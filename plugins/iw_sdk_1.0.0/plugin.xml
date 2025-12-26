@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   <extension
+         id="iw_sdk_gui_app"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="com.inerweave.sdk.Designer">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.inerweave.sdk.ConfigurationPerspective"
+            fixed="false"
+            icon="icons/session_config.gif"
+            id="iw_sdk.config_perspective"
+            name="Configuration">
+      </perspective>
+      <perspective
+            class="com.inerweave.sdk.TemplateEditorPerspective"
+            fixed="false"
+            icon="icons/changelog_obj.gif"
+            id="iw_sdk.te_perspective"
+            name="Template/XSLT Editor"/>
+      <perspective
+            class="com.inerweave.sdk.TransactionFlowPerspective"
+            fixed="false"
+            icon="icons/create_child.gif"
+            id="iw_sdk.tf_perspective"
+            name="Transaction Flow"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="IM Configuration"
+            allowMultiple="false"
+            icon="icons/calendar.gif"
+            class="com.inerweave.sdk.vews.ConfigBDView"
+            id="iw_sdk.ConfigBDView">
+      </view>
+      <view
+            name="Navigator"
+            allowMultiple="false"
+            icon="icons/e_synch_toc_nav.gif"
+            class="com.inerweave.sdk.vews.NavigationView"
+            id="iw_sdk.NavigationView">
+      </view>
+      <view
+            allowMultiple="false"
+            class="com.inerweave.sdk.vews.ConfigTSView"
+            icon="icons/session_config.gif"
+            id="iw_sdk.ConfigTSView"
+            name="TS Configuration">
+      </view>
+      <view
+            allowMultiple="true"
+            class="com.inerweave.sdk.vews.TransactionFlowView"
+            icon="icons/sequence.gif"
+            id="iw_sdk.TransactionFlowView"
+            name="Transaction Flow View"/>
+      <view
+            allowMultiple="true"
+            class="com.inerweave.sdk.vews.XSLTEditorView"
+            icon="icons/changelog_obj.gif"
+            id="iw_sdk.XSLTEditorView"
+            name="XSLT Editor"/>
+      <view
+            class="com.inerweave.sdk.vews.TransactionDetailsView"
+            icon="icons/properties.gif"
+            id="iw_sdk.TransactionDetailsView"
+            name="Transaction Details View"/>
+      <view
+            allowMultiple="true"
+            class="com.inerweave.sdk.vews.DataMapView"
+            icon="icons/table_mapping_strateg.gif"
+            id="iw_sdk.DataMapView"
+            name="Data Map View"/>
+      <view
+            allowMultiple="true"
+            class="com.inerweave.sdk.vews.ConnectionView"
+            icon="icons/connection.gif"
+            id="iw_sdk.ConnectionView"
+            name="Connection View"/>
+      <view
+            allowMultiple="true"
+            class="com.inerweave.sdk.vews.AccessParameterView"
+            icon="icons/initializ_parameter.gif"
+            id="iw_sdk.AccessParameterView"
+            name="Access Parameter View"/>
+      <view
+            allowMultiple="true"
+            class="com.inerweave.sdk.vews.TemplateEditorView"
+            icon="icons/mime_mapping.gif"
+            id="iw_sdk.IwTemplateEditor"
+            name="Template Editor"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Project"
+            id="iw_sdk.project">
+      </category>
+      <command
+            category="Project"
+            categoryId="iw_sdk.project"
+            description="Opens a project"
+            id="iw_sdk.openProject"
+            name="Open Project">
+      </command>
+      <command
+            category="Project"
+            categoryId="iw_sdk.project"
+            description="Closes a project"
+            id="iw_sdk.closeProject"
+            name="Close Project">
+      </command>
+      <command
+            category="Project"
+            categoryId="iw_sdk.project"
+            description="Project properties"
+            id="iw_sdk.projectProperties"
+            name="Project Properties">
+      </command>
+      <category
+            id="iw_sdk.file"
+            name="File">
+      </category>
+      <command
+            category="File"
+            categoryId="iw_sdk.file"
+            description="Opens a File"
+            id="iw_sdk.openFile"
+            name="Open File">
+      </command>
+      <category
+            id="iw_sdk.wizard"
+            name="Wizard"/>
+      <command
+            categoryId="iw_sdk.wizard"
+            description="Opens a new wizard"
+            id="iw_sdk.newWizard"
+            name="New Wizard"/>
+      <command
+            category="Project"
+            categoryId="iw_sdk.project"
+            description="Builds a project"
+            id="iw_sdk.buildProject"
+            name="Build Project"/>
+      <command
+            category="Project"
+            categoryId="iw_sdk.project"
+            description="Compiles XSLT"
+            id="iw_sdk.compileXSLT"
+            name="Compile XSLT"/>
+      <command
+            category="Project"
+            categoryId="iw_sdk.project"
+            description="Builds IM"
+            id="iw_sdk.buildIM"
+            name="Build IM"/>
+      <command
+            category="Project"
+            categoryId="iw_sdk.project"
+            description="Builds TS"
+            id="iw_sdk.buildTS"
+            name="Build TS"/>
+      <category
+            id="iw_sdk.ui"
+            name="User Interface"/>
+      <command
+            category="User Interface"
+            categoryId="iw_sdk.ui"
+            description="Opens a view"
+            id="iw_sdk.openView"
+            name="Open View"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+     
+      <key
+            commandId="org.eclipse.ui.file.exit"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+X">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="iw_sdk.project"
+            name="Project"
+            >
+	</category>
+
+      <wizard
+            category="iw_sdk.project"
+            class="com.inerweave.sdk.wizards.NewProjectWizard"
+            icon="icons/newjprj_wiz.gif"
+            id="iw_sdk.new_project"
+            name = "New Project"
+>
+  
+            <selection class="org.eclipse.core.resources.IResource"/>
+            </wizard>
+      <category
+            id="iw_sdk.transaction"
+            name="Transactions"/>
+      <wizard
+            category="iw_sdk.transaction"
+            class="com.inerweave.sdk.wizards.NewTransactionWizard"
+            icon="icons/properties.gif"
+            id="iw_sdk.new_transaction"
+            name="New Transaction">
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+      <wizard
+            category="iw_sdk.transaction"
+            class="com.inerweave.sdk.wizards.NewTransactionFlowWizard"
+            icon="icons/sequence.gif"
+            id="iw_sdk.new_transaction_flow"
+            name="New Transaction Flow">
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+      <wizard
+            category="iw_sdk.transaction"
+            class="com.inerweave.sdk.wizards.NewQueryWizard"
+            icon="icons/query_method_obj.gif"
+            id="iw_sdk.new_query"
+            name="New Query">
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension> 
+   <extension
+         id="iw_sdk_gui"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="iw_sdk.iw_sdk_gui_app"
+            name="Interweave IDE">
+         <property
+               name="windowImages"
+               value="icons/16diamond.gif,icons/32diamond.gif"/>
+         <property
+               name="aboutImage"
+               value="icons/16diamond.gif"/>
+         <property
+               name="aboutText"
+               value="%aboutText"/>
+      </product>
+   </extension>
+
+</plugin>

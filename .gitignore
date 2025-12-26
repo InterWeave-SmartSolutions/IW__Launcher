@@ -1,0 +1,111 @@
+# IW_IDE Git Ignore File
+
+# ===== Local Configuration =====
+config.local.ini
+*.local.ini
+*.local
+
+# ===== Database Files =====
+# Keep schema, ignore actual database
+database/*.db
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+
+# ===== Data Directories =====
+# Keep directory structure, ignore user data
+data/pages/*
+data/forms/*
+data/projects/*
+data/exports/*
+!data/pages/.gitkeep
+!data/forms/.gitkeep
+!data/projects/.gitkeep
+!data/exports/.gitkeep
+
+# ===== Workspace =====
+# User-specific workspace data
+workspace/.metadata/
+workspace/*/.settings/
+workspace/*/bin/
+workspace/*/target/
+workspace/*/.project
+workspace/*/.classpath
+
+# ===== IDE Generated =====
+configuration/.log
+configuration/org.eclipse.core.runtime/.manager/
+configuration/org.eclipse.osgi/.manager/
+configuration/org.eclipse.update/
+
+# ===== Java/Eclipse =====
+*.class
+*.jar
+!startup.jar
+!plugins/**/*.jar
+*.war
+*.ear
+.project
+.classpath
+.settings/
+bin/
+target/
+out/
+
+# ===== Logs =====
+*.log
+logs/
+log/
+
+# ===== OS Generated =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===== IDE Files =====
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== Backup Files =====
+*.bak
+*.backup
+*.orig
+*.tmp
+*.temp
+
+# ===== Archives (don't commit large archives) =====
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# ===== Sensitive Data =====
+**/credentials*
+**/secrets*
+**/*password*
+**/*token*
+.env
+.env.local
+.env.production
+.env.*.local
+
+# ===== Database Connection (configured per-machine) =====
+web_portal/tomcat/conf/context.xml
+
+# ===== Downloaded Dependencies (can be re-downloaded) =====
+web_portal/tomcat/lib/postgresql-*.jar
+
+# Auto Claude data directory
+.auto-claude/

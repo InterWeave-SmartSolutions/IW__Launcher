@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+================================================================================
+    IW_IDE LOCAL (NON-HOSTED) CONFIGURATION TEMPLATE
+    (Admin Account Authentication Only)
+================================================================================
+
+INSTRUCTIONS:
+1. Copy this file to: web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml
+2. Restart Tomcat
+
+This configuration uses IsHosted="0" which enables only admin account login.
+No database connection is required for authentication.
+
+ADMIN CREDENTIALS:
+  Username: __iw_admin__
+  Password: %iwps%
+
+Use this when:
+- Quick testing without database setup
+- Development/debugging
+- Database connection is unavailable
+================================================================================
+-->
+<BusinessDaemonConfiguration
+    Name="BD1"
+    HartbeatInterval="0"
+    RefreshInterval="1000"
+
+    PrimaryTSURL="http://127.0.0.1:8080/Creatio_QuickBooks_Integration"
+    SecondaryTSURL=""
+    PrimaryTSURLT="http://127.0.0.1:8080/Creatio_QuickBooks_Integration"
+    SecondaryTSURLT=""
+    PrimaryTSURL1="http://127.0.0.1:8080/Creatio_QuickBooks_Integration"
+    SecondaryTSURL1=""
+    PrimaryTSURLT1="http://127.0.0.1:8080/Creatio_QuickBooks_Integration"
+    SecondaryTSURLT1=""
+    PrimaryTSURLD="http://127.0.0.1:8080/Creatio_QuickBooks_Integration"
+    SecondaryTSURLD=""
+
+    FailoverURL=""
+
+    IsPrimary="1"
+    RunAtStartUp="1"
+    BufferSize="1024"
+
+    IsHosted="0"
+>
+</BusinessDaemonConfiguration>

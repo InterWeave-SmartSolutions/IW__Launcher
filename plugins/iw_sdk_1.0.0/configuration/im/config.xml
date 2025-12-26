@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?><BusinessDaemonConfiguration Name="BD1" IsPrimary="1"
+	PrimaryTSURL="http://127.0.0.1:8080/iwtransformationserver"
+	PrimaryTSURLT="http://127.0.0.1:8080/iwtransformationserver"
+	PrimaryTSURLD="http://127.0.0.1:8080/iwtransformationserver">
+</BusinessDaemonConfiguration>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output omit-xml-declaration="yes"/>
+	<xsl:variable name="rootdir" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='applicationdir']"/>
+	<xsl:variable name="webdir" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='sessionid']"/>
+	<xsl:variable name="themename" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='themename']"/>
+	<xsl:variable name="tranname" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='tranname']"/>
+	<xsl:variable name="dataname" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='dataname']"/>
+	<xsl:variable name="username" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='username']"/>
+	<xsl:variable name="groupid" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='groupid']"/>
+	<xsl:variable name="userid" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='userid']"/>
+	<xsl:variable name="userlevel" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='userlevel']"/>
+	<xsl:variable name="email" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='email']"/>
+	<xsl:variable name="docpath" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='imagepath']"/>
+	<xsl:variable name="imagepath" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='imagepath']"/>
+	<xsl:variable name="servername" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='servername']"/>
+	<xsl:variable name="remotehost" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='remotehost']"/>
+	<xsl:variable name="requestedsessionid" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='requestedsessionid']"/>
+	<xsl:variable name="applicationname" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='applicationname']"/>
+	<xsl:variable name="gatewayname" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='gatewayname']"/>
+	<xsl:variable name="servicename" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='servicename']"/>
+	<xsl:variable name="maxinactiveinterval" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='maxinactiveinterval']"/>
+	<xsl:variable name="contextpath" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='contextpath']"/>
+	<xsl:variable name="creationtime" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='creationtime']"/>
+	<xsl:variable name="requesturi" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='requesturi']"/>
+	<xsl:variable name="pathinfo" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='pathinfo']"/>
+	<xsl:variable name="realpath" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='realpath']"/>
+	<xsl:variable name="authtype" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='authtype']"/>
+	<xsl:variable name="serverport" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='serverport']"/>
+	<xsl:variable name="scheme" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='scheme']"/>
+	<xsl:variable name="protocol" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='protocol']"/>
+	<xsl:variable name="remoteuser" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='remoteuser']"/>
+	<xsl:variable name="sessionid" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='sessionid']"/>
+	<xsl:variable name="pathtranslated" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='pathtranslated']"/>
+	<xsl:variable name="appname" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='appname']"/>
+	<xsl:variable name="servletpath" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='servletpath']"/>
+	<xsl:variable name="lastaccessedtime" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='lastaccessedtime']"/>
+	<xsl:variable name="remoteaddr" select="/*/iwrecordset/transaction/datamap[@name='sessionvars']/data/row/col[@name='remoteaddr']"/>
+</xsl:stylesheet>

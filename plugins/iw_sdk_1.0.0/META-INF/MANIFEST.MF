@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Iw_sdk Plug-in
+Bundle-SymbolicName: iw_sdk; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: iw_sdk.Iw_sdkPlugin
+Bundle-Vendor: Integration Technologies, Inc.
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.ui.console,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.ui.ide
+Eclipse-AutoStart: true
+Bundle-ClassPath: lib/resolver.jar,
+ lib/serializer.jar,
+ lib/xalan.jar,
+ lib/xercesImpl.jar,
+ lib/xml-apis.jar,
+ lib/xsltc.jar,
+ bin/

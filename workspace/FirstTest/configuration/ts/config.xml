@@ -1,0 +1,1 @@
+<TransformationServerConfiguration Name="TS1" LogLevel="LOG_MINIMUM" IsPrimary="1" IsTimeStamping="0" IsCompiledMapping="0" BufferSize="1024" IsHosted="0"></TransformationServerConfiguration>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v2004 rel. 4 U (http://www.xmlspy.com) by Alfredo Celestial (Blockade Systems Corp.) -->
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="BusinessDaemonConfiguration">
+		<xs:annotation>
+			<xs:documentation>BD config.xml root element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="BusinessDaemonConfigurationType">
+					<xs:attribute name="Name" type="xs:NMTOKEN" use="required"/>
+					<xs:attribute name="IsPrimary" type="xs:boolean" use="required"/>
+					<xs:attribute name="FailoverURL" type="xs:anyURI" use="optional"/>
+					<xs:attribute name="RunAtStartUp" type="xs:boolean" use="optional" default="true">
+						<xs:annotation>
+							<xs:documentation>Defines whether all transactions must start at start-up. Value can be overwritten by TransactionDescription value.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="IsHosted" type="xs:boolean" use="optional" default="false"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Parameter">
+		<xs:annotation>
+			<xs:documentation>Transaction parameter</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Name" type="xs:NMTOKEN" use="required"/>
+			<xs:attribute name="Value" type="xs:string" use="optional" default=""/>
+			<xs:attribute name="Fixed" type="xs:boolean" use="optional" default="false"/>
+			<xs:attribute name="Upload" type="xs:boolean" use="optional" default="false"/>
+			<xs:attribute name="Password" type="xs:boolean" use="optional" default="false"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="TransactionDescription">
+		<xs:annotation>
+			<xs:documentation>Used in config only</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TransactionConfigBaseType">
+					<xs:attribute name="Interval" use="required">
+						<xs:annotation>
+							<xs:documentation>Interval between subsequent transactions </xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:long">
+								<xs:minInclusive value="0"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="Shift" use="required">
+						<xs:annotation>
+							<xs:documentation>Interval between server start and first transaction start</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:long">
+								<xs:minExclusive value="0"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="RunAtStartUp" type="xs:boolean" use="optional" default="true">
+						<xs:annotation>
+							<xs:documentation>Defines whether transaction starts at start-up; if presented, overwrites global BDConfiguration value.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="NumberOfExecutions" type="xs:nonNegativeInteger" use="optional" default="0"/>
+					<xs:attribute name="IsStateful" type="xs:boolean" use="optional" default="false"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="TransactionBaseType">
+		<xs:sequence>
+			<xs:element ref="Parameter" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="Id" type="xs:NMTOKEN" use="required">
+			<xs:annotation>
+				<xs:documentation>Transaction Id.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:element name="TransactionContext" type="TransactionContextType">
+		<xs:annotation>
+			<xs:documentation>From BD to TS</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="TransactionContextType">
+		<xs:complexContent>
+			<xs:extension base="TransactionBaseType">
+				<xs:attribute name="InstanceId" type="xs:string" use="required"/>
+				<xs:attribute name="FromPrimary" type="xs:boolean" use="optional" default="true"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="TransactionResult">
+		<xs:annotation>
+			<xs:documentation>From TS to BD</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TransactionContextType">
+					<xs:attribute name="Result" use="required">
+						<xs:simpleType>
+							<xs:restriction base="xs:NMTOKEN">
+								<xs:enumeration value="SUCCESS"/>
+								<xs:enumeration value="TIMEOUT"/>
+								<xs:enumeration value="FAILURE"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="StopSchedule" type="xs:boolean" use="optional" default="false"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="BusinessDaemonConfigurationType">
+		<xs:sequence>
+			<xs:element ref="TransactionDescription" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="Query" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="HartbeatInterval" type="xs:long" use="optional" default="0">
+			<xs:annotation>
+				<xs:documentation>Interval for BD failover (secondary tests primary)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="PrimaryTSURL" type="xs:anyURI" use="required"/>
+		<xs:attribute name="SecondaryTSURL" type="xs:anyURI" use="optional"/>
+		<xs:attribute name="BufferSize" type="xs:int" use="optional" default="1024"/>
+		<xs:attribute name="RefreshInterval" type="xs:long" use="optional" default="1000"/>
+	</xs:complexType>
+	<xs:element name="Query">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TransactionConfigBaseType"/>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="FailoverTransactions">
+		<xs:annotation>
+			<xs:documentation>From BD1 to BD2 anf from BD2 to BD1</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="TransactionFailoverContext" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="HartbeatInterval" type="xs:long" use="optional">
+				<xs:annotation>
+					<xs:documentation>Interval for BD failover (secondary tests primary)</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="PrimaryTSURL" type="xs:anyURI" use="required"/>
+			<xs:attribute name="SecondaryTSURL" type="xs:anyURI" use="optional"/>
+			<xs:attribute name="BufferSize" type="xs:int" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="TransactionFailoverContext">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TransactionBaseType">
+					<xs:sequence>
+						<xs:element ref="TransactionProfileThread" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+					<xs:attribute name="Interval" use="required">
+						<xs:annotation>
+							<xs:documentation>Interval between subsequent transactions </xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:long">
+								<xs:minInclusive value="0"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="Shift" use="required">
+						<xs:annotation>
+							<xs:documentation>Interval between server start and first transaction start</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:long">
+								<xs:minExclusive value="0"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="NumberOfExecutions" type="xs:nonNegativeInteger" use="optional" default="0"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="TransactionProfileThread">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="Parameter" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="ProfileName" type="xs:string" use="required"/>
+			<xs:attribute name="NumberOfExecutions" type="xs:nonNegativeInteger" use="optional" default="0"/>
+			<xs:attribute name="IsActive" type="xs:boolean" use="required"/>
+			<xs:attribute name="IsSuspended" type="xs:boolean" use="optional" default="false"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="TransactionConfigBaseType">
+		<xs:complexContent>
+			<xs:extension base="TransactionBaseType">
+				<xs:attribute name="Description" type="xs:string" use="optional" default=""/>
+				<xs:attribute name="IsActive" type="xs:boolean" use="optional" default="true"/>
+				<xs:attribute name="PrimaryTSURL" type="xs:anyURI" use="optional"/>
+				<xs:attribute name="SecondaryTSURL" type="xs:anyURI" use="optional"/>
+				<xs:attribute name="IsPublic" type="xs:boolean" use="optional" default="false"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

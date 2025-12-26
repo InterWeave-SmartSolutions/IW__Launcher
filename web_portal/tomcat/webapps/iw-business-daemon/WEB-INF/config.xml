@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+================================================================================
+    IW_IDE ORACLE CLOUD MySQL CONFIGURATION TEMPLATE
+    (Your Own MySQL Server on Oracle Cloud)
+================================================================================
+
+INSTRUCTIONS:
+1. Copy this file to: web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml
+2. Replace placeholder values with your Oracle Cloud MySQL credentials
+3. Restart Tomcat
+
+REQUIREMENTS:
+- MySQL server running on Oracle Cloud VM (129.153.47.225)
+- Database 'iw_ide' created with mysql_schema.sql applied
+- MySQL JDBC driver in tomcat/lib/ (mysql-connector-java-8.0.33.jar)
+- Port 3306 open in Oracle Cloud Security List
+
+This configuration mirrors the InterWeave hosted setup but uses your own server.
+================================================================================
+-->
+<BusinessDaemonConfiguration
+    Name="BD1"
+    HartbeatInterval="0"
+    RefreshInterval="1000"
+
+    PrimaryTSURL="http://127.0.0.1:8080/iwtransformationserver"
+    SecondaryTSURL=""
+    PrimaryTSURLT="http://127.0.0.1:8080/iwtransformationserver"
+    SecondaryTSURLT=""
+    PrimaryTSURL1="http://127.0.0.1:8080/iwtransformationserver"
+    SecondaryTSURL1=""
+    PrimaryTSURLT1="http://127.0.0.1:8080/iwtransformationserver"
+    SecondaryTSURLT1=""
+    PrimaryTSURLD="http://127.0.0.1:8080/iwtransformationserver"
+    SecondaryTSURLD=""
+
+    FailoverURL=""
+
+    IsPrimary="1"
+    RunAtStartUp="1"
+    BufferSize="1024"
+
+    IsHosted="1"
+    hostedDriver="com.mysql.cj.jdbc.Driver"
+    hostedURL="jdbc:mysql://129.153.47.225:3306/"
+    hostedDBName="iw_ide"
+    hostedUser="iw_admin"
+    hostedPassword="I6Yq8B6p0tF4YbrrabRn6ek66lRda40L"
+>
+</BusinessDaemonConfiguration>
+

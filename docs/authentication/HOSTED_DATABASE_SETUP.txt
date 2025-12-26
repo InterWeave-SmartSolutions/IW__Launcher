@@ -1,0 +1,82 @@
+================================================================================
+              IW_IDE HOSTED DATABASE CONFIGURATION
+                  (Option 2 - InterWeave Central Server)
+================================================================================
+
+This option connects to InterWeave's hosted MySQL database for user
+authentication. Users and companies are managed on InterWeave's servers.
+
+DISCOVERED SERVER INFORMATION
+-----------------------------
+Server:       iw0.interweave.biz (148.62.63.8)
+Port:         8080 (HTTP), 3306 (MySQL)
+Database:     MySQL via JDBC
+Driver:       com.mysql.jdbc.Driver
+JDBC URL:     jdbc:mysql://148.62.63.8:3306/
+
+Server Status: LIVE (as of 2024-12-04)
+  - HTTP 200 response from http://iw0.interweave.biz:8080/
+  - IWLogin.jsp accessible
+  - Running Tomcat 5.5.33
+
+SETUP INSTRUCTIONS
+------------------
+1. Obtain credentials from InterWeave:
+   - Contact InterWeave support at (800) 671-8692 x 101
+   - Request: hostedUser, hostedPassword, hostedDBName
+
+2. Copy the template configuration:
+   cp config.xml.hosted.template \
+      ../../web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml
+
+3. Edit config.xml and replace:
+   - YOUR_DATABASE_NAME -> actual database name
+   - YOUR_USERNAME -> actual MySQL username
+   - YOUR_PASSWORD -> actual MySQL password
+
+4. Ensure MySQL JDBC driver is in classpath:
+   - Check: web_portal/tomcat/lib/mysql-connector-*.jar
+   - If missing, download from MySQL website
+
+5. Restart Tomcat:
+   cd web_portal/tomcat
+   ./bin/shutdown.sh
+   ./bin/startup.sh
+
+6. Test login at: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+
+WHAT THIS ENABLES
+-----------------
+- User authentication against InterWeave central database
+- Company profile management
+- Full CompanyConfiguration.jsp functionality
+- Solution-specific configurations (QB, SF, CRM, etc.)
+- License validation
+
+DEPENDENCIES
+------------
+- Network access to 148.62.63.8 ports 3306 and 8080
+- Valid InterWeave license
+- MySQL JDBC driver (com.mysql.jdbc.Driver)
+
+TROUBLESHOOTING
+---------------
+Issue: "No IM Failover configureded" in logs
+  -> FailoverURL is empty; set to http://iw0.interweave.biz:8080/iw-business-daemon/failover
+
+Issue: "MalformedURLException: no protocol"
+  -> hostedURL is empty or malformed; ensure jdbc:mysql:// prefix
+
+Issue: NullPointerException at LoginServlet.java:157
+  -> IsHosted="0" or hosted credentials not configured
+
+Issue: "Communications link failure"
+  -> Firewall blocking port 3306; check network access
+
+================================================================================
+                               WARNING
+================================================================================
+This option creates a dependency on external InterWeave servers. If their
+servers go offline, authentication will fail. Consider Option 3 (Local
+PostgreSQL) for a self-contained solution.
+================================================================================
