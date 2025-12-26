@@ -1,0 +1,126 @@
+{
+  "project_name": "InterWeave IDE (IW_IDE)",
+  "project_type": "desktop-app",
+  "tech_stack": {
+    "primary_language": "Java",
+    "frameworks": ["Eclipse-based IDE", "Apache Tomcat 9.0.83", "XSLT/XML transformations", "JSP"],
+    "key_dependencies": ["Java Runtime Environment (JRE 8)", "MySQL/Oracle Cloud Database", "SOAP/REST API connectors", "Salesforce API", "QuickBooks API", "Authorize.Net API", "Creatio CRM API"]
+  },
+  "target_audience": {
+    "primary_persona": "Enterprise integration developers and IT professionals who need to create automated data synchronization workflows between business applications (CRM, ERP, financial systems)",
+    "secondary_personas": [
+      "Business analysts configuring data integrations without deep coding",
+      "System administrators managing integration flows and schedules",
+      "Small-to-medium business owners needing to connect Salesforce with QuickBooks or payment processors"
+    ],
+    "pain_points": [
+      "Manually syncing data between multiple business applications is time-consuming and error-prone",
+      "Complex API integrations (SOAP, REST, JSON) require significant development expertise",
+      "No visual tool to design data transformation workflows between disparate systems",
+      "Scheduling and automating recurring data synchronization tasks",
+      "Mapping fields between different application schemas (e.g., Salesforce to QuickBooks)"
+    ],
+    "goals": [
+      "Automate data flows between business applications without manual intervention",
+      "Create reusable integration templates for common business scenarios",
+      "Reduce development time for API integrations with visual design tools",
+      "Ensure reliable, scheduled data synchronization with monitoring capabilities",
+      "Transform and map data between different formats (XML, JSON, SOAP, SQL)"
+    ],
+    "usage_context": "Used by enterprise IT teams and integration developers in office environments to design, test, deploy, and monitor data integration workflows between cloud and on-premise business applications. Accessed via desktop IDE for development and web portal for configuration/monitoring."
+  },
+  "product_vision": {
+    "one_liner": "Enterprise data integration platform for creating synchronization workflows between business applications",
+    "problem_statement": "Businesses rely on multiple disconnected applications (CRM, ERP, accounting, payment processors) that require constant manual data entry or expensive custom development to keep in sync. This leads to data inconsistencies, wasted employee time, and integration fragility.",
+    "value_proposition": "InterWeave IDE provides a visual development environment that allows integration developers to create, deploy, and manage data transformation workflows between any business applications using XSLT-based transformations, without requiring deep programming expertise for each integration point",
+    "success_metrics": [
+      "Number of successful data synchronization transactions processed",
+      "Reduction in manual data entry time for connected applications",
+      "Time saved in developing new integrations vs custom coding",
+      "Uptime and reliability of scheduled integration flows",
+      "Number of connected integration points per customer deployment"
+    ]
+  },
+  "current_state": {
+    "maturity": "mvp",
+    "existing_features": [
+      "Visual IDE for creating integration flows (Eclipse-based)",
+      "Transaction flow designer with visual workflow builder",
+      "XSLT-based data transformation engine",
+      "Multiple adapter types for different protocols (SOAP, REST, SQL, hierarchical)",
+      "Salesforce to Authorize.Net payment processing integration",
+      "Salesforce to QuickBooks accounting integration (Accounts Receivable, Accounts Payable)",
+      "Creatio CRM to QuickBooks integration",
+      "Creatio to Stripe payment processing",
+      "Web portal for configuration and monitoring (Business Daemon)",
+      "Scheduled and utility flow execution modes",
+      "Query flows for REST API-like external triggers",
+      "Multi-database support (MySQL, Oracle Cloud, PostgreSQL)",
+      "Windows portable deployment with bundled JRE and Tomcat",
+      "Company and user authentication system",
+      "Integration Manager for flow control and scheduling"
+    ],
+    "known_gaps": [
+      "Custom user accounts not working due to proprietary authentication method in compiled LoginServlet",
+      "Need to upgrade to contemporary Java version (currently JRE 8)",
+      "Documentation needs improvement and cleanup",
+      "No modern REST API for programmatic access",
+      "Limited multi-user support on test server",
+      "Web UI could be modernized (currently JSP-based)"
+    ],
+    "technical_debt": [
+      "Hardcoded admin credentials in application bytecode - security concern for production use",
+      "Compiled servlet classes without source code access makes customization difficult",
+      "Old Java version (JRE 8) may have security and compatibility issues",
+      "Complex authentication flow between hosted database and local admin bypass",
+      "Eclipse-based IDE platform may be outdated compared to modern alternatives",
+      "JSP/Servlet web technology stack could be modernized"
+    ]
+  },
+  "competitive_context": {
+    "alternatives": [
+      "MuleSoft Anypoint Platform",
+      "Dell Boomi",
+      "Zapier",
+      "Microsoft Power Automate",
+      "Workato",
+      "Jitterbit",
+      "SnapLogic",
+      "Tray.io"
+    ],
+    "differentiators": [
+      "XSLT-based transformations provide powerful, standards-based data mapping",
+      "15+ years of refinement and real-world usage in enterprise environments",
+      "Self-contained portable deployment (no cloud dependency required)",
+      "Deep integration with Salesforce, QuickBooks, and payment processors",
+      "Visual flow designer with branching and conditional logic",
+      "One-time license model vs subscription pricing of competitors"
+    ],
+    "market_position": "Mid-market enterprise integration tool targeting businesses that need robust data synchronization between CRM, ERP, and financial applications. Positioned as a more affordable, self-hosted alternative to expensive iPaaS solutions, with particular strength in Salesforce-to-accounting integrations. Well-suited for organizations preferring on-premise or hybrid cloud deployments over pure SaaS integrations.",
+    "competitor_pain_points": [],
+    "competitor_analysis_available": false
+  },
+  "constraints": {
+    "technical": [
+      "Compiled servlet bytecode limits authentication customization",
+      "JRE 8 dependency may have compatibility issues with newer operating systems",
+      "Eclipse-based IDE framework may be difficult to modernize",
+      "Tomcat 9 requires Java 8+ which limits upgrade path",
+      "XSLT transformations require specialized knowledge"
+    ],
+    "resources": [
+      "Small development team (appears to be 2-4 people based on training call)",
+      "Legacy codebase with 15+ years of history",
+      "Documentation maintenance requires ongoing effort",
+      "Test server has limited compute resources (CPU constraints noted)"
+    ],
+    "dependencies": [
+      "External APIs: Salesforce, QuickBooks, Authorize.Net, Creatio, Stripe",
+      "Database: MySQL (Oracle Cloud hosted or local)",
+      "Java Runtime Environment 8",
+      "Apache Tomcat 9.0.83",
+      "Windows OS for portable deployment (Linux/Unix also supported)"
+    ]
+  },
+  "created_at": "2025-12-26T12:00:00Z"
+}

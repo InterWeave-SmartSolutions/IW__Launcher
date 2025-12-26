@@ -1,0 +1,534 @@
+{
+  "id": "roadmap-20251226-001",
+  "project_name": "InterWeave IDE (IW_IDE)",
+  "version": "1.0",
+  "vision": "Enterprise data integration platform for creating synchronization workflows between business applications",
+  "target_audience": {
+    "primary": "Enterprise integration developers and IT professionals who need to create automated data synchronization workflows between business applications (CRM, ERP, financial systems)",
+    "secondary": [
+      "Business analysts configuring data integrations without deep coding",
+      "System administrators managing integration flows and schedules",
+      "Small-to-medium business owners needing to connect Salesforce with QuickBooks or payment processors"
+    ]
+  },
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Foundation & Security",
+      "description": "Address critical security concerns, fix authentication issues, and stabilize the platform for production use. This phase eliminates technical debt blocking enterprise adoption.",
+      "order": 1,
+      "status": "planned",
+      "features": ["feature-1", "feature-2", "feature-3", "feature-4"],
+      "milestones": [
+        {
+          "id": "milestone-1-1",
+          "title": "Production-Ready Authentication",
+          "description": "Custom user accounts work reliably without workarounds, enabling secure multi-tenant deployments",
+          "features": ["feature-1", "feature-2"],
+          "status": "planned"
+        },
+        {
+          "id": "milestone-1-2",
+          "title": "Enterprise-Ready Documentation",
+          "description": "Comprehensive documentation enables self-service onboarding for new customers",
+          "features": ["feature-3", "feature-4"],
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Competitive Differentiation",
+      "description": "Strengthen core differentiators against MuleSoft, Zapier, and other competitors. Focus on pricing, deployment flexibility, and deep integrations that competitors lack.",
+      "order": 2,
+      "status": "planned",
+      "features": ["feature-5", "feature-6", "feature-7", "feature-8", "feature-9"],
+      "milestones": [
+        {
+          "id": "milestone-2-1",
+          "title": "Modern API Platform",
+          "description": "REST API enables programmatic access and third-party integrations",
+          "features": ["feature-5"],
+          "status": "planned"
+        },
+        {
+          "id": "milestone-2-2",
+          "title": "Visual Experience Upgrade",
+          "description": "Modernized web portal and enhanced visual XSLT editor compete with contemporary tools",
+          "features": ["feature-6", "feature-7"],
+          "status": "planned"
+        },
+        {
+          "id": "milestone-2-3",
+          "title": "Enterprise Scalability",
+          "description": "Multi-user support and robust error handling enable team-based deployments",
+          "features": ["feature-8", "feature-9"],
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Market Expansion",
+      "description": "Expand market reach by addressing regulated industry needs, enhancing monitoring, and building template ecosystem. Target the mid-market gap between Zapier and MuleSoft.",
+      "order": 3,
+      "status": "planned",
+      "features": ["feature-10", "feature-11", "feature-12", "feature-13"],
+      "milestones": [
+        {
+          "id": "milestone-3-1",
+          "title": "Compliance & Governance",
+          "description": "Platform meets data sovereignty requirements for regulated industries (healthcare, finance)",
+          "features": ["feature-10", "feature-11"],
+          "status": "planned"
+        },
+        {
+          "id": "milestone-3-2",
+          "title": "Template Ecosystem",
+          "description": "Pre-built integration templates reduce time-to-value for common business scenarios",
+          "features": ["feature-12", "feature-13"],
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Innovation & Future",
+      "description": "Long-term innovations including AI-assisted mapping, no-code capabilities, and platform modernization. Position for next-generation enterprise integration needs.",
+      "order": 4,
+      "status": "planned",
+      "features": ["feature-14", "feature-15", "feature-16", "feature-17"],
+      "milestones": [
+        {
+          "id": "milestone-4-1",
+          "title": "AI-Powered Integration",
+          "description": "AI assists with field mapping and transformation suggestions, reducing expertise barrier",
+          "features": ["feature-14", "feature-15"],
+          "status": "planned"
+        },
+        {
+          "id": "milestone-4-2",
+          "title": "Platform Modernization",
+          "description": "Updated technology stack ensures long-term viability and developer experience",
+          "features": ["feature-16", "feature-17"],
+          "status": "planned"
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "id": "feature-1",
+      "title": "Fix Custom User Authentication",
+      "description": "Resolve the authentication issues preventing custom user accounts from working. Replace or decompile the proprietary LoginServlet to enable standard user creation and authentication without requiring admin bypass workarounds.",
+      "rationale": "This is a critical blocker for production deployments. Custom user accounts are essential for enterprise multi-tenant usage. Currently only admin accounts work, which is a security and usability concern that competitors don't have.",
+      "priority": "must",
+      "complexity": "high",
+      "impact": "high",
+      "phase_id": "phase-1",
+      "dependencies": [],
+      "status": "idea",
+      "acceptance_criteria": [
+        "New user accounts can be created through the web portal",
+        "Users can log in with their own credentials without admin bypass",
+        "User permissions and access controls work as designed",
+        "Authentication works with both local and Oracle Cloud database configurations"
+      ],
+      "user_stories": [
+        "As a system administrator, I want to create individual user accounts so that team members have personalized access with proper audit trails",
+        "As an IT manager, I want to control user permissions so that sensitive integration configurations are protected"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-2",
+      "title": "Security Hardening - Remove Hardcoded Credentials",
+      "description": "Eliminate hardcoded admin credentials from application bytecode. Implement secure credential management using environment variables, encrypted configuration files, or secure vault integration.",
+      "rationale": "Hardcoded credentials are a critical security vulnerability that would fail enterprise security audits. This directly addresses the technical debt concern and is essential for any production deployment in security-conscious organizations.",
+      "priority": "must",
+      "complexity": "medium",
+      "impact": "high",
+      "phase_id": "phase-1",
+      "dependencies": ["feature-1"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "No credentials are stored in compiled bytecode or source files",
+        "Admin credentials can be configured externally via environment variables or config files",
+        "Credentials are encrypted at rest",
+        "Security scan passes without credential exposure warnings"
+      ],
+      "user_stories": [
+        "As a security officer, I want credentials managed securely so that the application passes our security audit",
+        "As a DevOps engineer, I want to configure credentials through environment variables so that deployment automation is secure"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-3",
+      "title": "Comprehensive Documentation Overhaul",
+      "description": "Create thorough, well-organized documentation including installation guides, user manuals, XSLT transformation tutorials, API references, and troubleshooting guides. Include video tutorials for visual learners.",
+      "rationale": "Documentation is a known gap that impacts onboarding. Competitors like MuleSoft have steep learning curves (pain-1-2), but good documentation can help IW_IDE differentiate as a more accessible platform.",
+      "priority": "must",
+      "complexity": "medium",
+      "impact": "high",
+      "phase_id": "phase-1",
+      "dependencies": [],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Installation guide enables self-service setup without support calls",
+        "All existing features are documented with examples",
+        "XSLT transformation tutorial with common patterns",
+        "Troubleshooting guide covers top 10 support issues",
+        "Documentation is searchable and indexed"
+      ],
+      "user_stories": [
+        "As a new user, I want clear documentation so that I can get started without extensive training",
+        "As an integration developer, I want XSLT examples so that I can create transformations without deep XML expertise"
+      ],
+      "competitor_insight_ids": ["pain-1-2"]
+    },
+    {
+      "id": "feature-4",
+      "title": "Quick-Start Integration Templates",
+      "description": "Create pre-configured, ready-to-deploy templates for the most common integration scenarios: Salesforce-to-QuickBooks (AR/AP), Salesforce-to-Authorize.Net, and Creatio-to-Stripe. Templates should require minimal configuration to go live.",
+      "rationale": "Competitors are 'overbuilt for simple integrations' (pain-1-4, pain-2-3). Purpose-built templates address the market gap for turnkey Salesforce/QuickBooks integration. This is a major differentiator that directly addresses the competitor pain points identified.",
+      "priority": "must",
+      "complexity": "medium",
+      "impact": "high",
+      "phase_id": "phase-1",
+      "dependencies": ["feature-3"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Salesforce-to-QuickBooks template deploys in under 30 minutes",
+        "Templates include field mapping for common objects",
+        "Setup wizard guides users through configuration",
+        "Each template has accompanying video walkthrough"
+      ],
+      "user_stories": [
+        "As a small business owner, I want a turnkey Salesforce-to-QuickBooks integration so that I don't need to hire developers",
+        "As a system administrator, I want pre-built templates so that common integrations don't require custom development"
+      ],
+      "competitor_insight_ids": ["pain-1-4", "pain-2-3", "pain-5-2", "gap-2"]
+    },
+    {
+      "id": "feature-5",
+      "title": "Modern REST API for Programmatic Access",
+      "description": "Create a comprehensive REST API that allows external systems to trigger flows, monitor status, retrieve logs, and manage configurations programmatically. Include OpenAPI/Swagger documentation.",
+      "rationale": "This is a known gap in the current state. A REST API enables automation, CI/CD integration, and third-party tool connectivity. It modernizes the platform and supports enterprise DevOps practices.",
+      "priority": "should",
+      "complexity": "high",
+      "impact": "high",
+      "phase_id": "phase-2",
+      "dependencies": ["feature-1", "feature-2"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "API supports CRUD operations for flows, schedules, and configurations",
+        "API can trigger flow execution and retrieve status",
+        "OpenAPI specification is published and interactive",
+        "API authentication uses industry-standard tokens (JWT/OAuth2)",
+        "Rate limiting and security controls are in place"
+      ],
+      "user_stories": [
+        "As a DevOps engineer, I want to trigger integrations via API so that I can automate deployment pipelines",
+        "As an integration developer, I want to programmatically manage flows so that I can version control configurations"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-6",
+      "title": "Web Portal UI Modernization",
+      "description": "Redesign the JSP-based web portal with a modern, responsive interface using contemporary web technologies. Improve navigation, add dashboard analytics, and enhance mobile responsiveness.",
+      "rationale": "The current JSP-based UI is a known technical debt item. A modern UI improves user experience and positions IW_IDE competitively against sleek interfaces from Zapier and Power Automate, while being more accessible than complex MuleSoft.",
+      "priority": "should",
+      "complexity": "high",
+      "impact": "medium",
+      "phase_id": "phase-2",
+      "dependencies": ["feature-5"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "New UI is responsive and works on mobile devices",
+        "Dashboard shows integration status at a glance",
+        "Navigation is intuitive with no more than 3 clicks to any feature",
+        "Performance is faster than current JSP pages",
+        "Maintains backward compatibility with existing functionality"
+      ],
+      "user_stories": [
+        "As a system administrator, I want a modern dashboard so that I can monitor integrations at a glance",
+        "As a business analyst, I want an intuitive interface so that I can configure integrations without developer help"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-7",
+      "title": "Enhanced Visual XSLT Editor with Drag-and-Drop Mapping",
+      "description": "Upgrade the visual XSLT editor to support drag-and-drop field mapping between source and target schemas. Add real-time transformation preview, syntax highlighting, and error detection.",
+      "rationale": "Addresses the market gap (gap-4) for visual IDE with complex data transformations. Zapier struggles with complex mapping (pain-3-2), and XSLT knowledge is a constraint. Visual mapping reduces the expertise barrier while leveraging XSLT power.",
+      "priority": "should",
+      "complexity": "high",
+      "impact": "high",
+      "phase_id": "phase-2",
+      "dependencies": [],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Users can drag fields from source schema to target schema",
+        "Mapping automatically generates XSLT code",
+        "Real-time preview shows transformation output",
+        "Common transformation functions available via dropdown",
+        "Syntax errors are highlighted before save"
+      ],
+      "user_stories": [
+        "As an integration developer, I want to drag-and-drop field mappings so that I can create transformations faster",
+        "As a business analyst, I want visual mapping so that I can configure integrations without learning XSLT syntax"
+      ],
+      "competitor_insight_ids": ["pain-3-2", "gap-4"]
+    },
+    {
+      "id": "feature-8",
+      "title": "Enhanced Multi-User Support with Role-Based Access Control",
+      "description": "Implement comprehensive multi-user support with role-based access control (RBAC), team workspaces, and audit logging. Enable concurrent users with proper isolation and collaboration features.",
+      "rationale": "Multi-user support is a known gap that limits team-based usage. Enterprise customers need role-based access for security compliance and team collaboration on integration projects.",
+      "priority": "should",
+      "complexity": "high",
+      "impact": "high",
+      "phase_id": "phase-2",
+      "dependencies": ["feature-1", "feature-2"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Support for at least 20 concurrent users",
+        "Roles: Admin, Developer, Operator, Viewer with distinct permissions",
+        "Audit log tracks all user actions with timestamps",
+        "Team workspaces isolate projects between groups",
+        "Single sign-on (SSO) support via SAML/OIDC"
+      ],
+      "user_stories": [
+        "As an IT manager, I want role-based access so that users only see integrations they're authorized for",
+        "As a compliance officer, I want audit logs so that I can track who made what changes and when"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-9",
+      "title": "Robust Error Handling and Retry Logic",
+      "description": "Implement configurable error handling with automatic retry, exponential backoff, dead letter queues, and error notifications. Add comprehensive error reporting and recovery workflows.",
+      "rationale": "Zapier has 'limited error handling and retry logic' (pain-3-5) which is weak for mission-critical workflows. Robust error handling is essential for enterprise reliability and differentiates IW_IDE from simpler tools.",
+      "priority": "should",
+      "complexity": "medium",
+      "impact": "high",
+      "phase_id": "phase-2",
+      "dependencies": [],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Configurable retry attempts with exponential backoff",
+        "Failed transactions queued for manual review",
+        "Email/webhook notifications on critical failures",
+        "Error dashboard shows failure trends and patterns",
+        "One-click retry for failed transactions"
+      ],
+      "user_stories": [
+        "As an operations manager, I want automatic retries so that transient failures don't require manual intervention",
+        "As a system administrator, I want error notifications so that I'm alerted to problems before customers complain"
+      ],
+      "competitor_insight_ids": ["pain-3-5"]
+    },
+    {
+      "id": "feature-10",
+      "title": "Compliance Documentation for Regulated Industries",
+      "description": "Create compliance documentation, security whitepapers, and deployment guides for regulated industries (HIPAA for healthcare, SOC 2, PCI-DSS for payments, GDPR for EU). Include audit checklists and configuration recommendations.",
+      "rationale": "Addresses market gap (gap-6) for organizations with data sovereignty requirements. Cloud-only competitors can't meet compliance needs for on-premise data processing. This documentation enables sales to regulated industries.",
+      "priority": "could",
+      "complexity": "medium",
+      "impact": "high",
+      "phase_id": "phase-3",
+      "dependencies": ["feature-2", "feature-8"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "HIPAA deployment guide with BAA template",
+        "SOC 2 control mapping document",
+        "PCI-DSS compliance checklist for payment integrations",
+        "GDPR data processing guide for EU deployments",
+        "Security whitepaper suitable for procurement review"
+      ],
+      "user_stories": [
+        "As a healthcare IT director, I want HIPAA compliance documentation so that I can justify using IW_IDE for patient data integrations",
+        "As a security auditor, I want SOC 2 control mapping so that I can evaluate the platform against our requirements"
+      ],
+      "competitor_insight_ids": ["pain-2-2", "pain-3-4", "pain-4-5", "pain-5-3", "gap-6"]
+    },
+    {
+      "id": "feature-11",
+      "title": "Real-Time Monitoring Dashboard with Alerts",
+      "description": "Create a comprehensive monitoring dashboard showing real-time integration status, transaction volumes, error rates, and performance metrics. Include configurable alerts for anomalies and SLA violations.",
+      "rationale": "Enterprises need visibility into integration health. Real-time monitoring enables proactive issue detection and supports SLA management. This is expected in enterprise platforms.",
+      "priority": "could",
+      "complexity": "medium",
+      "impact": "medium",
+      "phase_id": "phase-3",
+      "dependencies": ["feature-6"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Dashboard updates in real-time (< 5 second refresh)",
+        "Shows transaction volume, success rate, and latency metrics",
+        "Configurable alert thresholds via web UI",
+        "Historical charts for trend analysis",
+        "Integration with external monitoring tools (webhooks, email)"
+      ],
+      "user_stories": [
+        "As an operations manager, I want real-time visibility so that I can detect problems before they impact business",
+        "As a system administrator, I want alerting so that I'm notified of issues during off-hours"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-12",
+      "title": "Integration Template Marketplace",
+      "description": "Create a marketplace where users can discover, share, and download integration templates. Include community ratings, verified publisher program, and one-click deployment for templates.",
+      "rationale": "Templates address the market gap (gap-2) for turnkey integrations. A marketplace builds community, reduces implementation time, and creates network effects. Competitors like Workato have recipe marketplaces as a strength.",
+      "priority": "could",
+      "complexity": "high",
+      "impact": "medium",
+      "phase_id": "phase-3",
+      "dependencies": ["feature-4", "feature-5"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Templates are discoverable by category and keyword search",
+        "One-click deployment from marketplace to user environment",
+        "Rating and review system for community feedback",
+        "Verified publisher badges for official/partner templates",
+        "Template versioning and update notifications"
+      ],
+      "user_stories": [
+        "As an integration developer, I want to share my templates so that others can benefit from my work",
+        "As a business user, I want to find proven templates so that I don't have to start from scratch"
+      ],
+      "competitor_insight_ids": ["gap-2"]
+    },
+    {
+      "id": "feature-13",
+      "title": "Unlimited Transaction Pricing Marketing Package",
+      "description": "Create marketing materials, pricing calculator, and ROI documentation that clearly communicate the one-time license with unlimited transactions value proposition. Include competitor comparison charts.",
+      "rationale": "Directly addresses the top pain point across competitors: high subscription costs and per-task pricing that scales poorly (pain-1-1, pain-2-1, pain-3-1, pain-5-1). This is IW_IDE's key differentiator.",
+      "priority": "could",
+      "complexity": "low",
+      "impact": "high",
+      "phase_id": "phase-3",
+      "dependencies": [],
+      "status": "idea",
+      "acceptance_criteria": [
+        "ROI calculator shows cost savings vs subscription competitors",
+        "Comparison chart against MuleSoft, Zapier, Boomi pricing",
+        "Case study with real customer cost savings",
+        "Sales battlecard for competitive situations",
+        "Landing page optimized for 'affordable integration platform' keywords"
+      ],
+      "user_stories": [
+        "As a CFO, I want clear cost comparison so that I can justify the investment to my board",
+        "As a buyer evaluating options, I want TCO analysis so that I can compare IW_IDE to subscription alternatives"
+      ],
+      "competitor_insight_ids": ["pain-1-1", "pain-2-1", "pain-3-1", "pain-4-2", "pain-5-1", "gap-1", "gap-3"]
+    },
+    {
+      "id": "feature-14",
+      "title": "AI-Assisted Field Mapping Suggestions",
+      "description": "Use AI/ML to automatically suggest field mappings between source and target schemas based on field names, data types, and common patterns. Reduce manual mapping effort for new integrations.",
+      "rationale": "Reduces the expertise barrier for creating complex mappings. AI assistance helps business analysts create integrations without deep technical knowledge, addressing the goal of reducing development time.",
+      "priority": "could",
+      "complexity": "high",
+      "impact": "medium",
+      "phase_id": "phase-4",
+      "dependencies": ["feature-7"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "AI suggests mappings with >80% accuracy for standard objects",
+        "Suggestions include confidence scores",
+        "Users can accept, modify, or reject suggestions",
+        "System learns from user corrections over time",
+        "Works offline without cloud AI dependencies"
+      ],
+      "user_stories": [
+        "As a business analyst, I want AI-suggested mappings so that I can create integrations without extensive training",
+        "As an integration developer, I want automatic mapping so that I can focus on complex transformations instead of routine mappings"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-15",
+      "title": "No-Code Connector Builder",
+      "description": "Create a visual no-code interface for building custom API connectors. Users can define REST/SOAP endpoints, authentication, request/response mappings without writing code.",
+      "rationale": "Extends platform to connect with any application, not just pre-built integrations. Addresses goal of creating reusable integration templates and reduces dependency on development team for new connectors.",
+      "priority": "could",
+      "complexity": "high",
+      "impact": "medium",
+      "phase_id": "phase-4",
+      "dependencies": ["feature-5", "feature-7"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Visual interface for defining API endpoints",
+        "Support for common authentication methods (API key, OAuth, Basic)",
+        "Test connectivity within the builder",
+        "Generated connectors work in flow designer",
+        "Export/import connectors for sharing"
+      ],
+      "user_stories": [
+        "As an integration developer, I want to build custom connectors visually so that I can integrate new applications quickly",
+        "As a system administrator, I want to connect to internal APIs so that I can include custom applications in workflows"
+      ],
+      "competitor_insight_ids": ["pain-3-3"]
+    },
+    {
+      "id": "feature-16",
+      "title": "Java Runtime Upgrade Path",
+      "description": "Plan and execute upgrade from JRE 8 to a supported LTS Java version (Java 17 or 21). Update dependencies, test compatibility, and create migration documentation for existing deployments.",
+      "rationale": "Java 8 is outdated and may have security and compatibility issues (known technical debt). Modern Java provides performance improvements, new features, and long-term support. Essential for platform longevity.",
+      "priority": "should",
+      "complexity": "high",
+      "impact": "medium",
+      "phase_id": "phase-4",
+      "dependencies": [],
+      "status": "idea",
+      "acceptance_criteria": [
+        "All features work on Java 17 or 21 LTS",
+        "Performance benchmarks show improvement or parity",
+        "Migration guide for existing deployments",
+        "Backward compatibility maintained for user configurations",
+        "Security scan passes with updated runtime"
+      ],
+      "user_stories": [
+        "As a security officer, I want current Java version so that known vulnerabilities are patched",
+        "As a system administrator, I want modern Java so that I can use current OS versions without compatibility issues"
+      ],
+      "competitor_insight_ids": []
+    },
+    {
+      "id": "feature-17",
+      "title": "Webhook Support for Real-Time Event Triggers",
+      "description": "Add webhook endpoints that can trigger integration flows in real-time based on external events. Support for incoming webhooks (receive events) and outgoing webhooks (send notifications).",
+      "rationale": "Real-time triggers complement scheduled integrations. Many modern applications communicate via webhooks. This enables event-driven architectures and reduces integration latency.",
+      "priority": "could",
+      "complexity": "medium",
+      "impact": "medium",
+      "phase_id": "phase-4",
+      "dependencies": ["feature-5"],
+      "status": "idea",
+      "acceptance_criteria": [
+        "Configurable webhook endpoints with unique URLs",
+        "Support for common payload formats (JSON, form-encoded)",
+        "Webhook authentication (HMAC signature verification)",
+        "Automatic flow triggering on webhook receipt",
+        "Outgoing webhooks for integration notifications"
+      ],
+      "user_stories": [
+        "As an integration developer, I want webhook triggers so that integrations run immediately when events occur",
+        "As a system administrator, I want webhook notifications so that other systems are updated in real-time"
+      ],
+      "competitor_insight_ids": []
+    }
+  ],
+  "metadata": {
+    "created_at": "2025-12-26T12:45:00Z",
+    "updated_at": "2025-12-26T12:45:00Z",
+    "generated_by": "roadmap_features agent",
+    "prioritization_framework": "MoSCoW",
+    "competitor_analysis_used": true,
+    "analysis_notes": "Roadmap leverages competitor analysis from 5 major competitors (MuleSoft, Dell Boomi, Zapier, Power Automate, Workato). Key differentiators identified: one-time pricing vs subscriptions, on-premise deployment capability, deep Salesforce/QuickBooks integration, and XSLT-based transformations."
+  }
+}

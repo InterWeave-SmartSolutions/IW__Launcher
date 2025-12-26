@@ -107,5 +107,6 @@ web_portal/tomcat/conf/context.xml
 # ===== Downloaded Dependencies (can be re-downloaded) =====
 web_portal/tomcat/lib/postgresql-*.jar
 
-# Auto Claude data directory
-.auto-claude/
+# Auto Claude data directory (tracked for team collaboration)
+# Only ignore session-specific data
+.auto-claude/insights/sessions/
