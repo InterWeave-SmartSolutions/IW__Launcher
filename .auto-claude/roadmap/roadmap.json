@@ -18,20 +18,31 @@
       "description": "Address critical security concerns, fix authentication issues, and stabilize the platform for production use. This phase eliminates technical debt blocking enterprise adoption.",
       "order": 1,
       "status": "planned",
-      "features": ["feature-1", "feature-2", "feature-3", "feature-4"],
+      "features": [
+        "feature-1",
+        "feature-2",
+        "feature-3",
+        "feature-4"
+      ],
       "milestones": [
         {
           "id": "milestone-1-1",
           "title": "Production-Ready Authentication",
           "description": "Custom user accounts work reliably without workarounds, enabling secure multi-tenant deployments",
-          "features": ["feature-1", "feature-2"],
+          "features": [
+            "feature-1",
+            "feature-2"
+          ],
           "status": "planned"
         },
         {
           "id": "milestone-1-2",
           "title": "Enterprise-Ready Documentation",
           "description": "Comprehensive documentation enables self-service onboarding for new customers",
-          "features": ["feature-3", "feature-4"],
+          "features": [
+            "feature-3",
+            "feature-4"
+          ],
           "status": "planned"
         }
       ]
@@ -42,27 +53,41 @@
       "description": "Strengthen core differentiators against MuleSoft, Zapier, and other competitors. Focus on pricing, deployment flexibility, and deep integrations that competitors lack.",
       "order": 2,
       "status": "planned",
-      "features": ["feature-5", "feature-6", "feature-7", "feature-8", "feature-9"],
+      "features": [
+        "feature-5",
+        "feature-6",
+        "feature-7",
+        "feature-8",
+        "feature-9"
+      ],
       "milestones": [
         {
           "id": "milestone-2-1",
           "title": "Modern API Platform",
           "description": "REST API enables programmatic access and third-party integrations",
-          "features": ["feature-5"],
+          "features": [
+            "feature-5"
+          ],
           "status": "planned"
         },
         {
           "id": "milestone-2-2",
           "title": "Visual Experience Upgrade",
           "description": "Modernized web portal and enhanced visual XSLT editor compete with contemporary tools",
-          "features": ["feature-6", "feature-7"],
+          "features": [
+            "feature-6",
+            "feature-7"
+          ],
           "status": "planned"
         },
         {
           "id": "milestone-2-3",
           "title": "Enterprise Scalability",
           "description": "Multi-user support and robust error handling enable team-based deployments",
-          "features": ["feature-8", "feature-9"],
+          "features": [
+            "feature-8",
+            "feature-9"
+          ],
           "status": "planned"
         }
       ]
@@ -73,20 +98,31 @@
       "description": "Expand market reach by addressing regulated industry needs, enhancing monitoring, and building template ecosystem. Target the mid-market gap between Zapier and MuleSoft.",
       "order": 3,
       "status": "planned",
-      "features": ["feature-10", "feature-11", "feature-12", "feature-13"],
+      "features": [
+        "feature-10",
+        "feature-11",
+        "feature-12",
+        "feature-13"
+      ],
       "milestones": [
         {
           "id": "milestone-3-1",
           "title": "Compliance & Governance",
           "description": "Platform meets data sovereignty requirements for regulated industries (healthcare, finance)",
-          "features": ["feature-10", "feature-11"],
+          "features": [
+            "feature-10",
+            "feature-11"
+          ],
           "status": "planned"
         },
         {
           "id": "milestone-3-2",
           "title": "Template Ecosystem",
           "description": "Pre-built integration templates reduce time-to-value for common business scenarios",
-          "features": ["feature-12", "feature-13"],
+          "features": [
+            "feature-12",
+            "feature-13"
+          ],
           "status": "planned"
         }
       ]
@@ -97,20 +133,31 @@
       "description": "Long-term innovations including AI-assisted mapping, no-code capabilities, and platform modernization. Position for next-generation enterprise integration needs.",
       "order": 4,
       "status": "planned",
-      "features": ["feature-14", "feature-15", "feature-16", "feature-17"],
+      "features": [
+        "feature-14",
+        "feature-15",
+        "feature-16",
+        "feature-17"
+      ],
       "milestones": [
         {
           "id": "milestone-4-1",
           "title": "AI-Powered Integration",
           "description": "AI assists with field mapping and transformation suggestions, reducing expertise barrier",
-          "features": ["feature-14", "feature-15"],
+          "features": [
+            "feature-14",
+            "feature-15"
+          ],
           "status": "planned"
         },
         {
           "id": "milestone-4-2",
           "title": "Platform Modernization",
           "description": "Updated technology stack ensures long-term viability and developer experience",
-          "features": ["feature-16", "feature-17"],
+          "features": [
+            "feature-16",
+            "feature-17"
+          ],
           "status": "planned"
         }
       ]
@@ -127,7 +174,7 @@
       "impact": "high",
       "phase_id": "phase-1",
       "dependencies": [],
-      "status": "idea",
+      "status": "under_review",
       "acceptance_criteria": [
         "New user accounts can be created through the web portal",
         "Users can log in with their own credentials without admin bypass",
@@ -149,8 +196,10 @@
       "complexity": "medium",
       "impact": "high",
       "phase_id": "phase-1",
-      "dependencies": ["feature-1"],
-      "status": "idea",
+      "dependencies": [
+        "feature-1"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "No credentials are stored in compiled bytecode or source files",
         "Admin credentials can be configured externally via environment variables or config files",
@@ -173,7 +222,7 @@
       "impact": "high",
       "phase_id": "phase-1",
       "dependencies": [],
-      "status": "idea",
+      "status": "under_review",
       "acceptance_criteria": [
         "Installation guide enables self-service setup without support calls",
         "All existing features are documented with examples",
@@ -185,7 +234,9 @@
         "As a new user, I want clear documentation so that I can get started without extensive training",
         "As an integration developer, I want XSLT examples so that I can create transformations without deep XML expertise"
       ],
-      "competitor_insight_ids": ["pain-1-2"]
+      "competitor_insight_ids": [
+        "pain-1-2"
+      ]
     },
     {
       "id": "feature-4",
@@ -196,8 +247,10 @@
       "complexity": "medium",
       "impact": "high",
       "phase_id": "phase-1",
-      "dependencies": ["feature-3"],
-      "status": "idea",
+      "dependencies": [
+        "feature-3"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "Salesforce-to-QuickBooks template deploys in under 30 minutes",
         "Templates include field mapping for common objects",
@@ -208,7 +261,12 @@
         "As a small business owner, I want a turnkey Salesforce-to-QuickBooks integration so that I don't need to hire developers",
         "As a system administrator, I want pre-built templates so that common integrations don't require custom development"
       ],
-      "competitor_insight_ids": ["pain-1-4", "pain-2-3", "pain-5-2", "gap-2"]
+      "competitor_insight_ids": [
+        "pain-1-4",
+        "pain-2-3",
+        "pain-5-2",
+        "gap-2"
+      ]
     },
     {
       "id": "feature-5",
@@ -219,8 +277,11 @@
       "complexity": "high",
       "impact": "high",
       "phase_id": "phase-2",
-      "dependencies": ["feature-1", "feature-2"],
-      "status": "idea",
+      "dependencies": [
+        "feature-1",
+        "feature-2"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "API supports CRUD operations for flows, schedules, and configurations",
         "API can trigger flow execution and retrieve status",
@@ -243,8 +304,10 @@
       "complexity": "high",
       "impact": "medium",
       "phase_id": "phase-2",
-      "dependencies": ["feature-5"],
-      "status": "idea",
+      "dependencies": [
+        "feature-5"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "New UI is responsive and works on mobile devices",
         "Dashboard shows integration status at a glance",
@@ -268,7 +331,7 @@
       "impact": "high",
       "phase_id": "phase-2",
       "dependencies": [],
-      "status": "idea",
+      "status": "under_review",
       "acceptance_criteria": [
         "Users can drag fields from source schema to target schema",
         "Mapping automatically generates XSLT code",
@@ -280,7 +343,10 @@
         "As an integration developer, I want to drag-and-drop field mappings so that I can create transformations faster",
         "As a business analyst, I want visual mapping so that I can configure integrations without learning XSLT syntax"
       ],
-      "competitor_insight_ids": ["pain-3-2", "gap-4"]
+      "competitor_insight_ids": [
+        "pain-3-2",
+        "gap-4"
+      ]
     },
     {
       "id": "feature-8",
@@ -291,8 +357,11 @@
       "complexity": "high",
       "impact": "high",
       "phase_id": "phase-2",
-      "dependencies": ["feature-1", "feature-2"],
-      "status": "idea",
+      "dependencies": [
+        "feature-1",
+        "feature-2"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "Support for at least 20 concurrent users",
         "Roles: Admin, Developer, Operator, Viewer with distinct permissions",
@@ -316,7 +385,7 @@
       "impact": "high",
       "phase_id": "phase-2",
       "dependencies": [],
-      "status": "idea",
+      "status": "under_review",
       "acceptance_criteria": [
         "Configurable retry attempts with exponential backoff",
         "Failed transactions queued for manual review",
@@ -328,7 +397,9 @@
         "As an operations manager, I want automatic retries so that transient failures don't require manual intervention",
         "As a system administrator, I want error notifications so that I'm alerted to problems before customers complain"
       ],
-      "competitor_insight_ids": ["pain-3-5"]
+      "competitor_insight_ids": [
+        "pain-3-5"
+      ]
     },
     {
       "id": "feature-10",
@@ -339,8 +410,11 @@
       "complexity": "medium",
       "impact": "high",
       "phase_id": "phase-3",
-      "dependencies": ["feature-2", "feature-8"],
-      "status": "idea",
+      "dependencies": [
+        "feature-2",
+        "feature-8"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "HIPAA deployment guide with BAA template",
         "SOC 2 control mapping document",
@@ -352,7 +426,13 @@
         "As a healthcare IT director, I want HIPAA compliance documentation so that I can justify using IW_IDE for patient data integrations",
         "As a security auditor, I want SOC 2 control mapping so that I can evaluate the platform against our requirements"
       ],
-      "competitor_insight_ids": ["pain-2-2", "pain-3-4", "pain-4-5", "pain-5-3", "gap-6"]
+      "competitor_insight_ids": [
+        "pain-2-2",
+        "pain-3-4",
+        "pain-4-5",
+        "pain-5-3",
+        "gap-6"
+      ]
     },
     {
       "id": "feature-11",
@@ -363,8 +443,10 @@
       "complexity": "medium",
       "impact": "medium",
       "phase_id": "phase-3",
-      "dependencies": ["feature-6"],
-      "status": "idea",
+      "dependencies": [
+        "feature-6"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "Dashboard updates in real-time (< 5 second refresh)",
         "Shows transaction volume, success rate, and latency metrics",
@@ -387,8 +469,11 @@
       "complexity": "high",
       "impact": "medium",
       "phase_id": "phase-3",
-      "dependencies": ["feature-4", "feature-5"],
-      "status": "idea",
+      "dependencies": [
+        "feature-4",
+        "feature-5"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "Templates are discoverable by category and keyword search",
         "One-click deployment from marketplace to user environment",
@@ -400,7 +485,9 @@
         "As an integration developer, I want to share my templates so that others can benefit from my work",
         "As a business user, I want to find proven templates so that I don't have to start from scratch"
       ],
-      "competitor_insight_ids": ["gap-2"]
+      "competitor_insight_ids": [
+        "gap-2"
+      ]
     },
     {
       "id": "feature-13",
@@ -412,7 +499,7 @@
       "impact": "high",
       "phase_id": "phase-3",
       "dependencies": [],
-      "status": "idea",
+      "status": "under_review",
       "acceptance_criteria": [
         "ROI calculator shows cost savings vs subscription competitors",
         "Comparison chart against MuleSoft, Zapier, Boomi pricing",
@@ -424,7 +511,15 @@
         "As a CFO, I want clear cost comparison so that I can justify the investment to my board",
         "As a buyer evaluating options, I want TCO analysis so that I can compare IW_IDE to subscription alternatives"
       ],
-      "competitor_insight_ids": ["pain-1-1", "pain-2-1", "pain-3-1", "pain-4-2", "pain-5-1", "gap-1", "gap-3"]
+      "competitor_insight_ids": [
+        "pain-1-1",
+        "pain-2-1",
+        "pain-3-1",
+        "pain-4-2",
+        "pain-5-1",
+        "gap-1",
+        "gap-3"
+      ]
     },
     {
       "id": "feature-14",
@@ -435,8 +530,10 @@
       "complexity": "high",
       "impact": "medium",
       "phase_id": "phase-4",
-      "dependencies": ["feature-7"],
-      "status": "idea",
+      "dependencies": [
+        "feature-7"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "AI suggests mappings with >80% accuracy for standard objects",
         "Suggestions include confidence scores",
@@ -459,8 +556,11 @@
       "complexity": "high",
       "impact": "medium",
       "phase_id": "phase-4",
-      "dependencies": ["feature-5", "feature-7"],
-      "status": "idea",
+      "dependencies": [
+        "feature-5",
+        "feature-7"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "Visual interface for defining API endpoints",
         "Support for common authentication methods (API key, OAuth, Basic)",
@@ -472,7 +572,9 @@
         "As an integration developer, I want to build custom connectors visually so that I can integrate new applications quickly",
         "As a system administrator, I want to connect to internal APIs so that I can include custom applications in workflows"
       ],
-      "competitor_insight_ids": ["pain-3-3"]
+      "competitor_insight_ids": [
+        "pain-3-3"
+      ]
     },
     {
       "id": "feature-16",
@@ -484,7 +586,7 @@
       "impact": "medium",
       "phase_id": "phase-4",
       "dependencies": [],
-      "status": "idea",
+      "status": "under_review",
       "acceptance_criteria": [
         "All features work on Java 17 or 21 LTS",
         "Performance benchmarks show improvement or parity",
@@ -507,8 +609,10 @@
       "complexity": "medium",
       "impact": "medium",
       "phase_id": "phase-4",
-      "dependencies": ["feature-5"],
-      "status": "idea",
+      "dependencies": [
+        "feature-5"
+      ],
+      "status": "under_review",
       "acceptance_criteria": [
         "Configurable webhook endpoints with unique URLs",
         "Support for common payload formats (JSON, form-encoded)",
@@ -525,7 +629,7 @@
   ],
   "metadata": {
     "created_at": "2025-12-26T12:45:00Z",
-    "updated_at": "2025-12-26T12:45:00Z",
+    "updated_at": "2025-12-26T16:44:03.899Z",
     "generated_by": "roadmap_features agent",
     "prioritization_framework": "MoSCoW",
     "competitor_analysis_used": true,
