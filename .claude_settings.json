@@ -52,7 +52,15 @@
       "mcp__graphiti-memory__search_facts(*)",
       "mcp__graphiti-memory__add_episode(*)",
       "mcp__graphiti-memory__get_episodes(*)",
-      "mcp__graphiti-memory__get_entity_edge(*)"
+      "mcp__graphiti-memory__get_entity_edge(*)",
+      "Read(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation/**)",
+      "Write(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation/**)",
+      "Edit(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation/**)",
+      "Glob(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation/**)",
+      "Grep(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation/**)",
+      "Read(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation\\\\.auto-claude\\\\specs\\\\002-improved-error-messages-and-validation/**)",
+      "Write(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation\\\\.auto-claude\\\\specs\\\\002-improved-error-messages-and-validation/**)",
+      "Edit(C:\\\\IW_IDE\\\\IW_Launcher\\\\.worktrees\\\\002-improved-error-messages-and-validation\\\\.auto-claude\\\\specs\\\\002-improved-error-messages-and-validation/**)"
     ]
   }
 }
