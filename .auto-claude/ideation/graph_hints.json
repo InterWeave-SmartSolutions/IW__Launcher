@@ -1,6 +1,13 @@
 {
-  "enabled": false,
-  "reason": "Graphiti not configured",
-  "hints_by_type": {},
-  "created_at": "2025-12-26T10:20:08.333564"
+  "enabled": true,
+  "hints_by_type": {
+    "code_improvements": [],
+    "ui_ux_improvements": [],
+    "security_hardening": [],
+    "documentation_gaps": [],
+    "code_quality": [],
+    "performance_optimizations": []
+  },
+  "total_hints": 0,
+  "created_at": "2026-01-06T21:19:56.785316"
 }
