@@ -282,6 +282,34 @@ INSERT IGNORE INTO company_solutions (company_id, solution_id, is_enabled)
 SELECT 1, id, 1 FROM solutions;
 
 -- -----------------------------------------------------------------------------
+-- DEMO/TEST DATA
+-- Demo user accounts for testing authentication flow
+-- -----------------------------------------------------------------------------
+
+-- Insert demo company
+-- Password: 'demoCompany123' hashed with SHA-256
+INSERT IGNORE INTO companies (id, company_name, company_code, address1, city, state, zip, country,
+                              phone, email, password, license_key, solution_type, is_active) VALUES
+    (2, 'Demo Company Inc.', 'DEMO001', '123 Demo Street', 'San Francisco', 'CA', '94102', 'USA',
+     '555-0100', 'contact@democompany.com', SHA2('demoCompany123', 256), 'DEMO-LICENSE-2026', 'QB', 1);
+
+-- Insert demo user account
+-- Email: demo@sample.com
+-- Password: demo123 (hashed with SHA-256 to match LocalLoginServlet verification)
+INSERT IGNORE INTO users (id, company_id, email, password, first_name, last_name, phone, role, is_active) VALUES
+    (2, 2, 'demo@sample.com', SHA2('demo123', 256), 'Demo', 'User', '555-0101', 'user', 1);
+
+-- Insert demo admin user account for testing admin features
+-- Email: admin@sample.com
+-- Password: admin123 (hashed with SHA-256)
+INSERT IGNORE INTO users (id, company_id, email, password, first_name, last_name, phone, role, is_active) VALUES
+    (3, 2, 'admin@sample.com', SHA2('admin123', 256), 'Admin', 'User', '555-0102', 'admin', 1);
+
+-- Enable QuickBooks and Salesforce solutions for demo company
+INSERT IGNORE INTO company_solutions (company_id, solution_id, is_enabled)
+SELECT 2, id, 1 FROM solutions WHERE solution_code IN ('QB', 'SF');
+
+-- -----------------------------------------------------------------------------
 -- VIEWS FOR COMPATIBILITY
 -- -----------------------------------------------------------------------------
 
