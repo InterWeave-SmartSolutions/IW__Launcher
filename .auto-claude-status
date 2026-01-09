@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "002-improved-error-messages-and-validation",
-  "state": "complete",
+  "spec": "005-real-time-integration-monitoring-dashboard",
+  "state": "building",
   "subtasks": {
-    "completed": 22,
-    "total": 22,
-    "in_progress": 0,
+    "completed": 2,
+    "total": 25,
+    "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Integration and Testing",
+    "current": "Backend REST API Development",
     "id": null,
-    "total": 4
+    "total": 6
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 3,
-    "started_at": "2026-01-08T19:02:12.807452"
+    "number": 4,
+    "started_at": "2026-01-09T09:00:27.784191"
   },
-  "last_update": "2026-01-08T19:22:20.073332"
+  "last_update": "2026-01-09T09:16:11.419468"
 }
