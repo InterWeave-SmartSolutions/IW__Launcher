@@ -6,10 +6,11 @@ import javax.servlet.ServletContextListener;
 /**
  * MonitoringContextListener - Initializes and shuts down monitoring services.
  *
- * This listener starts the MetricsAggregator and AlertService when the web
- * application loads and gracefully shuts them down when the application unloads.
- * This ensures that background metrics aggregation tasks and alert thread pools
- * are properly managed throughout the application lifecycle.
+ * This listener starts the MetricsAggregator, AlertService, EmailNotificationService,
+ * and WebhookNotificationService when the web application loads and gracefully shuts
+ * them down when the application unloads. This ensures that background metrics
+ * aggregation tasks, alert thread pools, and notification services are properly
+ * managed throughout the application lifecycle.
  *
  * The listener is registered in web.xml and runs during application startup.
  *
@@ -20,7 +21,8 @@ public class MonitoringContextListener implements ServletContextListener {
 
     /**
      * Called when the web application is initialized.
-     * Starts the MetricsAggregator scheduler, initializes AlertService, and starts EmailNotificationService.
+     * Starts the MetricsAggregator scheduler, initializes AlertService, and starts
+     * EmailNotificationService and WebhookNotificationService.
      *
      * @param event ServletContext initialization event
      */
@@ -42,6 +44,11 @@ public class MonitoringContextListener implements ServletContextListener {
             emailService.start();
             log("EmailNotificationService started");
 
+            // Start webhook notification service
+            WebhookNotificationService webhookService = WebhookNotificationService.getInstance();
+            webhookService.start();
+            log("WebhookNotificationService started");
+
             log("Monitoring services initialized successfully");
 
         } catch (Exception e) {
@@ -52,7 +59,8 @@ public class MonitoringContextListener implements ServletContextListener {
 
     /**
      * Called when the web application is shutting down.
-     * Stops the EmailNotificationService, AlertService thread pool, and MetricsAggregator scheduler gracefully.
+     * Stops the WebhookNotificationService, EmailNotificationService, AlertService thread pool,
+     * and MetricsAggregator scheduler gracefully.
      *
      * @param event ServletContext destruction event
      */
@@ -61,6 +69,10 @@ public class MonitoringContextListener implements ServletContextListener {
         log("Shutting down monitoring services...");
 
         try {
+            // Stop webhook notification service
+            WebhookNotificationService webhookService = WebhookNotificationService.getInstance();
+            webhookService.stop();
+
             // Stop email notification service
             EmailNotificationService emailService = EmailNotificationService.getInstance();
             emailService.stop();
