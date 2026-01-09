@@ -116,3 +116,11 @@ web_portal/tomcat/lib/postgresql-*.jar
 
 # Auto Claude worktrees (local only)
 .worktrees/
+
+# ===== Media (large files) =====
+# Tutorial/training videos should not be committed.
+docs/tutorials/*.mp4
+docs/tutorials/*.m4v
+
+# Audio
+*.mp3
