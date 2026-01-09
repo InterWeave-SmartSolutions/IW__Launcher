@@ -12,6 +12,15 @@
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
 
+	<!-- Monitoring Context Listener - starts/stops metrics aggregation scheduler -->
+	<listener>
+		<listener-class>com.interweave.monitoring.service.MonitoringContextListener</listener-class>
+		<description>
+		Initializes monitoring services on application startup and gracefully shuts them down
+		on application shutdown. Manages the MetricsAggregator scheduler lifecycle.
+		</description>
+	</listener>
+
 	<!-- Error Handling Filter - catches uncaught exceptions -->
 	<filter>
 		<filter-name>ErrorHandlingFilter</filter-name>
