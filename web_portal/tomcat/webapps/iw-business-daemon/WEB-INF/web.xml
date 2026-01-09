@@ -274,6 +274,46 @@
 		<servlet-class>
 		com.interweave.businessDaemon.config.CompanyConfigurationServletDTT2</servlet-class>
 	</servlet>
+	<servlet>
+		<description>
+		Real-time dashboard API for monitoring integration status and metrics</description>
+		<display-name>
+		DashboardApiServlet</display-name>
+		<servlet-name>DashboardApiServlet</servlet-name>
+		<servlet-class>
+		com.interweave.monitoring.api.DashboardApiServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<servlet>
+		<description>
+		Transaction history API for querying execution logs with search and filter</description>
+		<display-name>
+		TransactionHistoryApiServlet</display-name>
+		<servlet-name>TransactionHistoryApiServlet</servlet-name>
+		<servlet-class>
+		com.interweave.monitoring.api.TransactionHistoryApiServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<servlet>
+		<description>
+		Performance metrics API for time-series data and charts</description>
+		<display-name>
+		MetricsApiServlet</display-name>
+		<servlet-name>MetricsApiServlet</servlet-name>
+		<servlet-class>
+		com.interweave.monitoring.api.MetricsApiServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	<servlet>
+		<description>
+		Alert configuration API for managing rules, webhooks, and alert history</description>
+		<display-name>
+		AlertConfigApiServlet</display-name>
+		<servlet-name>AlertConfigApiServlet</servlet-name>
+		<servlet-class>
+		com.interweave.monitoring.api.AlertConfigApiServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
         <servlet-mapping>
 		<servlet-name>IWBusinessDaemon</servlet-name>
 		<url-pattern>/failover</url-pattern>
@@ -385,6 +425,26 @@
         <servlet-mapping>
         	<servlet-name>CompanyConfigurationServletDTT2</servlet-name>
         	<url-pattern>/CompanyConfigurationServletDTT2</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>DashboardApiServlet</servlet-name>
+        	<url-pattern>/api/monitoring/dashboard</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>TransactionHistoryApiServlet</servlet-name>
+        	<url-pattern>/api/monitoring/transactions/*</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>MetricsApiServlet</servlet-name>
+        	<url-pattern>/api/monitoring/metrics</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>AlertConfigApiServlet</servlet-name>
+        	<url-pattern>/api/monitoring/alerts/*</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>AlertConfigApiServlet</servlet-name>
+        	<url-pattern>/api/monitoring/webhooks/*</url-pattern>
         </servlet-mapping>
 	<session-config>
 		<session-timeout>30</session-timeout>
