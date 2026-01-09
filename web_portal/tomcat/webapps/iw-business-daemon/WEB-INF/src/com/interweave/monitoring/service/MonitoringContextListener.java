@@ -6,10 +6,10 @@ import javax.servlet.ServletContextListener;
 /**
  * MonitoringContextListener - Initializes and shuts down monitoring services.
  *
- * This listener starts the MetricsAggregator when the web application loads
- * and gracefully shuts it down when the application unloads. This ensures
- * that background metrics aggregation tasks are properly managed throughout
- * the application lifecycle.
+ * This listener starts the MetricsAggregator and AlertService when the web
+ * application loads and gracefully shuts them down when the application unloads.
+ * This ensures that background metrics aggregation tasks and alert thread pools
+ * are properly managed throughout the application lifecycle.
  *
  * The listener is registered in web.xml and runs during application startup.
  *
@@ -20,7 +20,7 @@ public class MonitoringContextListener implements ServletContextListener {
 
     /**
      * Called when the web application is initialized.
-     * Starts the MetricsAggregator scheduler.
+     * Starts the MetricsAggregator scheduler and initializes AlertService.
      *
      * @param event ServletContext initialization event
      */
@@ -33,17 +33,21 @@ public class MonitoringContextListener implements ServletContextListener {
             MetricsAggregator aggregator = MetricsAggregator.getInstance();
             aggregator.start();
 
+            // Initialize alert service (creates thread pool)
+            AlertService alertService = AlertService.getInstance();
+            log("AlertService initialized with thread pool");
+
             log("Monitoring services initialized successfully");
 
         } catch (Exception e) {
-            logError("Failed to initialize monitoring services - metrics aggregation will not run", e);
+            logError("Failed to initialize monitoring services - some features may not work", e);
             // Don't throw exception - allow application to continue even if monitoring fails
         }
     }
 
     /**
      * Called when the web application is shutting down.
-     * Stops the MetricsAggregator scheduler gracefully.
+     * Stops the MetricsAggregator scheduler and AlertService thread pool gracefully.
      *
      * @param event ServletContext destruction event
      */
@@ -52,6 +56,10 @@ public class MonitoringContextListener implements ServletContextListener {
         log("Shutting down monitoring services...");
 
         try {
+            // Stop alert service thread pool
+            AlertService alertService = AlertService.getInstance();
+            alertService.shutdown();
+
             // Stop metrics aggregation scheduler
             MetricsAggregator aggregator = MetricsAggregator.getInstance();
             aggregator.stop();
