@@ -186,10 +186,45 @@
                     <button id="refresh-transactions-btn" class="btn btn-primary">
                         ↻ Refresh
                     </button>
-                    <a href="TransactionHistory.jsp?PortalBrand=<%= brand %>&PortalSolutions=<%= solutions %>"
-                       class="btn btn-secondary">
-                        View Full History →
-                    </a>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="filter-status">Status:</label>
+                        <select id="filter-status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="success">Success</option>
+                            <option value="failed">Failed</option>
+                            <option value="running">Running</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="timeout">Timeout</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-start-date">From:</label>
+                        <input type="date" id="filter-start-date" class="form-input">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filter-end-date">To:</label>
+                        <input type="date" id="filter-end-date" class="form-input">
+                    </div>
+
+                    <div class="filter-group filter-search-group">
+                        <label for="filter-search">Search:</label>
+                        <input type="text" id="filter-search" class="form-input"
+                               placeholder="Execution ID or error message...">
+                    </div>
+
+                    <div class="filter-group">
+                        <button id="clear-filters-btn" class="btn btn-secondary">
+                            Clear Filters
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -197,22 +232,56 @@
                 <table class="transactions-table" id="transactions-table">
                     <thead>
                         <tr>
-                            <th>Flow Name</th>
-                            <th>Status</th>
-                            <th>Started</th>
-                            <th>Duration</th>
-                            <th>Records</th>
+                            <th class="sortable" data-column="flow_name">
+                                Flow Name<span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-column="status">
+                                Status<span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-column="started_at">
+                                Started<span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-column="duration_ms">
+                                Duration<span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-column="records_processed">
+                                Records<span class="sort-indicator"></span>
+                            </th>
+                            <th>Error</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="transactions-table-body">
                         <tr>
-                            <td colspan="6" class="table-loading">
-                                <span class="loading">Loading transactions...</span>
+                            <td colspan="7" class="table-loading">
+                                <span class="loading">Loading transactions</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="pagination-controls">
+                <div class="pagination-info">
+                    <span id="page-info">Showing 0-0 of 0</span>
+                </div>
+                <div class="pagination-buttons">
+                    <button id="first-page-btn" class="btn btn-secondary btn-sm">⟨⟨</button>
+                    <button id="prev-page-btn" class="btn btn-secondary btn-sm">⟨</button>
+                    <span id="current-page" class="page-display">Page 1 of 1</span>
+                    <button id="next-page-btn" class="btn btn-secondary btn-sm">⟩</button>
+                    <button id="last-page-btn" class="btn btn-secondary btn-sm">⟩⟩</button>
+                </div>
+                <div class="pagination-size">
+                    <label for="page-size-select">Per page:</label>
+                    <select id="page-size-select" class="form-select">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
             </div>
         </section>
 
@@ -262,5 +331,8 @@
 
     <!-- Dashboard Charts Visualizations -->
     <script src="js/dashboard-charts.js"></script>
+
+    <!-- Transaction History Table -->
+    <script src="js/transaction-history.js"></script>
 </body>
 </html>
