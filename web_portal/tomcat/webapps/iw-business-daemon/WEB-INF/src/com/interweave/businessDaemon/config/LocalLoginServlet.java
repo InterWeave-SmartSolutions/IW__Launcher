@@ -341,22 +341,23 @@ public class LocalLoginServlet extends HttpServlet {
         String cause;
         String resolution;
 
+        private AuthenticationResult(boolean success, UserInfo userInfo, ErrorCode errorCode,
+                                    String errorMessage, String cause, String resolution) {
+            this.success = success;
+            this.userInfo = userInfo;
+            this.errorCode = errorCode;
+            this.errorMessage = errorMessage;
+            this.cause = cause;
+            this.resolution = resolution;
+        }
+
         static AuthenticationResult success(UserInfo userInfo) {
-            AuthenticationResult result = new AuthenticationResult();
-            result.success = true;
-            result.userInfo = userInfo;
-            return result;
+            return new AuthenticationResult(true, userInfo, null, null, null, null);
         }
 
         static AuthenticationResult failure(ErrorCode errorCode, String errorMessage,
                                            String cause, String resolution) {
-            AuthenticationResult result = new AuthenticationResult();
-            result.success = false;
-            result.errorCode = errorCode;
-            result.errorMessage = errorMessage;
-            result.cause = cause;
-            result.resolution = resolution;
-            return result;
+            return new AuthenticationResult(false, null, errorCode, errorMessage, cause, resolution);
         }
     }
 
