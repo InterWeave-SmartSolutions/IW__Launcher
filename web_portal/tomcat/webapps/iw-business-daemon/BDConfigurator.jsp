@@ -95,9 +95,10 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 		Integration Manager</span><br/>
 		</td>
 					<td align="right" class="labels">User: <%= currentUser%></td>
+					<td align="right"><a href='<%= "monitoring/Dashboard.jsp" + brandSol1%>' target="_top" class="labels">Monitoring Dashboard</a></td>
 					<td align="right"><a href='<%= "LogoutServlet?ProfileId=" + currentProfileName + brandSol%>' target="_top" class="labels">Logout</a></td>
 					<td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
-				
+
 	</tr>
 
 </table>
