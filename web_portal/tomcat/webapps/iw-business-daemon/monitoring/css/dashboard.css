@@ -459,6 +459,18 @@ a:hover {
     font-style: italic;
 }
 
+.table-info {
+    text-align: center;
+    padding: var(--spacing-lg) !important;
+    color: #1976d2;
+    background-color: #e3f2fd;
+}
+
+.error-text {
+    color: var(--color-error);
+    font-weight: 600;
+}
+
 /* Status Badges */
 .status-badge {
     display: inline-block;
@@ -490,6 +502,11 @@ a:hover {
     color: var(--color-warning);
 }
 
+.status-info {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
 /* ========================================
    Running Flows List
    ======================================== */
@@ -518,11 +535,66 @@ a:hover {
     line-height: 1.4;
 }
 
+/* Running Flow Card - Alternative styling */
+.running-flow-card {
+    border: 1px solid var(--iw-background);
+    border-left: 4px solid var(--color-running);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    background-color: #fafafa;
+}
+
+.flow-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+    gap: var(--spacing-sm);
+}
+
+.flow-name {
+    font-weight: bold;
+    margin: 0;
+    font-size: 14px;
+    color: var(--iw-text);
+}
+
+.flow-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.flow-detail {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--iw-text);
+}
+
+.detail-value {
+    color: #666;
+}
+
 .empty-state {
     text-align: center;
     padding: var(--spacing-xl);
     color: #888;
     font-style: italic;
+}
+
+.error-state {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--color-error);
+    font-weight: 600;
+    background-color: var(--color-error-light);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-error);
 }
 
 /* ========================================

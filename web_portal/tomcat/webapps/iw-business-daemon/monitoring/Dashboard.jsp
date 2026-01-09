@@ -245,7 +245,7 @@
         </div>
     </footer>
 
-    <!-- Dashboard JavaScript (will be implemented in subsequent subtasks) -->
+    <!-- Dashboard JavaScript Configuration -->
     <script>
         // Configuration
         window.dashboardConfig = {
@@ -255,25 +255,9 @@
             refreshInterval: 10000, // 10 seconds
             apiBaseUrl: '../api/monitoring'
         };
-
-        // Placeholder initialization - actual implementation in subsequent subtasks
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard loaded for user:', window.dashboardConfig.userId);
-
-            // Display placeholder message
-            setTimeout(function() {
-                document.getElementById('active-flows-count').innerHTML = '<span class="value">0</span>';
-                document.getElementById('success-rate-24h').innerHTML = '<span class="value">--</span>';
-                document.getElementById('errors-today-count').innerHTML = '<span class="value">0</span>';
-                document.getElementById('avg-duration').innerHTML = '<span class="value">--</span>';
-
-                document.getElementById('transactions-table-body').innerHTML =
-                    '<tr><td colspan="6" class="table-empty">No transaction data available. JavaScript implementation pending (subtask 5.2).</td></tr>';
-
-                document.getElementById('running-flows-container').innerHTML =
-                    '<div class="empty-state">No flows currently running.</div>';
-            }, 500);
-        });
     </script>
+
+    <!-- Dashboard Real-time Status Display -->
+    <script src="js/dashboard-status.js"></script>
 </body>
 </html>
