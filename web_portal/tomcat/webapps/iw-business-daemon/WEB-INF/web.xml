@@ -69,12 +69,12 @@
 	</servlet>
 	<servlet>
 		<description>
-		Servlet to authenticate users against InterWeave central server</description>
+		Servlet to authenticate users against local database</description>
 		<display-name>
 		LoginServlet</display-name>
 		<servlet-name>LoginServlet</servlet-name>
 		<servlet-class>
-		com.interweave.businessDaemon.config.LoginServlet</servlet-class>
+		com.interweave.businessDaemon.config.LocalLoginServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
