@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Base64;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -170,8 +171,8 @@ public class LocalLoginServlet extends HttpServlet {
             throws SQLException {
 
         // First, check if user exists (regardless of active status)
-        String sqlUserCheck = "SELECT u.id, u.email, u.password, u.first_name, u.last_name, " +
-                              "u.role, u.is_active, u.company_id, c.company_name, " +
+        String sqlUserCheck = "SELECT u.id, u.email, u.password_hash, u.first_name, u.last_name, " +
+                              "u.is_admin, u.is_active, u.company_id, c.organization_name, " +
                               "c.solution_type, c.auth_token, c.is_active as company_active " +
                               "FROM users u " +
                               "JOIN companies c ON u.company_id = c.id " +
@@ -182,7 +183,7 @@ public class LocalLoginServlet extends HttpServlet {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String storedHash = rs.getString("password");
+                    String storedHash = rs.getString("password_hash");
                     boolean userActive = rs.getBoolean("is_active");
                     boolean companyActive = rs.getBoolean("company_active");
 
@@ -229,10 +230,9 @@ public class LocalLoginServlet extends HttpServlet {
                     userInfo.email = rs.getString("email");
                     userInfo.firstName = rs.getString("first_name");
                     userInfo.lastName = rs.getString("last_name");
-                    String role = rs.getString("role");
-                    userInfo.isAdmin = "admin".equalsIgnoreCase(role);
+                    userInfo.isAdmin = rs.getBoolean("is_admin");
                     userInfo.companyId = rs.getInt("company_id");
-                    userInfo.companyName = rs.getString("company_name");
+                    userInfo.companyName = rs.getString("organization_name");
                     userInfo.solutionType = rs.getString("solution_type");
                     userInfo.authToken = rs.getString("auth_token");
 
@@ -243,7 +243,7 @@ public class LocalLoginServlet extends HttpServlet {
                     // (don't reveal that the email doesn't exist - security best practice)
                     return AuthenticationResult.failure(
                         ErrorCode.AUTH001,
-                        "Invalid email or password",
+"Invalid email or password",
                         "User not found in database",
                         "Verify your email address and password are correct. " +
                         "If you haven't registered yet, please register first. " +
@@ -279,23 +279,12 @@ public class LocalLoginServlet extends HttpServlet {
     }
 
     /**
-     * Hashes a password using SHA-256 and returns lowercase hexadecimal string
-     * This matches MySQL's SHA2(password, 256) function output format
+     * Hashes a password using SHA-256
      */
     private String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(password.getBytes());
-
-        // Convert bytes to hexadecimal string (matches MySQL SHA2 output)
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
+        return Base64.getEncoder().encodeToString(hash);
     }
 
     /**
@@ -352,9 +341,6 @@ public class LocalLoginServlet extends HttpServlet {
         String cause;
         String resolution;
 
-        /**
-         * Creates a successful authentication result
-         */
         static AuthenticationResult success(UserInfo userInfo) {
             AuthenticationResult result = new AuthenticationResult();
             result.success = true;
@@ -362,11 +348,8 @@ public class LocalLoginServlet extends HttpServlet {
             return result;
         }
 
-        /**
-         * Creates a failed authentication result with detailed error information
-         */
         static AuthenticationResult failure(ErrorCode errorCode, String errorMessage,
-                                            String cause, String resolution) {
+                                           String cause, String resolution) {
             AuthenticationResult result = new AuthenticationResult();
             result.success = false;
             result.errorCode = errorCode;
