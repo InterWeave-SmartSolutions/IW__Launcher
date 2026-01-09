@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+    <xs:annotation>
+        <xs:documentation>
+            XSD Schema for InterWeave Transaction Mappings (transactions.xml)
+
+            This schema defines the structure for transaction mapping configuration files
+            located at: workspace/{project}/xslt/Site/new/xml/transactions.xml
+
+            Transaction mappings define how data flows between source and destination systems,
+            including field mappings, transformations, and business logic rules.
+
+            Version: 1.0
+            Created: 2026-01-08
+        </xs:documentation>
+    </xs:annotation>
+
+    <!-- Root element for transaction mappings -->
+    <xs:element name="iwmappings">
+        <xs:annotation>
+            <xs:documentation>
+                Root element containing all transaction mappings for an integration project.
+                Can contain multiple mapping definitions for different transaction types.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="mapping" type="MappingType" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Individual transaction mapping definition.
+                            Each mapping represents a specific data transformation between source and destination.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="version" type="xs:string" use="optional">
+                <xs:annotation>
+                    <xs:documentation>
+                        Schema version for transaction mappings.
+                        Used for compatibility checking and migration.
+                        Example: "1.0", "2.0"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Complex type for individual mappings -->
+    <xs:complexType name="MappingType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a transaction mapping with source, destination, and transformation rules.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Human-readable description of this mapping's purpose.
+                        Example: "Maps Salesforce Account to QuickBooks Customer"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="source" type="SourceType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Source system configuration and data extraction rules.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="destination" type="DestinationType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Destination system configuration and data loading rules.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="fieldMappings" type="FieldMappingsType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Field-level mappings between source and destination.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="transformationRules" type="TransformationRulesType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Business logic and data transformation rules.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="filters" type="FiltersType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Data filtering conditions and criteria.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+
+        <xs:attribute name="id" type="xs:ID" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Unique identifier for this mapping.
+                    Must be unique within the iwmappings document.
+                    Example: "SF_Account_to_QB_Customer"
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Display name for this mapping.
+                    Example: "Salesforce Account to QuickBooks Customer"
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+        <xs:attribute name="type" use="optional" default="sync">
+            <xs:annotation>
+                <xs:documentation>
+                    Type of mapping operation.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="sync">
+                        <xs:annotation>
+                            <xs:documentation>Synchronization mapping (bidirectional or unidirectional)</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="import">
+                        <xs:annotation>
+                            <xs:documentation>Import data from source to destination</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="export">
+                        <xs:annotation>
+                            <xs:documentation>Export data from source to external system</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="transform">
+                        <xs:annotation>
+                            <xs:documentation>Pure transformation without direct source/destination</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+
+        <xs:attribute name="enabled" type="BooleanFlag" use="optional" default="1">
+            <xs:annotation>
+                <xs:documentation>
+                    Enable or disable this mapping.
+                    Set to "1" to enable, "0" to disable.
+                    Disabled mappings are skipped during execution.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Source system configuration -->
+    <xs:complexType name="SourceType">
+        <xs:sequence>
+            <xs:element name="entity" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Source entity/object name.
+                        Example: "Account", "Contact", "Order"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="query" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Source query or filter expression.
+                        Format depends on source system (SOQL, SQL, XPath, etc.)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="connection" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Reference to source connection ID defined in project connections.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Destination system configuration -->
+    <xs:complexType name="DestinationType">
+        <xs:sequence>
+            <xs:element name="entity" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Destination entity/object name.
+                        Example: "Customer", "Invoice", "SalesOrder"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="operation" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Operation to perform on destination.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="create"/>
+                        <xs:enumeration value="update"/>
+                        <xs:enumeration value="upsert"/>
+                        <xs:enumeration value="delete"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="connection" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Reference to destination connection ID defined in project connections.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Field mappings container -->
+    <xs:complexType name="FieldMappingsType">
+        <xs:sequence>
+            <xs:element name="field" type="FieldMappingType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Individual field mapping definition.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Individual field mapping -->
+    <xs:complexType name="FieldMappingType">
+        <xs:sequence>
+            <xs:element name="sourceField" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Source field name or XPath expression.
+                        Example: "AccountName", "/root/account/name"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="destinationField" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Destination field name or XPath expression.
+                        Example: "CustomerName", "/customer/fullName"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="transformation" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Transformation expression or function to apply.
+                        Example: "uppercase()", "concat(@firstName, ' ', @lastName)"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="defaultValue" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Default value to use if source field is empty or null.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="required" type="BooleanFlag" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates if this field is required.
+                    Set to "1" if required, "0" if optional.
+                    Required fields cause validation errors if missing.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Transformation rules container -->
+    <xs:complexType name="TransformationRulesType">
+        <xs:sequence>
+            <xs:element name="rule" type="TransformationRuleType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Individual transformation rule.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Individual transformation rule -->
+    <xs:complexType name="TransformationRuleType">
+        <xs:sequence>
+            <xs:element name="condition" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Condition expression that must be true for this rule to execute.
+                        Example: "@status = 'Active'", "count(items/item) > 0"
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="action" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Action or transformation to perform when condition is met.
+                        Can be XSLT template reference, function call, or expression.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Optional identifier for this rule.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="priority" type="xs:integer" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Execution priority (lower numbers execute first).
+                    Default: 0
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Filters container -->
+    <xs:complexType name="FiltersType">
+        <xs:sequence>
+            <xs:element name="filter" type="FilterType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Individual filter condition.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="logic" use="optional" default="AND">
+            <xs:annotation>
+                <xs:documentation>
+                    Logical operator for combining multiple filters.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="AND"/>
+                    <xs:enumeration value="OR"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Individual filter -->
+    <xs:complexType name="FilterType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="field" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Field name or XPath expression to filter on.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="operator" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Comparison operator.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="equals"/>
+                            <xs:enumeration value="notEquals"/>
+                            <xs:enumeration value="greaterThan"/>
+                            <xs:enumeration value="lessThan"/>
+                            <xs:enumeration value="greaterOrEqual"/>
+                            <xs:enumeration value="lessOrEqual"/>
+                            <xs:enumeration value="contains"/>
+                            <xs:enumeration value="startsWith"/>
+                            <xs:enumeration value="endsWith"/>
+                            <xs:enumeration value="isEmpty"/>
+                            <xs:enumeration value="isNotEmpty"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <!-- Custom type for boolean flags (0 or 1) -->
+    <xs:simpleType name="BooleanFlag">
+        <xs:annotation>
+            <xs:documentation>
+                Boolean value represented as "0" (false) or "1" (true).
+                This format is used throughout InterWeave configuration files.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="0">
+                <xs:annotation>
+                    <xs:documentation>False / Disabled / Optional</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>True / Enabled / Required</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

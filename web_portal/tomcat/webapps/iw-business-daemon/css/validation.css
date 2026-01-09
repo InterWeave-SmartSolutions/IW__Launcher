@@ -1,0 +1,354 @@
+/**
+ * InterWeave Form Validation Styles
+ *
+ * Provides visual feedback for form validation states including
+ * error, warning, success, and informational messages.
+ *
+ * Compatible with existing InterWeave portal styling and follows
+ * WCAG accessibility guidelines for color contrast and visibility.
+ */
+
+/* ========================================
+   Field State Styling
+   ======================================== */
+
+/**
+ * Error state - field has validation errors
+ */
+.validation-error-field {
+    border: 2px solid #cc0000 !important;
+    background-color: #fff5f5 !important;
+}
+
+.validation-error-field:focus {
+    outline: 2px solid #cc0000 !important;
+    outline-offset: 2px;
+}
+
+/**
+ * Warning state - field has warnings but is technically valid
+ */
+.validation-warning-field {
+    border: 2px solid #ff9800 !important;
+    background-color: #fffbf0 !important;
+}
+
+.validation-warning-field:focus {
+    outline: 2px solid #ff9800 !important;
+    outline-offset: 2px;
+}
+
+/**
+ * Success state - field is valid
+ */
+.validation-success-field {
+    border: 2px solid #009900 !important;
+    background-color: #f5fff5 !important;
+}
+
+.validation-success-field:focus {
+    outline: 2px solid #009900 !important;
+    outline-offset: 2px;
+}
+
+/* ========================================
+   Error Container
+   ======================================== */
+
+/**
+ * Container for validation messages
+ */
+.validation-error {
+    margin-top: 4px;
+    margin-bottom: 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.validation-error-active {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   Validation Messages
+   ======================================== */
+
+/**
+ * Base message styling
+ */
+.validation-message {
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.validation-message:last-child {
+    margin-bottom: 0;
+}
+
+/**
+ * Error message - validation failed
+ */
+.validation-message-error {
+    background-color: #ffeeee;
+    border-left: 3px solid #cc0000;
+    color: #cc0000;
+    font-weight: bold;
+}
+
+.validation-message-error::before {
+    content: '\26A0'; /* Warning sign */
+    font-style: normal;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/**
+ * Warning message - technically valid but not ideal
+ */
+.validation-message-warning {
+    background-color: #fff8e1;
+    border-left: 3px solid #ff9800;
+    color: #e65100;
+    font-weight: normal;
+}
+
+.validation-message-warning::before {
+    content: '\26A0'; /* Warning sign */
+    font-style: normal;
+    flex-shrink: 0;
+}
+
+/**
+ * Info message - helpful information (e.g., password strength)
+ */
+.validation-message-info {
+    background-color: #e3f2fd;
+    border-left: 3px solid #2196f3;
+    color: #1565c0;
+    font-weight: normal;
+}
+
+.validation-message-info::before {
+    content: '\2139'; /* Information symbol */
+    font-style: normal;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   Password Strength Indicators
+   ======================================== */
+
+/**
+ * Weak password - red indicator
+ */
+.validation-strength-weak {
+    background-color: #ffeeee !important;
+    border-left-color: #cc0000 !important;
+    color: #cc0000 !important;
+}
+
+/**
+ * Medium password - orange indicator
+ */
+.validation-strength-medium {
+    background-color: #fff8e1 !important;
+    border-left-color: #ff9800 !important;
+    color: #e65100 !important;
+}
+
+/**
+ * Strong password - green indicator
+ */
+.validation-strength-strong {
+    background-color: #e8f5e9 !important;
+    border-left-color: #4caf50 !important;
+    color: #2e7d32 !important;
+}
+
+/* ========================================
+   Accessibility Enhancements
+   ======================================== */
+
+/**
+ * Screen reader only content
+ */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/**
+ * Focus visible enhancement for keyboard navigation
+ */
+.validation-error-field:focus-visible,
+.validation-warning-field:focus-visible,
+.validation-success-field:focus-visible {
+    outline-width: 3px !important;
+    outline-style: solid !important;
+}
+
+/* ========================================
+   Form Layout Enhancements
+   ======================================== */
+
+/**
+ * Field wrapper with validation
+ */
+.validation-field-wrapper {
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.validation-field-wrapper label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: bold;
+    color: #454545;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
+.validation-field-wrapper input,
+.validation-field-wrapper select,
+.validation-field-wrapper textarea {
+    width: 100%;
+    max-width: 400px;
+}
+
+/**
+ * Required field indicator
+ */
+.validation-required::after {
+    content: ' *';
+    color: #cc0000;
+    font-weight: bold;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media screen and (max-width: 768px) {
+    .validation-message {
+        font-size: 11px;
+        padding: 5px 8px;
+    }
+
+    .validation-field-wrapper input,
+    .validation-field-wrapper select,
+    .validation-field-wrapper textarea {
+        max-width: 100%;
+    }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+    .validation-error,
+    .validation-message {
+        display: none;
+    }
+
+    .validation-error-field,
+    .validation-warning-field,
+    .validation-success-field {
+        border: 1px solid #000000 !important;
+        background-color: transparent !important;
+    }
+}
+
+/* ========================================
+   High Contrast Mode Support
+   ======================================== */
+
+@media (prefers-contrast: high) {
+    .validation-error-field {
+        border-width: 3px !important;
+    }
+
+    .validation-warning-field {
+        border-width: 3px !important;
+    }
+
+    .validation-success-field {
+        border-width: 3px !important;
+    }
+
+    .validation-message {
+        border-left-width: 4px !important;
+    }
+}
+
+/* ========================================
+   Reduced Motion Support
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .validation-error-active {
+        animation: none;
+    }
+
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   Dark Mode Support (Future Enhancement)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    .validation-error-field {
+        background-color: #3a1a1a !important;
+    }
+
+    .validation-warning-field {
+        background-color: #3a2a1a !important;
+    }
+
+    .validation-success-field {
+        background-color: #1a3a1a !important;
+    }
+
+    .validation-message-error {
+        background-color: #4a2020;
+        color: #ff6b6b;
+    }
+
+    .validation-message-warning {
+        background-color: #4a3520;
+        color: #ffb74d;
+    }
+
+    .validation-message-info {
+        background-color: #20354a;
+        color: #64b5f6;
+    }
+}

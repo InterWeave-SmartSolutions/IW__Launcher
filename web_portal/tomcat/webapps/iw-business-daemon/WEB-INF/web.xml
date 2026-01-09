@@ -11,6 +11,21 @@
 		<welcome-file>default.htm</welcome-file>
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
+
+	<!-- Error Handling Filter - catches uncaught exceptions -->
+	<filter>
+		<filter-name>ErrorHandlingFilter</filter-name>
+		<filter-class>com.interweave.web.ErrorHandlingFilter</filter-class>
+		<description>
+		Global error handling filter that catches uncaught exceptions and
+		transforms them into structured error responses with proper logging
+		</description>
+	</filter>
+	<filter-mapping>
+		<filter-name>ErrorHandlingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
 	<servlet>
 		<servlet-name>IWBusinessDaemon</servlet-name>
 		<servlet-class>com.interweave.businessDaemon.BusinessDaemonInit</servlet-class>
