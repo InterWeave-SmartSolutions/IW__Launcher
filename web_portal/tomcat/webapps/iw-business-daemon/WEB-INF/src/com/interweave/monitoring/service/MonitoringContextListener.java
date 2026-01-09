@@ -20,7 +20,7 @@ public class MonitoringContextListener implements ServletContextListener {
 
     /**
      * Called when the web application is initialized.
-     * Starts the MetricsAggregator scheduler and initializes AlertService.
+     * Starts the MetricsAggregator scheduler, initializes AlertService, and starts EmailNotificationService.
      *
      * @param event ServletContext initialization event
      */
@@ -37,6 +37,11 @@ public class MonitoringContextListener implements ServletContextListener {
             AlertService alertService = AlertService.getInstance();
             log("AlertService initialized with thread pool");
 
+            // Start email notification service
+            EmailNotificationService emailService = EmailNotificationService.getInstance();
+            emailService.start();
+            log("EmailNotificationService started");
+
             log("Monitoring services initialized successfully");
 
         } catch (Exception e) {
@@ -47,7 +52,7 @@ public class MonitoringContextListener implements ServletContextListener {
 
     /**
      * Called when the web application is shutting down.
-     * Stops the MetricsAggregator scheduler and AlertService thread pool gracefully.
+     * Stops the EmailNotificationService, AlertService thread pool, and MetricsAggregator scheduler gracefully.
      *
      * @param event ServletContext destruction event
      */
@@ -56,6 +61,10 @@ public class MonitoringContextListener implements ServletContextListener {
         log("Shutting down monitoring services...");
 
         try {
+            // Stop email notification service
+            EmailNotificationService emailService = EmailNotificationService.getInstance();
+            emailService.stop();
+
             // Stop alert service thread pool
             AlertService alertService = AlertService.getInstance();
             alertService.shutdown();
