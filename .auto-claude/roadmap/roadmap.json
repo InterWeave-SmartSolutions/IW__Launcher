@@ -197,7 +197,7 @@
       "impact": "high",
       "phase_id": "phase-1",
       "dependencies": [],
-      "status": "under_review",
+      "status": "planned",
       "acceptance_criteria": [
         "Users can log in with email and password credentials stored in the database",
         "Password hashing algorithm matches the stored hash format in the database",
@@ -209,6 +209,7 @@
         "As an integration developer, I want to log in with my company-assigned credentials so that I can access my integration projects",
         "As a system administrator, I want to create new user accounts so that team members can access the platform"
       ],
+      "linked_spec_id": "003-fix-user-authentication-system",
       "competitor_insight_ids": []
     },
     {
@@ -639,7 +640,7 @@
   ],
   "metadata": {
     "created_at": "2026-01-08T13:00:00Z",
-    "updated_at": "2026-01-08T16:35:21.954Z",
+    "updated_at": "2026-01-09T00:58:11.371Z",
     "generated_by": "roadmap_features agent",
     "prioritization_framework": "MoSCoW",
     "competitor_analysis_used": true,
