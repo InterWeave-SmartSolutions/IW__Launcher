@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "001-git-check",
-  "state": "complete",
+  "spec": "002-improved-error-messages-and-validation",
+  "state": "building",
   "subtasks": {
-    "completed": 1,
-    "total": 1,
-    "in_progress": 0,
+    "completed": 17,
+    "total": 22,
+    "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Git Cleanup and Preparation",
-    "id": 1,
-    "total": 1
+    "current": "Error Documentation and Help System",
+    "id": null,
+    "total": 2
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 1,
-    "started_at": "2026-01-08T12:29:39.121049"
+    "number": 19,
+    "started_at": "2026-01-08T14:02:54.874120"
   },
-  "last_update": "2026-01-08T12:32:06.348820"
+  "last_update": "2026-01-08T15:34:46.382026"
 }

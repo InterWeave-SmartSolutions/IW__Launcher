@@ -20,6 +20,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+import com.interweave.error.ErrorCode;
+import com.interweave.error.ErrorLogger;
+import com.interweave.error.IWError;
+
 /**
  * LocalLoginServlet - Authenticates users against the local PostgreSQL database
  * instead of the InterWeave central server.
@@ -57,10 +61,20 @@ public class LocalLoginServlet extends HttpServlet {
         String portalBrand = request.getParameter("PortalBrand");
         String portalSolutions = request.getParameter("PortalSolutions");
 
-        // Validate input
+        // Validate input - check for missing credentials
         if (email == null || email.trim().isEmpty() ||
             password == null || password.trim().isEmpty()) {
-            redirectToLogin(request, response, "Please enter both email and password",
+
+            IWError error = IWError.builder(ErrorCode.VALIDATION001)
+                .message("Please enter both email and password")
+                .affectedComponent("LocalLoginServlet")
+                .cause("Required login credentials not provided")
+                .suggestedResolution("Enter your email address and password to log in")
+                .build();
+
+            ErrorLogger.logError(error);
+            redirectToLogin(request, response, ErrorCode.VALIDATION001,
+                           "Please enter both email and password",
                            email, portalBrand, portalSolutions);
             return;
         }
@@ -68,11 +82,12 @@ public class LocalLoginServlet extends HttpServlet {
         email = email.trim().toLowerCase();
 
         try (Connection conn = dataSource.getConnection()) {
-            // Look up the user
-            UserInfo userInfo = authenticateUser(conn, email, password);
+            // Authenticate user and get detailed result
+            AuthenticationResult authResult = authenticateUser(conn, email, password);
 
-            if (userInfo != null) {
+            if (authResult.success) {
                 // Authentication successful
+                UserInfo userInfo = authResult.userInfo;
                 HttpSession session = request.getSession(true);
                 session.setAttribute("userId", userInfo.userId);
                 session.setAttribute("userEmail", userInfo.email);
@@ -102,15 +117,41 @@ public class LocalLoginServlet extends HttpServlet {
 
                 response.sendRedirect(redirectUrl);
             } else {
-                // Authentication failed
-                log("Authentication failed for email: " + email);
-                redirectToLogin(request, response, "Invalid email or password",
+                // Authentication failed - log and redirect with specific error
+                IWError error = IWError.builder(authResult.errorCode)
+                    .message(authResult.errorMessage)
+                    .affectedComponent("LocalLoginServlet")
+                    .cause(authResult.cause)
+                    .suggestedResolution(authResult.resolution)
+                    .build();
+
+                ErrorLogger.logError(error);
+
+                // Don't log email for invalid credentials (security - avoid info leakage in logs)
+                if (authResult.errorCode == ErrorCode.AUTH001) {
+                    log("Authentication failed: Invalid credentials");
+                } else {
+                    log("Authentication failed for " + email + ": " + authResult.errorMessage);
+                }
+
+                redirectToLogin(request, response, authResult.errorCode, authResult.errorMessage,
                                email, portalBrand, portalSolutions);
             }
 
         } catch (SQLException e) {
-            log("Database error during authentication", e);
-            redirectToLogin(request, response, "System error. Please try again later.",
+            // Database connection or query error
+            IWError error = IWError.builder(ErrorCode.DB001)
+                .message("Unable to connect to authentication database")
+                .affectedComponent("LocalLoginServlet")
+                .cause("SQLException: " + e.getMessage())
+                .suggestedResolution("Please try again. If the problem persists, contact your system administrator")
+                .throwable(e)
+                .build();
+
+            ErrorLogger.logError(error);
+
+            redirectToLogin(request, response, ErrorCode.DB001,
+                           "A system error occurred. Please try again later.",
                            email, portalBrand, portalSolutions);
         }
     }
@@ -124,42 +165,94 @@ public class LocalLoginServlet extends HttpServlet {
 
     /**
      * Authenticates a user against the local database
+     * Returns detailed result including specific error information
      */
-    private UserInfo authenticateUser(Connection conn, String email, String password)
+    private AuthenticationResult authenticateUser(Connection conn, String email, String password)
             throws SQLException {
 
-        String sql = "SELECT u.id, u.email, u.password_hash, u.first_name, u.last_name, " +
-                     "u.is_admin, u.company_id, c.organization_name, c.solution_type, c.auth_token " +
-                     "FROM users u " +
-                     "JOIN companies c ON u.company_id = c.id " +
-                     "WHERE LOWER(u.email) = ? AND u.is_active = true AND c.is_active = true";
+        // First, check if user exists (regardless of active status)
+        String sqlUserCheck = "SELECT u.id, u.email, u.password, u.first_name, u.last_name, " +
+                              "u.role, u.is_active, u.company_id, c.company_name, " +
+                              "c.solution_type, c.auth_token, c.is_active as company_active " +
+                              "FROM users u " +
+                              "JOIN companies c ON u.company_id = c.id " +
+                              "WHERE LOWER(u.email) = ?";
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(sqlUserCheck)) {
             stmt.setString(1, email.toLowerCase());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String storedHash = rs.getString("password_hash");
+                    String storedHash = rs.getString("password");
+                    boolean userActive = rs.getBoolean("is_active");
+                    boolean companyActive = rs.getBoolean("company_active");
 
-                    // Verify password
-                    if (verifyPassword(password, storedHash)) {
-                        UserInfo userInfo = new UserInfo();
-                        userInfo.userId = rs.getInt("id");
-                        userInfo.email = rs.getString("email");
-                        userInfo.firstName = rs.getString("first_name");
-                        userInfo.lastName = rs.getString("last_name");
-                        userInfo.isAdmin = rs.getBoolean("is_admin");
-                        userInfo.companyId = rs.getInt("company_id");
-                        userInfo.companyName = rs.getString("organization_name");
-                        userInfo.solutionType = rs.getString("solution_type");
-                        userInfo.authToken = rs.getString("auth_token");
-                        return userInfo;
+                    // Verify password first
+                    if (!verifyPassword(password, storedHash)) {
+                        // Wrong password - return generic invalid credentials error
+                        // (don't reveal that the email exists - security best practice)
+                        return AuthenticationResult.failure(
+                            ErrorCode.AUTH001,
+                            "Invalid email or password",
+                            "Password verification failed",
+                            "Verify your email address and password are correct. " +
+                            "Passwords are case-sensitive. Contact your administrator if you've forgotten your password."
+                        );
                     }
+
+                    // Password is correct, now check account status
+
+                    // Check if company is inactive
+                    if (!companyActive) {
+                        return AuthenticationResult.failure(
+                            ErrorCode.AUTH003,
+                            "Your company account is inactive",
+                            "Company account disabled or suspended",
+                            "Contact your company administrator or InterWeave support to reactivate your company account. " +
+                            "This may be due to expired subscription or administrative action."
+                        );
+                    }
+
+                    // Check if user is inactive
+                    if (!userActive) {
+                        return AuthenticationResult.failure(
+                            ErrorCode.AUTH002,
+                            "Your user account is inactive",
+                            "User account disabled",
+                            "Contact your company administrator to activate your account. " +
+                            "Your account may need to be reactivated or you may need to complete registration."
+                        );
+                    }
+
+                    // All checks passed - authentication successful
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.userId = rs.getInt("id");
+                    userInfo.email = rs.getString("email");
+                    userInfo.firstName = rs.getString("first_name");
+                    userInfo.lastName = rs.getString("last_name");
+                    String role = rs.getString("role");
+                    userInfo.isAdmin = "admin".equalsIgnoreCase(role);
+                    userInfo.companyId = rs.getInt("company_id");
+                    userInfo.companyName = rs.getString("company_name");
+                    userInfo.solutionType = rs.getString("solution_type");
+                    userInfo.authToken = rs.getString("auth_token");
+
+                    return AuthenticationResult.success(userInfo);
+
+                } else {
+                    // User not found - return generic invalid credentials error
+                    // (don't reveal that the email doesn't exist - security best practice)
+                    return AuthenticationResult.failure(
+                        ErrorCode.AUTH001,
+                        "Invalid email or password",
+                        "User not found in database",
+                        "Verify your email address and password are correct. " +
+                        "If you haven't registered yet, please register first. " +
+                        "Contact your administrator if you need assistance."
+                    );
                 }
             }
         }
-
-        return null;
     }
 
     /**
@@ -211,14 +304,19 @@ public class LocalLoginServlet extends HttpServlet {
     }
 
     /**
-     * Redirects back to login page with an error message
+     * Redirects back to login page with an error message and error code
      */
     private void redirectToLogin(HttpServletRequest request, HttpServletResponse response,
-                                 String errorMessage, String email, String portalBrand,
-                                 String portalSolutions) throws IOException {
+                                 ErrorCode errorCode, String errorMessage, String email,
+                                 String portalBrand, String portalSolutions) throws IOException {
 
         StringBuilder url = new StringBuilder("IWLogin.jsp?error=");
         url.append(java.net.URLEncoder.encode(errorMessage, "UTF-8"));
+
+        // Add error code for specific error handling in JSP
+        if (errorCode != null) {
+            url.append("&errorCode=").append(java.net.URLEncoder.encode(errorCode.getCode(), "UTF-8"));
+        }
 
         if (email != null && !email.isEmpty()) {
             url.append("&Email=").append(java.net.URLEncoder.encode(email, "UTF-8"));
@@ -231,6 +329,42 @@ public class LocalLoginServlet extends HttpServlet {
         }
 
         response.sendRedirect(url.toString());
+    }
+
+    /**
+     * Inner class to hold authentication result with detailed error information
+     */
+    private static class AuthenticationResult {
+        boolean success;
+        UserInfo userInfo;
+        ErrorCode errorCode;
+        String errorMessage;
+        String cause;
+        String resolution;
+
+        /**
+         * Creates a successful authentication result
+         */
+        static AuthenticationResult success(UserInfo userInfo) {
+            AuthenticationResult result = new AuthenticationResult();
+            result.success = true;
+            result.userInfo = userInfo;
+            return result;
+        }
+
+        /**
+         * Creates a failed authentication result with detailed error information
+         */
+        static AuthenticationResult failure(ErrorCode errorCode, String errorMessage,
+                                            String cause, String resolution) {
+            AuthenticationResult result = new AuthenticationResult();
+            result.success = false;
+            result.errorCode = errorCode;
+            result.errorMessage = errorMessage;
+            result.cause = cause;
+            result.resolution = resolution;
+            return result;
+        }
     }
 
     /**
