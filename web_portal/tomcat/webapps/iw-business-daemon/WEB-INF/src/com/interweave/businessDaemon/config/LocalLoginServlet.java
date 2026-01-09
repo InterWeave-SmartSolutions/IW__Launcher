@@ -8,7 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Base64;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -280,12 +279,23 @@ public class LocalLoginServlet extends HttpServlet {
     }
 
     /**
-     * Hashes a password using SHA-256
+     * Hashes a password using SHA-256 and returns lowercase hexadecimal string
+     * This matches MySQL's SHA2(password, 256) function output format
      */
     private String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(password.getBytes());
-        return Base64.getEncoder().encodeToString(hash);
+
+        // Convert bytes to hexadecimal string (matches MySQL SHA2 output)
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     /**
