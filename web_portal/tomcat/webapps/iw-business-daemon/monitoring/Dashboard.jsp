@@ -259,5 +259,8 @@
 
     <!-- Dashboard Real-time Status Display -->
     <script src="js/dashboard-status.js"></script>
+
+    <!-- Dashboard Charts Visualizations -->
+    <script src="js/dashboard-charts.js"></script>
 </body>
 </html>
