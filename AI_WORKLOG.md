@@ -880,3 +880,32 @@ Follow-ups / known issues:
 - **Report back format**: Documented what information to collect from console
 - **System status**: Diagnostic complete, debugging guide ready, waiting for user to check Oracle Cloud Console
 
+---
+
+## 2026-01-13 18:05 (UTC)
+Agent/tool: Warp (gpt-5.2)
+User request: Add `InterWoven/` and tutorial `*.mp4` files to `.gitignore`, fix `git add`/`git commit` so push succeeds, and push the `publish/auto-claude-002` branch.
+Actions taken:
+- Updated `.gitignore` to ignore `InterWoven` and video files (`*.mp4`, `*.m4v`), and to ignore local tool/runtime artifacts (`.playwright-mcp/`, `web_portal/tomcat/{logs,work,temp}/`).
+- Updated `CLAUDE.md` to remove a plaintext database password and replace it with a placeholder.
+- Removed tracked `docs/tutorials/*.mp4` from the git index (kept local files) so they will no longer be committed.
+- Removed the accidentally-staged `InterWoven` gitlink from the git index.
+- Fixed a failed push caused by accidental large-file blobs by rebasing local-only commits and amending the offending commit to avoid touching mp4 content.
+Files changed/created:
+- `.gitignore`
+- `CLAUDE.md`
+- `AI_WORKLOG.md` (this entry)
+- Removed from git tracking: `docs/tutorials/*.mp4`, `InterWoven`
+Commands run:
+- git status / diff
+- git rm --cached (for mp4 files)
+- git add -A
+- git commit
+- git rebase -i / git commit --amend
+- git push
+Verification performed:
+- Verified `InterWoven` is not tracked by git.
+- Verified no mp4/m4v files are tracked in HEAD (only local working-tree copies remain).
+Follow-ups / known issues:
+- If training videos should remain in the repo, they must be managed via Git LFS and not re-added as normal git blobs.
+
