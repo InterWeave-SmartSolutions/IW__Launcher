@@ -61,6 +61,11 @@ out/
 logs/
 log/
 
+# ===== Tomcat Runtime Artifacts (never commit) =====
+web_portal/tomcat/logs/
+web_portal/tomcat/work/
+web_portal/tomcat/temp/
+
 # ===== OS Generated =====
 .DS_Store
 .DS_Store?
@@ -80,6 +85,9 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# ===== Tool Artifacts (local only) =====
+.playwright-mcp/
 
 # ===== Backup Files =====
 *.bak
@@ -122,7 +130,10 @@ web_portal/tomcat/lib/postgresql-*.jar
 .worktrees/
 
 # ===== Media (large files) =====
-# Tutorial/training videos should not be committed.
+# Videos should not be committed.
+*.mp4
+*.m4v
+
 docs/tutorials/*.mp4
 docs/tutorials/*.m4v
 
