@@ -5,6 +5,10 @@ config.local.ini
 *.local.ini
 *.local
 
+# ===== Concept Snapshots / Prototypes =====
+InterWoven
+InterWoven/
+
 # ===== Database Files =====
 # Keep schema, ignore actual database
 database/*.db

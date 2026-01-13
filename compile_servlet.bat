@@ -8,20 +8,35 @@ echo ==========================================
 echo.
 
 REM Set paths
-set JAVAC="C:\Program Files\Java\jdk-24\bin\javac.exe"
-set WEB_INF=web_portal\tomcat\webapps\iw-business-daemon\WEB-INF
-set CLASSES=%WEB_INF%\classes
-set LIB=%WEB_INF%\lib
-set TOMCAT_LIB=web_portal\tomcat\lib
+set "WEB_INF=web_portal\tomcat\webapps\iw-business-daemon\WEB-INF"
+set "CLASSES=%WEB_INF%\classes"
+set "LIB=%WEB_INF%\lib"
+set "TOMCAT_LIB=web_portal\tomcat\lib"
 
-REM Check if javac exists
-if not exist %JAVAC% (
-    echo ERROR: Java compiler not found at %JAVAC%
-    echo Please install JDK or update the JAVAC path in this script
+REM Locate javac (JDK required)
+set "JAVAC="
+for /f "delims=" %%J in ('where javac 2^>nul') do (
+    set "JAVAC=%%J"
+    goto :javac_found
+)
+:javac_found
+
+if not defined JAVAC (
+    if defined JAVA_HOME if exist "%JAVA_HOME%\bin\javac.exe" set "JAVAC=%JAVA_HOME%\bin\javac.exe"
+)
+
+if not defined JAVAC (
+    echo ERROR: Java compiler (javac) not found.
+    echo.
+    echo To compile servlets you must install a JDK (Java 8+ recommended for this codebase).
+    echo Then ensure either:
+    echo   - javac is on PATH, OR
+    echo   - JAVA_HOME is set to your JDK directory
+    echo.
     exit /b 1
 )
 
-echo Using Java compiler: %JAVAC%
+echo Using Java compiler: "%JAVAC%"
 echo.
 
 REM Create output directories

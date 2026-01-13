@@ -385,12 +385,12 @@
         "As a support engineer, I want to search transaction history so that I can investigate customer-reported data issues",
         "As a developer, I want alerts when my integration fails so that I can respond quickly"
       ],
+      "linked_spec_id": "005-real-time-integration-monitoring-dashboard",
       "competitor_insight_ids": [
         "pain-2-1",
         "pain-4-3",
         "pain-2-5"
-      ],
-      "linked_spec_id": "005-real-time-integration-monitoring-dashboard"
+      ]
     },
     {
       "id": "feature-6",
@@ -937,7 +937,7 @@
   ],
   "metadata": {
     "created_at": "2026-01-08T13:00:00Z",
-    "updated_at": "2026-01-09T13:59:55.416Z",
+    "updated_at": "2026-01-10T19:34:46.337Z",
     "generated_by": "roadmap_features agent",
     "prioritization_framework": "MoSCoW",
     "competitor_analysis_used": true,

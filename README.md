@@ -2,6 +2,11 @@
 
 Enterprise data integration platform for creating synchronization workflows between business applications.
 
+## InterWoven (concept snapshot)
+The `InterWoven/` directory (when present) is an imported concept/prototype for future improvements to the IDE launcher and Java form web pages.
+
+IMPORTANT: Do not use, read, or reference anything in `InterWoven/` unless the user explicitly asks you to.
+
 ---
 
 ## How to Use (3 Simple Scripts)
@@ -13,6 +18,44 @@ Enterprise data integration platform for creating synchronization workflows betw
 | `CHANGE_DATABASE.bat` | Change database connection (optional) |
 
 That's it! Just double-click `START.bat` to begin.
+
+---
+
+## Getting This Working on a New Windows Machine (Important)
+
+### Option A (Recommended): Use a ZIP / Release Artifact
+If you have a pre-built ZIP that contains `IW_Launcher/` (including `jre/` and `web_portal/tomcat/`), you should be able to run without installing Java/Tomcat/Maven.
+
+### Option B: Clone the repo with Git (Developers)
+This repository stores several **binary files** via **Git LFS** (Large File Storage) — including `*.exe` and many `*.jar` files.
+
+If you clone without Git LFS, Windows will download tiny placeholder “pointer” files instead of the real binaries, and the app will fail to start.
+
+1. Install **Git for Windows**
+2. Install **Git LFS**
+3. In the repo folder, run:
+   - `git lfs install`
+   - `git lfs pull`
+
+### Quick “sanity check” (did LFS download correctly?)
+Verify these exist and are NOT tiny files:
+- `jre\bin\java.exe`
+- `web_portal\tomcat\bin\catalina.bat`
+- `web_portal\tomcat\lib\catalina.jar` (should be MBs, not a small text file)
+
+---
+
+## Do I Need to Install Java / Tomcat / Maven?
+
+### Just running the app (most users)
+- **No.** This launcher uses the bundled runtime in `jre/` and the bundled Tomcat in `web_portal/tomcat/`.
+
+### Building / modifying code (developers)
+Install these on Windows:
+- **JDK 8+** (required for `javac`)
+- **Apache Maven 3.6+** (required for `mvn`)
+
+You only need Apache Ant if you plan to rebuild Tomcat itself (normally you do not).
 
 ---
 

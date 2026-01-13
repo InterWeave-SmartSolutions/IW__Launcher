@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Mandatory workflow for ALL AI agents (read this first)
+All AI tools/agents working in this repo MUST follow `AI_WORKFLOW.md`.
+- If you make changes, you MUST append a session entry to `AI_WORKLOG.md`.
+- Every response MUST include `What I did (this response)`.
+
+## IMPORTANT: InterWoven concept directory
+If an `InterWoven/` directory exists in this repo, it is a concept/prototype snapshot for potential future IDE launcher + Java form web page improvements.
+
+Do not use, read, or reference anything in `InterWoven/` unless the user explicitly requests it.
+
 ---
 
 ## Project Overview
@@ -19,7 +29,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Workspace projects stored in `workspace/`
 
 2. **Web Portal (`web_portal/tomcat/`)** - Apache Tomcat 9.0.83 server
-   - Deploys `iw-business-daemon.war`
+   - Deploys `iw-business-daemon.war` (deployed as expanded directory in `webapps/`)
    - User authentication and company management
    - Hosts JSP interfaces for profile/config management
    - Default port: 8080
@@ -185,6 +195,15 @@ Common integration patterns documented in `docs/tutorials/`:
 - `InterWeave-IDE-Training-3.md`
 - `InterWeave-IDE-Review-4.md`
 
+### Building from Source
+
+For developers modifying Java code, see `BUILD.md` for:
+- Maven build configuration
+- Compilation commands
+- Test execution
+- Deployment to Tomcat
+- IDE integration (Eclipse, IntelliJ, VS Code)
+
 ## Directory Structure
 
 ```
@@ -252,6 +271,13 @@ IW_Launcher/
 **WSL2:**
 - Works but uses Windows paths (`/mnt/c/IW_IDE/IW_Launcher`)
 - Run Windows `.bat` scripts directly
+
+**Git LFS Requirement (Developers):**
+- If cloning this repo, you MUST have Git LFS installed
+- Many binary files (`*.exe`, `*.jar`) are stored via Git LFS
+- Without LFS, you'll get tiny placeholder files instead of real binaries
+- After cloning, run: `git lfs install && git lfs pull`
+- Sanity check: Verify `jre/bin/java.exe` and `web_portal/tomcat/lib/catalina.jar` are NOT tiny text files
 
 ## Security Notes
 

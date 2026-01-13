@@ -4,7 +4,7 @@
 
 **Windows:** Double-click `start_web_portal.bat`
 
-**Linux/Mac:** 
+**Linux/Mac/WSL:**
 ```bash
 ./start_web_portal.sh
 ```
@@ -17,7 +17,7 @@ Open browser to: **http://localhost:8080/iw-business-daemon/IWLogin.jsp**
 
 **Windows:** Double-click `stop_web_portal.bat`
 
-**Linux/Mac:**
+**Linux/Mac/WSL:**
 ```bash
 ./stop_web_portal.sh
 ```
