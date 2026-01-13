@@ -38,44 +38,46 @@ String errorResolution = request.getParameter("ErrorResolution");
 String errorDocLink = request.getParameter("ErrorDocLink");
 String transactionId = request.getParameter("TransactionId");
 
+// TEMPORARILY DISABLED: Error framework not compiled
 // Try to get structured error from request attribute
-IWError iwError = null;
-try {
-	iwError = (IWError) request.getAttribute("iwError");
-} catch (Exception e) {
-	// Ignore if error classes not available - just use text error
-}
+// IWError iwError = null;
+// try {
+// 	iwError = (IWError) request.getAttribute("iwError");
+// } catch (Exception e) {
+// 	// Ignore if error classes not available - just use text error
+// }
 
 // Use structured error if available, otherwise fall back to parameters/text
-if (iwError != null) {
-	if (errorText == null) errorText = iwError.getMessage();
-	if (errorCode == null && iwError.getErrorCode() != null) errorCode = iwError.getErrorCode().getCode();
-	if (errorCause == null) errorCause = iwError.getCause();
-	if (errorComponent == null) errorComponent = iwError.getComponent();
-	if (errorResolution == null) errorResolution = iwError.getResolution();
-	if (errorDocLink == null) errorDocLink = iwError.getDocumentationLink();
-	if (transactionId == null) transactionId = iwError.getTransactionId();
-}
+// if (iwError != null) {
+// 	if (errorText == null) errorText = iwError.getMessage();
+// 	if (errorCode == null && iwError.getErrorCode() != null) errorCode = iwError.getErrorCode().getCode();
+// 	if (errorCause == null) errorCause = iwError.getCause();
+// 	if (errorComponent == null) errorComponent = iwError.getComponent();
+// 	if (errorResolution == null) errorResolution = iwError.getResolution();
+// 	if (errorDocLink == null) errorDocLink = iwError.getDocumentationLink();
+// 	if (transactionId == null) transactionId = iwError.getTransactionId();
+// }
 
 // Ensure we have at least error text
 if (errorText == null) {
 	errorText = "An unexpected error occurred. Please contact support for assistance.";
 }
 
+// TEMPORARILY DISABLED: ErrorCode classes not compiled
 // Try to lookup documentation if we have an error code but no resolution
-if (errorCode != null && errorResolution == null) {
-	try {
-		ErrorCode code = ErrorCode.findByCode(errorCode);
-		if (code != null) {
-			errorResolution = ErrorDocumentation.getResolutionSteps(code);
-			if (errorDocLink == null) {
-				errorDocLink = ErrorDocumentation.getDocumentationUrl(code);
-			}
-		}
-	} catch (Exception e) {
-		// Silently ignore - just won't have enhanced error info
-	}
-}
+// if (errorCode != null && errorResolution == null) {
+// 	try {
+// 		ErrorCode code = ErrorCode.findByCode(errorCode);
+// 		if (code != null) {
+// 			errorResolution = ErrorDocumentation.getResolutionSteps(code);
+// 			if (errorDocLink == null) {
+// 				errorDocLink = ErrorDocumentation.getDocumentationUrl(code);
+// 			}
+// 		}
+// 	} catch (Exception e) {
+// 		// Silently ignore - just won't have enhanced error info
+// 	}
+// }
 
 // Generate transaction ID if not present
 if (transactionId == null || transactionId.trim().length() == 0) {

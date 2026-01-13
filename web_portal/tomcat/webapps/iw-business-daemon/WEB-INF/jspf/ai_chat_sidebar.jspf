@@ -1,0 +1,55 @@
+<%--
+  AI Sidebar Hook (JSP-safe)
+
+  This fragment is intentionally:
+  - Self-contained
+  - CSS/JS scoped under `.iw-ai*` to minimize collisions
+  - Backwards-compatible with legacy JSP pages
+
+  NOTE: This is ONLY the UI injection hook.
+  The backend endpoint is expected to be implemented separately (e.g. POST /api/ai/chat).
+--%>
+<%
+  String iwContextPath = request.getContextPath();
+  String iwPagePath = request.getRequestURI();
+%>
+<link rel="stylesheet" href="<%= iwContextPath %>/css/iw-ai.css" />
+<script src="<%= iwContextPath %>/js/iw-ai.js" defer></script>
+
+<div
+  class="iw-ai"
+  id="iw-ai-root"
+  data-endpoint="<%= iwContextPath %>/api/ai/chat"
+  data-page="<%= iwPagePath %>"
+>
+  <button type="button" class="iw-ai__fab" aria-label="Open AI assistant" aria-controls="iw-ai-panel" aria-expanded="false">
+    AI
+  </button>
+
+  <div class="iw-ai__backdrop" hidden></div>
+
+  <aside class="iw-ai__panel" id="iw-ai-panel" role="dialog" aria-label="AI assistant" aria-modal="true" hidden>
+    <header class="iw-ai__header">
+      <div class="iw-ai__title">
+        AI Assistant
+        <div class="iw-ai__subtitle">Compatibility-first hook (UI only)</div>
+      </div>
+      <button type="button" class="iw-ai__close" aria-label="Close AI assistant">×</button>
+    </header>
+
+    <div class="iw-ai__messages" role="log" aria-live="polite" aria-relevant="additions">
+      <div class="iw-ai__system">
+        Ask: “Explain this page”, “Why did this fail?”, “What does this field mean?”
+      </div>
+    </div>
+
+    <form class="iw-ai__composer" autocomplete="off">
+      <label class="iw-ai__label" for="iw-ai-input">Message</label>
+      <textarea class="iw-ai__input" id="iw-ai-input" rows="3" placeholder="Type a question…"></textarea>
+      <div class="iw-ai__actions">
+        <button type="submit" class="iw-ai__send">Send</button>
+      </div>
+      <div class="iw-ai__status" aria-live="polite"></div>
+    </form>
+  </aside>
+</div>

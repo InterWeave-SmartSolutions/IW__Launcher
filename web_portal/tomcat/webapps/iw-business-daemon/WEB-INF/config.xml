@@ -43,7 +43,7 @@ This configuration mirrors the InterWeave hosted setup but uses your own server.
 
     IsHosted="1"
     hostedDriver="com.mysql.cj.jdbc.Driver"
-    hostedURL="jdbc:mysql://129.153.47.225:3306/"
+    hostedURL="jdbc:mysql://127.0.0.1:3306/"
     hostedDBName="iw_ide"
     hostedUser="iw_admin"
     hostedPassword="I6Yq8B6p0tF4YbrrabRn6ek66lRda40L"

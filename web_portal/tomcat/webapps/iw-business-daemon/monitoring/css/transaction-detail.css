@@ -1,0 +1,545 @@
+/**
+ * Transaction Detail Page Styles
+ *
+ * Specific styles for the transaction detail view, extending
+ * the base dashboard.css styles.
+ */
+
+/* ========================================
+   Loading and Error States
+   ======================================== */
+.loading-container,
+.error-container {
+    max-width: 800px;
+    margin: var(--spacing-xl) auto;
+    padding: var(--spacing-xl);
+    background: var(--iw-white);
+    border: 1px solid var(--iw-secondary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+.loading-spinner {
+    padding: var(--spacing-xl);
+}
+
+.error-message {
+    padding: var(--spacing-lg);
+}
+
+.error-message h3 {
+    color: var(--color-error);
+    margin-bottom: var(--spacing-md);
+    font-size: 18px;
+    font-family: var(--font-secondary);
+}
+
+.error-message p {
+    color: #666;
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+}
+
+.error-message .btn {
+    margin: 0 var(--spacing-xs);
+}
+
+/* ========================================
+   Detail Container
+   ======================================== */
+.detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.detail-section {
+    background: var(--iw-white);
+    border: 1px solid var(--iw-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* ========================================
+   Overview Section
+   ======================================== */
+.overview-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--iw-background);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    background-color: #fafafa;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--iw-background);
+}
+
+.detail-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #666;
+    text-transform: uppercase;
+    font-family: var(--font-secondary);
+}
+
+.detail-value {
+    font-size: 13px;
+    color: var(--iw-primary);
+    word-wrap: break-word;
+    font-family: var(--font-secondary);
+}
+
+.detail-value.code {
+    font-family: 'Courier New', Consolas, monospace;
+    background-color: #f5f5f5;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+}
+
+.detail-value.empty {
+    color: #999;
+    font-style: italic;
+}
+
+/* ========================================
+   Records Processing Section
+   ======================================== */
+.records-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.record-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 2px solid;
+}
+
+.record-card.card-success {
+    background-color: var(--color-success-light);
+    border-color: var(--color-success);
+}
+
+.record-card.card-error {
+    background-color: var(--color-error-light);
+    border-color: var(--color-error);
+}
+
+.record-card.card-warning {
+    background-color: var(--color-warning-light);
+    border-color: var(--color-warning);
+}
+
+.record-icon {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.record-card.card-success .record-icon {
+    color: var(--color-success);
+}
+
+.record-card.card-error .record-icon {
+    color: var(--color-error);
+}
+
+.record-card.card-warning .record-icon {
+    color: var(--color-warning);
+}
+
+.record-content {
+    flex: 1;
+}
+
+.record-label {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: var(--spacing-xs);
+    font-family: var(--font-secondary);
+}
+
+.record-value {
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1;
+    color: var(--iw-primary);
+}
+
+/* ========================================
+   Error Section
+   ======================================== */
+.error-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.error-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.error-code {
+    font-family: 'Courier New', Consolas, monospace;
+    background-color: var(--color-error-light);
+    color: var(--color-error);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.error-message-box {
+    background-color: var(--color-error-light);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    color: var(--color-error);
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* ========================================
+   Collapsible Sections
+   ======================================== */
+.collapsible-section {
+    border: 1px solid var(--iw-background);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.collapsible-header {
+    width: 100%;
+    background-color: #fafafa;
+    border: none;
+    padding: var(--spacing-md);
+    font-family: var(--font-secondary);
+    font-size: 13px;
+    font-weight: bold;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--iw-primary);
+    transition: background-color 0.2s ease;
+}
+
+.collapsible-header:hover {
+    background-color: #f0f0f0;
+}
+
+.collapsible-header:focus {
+    outline: 2px solid var(--color-info);
+    outline-offset: 2px;
+}
+
+.toggle-icon {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    color: #666;
+    font-size: 10px;
+}
+
+.collapsible-header.active .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.collapsible-content.active {
+    max-height: 2000px;
+}
+
+.stack-trace {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    background-color: #2b2b2b;
+    color: #f8f8f2;
+    padding: var(--spacing-md);
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* ========================================
+   Payloads Section
+   ======================================== */
+.payloads-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--iw-background);
+}
+
+.payloads-section .section-info {
+    font-size: 12px;
+    color: #666;
+    font-weight: bold;
+}
+
+#payloads-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.payload-card {
+    border: 1px solid var(--iw-background);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.payload-header {
+    background-color: #fafafa;
+    padding: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+    border-bottom: 1px solid var(--iw-background);
+}
+
+.payload-title {
+    font-family: var(--font-secondary);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--iw-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.payload-type-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-info-light);
+    color: var(--color-info);
+}
+
+.payload-type-badge.request {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.payload-type-badge.response {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.payload-type-badge.intermediate {
+    background-color: #fff8e1;
+    color: #f57c00;
+}
+
+.payload-meta {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: 11px;
+    color: #666;
+}
+
+.payload-body {
+    background-color: var(--iw-white);
+}
+
+.payload-toolbar {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: #fafafa;
+    border-bottom: 1px solid var(--iw-background);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.payload-info {
+    font-size: 11px;
+    color: #666;
+}
+
+.payload-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.btn-icon {
+    background: none;
+    border: 1px solid var(--iw-secondary);
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    color: var(--iw-primary);
+    font-family: var(--font-secondary);
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    background-color: var(--iw-background);
+    border-color: var(--iw-primary);
+}
+
+.payload-content {
+    padding: var(--spacing-md);
+    max-height: 600px;
+    overflow: auto;
+}
+
+.payload-code {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+    color: var(--iw-primary);
+}
+
+.payload-code.json {
+    background-color: #282c34;
+    color: #abb2bf;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+}
+
+.payload-code.xml {
+    background-color: #f5f5f5;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+}
+
+/* JSON Syntax Highlighting */
+.json-key {
+    color: #e06c75;
+}
+
+.json-string {
+    color: #98c379;
+}
+
+.json-number {
+    color: #d19a66;
+}
+
+.json-boolean,
+.json-null {
+    color: #c678dd;
+}
+
+/* ========================================
+   Actions Section
+   ======================================== */
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-md);
+}
+
+.action-note {
+    font-size: 11px;
+    color: #999;
+    font-style: italic;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media screen and (max-width: 768px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .records-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payload-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .payload-meta {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .payload-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+    .header-actions,
+    .action-buttons,
+    .payload-actions {
+        display: none !important;
+    }
+
+    .collapsible-content {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .payload-content {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .detail-section {
+        page-break-inside: avoid;
+    }
+}

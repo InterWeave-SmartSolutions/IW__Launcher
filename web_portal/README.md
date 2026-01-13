@@ -7,9 +7,9 @@ Self-contained web portal for InterWeave IDE integration.
 ### Windows
 1. Double-click `start_web_portal.bat`
 2. Browser opens automatically to the login page
-3. To stop: run `stop_web_portal.bat`
+3. To stop: double-click `stop_web_portal.bat`
 
-### Linux / Mac
+### Linux / Mac / WSL
 ```bash
 ./start_web_portal.sh
 # To stop:
@@ -33,7 +33,8 @@ Once started, access the portal at:
 ## Requirements
 
 ### Windows
-- **None!** Uses bundled JRE from `../jre/`
+- **None (runtime).** Uses bundled JRE from `../jre/`.
+- If you cloned this repo with Git: you must have **Git LFS** installed and run `git lfs pull` so the bundled Tomcat JARs are actually present.
 
 ### Linux / Mac
 - Java 8+ installed (`java` in PATH or `JAVA_HOME` set)
@@ -51,12 +52,12 @@ Default port is **8080**. To change it:
 
 ```
 web_portal/
-├── start_web_portal.bat    # Windows start script
-├── stop_web_portal.bat     # Windows stop script
-├── start_web_portal.sh     # Linux/Mac start script
-├── stop_web_portal.sh      # Linux/Mac stop script
+├── start_web_portal.bat    # Windows start script (wrapper)
+├── stop_web_portal.bat     # Windows stop script (wrapper)
+├── start_web_portal.sh     # Linux/Mac/WSL start script (wrapper)
+├── stop_web_portal.sh      # Linux/Mac/WSL stop script (wrapper)
 ├── README.md               # This file
-└── tomcat/                 # Apache Tomcat 9.0.83
+└── tomcat/                 # Apache Tomcat 9.0.83 (bundled)
     ├── bin/                # Tomcat binaries
     ├── conf/               # Configuration (server.xml, etc.)
     ├── logs/               # Server logs
@@ -64,6 +65,8 @@ web_portal/
     │   └── iw-business-daemon.war
     └── ...
 ```
+
+Note: the wrapper scripts call into the `_internal/` scripts at the repo root.
 
 ## Logs
 

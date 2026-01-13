@@ -1,11 +1,11 @@
 {
   "active": true,
-  "spec": "002-improved-error-messages-and-validation",
-  "state": "complete",
+  "spec": "005-real-time-integration-monitoring-dashboard",
+  "state": "building",
   "subtasks": {
-    "completed": 22,
-    "total": 22,
-    "in_progress": 0,
+    "completed": 23,
+    "total": 25,
+    "in_progress": 1,
     "failed": 0
   },
   "phase": {
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 3,
-    "started_at": "2026-01-08T19:02:12.807452"
+    "number": 355,
+    "started_at": "2026-01-09T09:00:27.784191"
   },
-  "last_update": "2026-01-08T19:22:20.073332"
+  "last_update": "2026-01-09T12:28:17.695948"
 }

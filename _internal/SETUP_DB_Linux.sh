@@ -146,9 +146,11 @@ else
     echo -e "   ${YELLOW}[WARN]${NC} MySQL driver missing from tomcat/lib/"
 fi
 
-# Make Linux scripts executable
-chmod +x "$SCRIPT_DIR/scripts/START_WebPortal_Linux.sh" 2>/dev/null || true
-chmod +x "$SCRIPT_DIR/scripts/STOP_WebPortal_Linux.sh" 2>/dev/null || true
+# Make Linux scripts executable (best-effort)
+chmod +x "$SCRIPT_DIR/../web_portal/start_web_portal.sh" 2>/dev/null || true
+chmod +x "$SCRIPT_DIR/../web_portal/stop_web_portal.sh" 2>/dev/null || true
+chmod +x "$SCRIPT_DIR/START_WebPortal_Linux.sh" 2>/dev/null || true
+chmod +x "$SCRIPT_DIR/STOP_WebPortal_Linux.sh" 2>/dev/null || true
 
 echo ""
 echo -e "${GREEN}====================================================================="
@@ -170,8 +172,8 @@ echo "---------------------------------------------------------------------"
 echo "  NEXT STEPS:"
 echo "---------------------------------------------------------------------"
 echo ""
-echo "  Start Web Portal:  ./scripts/START_WebPortal_Linux.sh"
-echo "  Stop Web Portal:   ./scripts/STOP_WebPortal_Linux.sh"
+echo "  Start Web Portal:  ./web_portal/start_web_portal.sh"
+echo "  Stop Web Portal:   ./web_portal/stop_web_portal.sh"
 echo ""
 echo "  Note: The IDE (iw_ide.exe) requires Windows."
 echo ""
@@ -185,7 +187,7 @@ read -r response
 if [[ "$response" =~ ^[Yy]$ ]]; then
     echo ""
     echo "Starting Web Portal..."
-    ./scripts/START_WebPortal_Linux.sh &
+    "$SCRIPT_DIR/../web_portal/start_web_portal.sh" &
 
     echo ""
     echo "Web Portal is starting. Please wait a moment."

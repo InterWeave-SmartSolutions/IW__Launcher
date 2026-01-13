@@ -50,7 +50,9 @@ if (brand != null && brand.length() > 0) {
 if (solutions != null && solutions.length() > 0) {
     brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
 }
+%>
 
+<%!
 // Helper function to get context-specific help message based on error code
 String getErrorHelp(String code) {
     if (code == null) return null;
@@ -79,7 +81,9 @@ String getErrorHelp(String code) {
 
     return null;
 }
+%>
 
+<%
 String errorHelp = errorCode != null ? getErrorHelp(errorCode) : null;
 %>
 <form action="LoginServlet" method="post">
