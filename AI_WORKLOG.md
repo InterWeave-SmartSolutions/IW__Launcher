@@ -936,3 +936,72 @@ Follow-ups / known issues:
 - SECURITY.md uses placeholder email (security@interweave-smartsolutions.com) -- needs real contact
 - .env.example still contains a real Oracle Cloud password (should be redacted to a placeholder)
 
+---
+
+## 2026-02-13 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Create enterprise documentation files (5 new files) for the enterprise-readiness branch
+Actions taken:
+- Created docs/adr/ directory for Architecture Decision Records
+- Created docs/security/ directory for security documentation
+- Created docs/adr/001-supabase-migration.md -- ADR for Oracle Cloud MySQL to Supabase Postgres migration
+- Created docs/adr/002-additive-only-changes.md -- ADR for additive-only modification policy
+- Created docs/API.md -- Web portal endpoint reference (JSP pages and API servlets)
+- Created docs/DEVELOPER_ONBOARDING.md -- Step-by-step new developer guide
+- Created docs/security/CREDENTIAL_ROTATION.md -- Database credential rotation procedures
+Files changed/created:
+- docs/adr/001-supabase-migration.md (created)
+- docs/adr/002-additive-only-changes.md (created)
+- docs/API.md (created)
+- docs/DEVELOPER_ONBOARDING.md (created)
+- docs/security/CREDENTIAL_ROTATION.md (created)
+- AI_WORKLOG.md (this entry)
+Commands run:
+- mkdir -p docs/adr docs/security
+- ls docs/ to verify existing structure
+Verification performed:
+- Confirmed docs/adr/ and docs/security/ directories did not previously exist
+- Verified all 5 files created successfully
+- All files reference correct project details: Java 8, Eclipse 3.1, Tomcat 9.0.83, Supabase Postgres, admin credentials
+- ADRs follow standard format (Title, Status, Context, Decision, Consequences)
+- API.md covers all known JSP pages and API servlet endpoints
+- DEVELOPER_ONBOARDING.md references existing docs (README.md, BUILD.md, CONTRIBUTING.md, CLAUDE.md)
+- CREDENTIAL_ROTATION.md covers Supabase, Oracle Cloud, verification, notifications, and emergency leak response
+Follow-ups / known issues:
+- API servlet endpoint response schemas are documented based on expected structure; actual responses should be verified against running servlets
+- DEVELOPER_ONBOARDING.md references CONTRIBUTING.md which was created in a previous session
+- Credential rotation guide assumes CHANGE_DATABASE.bat regenerates Tomcat config; this should be verified
+
+---
+
+## 2026-02-13 18:09 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Create migration management scripts extending the existing migration system in _internal/sql/
+Actions taken:
+- Read existing migration conventions from _internal/sql/MONITORING_MIGRATION_README.md
+- Analyzed existing SQL files (002_company_user_profiles.sql, 005_monitoring_schema.sql, 005_monitoring_schema_rollback.sql)
+- Studied settings table column inconsistency: MySQL uses setting_key/setting_value, Postgres uses key/value
+- Mapped known schema versions to migration numbers (1.0.0->001, 2.0->002, 2.1.0->005)
+- Matched .env loading conventions from START.bat (findstr /B) and SETUP_DB_Linux.sh (source .env)
+- Created 4 migration management scripts in _internal/
+Files changed/created:
+- _internal/run-migrations.sh (new) - Bash migration runner with --dry-run support, handles both psql and mysql
+- _internal/run-migrations.bat (new) - Windows batch equivalent
+- _internal/validate-env.sh (new) - Environment validation with 5 checks: .env existence, DB_MODE validation, required vars, CLI tools, connectivity
+- _internal/validate-env.bat (new) - Windows batch equivalent
+Commands run:
+- chmod +x on .sh files
+- ls -la to verify file creation
+Verification performed:
+- All 4 files created successfully in _internal/ (not database/migrations/)
+- No existing files were modified
+- Shell scripts set as executable
+- Scripts handle both setting_key and key column names for settings table queries
+- Scripts support all 4 DB_MODE values: supabase, oracle_cloud, interweave, local
+- Migration file pattern NNN_*.sql matches existing 002_ and 005_ conventions
+- Rollback files (*_rollback.sql) and test data files are skipped
+Follow-ups / known issues:
+- Version-to-migration-number mapping is hardcoded; if future migrations use different version schemes, the mapping must be extended
+- Windows batch psql connectivity test uses set PGPASSWORD inline; may need adjustment for some Windows psql distributions
+- The batch migration runner glob pattern for [0-9][0-9][0-9]_*.sql may behave differently across cmd.exe versions
+
