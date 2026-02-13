@@ -1,0 +1,49 @@
+# EditorConfig - https://editorconfig.org
+# Consistent coding styles across editors and IDEs
+
+root = true
+
+# Default for all files
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Java source
+[*.java]
+indent_size = 4
+
+# XML, JSP, HTML
+[*.{xml,jsp,html,xsl,xslt}]
+indent_size = 2
+
+# JSON, YAML
+[*.{json,yml,yaml}]
+indent_size = 2
+
+# SQL
+[*.sql]
+indent_size = 2
+
+# Markdown - preserve trailing whitespace for line breaks
+[*.md]
+trim_trailing_whitespace = false
+
+# Windows batch scripts - MUST use CRLF
+[*.{bat,cmd}]
+end_of_line = crlf
+
+# Shell scripts
+[*.sh]
+end_of_line = lf
+
+# Properties files
+[*.properties]
+end_of_line = lf
+
+# Makefiles require tabs
+[Makefile]
+indent_style = tab
