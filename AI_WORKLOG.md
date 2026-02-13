@@ -909,3 +909,30 @@ Verification performed:
 Follow-ups / known issues:
 - If training videos should remain in the repo, they must be managed via Git LFS and not re-added as normal git blobs.
 
+---
+
+## 2026-02-13 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Create CONTRIBUTING.md and SECURITY.md for the IW_Launcher repository
+Actions taken:
+- Read BUILD.md, AI_WORKFLOW.md, .env.example, and .gitignore for accurate context
+- Verified compile_servlet.bat/.sh exist in repo root
+- Verified config.xml and context.xml references across codebase
+- Created CONTRIBUTING.md (151 lines) covering: prerequisites, Git LFS, dev setup, protected directories, branching/commits, testing, PR process, AI workflow reference, known limitations
+- Created SECURITY.md (80 lines) covering: supported versions, vulnerability reporting, known security considerations (.env credentials, hardcoded admin password, LoginServlet proprietary hash, shared Oracle Cloud credentials, plaintext passwords in config.xml/context.xml), best practices
+- Noted that .env.example contains a real Oracle Cloud password (flagged in SECURITY.md)
+Files changed/created:
+- CONTRIBUTING.md (created)
+- SECURITY.md (created)
+- AI_WORKLOG.md (this entry)
+Commands run:
+- wc -l on both new files to verify line counts
+- Glob/Grep searches to verify file references
+Verification performed:
+- Confirmed both files are within requested line ranges (CONTRIBUTING: 151, SECURITY: 80)
+- Verified all referenced files (BUILD.md, AI_WORKFLOW.md, compile_servlet.bat/sh, config.xml, context.xml) exist in repo
+- Cross-checked directory protection rules against CLAUDE.md
+Follow-ups / known issues:
+- SECURITY.md uses placeholder email (security@interweave-smartsolutions.com) -- needs real contact
+- .env.example still contains a real Oracle Cloud password (should be redacted to a placeholder)
+
