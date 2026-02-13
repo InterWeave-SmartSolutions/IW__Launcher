@@ -1,0 +1,186 @@
+# =============================================================================
+# Build and Test CI Pipeline
+# =============================================================================
+# Runs on pushes to main and pull requests targeting main.
+# Three jobs: build (compile + verify), test-postgres, test-mysql.
+# =============================================================================
+
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Build and verify (no external database required)
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Validate Git LFS files
+        run: git lfs fsck --pointers
+
+      - name: Set up JDK 8 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - name: Build and verify
+        run: mvn clean verify --batch-mode --no-transfer-progress
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-test-reports
+          path: target/surefire-reports/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Run full test suite against PostgreSQL 15 (Supabase-compatible)
+  # ---------------------------------------------------------------------------
+  test-postgres:
+    name: Test (PostgreSQL 15)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: iw_ide_test
+          POSTGRES_USER: iw_test_user
+          POSTGRES_PASSWORD: iw_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U iw_test_user -d iw_ide_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up JDK 8 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - name: Run all tests (Postgres)
+        run: mvn test -P all-tests --batch-mode --no-transfer-progress
+        env:
+          DB_MODE: supabase
+          SUPABASE_DB_HOST: localhost
+          SUPABASE_DB_PORT: 5432
+          SUPABASE_DB_NAME: iw_ide_test
+          SUPABASE_DB_USER: iw_test_user
+          SUPABASE_DB_PASSWORD: iw_test_password
+          SUPABASE_DB_SSLMODE: disable
+
+      - name: Upload Postgres test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-test-reports
+          path: target/surefire-reports/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Run full test suite against MySQL 8 (legacy DB compatibility)
+  # ---------------------------------------------------------------------------
+  test-mysql:
+    name: Test (MySQL 8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: iw_ide_test
+          MYSQL_USER: iw_test_user
+          MYSQL_PASSWORD: iw_test_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u root -proot_password"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up JDK 8 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - name: Run all tests (MySQL)
+        run: mvn test -P all-tests --batch-mode --no-transfer-progress
+        env:
+          DB_MODE: oracle_cloud
+          ORACLE_DB_HOST: 127.0.0.1
+          ORACLE_DB_PORT: 3306
+          ORACLE_DB_NAME: iw_ide_test
+          ORACLE_DB_USER: iw_test_user
+          ORACLE_DB_PASSWORD: iw_test_password
+
+      - name: Upload MySQL test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mysql-test-reports
+          path: target/surefire-reports/
+          retention-days: 7
