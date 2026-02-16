@@ -34,11 +34,12 @@ public class IWError {
     private final Throwable throwable;
 
     /**
-     * Private constructor - use IWErrorBuilder to create instances
+     * Constructor used by IWErrorBuilder (kept package-private so the builder can live as a
+     * separate class).
      *
      * @param builder The builder instance containing error details
      */
-    private IWError(IWErrorBuilder builder) {
+    IWError(IWErrorBuilder builder) {
         this.errorCode = builder.errorCode;
         this.message = builder.message != null ? builder.message :
                       (builder.errorCode != null ? builder.errorCode.getDefaultMessage() : "Unknown error");

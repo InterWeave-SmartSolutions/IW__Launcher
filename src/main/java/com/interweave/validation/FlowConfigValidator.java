@@ -10,8 +10,11 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -204,6 +207,34 @@ public class FlowConfigValidator {
 
         resultBuilder.addIssues(issues);
         return resultBuilder.build();
+    }
+
+    /**
+     * Validates a flow configuration from a file.
+     *
+     * @param file The flow XML file
+     * @return ValidationResult containing any issues found
+     */
+    public ValidationResult validateFile(File file) {
+        if (file == null) {
+            return validateFlowXml(null, null);
+        }
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            String xml = new String(bytes, StandardCharsets.UTF_8);
+            return validateFlowXml(xml, file.getAbsolutePath());
+        } catch (IOException e) {
+            return ValidationResult.builder()
+                .validationType("Flow Configuration Validation")
+                .addIssue(ValidationIssue.builder()
+                    .severity(ValidationSeverity.ERROR)
+                    .message("Failed to read flow file: " + e.getMessage())
+                    .filePath(file.getAbsolutePath())
+                    .validationCategory(VALIDATION_CATEGORY)
+                    .suggestion("Verify the file exists and is readable")
+                    .build())
+                .build();
+        }
     }
 
     /**

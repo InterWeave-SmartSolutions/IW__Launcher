@@ -93,6 +93,15 @@ public class ValidationIssue {
     }
 
     /**
+     * Backwards-compatible alias for older call sites/tests.
+     *
+     * @return The validation category, or null if not set
+     */
+    public String getCategory() {
+        return getValidationCategory();
+    }
+
+    /**
      * Checks if this is an error-level issue
      *
      * @return true if severity is ERROR

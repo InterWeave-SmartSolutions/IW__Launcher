@@ -2,11 +2,6 @@
 
 Enterprise data integration platform for creating synchronization workflows between business applications.
 
-## InterWoven (concept snapshot)
-The `InterWoven/` directory (when present) is an imported concept/prototype for future improvements to the IDE launcher and Java form web pages.
-
-IMPORTANT: Do not use, read, or reference anything in `InterWoven/` unless the user explicitly asks you to.
-
 ---
 
 ## How to Use (3 Simple Scripts)
@@ -18,44 +13,6 @@ IMPORTANT: Do not use, read, or reference anything in `InterWoven/` unless the u
 | `CHANGE_DATABASE.bat` | Change database connection (optional) |
 
 That's it! Just double-click `START.bat` to begin.
-
----
-
-## Getting This Working on a New Windows Machine (Important)
-
-### Option A (Recommended): Use a ZIP / Release Artifact
-If you have a pre-built ZIP that contains `IW_Launcher/` (including `jre/` and `web_portal/tomcat/`), you should be able to run without installing Java/Tomcat/Maven.
-
-### Option B: Clone the repo with Git (Developers)
-This repository stores several **binary files** via **Git LFS** (Large File Storage) — including `*.exe` and many `*.jar` files.
-
-If you clone without Git LFS, Windows will download tiny placeholder “pointer” files instead of the real binaries, and the app will fail to start.
-
-1. Install **Git for Windows**
-2. Install **Git LFS**
-3. In the repo folder, run:
-   - `git lfs install`
-   - `git lfs pull`
-
-### Quick “sanity check” (did LFS download correctly?)
-Verify these exist and are NOT tiny files:
-- `jre\bin\java.exe`
-- `web_portal\tomcat\bin\catalina.bat`
-- `web_portal\tomcat\lib\catalina.jar` (should be MBs, not a small text file)
-
----
-
-## Do I Need to Install Java / Tomcat / Maven?
-
-### Just running the app (most users)
-- **No.** This launcher uses the bundled runtime in `jre/` and the bundled Tomcat in `web_portal/tomcat/`.
-
-### Building / modifying code (developers)
-Install these on Windows:
-- **JDK 8+** (required for `javac`)
-- **Apache Maven 3.6+** (required for `mvn`)
-
-You only need Apache Ant if you plan to rebuild Tomcat itself (normally you do not).
 
 ---
 
@@ -105,6 +62,64 @@ Double-click `CHANGE_DATABASE.bat` to switch between:
 2. Run `START.bat` again
 
 ---
+
+## Building / Developer Setup (Windows)
+
+The app runtime ships with a bundled Java runtime in `jre/` (so end-users typically do **not** need to install Java just to run `START.bat`).
+
+However, **building** Java components and running the Windows build scripts requires:
+- A **JDK** (recommended: **Temurin JDK 8**) so `javac` is available
+- **Apache Maven** so `mvn` is available on your **Windows** `PATH`
+
+Important:
+- `build.bat` checks for Maven using `where mvn`, so having Maven only inside WSL/Linux will **not** satisfy the Windows script.
+
+### Install prerequisites via winget (recommended)
+Open **Windows Terminal → PowerShell** and run:
+
+```powershell
+winget source update
+
+winget install -e --id EclipseAdoptium.Temurin.8.JDK --accept-package-agreements --accept-source-agreements
+winget install -e --id Apache.Maven --accept-package-agreements --accept-source-agreements
+```
+
+Close/reopen the terminal, then verify:
+
+```powershell
+java -version
+javac -version
+mvn -v
+where.exe mvn
+```
+
+### Alternative: Chocolatey (choco)
+If you prefer Chocolatey:
+
+```powershell
+choco install -y temurin8jdk maven
+```
+
+### Alternative: Scoop
+If you prefer Scoop:
+
+```powershell
+scoop bucket add java
+scoop install temurin8-jdk maven
+```
+
+### Build command
+From the repository root, you can build with Maven:
+
+```powershell
+mvn -DskipTests package
+```
+
+If you need Maven to **skip compiling tests** as well, use:
+
+```powershell
+mvn -Dmaven.test.skip=true package
+```
 
 ## For Technical Users
 

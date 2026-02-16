@@ -5,10 +5,6 @@ config.local.ini
 *.local.ini
 *.local
 
-# ===== Concept Snapshots / Prototypes =====
-InterWoven
-InterWoven/
-
 # ===== Database Files =====
 # Keep schema, ignore actual database
 database/*.db
@@ -42,6 +38,10 @@ configuration/org.eclipse.core.runtime/.manager/
 configuration/org.eclipse.osgi/.manager/
 configuration/org.eclipse.update/
 
+# ===== JRE Temporary Files =====
+jre.partial.*
+tatus
+
 # ===== Java/Eclipse =====
 *.class
 *.jar
@@ -60,11 +60,6 @@ out/
 *.log
 logs/
 log/
-
-# ===== Tomcat Runtime Artifacts (never commit) =====
-web_portal/tomcat/logs/
-web_portal/tomcat/work/
-web_portal/tomcat/temp/
 
 # ===== OS Generated =====
 .DS_Store
@@ -85,9 +80,6 @@ Desktop.ini
 *.swp
 *.swo
 *~
-
-# ===== Tool Artifacts (local only) =====
-.playwright-mcp/
 
 # ===== Backup Files =====
 *.bak
@@ -130,10 +122,7 @@ web_portal/tomcat/lib/postgresql-*.jar
 .worktrees/
 
 # ===== Media (large files) =====
-# Videos should not be committed.
-*.mp4
-*.m4v
-
+# Tutorial/training videos should not be committed.
 docs/tutorials/*.mp4
 docs/tutorials/*.m4v
 

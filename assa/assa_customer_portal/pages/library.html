@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASSA Associate Portal — Resource Library</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ASSA Associate Portal</h1>
+          <div class="sub">Library</div>
+        </div>
+      </div>
+      <div class="pill">Org: <b>All-Star Center • West</b></div>
+      <div class="pill">Role: <b>Owner</b> • Plan: <b>Active</b></div>
+      
+      <div class="nav">
+        <a href="/assa_customer_portal/index.html">🏠 <span>Home</span></a>
+        <a href="library.html">📚 <span>Resource Library</span></a>
+        <a href="search.html">🔎 <span>Search</span></a>
+        <a href="intake.html">🧭 <span>Business Checkup</span></a>
+        <a href="webinars.html">🎥 <span>Webinars</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="profile.html">👤 <span>My Profile</span></a>
+        <a href="billing.html">💳 <span>Billing</span></a>
+      </div>
+    
+      <footer>
+        <div>Prototype customer portal (static HTML)</div>
+        <div class="muted">Build: 2026-02-09</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search resources, templates, webinars…" />
+        </div>
+        <div class="pill">Timezone: <b>ET</b></div>
+        <a class="btn" href="/pages/profile.html">👤 Account</a>
+      </div>
+
+      
+<div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap">
+  <div>
+    <h1 style="font-size:22px">Resource Library</h1>
+    <div class="muted">Browse by Operational Area, Resource Type, and Role relevance.</div>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap">
+    <input data-resource-search placeholder="Search in this page…" style="min-width:260px" />
+    <a class="btn" href="/pages/search.html">Advanced search</a>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Filters (sample)</h2>
+  <div class="muted">In production, filters respect RBAC + subscription entitlement.</div>
+  <hr class="sep"/>
+  <div class="form">
+    <div class="field"><label>Operational Area</label>
+      <select><option selected>All</option><option>Marketing</option><option>Operations</option><option>HR / Recruiting</option><option>Finance / Reporting</option></select>
+    </div>
+    <div class="field"><label>Resource Type</label>
+      <select><option selected>All</option><option>Playbook</option><option>Checklist</option><option>Template</option><option>Video</option></select>
+    </div>
+    <div class="field"><label>Sort</label>
+      <select><option selected>Newest</option><option>Most viewed</option><option>Most saved</option></select>
+    </div>
+    <div class="field"><label>Role</label>
+      <select><option selected>Owner</option><option>Manager</option><option>Coach</option></select>
+    </div>
+  </div>
+</div>
+
+<div class="grid cards" style="margin-top:14px">
+  <section class="card span-4" data-resource-card>
+    <h2>Recruiting Playbook</h2>
+    <div class="muted">HR / Recruiting • Playbook • v3</div>
+    <hr class="sep"/>
+    <div class="tag"><span class="dot ok"></span> Owner / Manager</div>
+    <div style="height:10px"></div>
+    <a class="btn primary" href="/pages/resource.html">Open</a>
+    <a class="btn" href="/pages/resource.html">Save</a>
+  </section>
+
+  <section class="card span-4" data-resource-card>
+    <h2>Operations Checklist</h2>
+    <div class="muted">Operations • Checklist • v2</div>
+    <hr class="sep"/>
+    <div class="tag"><span class="dot ok"></span> Owner</div>
+    <div style="height:10px"></div>
+    <a class="btn primary" href="/pages/resource.html">Open</a>
+    <a class="btn" href="/pages/resource.html">Save</a>
+  </section>
+
+  <section class="card span-4" data-resource-card>
+    <h2>Monthly KPI Template</h2>
+    <div class="muted">Finance / Reporting • Template • v1</div>
+    <hr class="sep"/>
+    <div class="tag"><span class="dot ok"></span> Owner</div>
+    <div style="height:10px"></div>
+    <a class="btn primary" href="/pages/resource.html">Open</a>
+    <a class="btn" href="/pages/resource.html">Save</a>
+  </section>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Static UI prototype. Wire to Auth/MFA, CMS, Billing, Notifications via Integration Hub.</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

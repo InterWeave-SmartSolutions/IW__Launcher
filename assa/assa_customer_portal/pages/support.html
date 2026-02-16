@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASSA Associate Portal — Support</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ASSA Associate Portal</h1>
+          <div class="sub">Support</div>
+        </div>
+      </div>
+      <div class="pill">Org: <b>All-Star Center • West</b></div>
+      <div class="pill">Role: <b>Owner</b> • Plan: <b>Active</b></div>
+      
+      <div class="nav">
+        <a href="/assa_customer_portal/index.html">🏠 <span>Home</span></a>
+        <a href="library.html">📚 <span>Resource Library</span></a>
+        <a href="search.html">🔎 <span>Search</span></a>
+        <a href="intake.html">🧭 <span>Business Checkup</span></a>
+        <a href="webinars.html">🎥 <span>Webinars</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="profile.html">👤 <span>My Profile</span></a>
+        <a href="billing.html">💳 <span>Billing</span></a>
+      </div>
+    
+      <footer>
+        <div>Prototype customer portal (static HTML)</div>
+        <div class="muted">Build: 2026-02-09</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search resources, templates, webinars…" />
+        </div>
+        <div class="pill">Timezone: <b>ET</b></div>
+        <a class="btn" href="/pages/profile.html">👤 Account</a>
+      </div>
+
+      
+<h1 style="font-size:22px">Support</h1>
+<div class="muted">Open a ticket and track progress.</div>
+
+<div class="grid cards" style="margin-top:14px">
+  <section class="card span-6">
+    <h2>My Tickets</h2>
+    <hr class="sep"/>
+    <table class="table">
+      <thead><tr><th>ID</th><th>Category</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="muted">TCK-1202</td><td>Billing</td><td><span class="tag"><span class="dot warn"></span> Awaiting</span></td></tr>
+        <tr><td class="muted">TCK-1187</td><td>Content</td><td><span class="tag"><span class="dot ok"></span> In progress</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card span-6">
+    <h2>Create a Ticket</h2>
+    <hr class="sep"/>
+    <div class="form">
+      <div class="field"><label>Category</label><select><option>Access</option><option selected>Billing</option><option>Content</option><option>Bug</option></select></div>
+      <div class="field"><label>Priority</label><select><option>P3</option><option selected>P2</option><option>P1</option></select></div>
+      <div class="field full"><label>Message</label><textarea>Payment failed and access was restricted. Please extend grace period.</textarea></div>
+    </div>
+    <div style="height:10px"></div>
+    <button class="btn primary">Submit</button>
+  </section>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Static UI prototype. Wire to Auth/MFA, CMS, Billing, Notifications via Integration Hub.</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

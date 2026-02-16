@@ -117,6 +117,34 @@ public class ConnectionValidator {
     }
 
     /**
+     * Backwards-compatible overload used by older tooling/tests.
+     *
+     * @param connectionName The unique name of the connection
+     * @param type Connection type (e.g., REST, SOAP)
+     * @param configuration Map of configuration parameters
+     */
+    public void registerConnection(String connectionName, String type, Map<String, String> configuration) {
+        if (connectionName == null || connectionName.trim().isEmpty()) {
+            return;
+        }
+
+        Map<String, String> merged = new HashMap<>();
+        if (configuration != null) {
+            merged.putAll(configuration);
+        }
+        if (type != null && !type.trim().isEmpty()) {
+            merged.put("type", type);
+        }
+
+        // Normalize legacy key names used by some call sites.
+        if (!merged.containsKey("authType") && merged.containsKey("authenticationType")) {
+            merged.put("authType", merged.get("authenticationType"));
+        }
+
+        registerConnection(connectionName, merged);
+    }
+
+    /**
      * Marks a connection as referenced (used in a flow)
      *
      * @param connectionName The name of the referenced connection
@@ -212,6 +240,13 @@ public class ConnectionValidator {
 
         resultBuilder.addIssues(allIssues);
         return resultBuilder.build();
+    }
+
+    /**
+     * Backwards-compatible alias for older call sites/tests.
+     */
+    public ValidationResult validate() {
+        return validateAllConnections();
     }
 
     /**

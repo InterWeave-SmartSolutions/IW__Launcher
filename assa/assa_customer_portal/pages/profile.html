@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASSA Associate Portal — Profile</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ASSA Associate Portal</h1>
+          <div class="sub">My Profile</div>
+        </div>
+      </div>
+      <div class="pill">Org: <b>All-Star Center • West</b></div>
+      <div class="pill">Role: <b>Owner</b> • Plan: <b>Active</b></div>
+      
+      <div class="nav">
+        <a href="/assa_customer_portal/index.html">🏠 <span>Home</span></a>
+        <a href="library.html">📚 <span>Resource Library</span></a>
+        <a href="search.html">🔎 <span>Search</span></a>
+        <a href="intake.html">🧭 <span>Business Checkup</span></a>
+        <a href="webinars.html">🎥 <span>Webinars</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="profile.html">👤 <span>My Profile</span></a>
+        <a href="billing.html">💳 <span>Billing</span></a>
+      </div>
+    
+      <footer>
+        <div>Prototype customer portal (static HTML)</div>
+        <div class="muted">Build: 2026-02-09</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search resources, templates, webinars…" />
+        </div>
+        <div class="pill">Timezone: <b>ET</b></div>
+        <a class="btn" href="/pages/profile.html">👤 Account</a>
+      </div>
+
+      
+<h1 style="font-size:22px">My Profile</h1>
+<div class="muted">Organization and team settings (sample).</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Organization</h2>
+  <hr class="sep"/>
+  <div class="form">
+    <div class="field"><label>Organization Name</label><input value="All-Star Center • West" /></div>
+    <div class="field"><label>Primary Contact</label><input value="Owner Name" /></div>
+    <div class="field"><label>Email</label><input value="owner@allstarcenterwest.com" /></div>
+    <div class="field"><label>Phone</label><input value="(555) 555-5555" /></div>
+  </div>
+  <div style="height:10px"></div>
+  <button class="btn primary">Save</button>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Static UI prototype. Wire to Auth/MFA, CMS, Billing, Notifications via Integration Hub.</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

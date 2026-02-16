@@ -72,6 +72,31 @@ public class ValidationResult {
     }
 
     /**
+     * Convenience accessor for single-file validations.
+     *
+     * If all issues in this result share the same non-null file path, returns that path.
+     * Otherwise returns null.
+     */
+    public String getFilePath() {
+        String candidate = null;
+        for (ValidationIssue issue : issues) {
+            if (issue == null) {
+                continue;
+            }
+            String fp = issue.getFilePath();
+            if (fp == null) {
+                continue;
+            }
+            if (candidate == null) {
+                candidate = fp;
+            } else if (!candidate.equals(fp)) {
+                return null;
+            }
+        }
+        return candidate;
+    }
+
+    /**
      * Gets the timestamp when validation was performed
      *
      * @return Timestamp in milliseconds since epoch

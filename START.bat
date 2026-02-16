@@ -85,7 +85,15 @@ if not exist "%IW_HOME%\.env" (
 
 REM ========== VERIFY REQUIREMENTS ==========
 if not exist "%JAVA_HOME%\bin\java.exe" (
-    echo  [ERROR] Java not found!
+    echo  [ERROR] Java runtime not found!
+    echo.
+    echo  Expected: %JAVA_HOME%\bin\java.exe
+    echo  Expected: %JAVA_HOME%\bin\javaw.exe
+    echo.
+    echo  The IDE launcher (iw_ide.exe) requires a full Windows JRE under the local "jre\" folder.
+    echo  Fix options:
+    echo    1^) Extract a Windows x86 (32-bit) JRE 8 into this repo's "jre\" folder so it contains bin\java.exe and bin\javaw.exe
+    echo    2^) Install Java 8 (32-bit) on this machine and update iw_ide.ini to point -vm to its javaw.exe
     echo.
     pause
     exit /b 1

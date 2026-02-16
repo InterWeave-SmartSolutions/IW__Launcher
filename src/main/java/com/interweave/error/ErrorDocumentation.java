@@ -607,6 +607,16 @@ public class ErrorDocumentation {
     }
 
     /**
+     * Backwards-compatible alias for older call sites.
+     *
+     * @param errorCode The error code to look up
+     * @return Documentation URL, or null if not found
+     */
+    public static String getDocumentationLink(ErrorCode errorCode) {
+        return getDocumentationUrl(errorCode);
+    }
+
+    /**
      * Checks if documentation exists for an error code
      *
      * @param errorCode The error code to check
