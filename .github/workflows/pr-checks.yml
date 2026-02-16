@@ -1,0 +1,237 @@
+# =============================================================================
+# Pull Request Quality Checks
+# =============================================================================
+# Runs on every pull request targeting main.
+# Three jobs: lint commit titles, guard protected directories, detect secrets.
+#
+# Security note: All user-controlled inputs (PR title, etc.) are passed via
+# environment variables rather than inline expressions to prevent injection.
+# SHA values (base.sha, head.sha) are git commit hashes, not user input.
+# =============================================================================
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Validate PR title follows Conventional Commits format
+  # ---------------------------------------------------------------------------
+  lint-commits:
+    name: Lint PR Title (Conventional Commits)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check PR title format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Checking PR title for Conventional Commits format..."
+          echo ""
+
+          # Conventional Commits pattern:
+          #   type(optional-scope): description
+          # Allowed types: feat, fix, docs, style, refactor, perf, test, build,
+          #                ci, chore, revert
+          PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?!?: .+'
+
+          if echo "${PR_TITLE}" | grep -Eq "${PATTERN}"; then
+            echo "PR title follows Conventional Commits format."
+          else
+            echo "::error::PR title does not follow Conventional Commits format."
+            echo ""
+            echo "Expected format:  type(scope): description"
+            echo "Examples:"
+            echo "  feat: add user authentication"
+            echo "  fix(db): resolve connection timeout"
+            echo "  docs: update README with setup instructions"
+            echo "  chore(ci): add build workflow"
+            echo ""
+            echo "Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Block changes to protected directories
+  # ---------------------------------------------------------------------------
+  check-protected-dirs:
+    name: Check Protected Directories
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - name: Check for changes in protected directories
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          echo "Comparing ${BASE_SHA}..${HEAD_SHA}"
+          echo ""
+
+          # List of protected directories that should not be modified in PRs
+          PROTECTED_DIRS=(
+            "plugins/iw_sdk_1.0.0/"
+            "jre/"
+            "configuration/org.eclipse.update/"
+          )
+
+          CHANGED_FILES=$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}")
+          VIOLATIONS=""
+
+          for dir in "${PROTECTED_DIRS[@]}"; do
+            MATCHES=$(echo "${CHANGED_FILES}" | grep "^${dir}" || true)
+            if [ -n "${MATCHES}" ]; then
+              VIOLATIONS="${VIOLATIONS}${MATCHES}"$'\n'
+              echo "::error::Protected directory modified: ${dir}"
+              echo "  Changed files:"
+              echo "${MATCHES}" | sed 's/^/    /'
+              echo ""
+            fi
+          done
+
+          if [ -n "${VIOLATIONS}" ]; then
+            echo ""
+            echo "================================================================"
+            echo "ERROR: Pull request modifies protected directories."
+            echo "================================================================"
+            echo ""
+            echo "The following directories are protected and must not be changed"
+            echo "through normal pull requests:"
+            echo ""
+            for dir in "${PROTECTED_DIRS[@]}"; do
+              echo "  - ${dir}"
+            done
+            echo ""
+            echo "If changes to these directories are truly required, contact a"
+            echo "repository administrator."
+            exit 1
+          fi
+
+          echo "No protected directories were modified."
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Scan changed files for accidental secret exposure
+  # ---------------------------------------------------------------------------
+  check-no-secrets:
+    name: Check for Secrets in Changed Files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - name: Scan changed files for secret patterns
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          echo "Scanning changed files for potential secrets..."
+          echo ""
+
+          # Get the list of changed files (added or modified, not deleted)
+          CHANGED_FILES=$(git diff --name-only --diff-filter=AM "${BASE_SHA}...${HEAD_SHA}")
+
+          if [ -z "${CHANGED_FILES}" ]; then
+            echo "No added or modified files to scan."
+            exit 0
+          fi
+
+          # Skip binary files and common non-text files
+          TEXT_FILES=""
+          while IFS= read -r file; do
+            if [ -f "${file}" ] && file --mime-type "${file}" | grep -q "text/"; then
+              TEXT_FILES="${TEXT_FILES}${file}"$'\n'
+            fi
+          done <<< "${CHANGED_FILES}"
+
+          if [ -z "${TEXT_FILES}" ]; then
+            echo "No text files to scan."
+            exit 0
+          fi
+
+          FOUND_SECRETS=0
+
+          # Patterns that indicate hardcoded secrets
+          # Each entry: "label|regex"
+          SECRET_PATTERNS=(
+            "Database Password Assignment|DB_PASSWORD\s*=\s*['\"]?[A-Za-z0-9_/+=@!#$%^&*]{8,}"
+            "Generic Password Assignment|[Pp]assword\s*=\s*['\"]?[A-Za-z0-9_/+=@!#$%^&*]{8,}"
+            "AWS Access Key|AKIA[0-9A-Z]{16}"
+            "AWS Secret Key|aws_secret_access_key\s*=\s*[A-Za-z0-9/+=]{20,}"
+            "Generic API Key Assignment|[Aa]pi[_-]?[Kk]ey\s*=\s*['\"]?[A-Za-z0-9_/+=\-]{16,}"
+            "Generic Secret Assignment|[Ss]ecret\s*=\s*['\"]?[A-Za-z0-9_/+=\-]{16,}"
+            "Private Key Block|-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----"
+            "Connection String with Password|://[^:]+:[^@]+@[^/]+"
+            "Bearer Token|[Bb]earer\s+[A-Za-z0-9_\-.]{20,}"
+          )
+
+          # Files to always skip (these are expected to have placeholder patterns)
+          SKIP_FILES=(
+            ".env.example"
+            "CLAUDE.md"
+            ".github/workflows/build-and-test.yml"
+            ".github/workflows/pr-checks.yml"
+          )
+
+          while IFS= read -r file; do
+            [ -z "${file}" ] && continue
+
+            # Check if file is in the skip list
+            SKIP=false
+            for skip_file in "${SKIP_FILES[@]}"; do
+              if [ "${file}" = "${skip_file}" ]; then
+                SKIP=true
+                break
+              fi
+            done
+            ${SKIP} && continue
+
+            for pattern_entry in "${SECRET_PATTERNS[@]}"; do
+              LABEL="${pattern_entry%%|*}"
+              REGEX="${pattern_entry##*|}"
+
+              MATCHES=$(grep -nE "${REGEX}" "${file}" 2>/dev/null || true)
+              if [ -n "${MATCHES}" ]; then
+                echo "::error file=${file}::Potential secret detected (${LABEL})"
+                echo "  File: ${file}"
+                echo "  Pattern: ${LABEL}"
+                echo "  Matches:"
+                echo "${MATCHES}" | head -5 | sed 's/^/    /'
+                echo ""
+                FOUND_SECRETS=1
+              fi
+            done
+          done <<< "${TEXT_FILES}"
+
+          if [ "${FOUND_SECRETS}" -eq 1 ]; then
+            echo ""
+            echo "================================================================"
+            echo "ERROR: Potential secrets detected in changed files."
+            echo "================================================================"
+            echo ""
+            echo "Please review the flagged lines above and either:"
+            echo "  1. Remove the hardcoded secret and use environment variables"
+            echo "  2. Add the file to .gitignore if it should not be committed"
+            echo "  3. If this is a false positive, document why in the PR"
+            echo ""
+            exit 1
+          fi
+
+          echo "No secrets detected in changed files."
