@@ -50,6 +50,6 @@ All new development in this repository follows an **additive-only pattern**. The
 
 - **Some duplication is acceptable and expected**: There may be cases where new code partially duplicates logic that exists in a compiled class. For example, a new authentication servlet may reimplement user lookup logic that already exists in `LoginServlet.class`. This duplication is an intentional trade-off for safety.
 - **Coexistence of old and new servlets**: The web application will have both the original servlet mappings and new API endpoints. This means the `web.xml` grows over time, and developers need to understand which endpoints are legacy and which are new.
-- **Migration scripts accumulate**: The `_internal/sql/` directory will grow as each change adds new migration files rather than modifying existing ones. Migration ordering must be maintained carefully.
+- **Migration scripts accumulate**: The `scripts/sql/` directory will grow as each change adds new migration files rather than modifying existing ones.
 - **Cannot fix bugs in proprietary code**: If a bug exists in `LoginServlet.class` or the SDK plugin, we cannot patch it directly. Workarounds must be implemented as additive layers (e.g., a proxy servlet, a wrapper script, or client-side logic).
 - **Documentation overhead**: Developers must be explicitly informed about which directories are protected and why. The `CLAUDE.md`, `AI_WORKFLOW.md`, and this ADR serve as that documentation for both human and AI contributors.

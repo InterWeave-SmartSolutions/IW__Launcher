@@ -123,12 +123,16 @@ mvn -Dmaven.test.skip=true package
 
 ## For Technical Users
 
-Advanced scripts are in the `_internal/` folder:
+Advanced scripts are in the `scripts/` folder:
 - `SETUP_DB_Windows.bat` - Manual database setup
 - `SETUP_DB_Linux.sh` - Linux/Mac setup
 - `start_webportal.bat` - Start web server only
 - `start_ide.bat` - Start IDE only
 - `stop_webportal.bat` - Stop web server only
+
+Setup/install scripts are in `scripts/setup/`:
+- `install_tomcat.bat` / `install_tomcat.ps1` - Tomcat installation
+- `setup_tomcat.bat` - Tomcat configuration
 
 ---
 
@@ -142,12 +146,29 @@ IW_Launcher/
 ├── iw_ide.exe             # IDE program
 ├── .env                   # Your settings (auto-created)
 │
-├── _internal/             # Technical scripts (don't touch)
-├── database/              # Database schemas
+├── scripts/               # Advanced scripts
+│   ├── setup/             # Install & config scripts
+│   └── sql/               # SQL migration scripts
+├── database/              # Database schemas & definitions
+│   └── schemas/           # XSD schemas
 ├── docs/                  # Documentation
-├── jre/                   # Java runtime
-├── web_portal/            # Web server
-└── workspace/             # Your projects
+│   ├── ai/                # AI workflow & worklog
+│   ├── assa-specs/        # ASSA specification docs
+│   ├── development/       # Build, API, contributing guides
+│   ├── legacy-pdfs/       # Original PDF documentation
+│   ├── security/          # Security & credential docs
+│   ├── setup/             # Installation guides
+│   ├── testing/           # Test plans
+│   └── tutorials/         # Training materials
+├── frontends/             # Front-end applications
+│   ├── InterWoven/        # React SPA (concept/prototype)
+│   └── assa/              # ASSA portal prototype
+├── jre/                   # Bundled Java 8 runtime
+├── plugins/               # Eclipse plugins
+├── src/                   # Java source code
+├── web_portal/            # Web server (Tomcat)
+├── workspace/             # IDE workspace & projects
+└── configuration/         # Eclipse configuration
 ```
 
 ---

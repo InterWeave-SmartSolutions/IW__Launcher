@@ -120,6 +120,10 @@ web_portal/tomcat/lib/postgresql-*.jar
 
 # ===== AI Tool Config (user-specific) =====
 .claude_settings.json
+.auto-claude-status
+.claude/
+.playwright-mcp/
+firebase-debug.log
 
 # ===== Media (large files) =====
 # Tutorial/training videos should not be committed.

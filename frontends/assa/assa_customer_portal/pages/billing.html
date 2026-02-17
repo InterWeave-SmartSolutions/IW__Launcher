@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASSA Associate Portal — Billing</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ASSA Associate Portal</h1>
+          <div class="sub">Billing</div>
+        </div>
+      </div>
+      <div class="pill">Org: <b>All-Star Center • West</b></div>
+      <div class="pill">Role: <b>Owner</b> • Plan: <b>Active</b></div>
+      
+      <div class="nav">
+        <a href="/assa_customer_portal/index.html">🏠 <span>Home</span></a>
+        <a href="library.html">📚 <span>Resource Library</span></a>
+        <a href="search.html">🔎 <span>Search</span></a>
+        <a href="intake.html">🧭 <span>Business Checkup</span></a>
+        <a href="webinars.html">🎥 <span>Webinars</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="profile.html">👤 <span>My Profile</span></a>
+        <a href="billing.html">💳 <span>Billing</span></a>
+      </div>
+    
+      <footer>
+        <div>Prototype customer portal (static HTML)</div>
+        <div class="muted">Build: 2026-02-09</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search resources, templates, webinars…" />
+        </div>
+        <div class="pill">Timezone: <b>ET</b></div>
+        <a class="btn" href="/pages/profile.html">👤 Account</a>
+      </div>
+
+      
+<h1 style="font-size:22px">Billing</h1>
+<div class="muted">Subscription, invoices, and payment method (sample).</div>
+
+<div class="grid cards" style="margin-top:14px">
+  <section class="card span-4">
+    <h2>Plan</h2>
+    <hr class="sep"/>
+    <div class="kpi">Associate Monthly</div>
+    <div class="muted">$29.99 / month</div>
+    <div style="height:10px"></div>
+    <div class="tag"><span class="dot ok"></span> Active</div>
+  </section>
+
+  <section class="card span-8">
+    <h2>Invoices</h2>
+    <hr class="sep"/>
+    <table class="table">
+      <thead><tr><th>Date</th><th>Invoice</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="muted">2026-02-01</td><td>INV-22091</td><td>$29.99</td><td><span class="tag"><span class="dot ok"></span> Paid</span></td></tr>
+        <tr><td class="muted">2026-01-01</td><td>INV-21912</td><td>$29.99</td><td><span class="tag"><span class="dot ok"></span> Paid</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Payment Method</h2>
+  <div class="muted">Tokenized storage at the gateway (not in portal DB).</div>
+  <hr class="sep"/>
+  <div class="tile">
+    <b>Visa •••• 4242</b>
+    <div class="muted">Expires 09/28</div>
+    <div style="height:10px"></div>
+    <button class="btn primary">Update</button>
+  </div>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Static UI prototype. Wire to Auth/MFA, CMS, Billing, Notifications via Integration Hub.</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

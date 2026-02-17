@@ -3,14 +3,14 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Mandatory workflow for ALL AI agents (read this first)
-All AI tools/agents working in this repo MUST follow `AI_WORKFLOW.md`.
-- If you make changes, you MUST append a session entry to `AI_WORKLOG.md`.
+All AI tools/agents working in this repo MUST follow `docs/ai/AI_WORKFLOW.md`.
+- If you make changes, you MUST append a session entry to `docs/ai/AI_WORKLOG.md`.
 - Every response MUST include `What I did (this response)`.
 
 ## IMPORTANT: InterWoven concept directory
-If an `InterWoven/` directory exists in this repo, it is a concept/prototype snapshot for potential future IDE launcher + Java form web page improvements.
+If a `frontends/InterWoven/` directory exists in this repo, it is a concept/prototype snapshot for potential future IDE launcher + Java form web page improvements.
 
-Do not use, read, or reference anything in `InterWoven/` unless the user explicitly requests it.
+Do not use, read, or reference anything in `frontends/InterWoven/` unless the user explicitly requests it.
 
 ---
 
@@ -80,13 +80,13 @@ This:
 ### Start Individual Components
 ```bash
 # Web portal only
-./_internal/start_webportal.bat
+./scripts/start_webportal.bat
 
 # IDE only
-./_internal/start_ide.bat
+./scripts/start_ide.bat
 
 # Stop web portal
-./_internal/stop_webportal.bat
+./scripts/stop_webportal.bat
 
 # Full stop
 ./STOP.bat
@@ -130,10 +130,10 @@ Key tables (see `database/mysql_schema.sql`):
 **Database Setup:**
 ```bash
 # Windows
-./_internal/SETUP_DB_Windows.bat
+./scripts/SETUP_DB_Windows.bat
 
 # Linux/Mac
-./_internal/SETUP_DB_Linux.sh
+./scripts/SETUP_DB_Linux.sh
 ```
 
 ## Web Portal Access
@@ -171,7 +171,7 @@ Edit `web_portal/tomcat/conf/server.xml`:
 
 2. **Windows-Centric Design**
    - Primary scripts are `.bat` files for Windows
-   - Linux/Mac scripts available in `_internal/` but less maintained
+   - Linux/Mac scripts available in `scripts/` but less maintained
    - Runs in WSL2 but expects Windows paths
 
 ### Eclipse/IDE Specifics
@@ -196,7 +196,7 @@ Common integration patterns documented in `docs/tutorials/`:
 
 ### Building from Source
 
-For developers modifying Java code, see `BUILD.md` for:
+For developers modifying Java code, see `docs/development/BUILD.md` for:
 - Maven build configuration
 - Compilation commands
 - Test execution
@@ -216,26 +216,35 @@ IW_Launcher/
 ├── .env                        # Database config (auto-created)
 ├── .env.example                # Template for .env
 │
-├── _internal/                  # Advanced scripts
-│   ├── SETUP_DB_Windows.bat    # Manual DB setup (Windows)
-│   ├── SETUP_DB_Linux.sh       # Manual DB setup (Linux/Mac)
-│   ├── start_webportal.bat     # Web server only
-│   ├── start_ide.bat           # IDE only
-│   ├── stop_webportal.bat      # Stop web server
+├── scripts/                    # Advanced scripts
+│   ├── setup/                  # Install & config scripts
 │   └── sql/                    # SQL migration scripts
 │
 ├── database/                   # Database schemas
 │   ├── mysql_schema.sql        # Primary MySQL schema
 │   ├── postgres_schema.sql     # PostgreSQL alternative
-│   └── schema.sql              # Original schema
+│   ├── schema.sql              # Original schema
+│   └── schemas/                # XSD schemas
 │
 ├── docs/                       # Documentation
+│   ├── ai/                     # AI workflow & worklog
+│   ├── assa-specs/             # ASSA specification docs
+│   ├── development/            # Build, API, contributing guides
+│   ├── legacy-pdfs/            # Original PDF documentation
+│   ├── security/               # Security & credential docs
+│   ├── setup/                  # Installation guides
+│   ├── testing/                # Test plans
 │   └── tutorials/              # Training materials
+│
+├── frontends/                  # Front-end applications
+│   ├── InterWoven/             # React SPA (concept/prototype)
+│   └── assa/                   # ASSA portal prototype
 │
 ├── jre/                        # Bundled Java 8 runtime
 ├── plugins/                    # Eclipse plugins
 │   ├── iw_sdk_1.0.0/           # InterWeave SDK plugin
 │   └── org.eclipse.*.jar       # Eclipse core plugins
+├── src/                        # Java source code
 │
 ├── web_portal/                 # Web server
 │   ├── tomcat/                 # Apache Tomcat 9.0.83
@@ -243,7 +252,7 @@ IW_Launcher/
 │   │   ├── conf/               # server.xml, web.xml
 │   │   ├── logs/               # Server logs
 │   │   └── webapps/            # Deployed apps
-│   │       └── iw-business-daemon.war
+│   │       └── iw-business-daemon/
 │   ├── start_web_portal.bat    # Windows start
 │   ├── stop_web_portal.bat     # Windows stop
 │   └── README.md               # Web portal docs
@@ -265,7 +274,7 @@ IW_Launcher/
 
 **Linux/Mac (Secondary):**
 - Java 8+ required (`java` in PATH or `JAVA_HOME` set)
-- Scripts available in `_internal/`
+- Scripts available in `scripts/`
 
 **WSL2:**
 - Works but uses Windows paths (`/mnt/c/IW_IDE/IW_Launcher`)

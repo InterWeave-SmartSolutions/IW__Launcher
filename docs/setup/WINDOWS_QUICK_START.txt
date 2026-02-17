@@ -1,0 +1,127 @@
+================================================================================
+                    IW_IDE WINDOWS QUICK START
+                      (No WSL Required)
+================================================================================
+
+PREREQUISITES
+-------------
+NONE! This package includes everything needed:
+  - Bundled Java Runtime (JRE 8) in the 'jre' folder
+  - Apache Tomcat 9.0.83 pre-configured
+  - All required libraries and dependencies
+
+No system Java installation required.
+
+================================================================================
+                        QUICK START
+================================================================================
+
+Option A: Start Everything (Recommended)
+----------------------------------------
+1. Double-click: start_all.bat
+2. Wait 15-30 seconds for Web Portal to initialize
+3. IDE will launch automatically
+4. Open browser to: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+
+Option B: Start Components Individually
+---------------------------------------
+Start IDE only:        Double-click start_ide.bat (or iw_ide.exe)
+Start Web Portal only: Double-click start_webportal.bat
+Stop Web Portal:       Double-click stop_webportal.bat
+
+================================================================================
+                        AVAILABLE SCRIPTS
+================================================================================
+
+Root Directory (C:\IW_IDE\IW_Launcher\):
+  start_all.bat         - Starts both Web Portal and IDE
+  start_ide.bat         - Starts IW_IDE application
+  start_webportal.bat   - Starts Tomcat (Web Portal)
+  stop_webportal.bat    - Stops Tomcat
+  iw_ide.exe            - IDE executable (direct launch)
+
+================================================================================
+                        ADMIN LOGIN
+================================================================================
+
+URL:      http://localhost:8080/iw-business-daemon/IWLogin.jsp
+Username: __iw_admin__
+Password: %iwps%
+
+Other admin accounts available - see docs\authentication\ADMIN_CREDENTIALS.txt
+
+================================================================================
+                        TROUBLESHOOTING
+================================================================================
+
+Issue: "Port 8080 already in use"
+  -> Another app is using port 8080
+  -> Either stop that app, or edit web_portal\tomcat\conf\server.xml to change port
+
+Issue: Tomcat window closes immediately
+  -> Run from Command Prompt to see error messages
+  -> Check web_portal\tomcat\logs\catalina.out for details
+
+Issue: "localhost refused to connect" in browser
+  -> Wait longer for Tomcat to start (can take 30+ seconds)
+  -> Check if java.exe is running in Task Manager
+  -> Check Windows Firewall isn't blocking port 8080
+
+Issue: IDE won't start
+  -> Ensure 'jre' folder exists in IW_Launcher directory
+  -> Check that jre\bin\javaw.exe exists
+
+Issue: "Java not found" errors
+  -> The bundled JRE should be used automatically
+  -> If problems persist, verify jre folder wasn't deleted
+
+================================================================================
+                        FILE LOCATIONS
+================================================================================
+
+Logs:          web_portal\tomcat\logs\
+  - catalina.log     (main Tomcat log)
+  - localhost.log    (webapp errors)
+
+Configuration: web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\
+  - config.xml       (database and server settings)
+  - web.xml          (servlet configuration)
+
+JRE:           jre\
+  - Bundled Eclipse Adoptium JRE 8 (32-bit)
+
+================================================================================
+                     ADDITIONAL DOCUMENTATION
+================================================================================
+
+docs\authentication\README.txt              - Authentication options overview
+docs\authentication\ADMIN_CREDENTIALS.txt   - Admin account passwords
+docs\authentication\HOSTED_DATABASE_SETUP.txt - InterWeave server setup
+
+================================================================================
+                        DIRECTORY STRUCTURE
+================================================================================
+
+IW_Launcher\
+  |-- start_all.bat          # Start everything
+  |-- start_ide.bat          # Start IDE only
+  |-- start_webportal.bat    # Start web portal only
+  |-- stop_webportal.bat     # Stop web portal
+  |-- iw_ide.exe             # IDE executable
+  |
+  |-- jre\                   # Bundled Java Runtime
+  |   |-- bin\               # Java executables
+  |   +-- lib\               # Java libraries
+  |
+  |-- web_portal\
+  |   +-- tomcat\            # Tomcat 9.0.83
+  |       |-- bin\           # Startup scripts
+  |       |-- conf\          # Server configuration
+  |       |-- logs\          # Log files
+  |       +-- webapps\       # Web applications
+  |           +-- iw-business-daemon\  # IW_IDE web app
+  |
+  +-- docs\                  # Documentation
+      +-- authentication\    # Authentication guides
+
+================================================================================

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASSA Master Console — Content Library</title>
+<link rel="stylesheet" href="../assets/css/styles.css"></head>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ASSA Associate Program</h1>
+          <div class="sub">Master Console • Content Library</div>
+        </div>
+      </div>
+      <div class="pill">Environment: <b>Staging</b> • Build: <span class="muted">2026-02-06</span></div>
+      
+      <div class="nav">
+        <a href="/assa_master_console/index.html">🏠 <span>Dashboard</span></a>
+        <a href="users.html">👤 <span>Users & Roles</span></a>
+        <a href="content.html">📚 <span>Content Library</span></a>
+        <a href="subscriptions.html">💳 <span>Subscriptions</span></a>
+        <a href="integrations.html">🔌 <span>Integrations</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="analytics.html">📈 <span>Analytics</span></a>
+        <a href="audit.html">🧾 <span>Audit & Security</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="settings.html">⚙️ <span>Settings</span></a>
+      </div>
+    
+      <footer>
+        <div>InterWeave SmartSolutions • Internal Console</div>
+        <div class="muted">Role-aware UX • Audit-first design</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search users, content, subscriptions, integrations…" />
+        </div>
+        <div class="pill">Tenant: <b>ASSA</b></div>
+        <div class="pill">Admin: <b>Program Ops</b></div>
+      </div>
+
+      
+<div class="flex between">
+  <div>
+    <h1 style="margin:0;font-size:22px">Content Library</h1>
+    <div class="muted">Hybrid taxonomy: Operational Area + Job Role + Resource Type, with versioning and scheduled releases.</div>
+  </div>
+  <div class="flex">
+    <button class="btn primary">➕ New Resource</button>
+    <button class="btn">🧩 Taxonomy</button>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div class="flex between">
+    <h2 style="margin:0">Resource Inventory</h2>
+    <div class="muted">Protected downloads • watermarking optional.</div>
+  </div>
+  <hr class="sep"/>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Operational Area</th>
+        <th>Roles</th>
+        <th>Version</th>
+        <th>Release</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="muted">RES-112</td>
+        <td><b>Recruiting Playbook</b><div class="muted">Synonyms: hiring, staffing</div></td>
+        <td>Playbook</td>
+        <td>HR / Recruiting</td>
+        <td class="muted">Owner, Manager</td>
+        <td class="muted">v3</td>
+        <td class="muted">Immediate</td>
+        <td><span class="status"><span class="dot ok"></span> Published</span></td>
+      </tr>
+      <tr>
+        <td class="muted">RES-203</td>
+        <td><b>Monthly KPI Template</b><div class="muted">PDF + XLSX</div></td>
+        <td>Template</td>
+        <td>Finance / Reporting</td>
+        <td class="muted">Owner</td>
+        <td class="muted">v1</td>
+        <td class="muted">Scheduled</td>
+        <td><span class="status"><span class="dot warn"></span> Pending</span></td>
+      </tr>
+      <tr>
+        <td class="muted">RES-087</td>
+        <td><b>Operations Checklist</b></td>
+        <td>Checklist</td>
+        <td>Operations</td>
+        <td class="muted">Owner, Manager</td>
+        <td class="muted">v2</td>
+        <td class="muted">Immediate</td>
+        <td><span class="status"><span class="dot ok"></span> Published</span></td>
+      </tr>
+      <tr>
+        <td class="muted">VID-044</td>
+        <td><b>Webinar: Social Growth</b></td>
+        <td>Video</td>
+        <td>Marketing</td>
+        <td class="muted">All</td>
+        <td class="muted">v1</td>
+        <td class="muted">Immediate</td>
+        <td><span class="status"><span class="dot ok"></span> Published</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Publish / Version Workflow</h2>
+  <div class="muted">Draft → Review → Scheduled/Published → Deprecated (with audit trail).</div>
+  <hr class="sep"/>
+  <div class="form">
+    <div class="field"><label>Resource ID</label><input value="RES-203" /></div>
+    <div class="field"><label>New Version</label><input value="v1.1" /></div>
+    <div class="field"><label>Release Mode</label>
+      <select>
+        <option>Immediate</option>
+        <option selected>Scheduled</option>
+      </select>
+    </div>
+    <div class="field"><label>Release Date</label><input value="2026-02-20" /></div>
+    <div class="field full"><label>Release Notes</label>
+      <textarea>Added KPI definitions and improved instructions.</textarea>
+    </div>
+  </div>
+  <div class="flex" style="margin-top:10px">
+    <button class="btn primary">Publish</button>
+    <button class="btn">Save Draft</button>
+    <button class="btn danger">Deprecate</button>
+  </div>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Prototype console HTML (static). Wire to APIs: /api/* (placeholder).</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ASSA Associate Portal — Search</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ASSA Associate Portal</h1>
+          <div class="sub">Search</div>
+        </div>
+      </div>
+      <div class="pill">Org: <b>All-Star Center • West</b></div>
+      <div class="pill">Role: <b>Owner</b> • Plan: <b>Active</b></div>
+      
+      <div class="nav">
+        <a href="/assa_customer_portal/index.html">🏠 <span>Home</span></a>
+        <a href="library.html">📚 <span>Resource Library</span></a>
+        <a href="search.html">🔎 <span>Search</span></a>
+        <a href="intake.html">🧭 <span>Business Checkup</span></a>
+        <a href="webinars.html">🎥 <span>Webinars</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="profile.html">👤 <span>My Profile</span></a>
+        <a href="billing.html">💳 <span>Billing</span></a>
+      </div>
+    
+      <footer>
+        <div>Prototype customer portal (static HTML)</div>
+        <div class="muted">Build: 2026-02-09</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search resources, templates, webinars…" />
+        </div>
+        <div class="pill">Timezone: <b>ET</b></div>
+        <a class="btn" href="/pages/profile.html">👤 Account</a>
+      </div>
+
+      
+<h1 style="font-size:22px">Search</h1>
+<div class="muted">Advanced keyword + taxonomy search (sample).</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Search Controls</h2>
+  <hr class="sep"/>
+  <div class="form">
+    <div class="field full"><label>Keyword</label><input value="recruiting" /></div>
+    <div class="field"><label>Operational Area</label>
+      <select><option>All</option><option selected>HR / Recruiting</option><option>Operations</option><option>Marketing</option><option>Finance / Reporting</option></select>
+    </div>
+    <div class="field"><label>Resource Type</label>
+      <select><option selected>All</option><option>Playbook</option><option>Checklist</option><option>Template</option><option>Video</option></select>
+    </div>
+    <div class="field"><label>Role Relevance</label>
+      <select><option selected>Owner</option><option>Manager</option><option>Coach</option></select>
+    </div>
+    <div class="field"><label>Include synonyms</label>
+      <select><option selected>Yes</option><option>No</option></select>
+    </div>
+  </div>
+  <div style="height:10px"></div>
+  <button class="btn primary">Search</button>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Results</h2>
+  <hr class="sep"/>
+  <table class="table">
+    <thead><tr><th>Title</th><th>Type</th><th>Area</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><b>Recruiting Playbook</b><div class="muted">Updated v3</div></td><td>Playbook</td><td>HR / Recruiting</td><td><a class="btn primary" href="/pages/resource.html">Open</a></td></tr>
+      <tr><td><b>Staff Onboarding Checklist</b><div class="muted">New</div></td><td>Checklist</td><td>HR / Recruiting</td><td><a class="btn" href="/pages/resource.html">Open</a></td></tr>
+      <tr><td><b>Interview Scorecard Template</b><div class="muted">Template</div></td><td>Template</td><td>HR / Recruiting</td><td><a class="btn" href="/pages/resource.html">Open</a></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Static UI prototype. Wire to Auth/MFA, CMS, Billing, Notifications via Integration Hub.</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

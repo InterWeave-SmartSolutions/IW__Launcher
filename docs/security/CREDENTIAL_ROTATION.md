@@ -52,10 +52,10 @@ Select the `supabase` option when prompted. This regenerates the Tomcat context 
 
 ```cmd
 :: Stop the web portal
-_internal\stop_webportal.bat
+scripts\stop_webportal.bat
 
 :: Start the web portal
-_internal\start_webportal.bat
+scripts\start_webportal.bat
 ```
 
 ### Step 5: Verify connectivity
@@ -98,8 +98,8 @@ Select the `oracle_cloud` option.
 ### Step 4: Restart Tomcat
 
 ```cmd
-_internal\stop_webportal.bat
-_internal\start_webportal.bat
+scripts\stop_webportal.bat
+scripts\start_webportal.bat
 ```
 
 ### Step 5: Verify connectivity
@@ -144,7 +144,7 @@ The response should indicate a healthy database connection.
 
 ### 3.4 Verify from the IDE
 
-1. Launch the IDE (`_internal\start_ide.bat` or via `START.bat`)
+1. Launch the IDE (`scripts\start_ide.bat` or via `START.bat`)
 2. Open a workspace project
 3. Confirm that any project operations that query the database succeed
 
@@ -173,10 +173,10 @@ After rotating credentials, the following actions are required:
 
 ### Restart sequence
 
-1. Stop Tomcat: `_internal\stop_webportal.bat`
+1. Stop Tomcat: `scripts\stop_webportal.bat`
 2. Update `.env` with new credentials
 3. Run `CHANGE_DATABASE.bat` to regenerate config
-4. Start Tomcat: `_internal\start_webportal.bat`
+4. Start Tomcat: `scripts\start_webportal.bat`
 5. Verify (see section 3)
 
 ---

@@ -31,7 +31,7 @@ Migrate the primary database backend from Oracle Cloud MySQL to Supabase Postgre
    - `database/postgres_schema.sql` -- Postgres dialect (primary)
    - `database/schema.sql` -- Original reference schema
 
-5. **Configuration generation**: The `_internal/` setup scripts and `CHANGE_DATABASE.bat` were updated to generate the appropriate JDBC connection strings and Tomcat `config.xml` for whichever `DB_MODE` is selected.
+5. **Configuration generation**: The `scripts/` setup scripts and `CHANGE_DATABASE.bat` were updated to generate the appropriate JDBC connection strings and Tomcat `config.xml` for whichever `DB_MODE` is selected.
 
 ## Consequences
 
@@ -48,5 +48,5 @@ Migrate the primary database backend from Oracle Cloud MySQL to Supabase Postgre
 - **Dual-dialect SQL maintenance**: Every schema change and migration must be written and tested in both MySQL and Postgres dialects. This increases the effort for each database change.
 - **Column naming divergence**: The `settings` table uses `setting_key` as the column name in Postgres (since `key` is a reserved word in Postgres), while the MySQL schema uses `key`. Application code and queries must account for this difference depending on the active `DB_MODE`.
 - **Postgres not yet tested in CI**: At the time of this decision, the continuous integration pipeline does not include Postgres integration tests. MySQL-based tests pass, but Postgres-specific behavior (e.g., case sensitivity, type coercion differences) has only been verified through manual testing.
-- **Migration coordination**: Existing deployments using Oracle Cloud MySQL need a data migration path. The `_internal/sql/` directory contains migration scripts, but the migration process is not yet fully automated.
+- **Migration coordination**: Existing deployments using Oracle Cloud MySQL need a data migration path. The `scripts/sql/` directory contains migration scripts, but the migration process is not yet fully automated.
 - **Network dependency**: Unlike `local` mode, the Supabase option requires internet connectivity. Offline development must still use `DB_MODE=local`.
