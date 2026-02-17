@@ -154,18 +154,16 @@ IW_Launcher/
 
 ## Known Issues
 
-### Custom User Accounts Not Working (TODO)
-- The demo user (`demo@sample.com`) was added to the database but login fails
-- The compiled `LoginServlet.class` uses a proprietary authentication method
-- **Root cause:** The original LoginServlet expects a specific password format/hash that differs from our database schema
-- **Workaround:** Use the admin account (`__iw_admin__` / `%iwps%`) for now
-- **Future fix:** Either decompile and modify LoginServlet, or create a replacement servlet
+### Authentication
+- The original `LoginServlet` used a proprietary password hash format incompatible with the MySQL schema.
+- **Fixed:** Replaced with `LocalLoginServlet` which uses SHA-256 hex hashing to match MySQL's `SHA2()` function.
+- Demo user login has not been verified end-to-end yet (requires database connectivity).
 
 ### Database Accounts
 | Account | Email | Password | Status |
 |---------|-------|----------|--------|
 | Admin | `__iw_admin__` | `%iwps%` | **WORKING** |
-| Demo | `demo@sample.com` | `demo123` | NOT WORKING (auth issue) |
+| Demo | `demo@sample.com` | `demo123` | Needs verification |
 
 ---
 

@@ -125,7 +125,7 @@ Key tables (see `database/mysql_schema.sql`):
 - `companies` - Organization profiles with license management
 - `users` - User accounts linked to companies
 - `user_profiles` - Extended user information
-- Authentication uses email + password (custom format/hash in LoginServlet)
+- Authentication uses email + SHA-256 hex password hash (via `LocalLoginServlet`, matches MySQL `SHA2()`)
 
 **Database Setup:**
 ```bash
@@ -163,12 +163,11 @@ Edit `web_portal/tomcat/conf/server.xml`:
 
 ### Known Issues
 
-1. **Custom User Authentication Not Working**
+1. **Demo User Authentication Not Yet Verified**
    - Admin account (`__iw_admin__` / `%iwps%`) works
-   - Demo user (`demo@sample.com` / `demo123`) fails authentication
-   - Root cause: Compiled `LoginServlet.class` uses proprietary password hash format
-   - Workaround: Use admin account only
-   - Future fix: Decompile and modify LoginServlet or create replacement servlet
+   - Demo user (`demo@sample.com` / `demo123`) needs end-to-end verification
+   - Original `LoginServlet` was replaced with `LocalLoginServlet` (SHA-256 hex hash, matches MySQL `SHA2()`)
+   - The proprietary hash mismatch issue is resolved; remaining question is whether demo account exists in the target database
 
 2. **Windows-Centric Design**
    - Primary scripts are `.bat` files for Windows
