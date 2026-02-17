@@ -62,15 +62,13 @@
 		<servlet-class>
 		com.interweave.businessDaemon.DynamicConfigurator</servlet-class>
 	</servlet>
+	<!-- DISABLED: Typo in class name - no RegistraqtionServlet class exists.
+	     Use RegistrationServlet (correct spelling) instead.
 	<servlet>
-		<description>
-		</description>
-		<display-name>
-		RegistraqtionServlet</display-name>
 		<servlet-name>RegistraqtionServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.RegistraqtionServlet</servlet-class>
+		<servlet-class>com.interweave.businessDaemon.config.RegistraqtionServlet</servlet-class>
 	</servlet>
+	-->
 	<servlet>
 		<description>
 		</description>
@@ -82,12 +80,12 @@
 	</servlet>
 	<servlet>
 		<description>
-		Servlet to authenticate users against InterWeave central server</description>
+		Authenticates users against the local MySQL database</description>
 		<display-name>
 		LoginServlet</display-name>
 		<servlet-name>LoginServlet</servlet-name>
 		<servlet-class>
-		com.interweave.businessDaemon.config.LoginServlet</servlet-class>
+		com.interweave.businessDaemon.config.LocalLoginServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -287,46 +285,29 @@
 		<servlet-class>
 		com.interweave.businessDaemon.config.CompanyConfigurationServletDTT2</servlet-class>
 	</servlet>
+	<!-- DISABLED: Monitoring API servlets - source exists in WEB-INF/src/com/interweave/monitoring/api/
+	     but has not been compiled. To enable: compile sources, deploy to WEB-INF/classes, then uncomment.
 	<servlet>
-		<description>
-		Real-time dashboard API for monitoring integration status and metrics</description>
-		<display-name>
-		DashboardApiServlet</display-name>
 		<servlet-name>DashboardApiServlet</servlet-name>
-		<servlet-class>
-		com.interweave.monitoring.api.DashboardApiServlet</servlet-class>
+		<servlet-class>com.interweave.monitoring.api.DashboardApiServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	<servlet>
-		<description>
-		Transaction history API for querying execution logs with search and filter</description>
-		<display-name>
-		TransactionHistoryApiServlet</display-name>
 		<servlet-name>TransactionHistoryApiServlet</servlet-name>
-		<servlet-class>
-		com.interweave.monitoring.api.TransactionHistoryApiServlet</servlet-class>
+		<servlet-class>com.interweave.monitoring.api.TransactionHistoryApiServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	<servlet>
-		<description>
-		Performance metrics API for time-series data and charts</description>
-		<display-name>
-		MetricsApiServlet</display-name>
 		<servlet-name>MetricsApiServlet</servlet-name>
-		<servlet-class>
-		com.interweave.monitoring.api.MetricsApiServlet</servlet-class>
+		<servlet-class>com.interweave.monitoring.api.MetricsApiServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	<servlet>
-		<description>
-		Alert configuration API for managing rules, webhooks, and alert history</description>
-		<display-name>
-		AlertConfigApiServlet</display-name>
 		<servlet-name>AlertConfigApiServlet</servlet-name>
-		<servlet-class>
-		com.interweave.monitoring.api.AlertConfigApiServlet</servlet-class>
+		<servlet-class>com.interweave.monitoring.api.AlertConfigApiServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
+	-->
         <servlet-mapping>
 		<servlet-name>IWBusinessDaemon</servlet-name>
 		<url-pattern>/failover</url-pattern>
@@ -339,10 +320,12 @@
         	<servlet-name>DynamicConfigurator</servlet-name>
         	<url-pattern>/DynamicConfigurator</url-pattern>
         </servlet-mapping>
+        <!-- DISABLED: RegistraqtionServlet (typo) - see RegistrationServlet instead
         <servlet-mapping>
         	<servlet-name>RegistraqtionServlet</servlet-name>
         	<url-pattern>/RegistraqtionServlet</url-pattern>
         </servlet-mapping>
+        -->
         <servlet-mapping>
         	<servlet-name>RegistrationServlet</servlet-name>
         	<url-pattern>/RegistrationServlet</url-pattern>
@@ -439,6 +422,7 @@
         	<servlet-name>CompanyConfigurationServletDTT2</servlet-name>
         	<url-pattern>/CompanyConfigurationServletDTT2</url-pattern>
         </servlet-mapping>
+        <!-- DISABLED: Monitoring API mappings - see monitoring servlet comment above
         <servlet-mapping>
         	<servlet-name>DashboardApiServlet</servlet-name>
         	<url-pattern>/api/monitoring/dashboard</url-pattern>
@@ -459,6 +443,7 @@
         	<servlet-name>AlertConfigApiServlet</servlet-name>
         	<url-pattern>/api/monitoring/webhooks/*</url-pattern>
         </servlet-mapping>
+        -->
 	<session-config>
 		<session-timeout>30</session-timeout>
 	</session-config>

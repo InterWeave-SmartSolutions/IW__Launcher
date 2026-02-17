@@ -8,8 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Base64;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -25,13 +23,13 @@ import com.interweave.error.ErrorLogger;
 import com.interweave.error.IWError;
 
 /**
- * LocalLoginServlet - Authenticates users against the local PostgreSQL database
+ * LocalLoginServlet - Authenticates users against the local MySQL database
  * instead of the InterWeave central server.
  *
  * This servlet replaces the original LoginServlet for standalone IW_IDE operation.
  *
  * @author IW_IDE Local Authentication
- * @version 1.0
+ * @version 1.1
  */
 public class LocalLoginServlet extends HttpServlet {
 
@@ -45,7 +43,7 @@ public class LocalLoginServlet extends HttpServlet {
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             dataSource = (DataSource) envContext.lookup("jdbc/IWDB");
-            log("LocalLoginServlet initialized - using local PostgreSQL database");
+            log("LocalLoginServlet initialized - using local MySQL database");
         } catch (NamingException e) {
             log("Failed to initialize DataSource", e);
             throw new ServletException("Cannot initialize database connection", e);
@@ -95,8 +93,8 @@ public class LocalLoginServlet extends HttpServlet {
                 session.setAttribute("companyId", userInfo.companyId);
                 session.setAttribute("companyName", userInfo.companyName);
                 session.setAttribute("isAdmin", userInfo.isAdmin);
+                session.setAttribute("role", userInfo.role);
                 session.setAttribute("solutionType", userInfo.solutionType);
-                session.setAttribute("authToken", userInfo.authToken);
                 session.setAttribute("authenticated", true);
 
                 // Update last login timestamp
@@ -171,9 +169,9 @@ public class LocalLoginServlet extends HttpServlet {
             throws SQLException {
 
         // First, check if user exists (regardless of active status)
-        String sqlUserCheck = "SELECT u.id, u.email, u.password_hash, u.first_name, u.last_name, " +
-                              "u.is_admin, u.is_active, u.company_id, c.organization_name, " +
-                              "c.solution_type, c.auth_token, c.is_active as company_active " +
+        String sqlUserCheck = "SELECT u.id, u.email, u.password, u.first_name, u.last_name, " +
+                              "u.role, u.is_active, u.company_id, c.company_name, " +
+                              "c.solution_type, c.is_active as company_active " +
                               "FROM users u " +
                               "JOIN companies c ON u.company_id = c.id " +
                               "WHERE LOWER(u.email) = ?";
@@ -183,7 +181,7 @@ public class LocalLoginServlet extends HttpServlet {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    String storedHash = rs.getString("password_hash");
+                    String storedHash = rs.getString("password");
                     boolean userActive = rs.getBoolean("is_active");
                     boolean companyActive = rs.getBoolean("company_active");
 
@@ -230,11 +228,11 @@ public class LocalLoginServlet extends HttpServlet {
                     userInfo.email = rs.getString("email");
                     userInfo.firstName = rs.getString("first_name");
                     userInfo.lastName = rs.getString("last_name");
-                    userInfo.isAdmin = rs.getBoolean("is_admin");
+                    userInfo.role = rs.getString("role");
+                    userInfo.isAdmin = "admin".equalsIgnoreCase(userInfo.role);
                     userInfo.companyId = rs.getInt("company_id");
-                    userInfo.companyName = rs.getString("organization_name");
+                    userInfo.companyName = rs.getString("company_name");
                     userInfo.solutionType = rs.getString("solution_type");
-                    userInfo.authToken = rs.getString("auth_token");
 
                     return AuthenticationResult.success(userInfo);
 
@@ -279,12 +277,19 @@ public class LocalLoginServlet extends HttpServlet {
     }
 
     /**
-     * Hashes a password using SHA-256
+     * Hashes a password using SHA-256, producing lowercase hex output
+     * to match MySQL's SHA2(password, 256) function.
      */
     private String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(password.getBytes());
-        return Base64.getEncoder().encodeToString(hash);
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     /**
@@ -369,10 +374,10 @@ public class LocalLoginServlet extends HttpServlet {
         String email;
         String firstName;
         String lastName;
+        String role;
         boolean isAdmin;
         int companyId;
         String companyName;
         String solutionType;
-        String authToken;
     }
 }

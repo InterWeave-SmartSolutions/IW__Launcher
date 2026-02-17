@@ -1,24 +1,26 @@
 # 🚀 InterWeave IDE - System Readiness Report
 
-## ✅ SYSTEM STATUS: READY TO LAUNCH
+## ⚠️ SYSTEM STATUS: DEPLOYABLE (First-Time Setup Required)
 
-Your computer has all the necessary components to run InterWeave IDE. Here's what was verified:
+This repository contains everything needed to run InterWeave IDE. A fresh clone requires
+running `START.bat` which handles first-time database configuration via `.env.example`.
 
 ---
 
 ## 📋 COMPONENT CHECK
 
-| Component               | Status   | Details                                        |
-| ----------------------- | -------- | ---------------------------------------------- |
-| **Java Runtime**        | ✅ Ready | Bundled JRE 8 at `jre/bin/java.exe`            |
-| **IDE Launcher**        | ✅ Ready | `iw_ide.exe` present                           |
-| **Web Portal (Tomcat)** | ✅ Ready | Apache Tomcat 9.0.83 configured                |
-| **Web Application**     | ✅ Ready | `iw-business-daemon` deployed with JSP pages   |
-| **Database Config**     | ✅ Ready | `.env` configured for Oracle Cloud MySQL       |
-| **Startup Scripts**     | ✅ Ready | `START.bat`, `STOP.bat`, `CHANGE_DATABASE.bat` |
-| **Java Source Code**    | ✅ Ready | Maven project structure with 19 source files   |
-| **Build System**        | ✅ Ready | `pom.xml` configured for Maven                 |
-| **Network Port**        | ⚠️ Check | Port 8080 (confirm not in use)                 |
+| Component               | Status      | Details                                                    |
+| ----------------------- | ----------- | ---------------------------------------------------------- |
+| **Java Runtime**        | ✅ Ready    | Bundled JRE 8 at `jre/bin/java.exe`                        |
+| **IDE Launcher**        | ✅ Ready    | `iw_ide.exe` present                                       |
+| **Web Portal (Tomcat)** | ✅ Ready    | Apache Tomcat 9.0.83 configured                            |
+| **Web Application**     | ✅ Ready    | 27 servlets deployed + 49 .class files + 4 WEB-INF JARs   |
+| **Database Connector**  | ✅ Ready    | mysql-connector-java-8.0.33.jar in tomcat/lib              |
+| **Database Config**     | ⚠️ Setup   | Run `START.bat` first time to generate `.env` + `context.xml` from templates |
+| **Startup Scripts**     | ✅ Ready    | `START.bat`, `STOP.bat`, `CHANGE_DATABASE.bat`             |
+| **Java Source Code**    | ✅ Ready    | Maven project structure in `src/` + servlet source in `WEB-INF/src/` |
+| **Build System**        | ✅ Ready    | `pom.xml` configured for Maven (optional — pre-built classes included) |
+| **Network Port**        | ⚠️ Check   | Port 8080 (confirm not in use)                             |
 
 ---
 
@@ -36,17 +38,19 @@ Your computer has all the necessary components to run InterWeave IDE. Here's wha
 
 ### Backend Components
 
-- ✅ **Error Framework:** 6 production classes
-- ✅ **Validation Framework:** 9 validation classes
-- ✅ **Web Filter:** ErrorHandlingFilter for error management
-- ✅ **Help Service:** HelpLinkService for documentation links
+- ✅ **Servlet Classes:** 27 active servlets with matching .class files in WEB-INF/classes
+- ✅ **Error Framework:** 8 classes (ErrorCode, ErrorCategory, IWError, IWErrorBuilder, etc.)
+- ✅ **Core Engine:** BusinessDaemonInit, ConfigContext, TransactionBase, etc.
+- ⚠️ **Monitoring API:** 4 servlets disabled (source exists, not yet compiled)
+- ⚠️ **ErrorHandlingFilter:** Disabled (requires compiled web filter class)
 
 ### Database
 
-- ✅ **Current Mode:** `oracle_cloud`
-- ✅ **Host:** 129.153.47.225 (Oracle Cloud MySQL)
-- ✅ **Fallback Modes Available:**
-  - `interweave` - InterWeave hosted server (148.62.63.8)
+- ⚠️ **First-Time Setup:** Run `START.bat` — it creates `.env` from `.env.example` and `context.xml` from `context.xml.mysql`
+- ✅ **Schema:** `mysql_schema.sql` included with admin user (`__iw_admin__` / `%iwps%`)
+- ✅ **Modes Available:**
+  - `oracle_cloud` - Oracle Cloud MySQL
+  - `interweave` - InterWeave hosted server
   - `local` - Offline mode (admin only)
 
 ---
@@ -168,7 +172,7 @@ Find `<Connector port="8080"...` and change to a different port (e.g., 8081)
 
 | CVE            | Status       | Version                                   |
 | -------------- | ------------ | ----------------------------------------- |
-| CVE-2022-34169 | ✅ **FIXED** | xalan 2.7.3 (upgraded from 2.7.2)         |
+| CVE-2022-34169 | ⚠️ Note     | xalan.jar in WEB-INF/lib (version TBD)    |
 | Java 8 EOL     | ⚠️ Note      | Still supported, Java 11+ roadmap planned |
 
 ---
@@ -299,5 +303,5 @@ If you encounter issues:
 
 ---
 
-**Generated:** February 16, 2026  
-**Status:** ✅ PRODUCTION READY
+**Updated:** February 16, 2026  
+**Status:** ⚠️ DEPLOYABLE — Fresh clone requires first-time setup via START.bat
