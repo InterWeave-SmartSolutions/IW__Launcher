@@ -11,6 +11,8 @@ int clps = currentProfileName.indexOf(":");
 currentUser = currentProfileName.substring(clps + 1);}
 String oldProfileName = request.getParameter("OldProfile");
 String solutionType = request.getParameter("Solution");
+if(solutionType == null || solutionType.isEmpty()){ solutionType = (String) session.getAttribute("solutionType"); }
+if(solutionType == null){ solutionType = "QB"; }
 String navigation = request.getParameter("Navigation");
 String crm = "CRM";
 if(solutionType.startsWith("SF")){
@@ -81,11 +83,17 @@ edit = true;
 }
 }
 }
-TransactionThread ptt;
+TransactionThread ptt = null;
+if(currentProfileName!=null){
 if (oldProfileName == null) {
-	ptt = ConfigContext.getCompanyRegistration().getTransactionThreads().get(currentProfileName);
+	if(ConfigContext.getCompanyRegistration()!=null && ConfigContext.getCompanyRegistration().getTransactionThreads()!=null){
+		ptt = ConfigContext.getCompanyRegistration().getTransactionThreads().get(currentProfileName);
+	}
 } else {
-	ptt = ConfigContext.getUpdateCompany().getTransactionThreads().get(currentProfileName);
+	if(ConfigContext.getUpdateCompany()!=null && ConfigContext.getUpdateCompany().getTransactionThreads()!=null){
+		ptt = ConfigContext.getUpdateCompany().getTransactionThreads().get(currentProfileName);
+	}
+}
 }
 if (ptt != null){
 String cnfg = ptt.getParameters().get("configuration").getParameterValue();

@@ -1,6 +1,6 @@
 # 🚀 InterWeave IDE - System Readiness Report
 
-## ⚠️ SYSTEM STATUS: DEPLOYABLE (First-Time Setup Required)
+## ✅ SYSTEM STATUS: VERIFIED (2026-02-23)
 
 This repository contains everything needed to run InterWeave IDE. A fresh clone requires
 running `START.bat` which handles first-time database configuration via `.env.example`.
@@ -15,8 +15,8 @@ running `START.bat` which handles first-time database configuration via `.env.ex
 | **IDE Launcher**        | ✅ Ready    | `iw_ide.exe` present                                       |
 | **Web Portal (Tomcat)** | ✅ Ready    | Apache Tomcat 9.0.83 configured                            |
 | **Web Application**     | ✅ Ready    | 27 servlets deployed + 49 .class files + 4 WEB-INF JARs   |
-| **Database Connector**  | ✅ Ready    | mysql-connector-java-8.0.33.jar in tomcat/lib              |
-| **Database Config**     | ⚠️ Setup   | Run `START.bat` first time to generate `.env` + `context.xml` from templates |
+| **Database Connector**  | ✅ Ready    | PostgreSQL JDBC + mysql-connector-java-8.0.33.jar in tomcat/lib |
+| **Database Config**     | ✅ Verified | Supabase Postgres via pooler (transaction mode, port 6543)  |
 | **Startup Scripts**     | ✅ Ready    | `START.bat`, `STOP.bat`, `CHANGE_DATABASE.bat`             |
 | **Java Source Code**    | ✅ Ready    | Maven project structure in `src/` + servlet source in `WEB-INF/src/` |
 | **Build System**        | ✅ Ready    | `pom.xml` configured for Maven (optional — pre-built classes included) |
@@ -49,8 +49,8 @@ running `START.bat` which handles first-time database configuration via `.env.ex
 - ⚠️ **First-Time Setup:** Run `START.bat` — it creates `.env` from `.env.example` and `context.xml` from `context.xml.mysql`
 - ✅ **Schema:** `mysql_schema.sql` included with admin user (`__iw_admin__` / `%iwps%`)
 - ✅ **Modes Available:**
-  - `oracle_cloud` - Oracle Cloud MySQL
-  - `interweave` - InterWeave hosted server
+  - `supabase` - Supabase Postgres (default)
+  - `interweave` - InterWeave hosted MySQL
   - `local` - Offline mode (admin only)
 
 ---
@@ -303,5 +303,5 @@ If you encounter issues:
 
 ---
 
-**Updated:** February 16, 2026  
-**Status:** ⚠️ DEPLOYABLE — Fresh clone requires first-time setup via START.bat
+**Updated:** February 23, 2026  
+**Status:** ✅ VERIFIED — 29/29 E2E tests pass, Supabase Postgres connected, all accounts working

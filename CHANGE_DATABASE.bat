@@ -36,20 +36,20 @@ echo.
 REM Read current DB_MODE from .env using findstr
 set "CURRENT_MODE=unknown"
 for /f "tokens=2 delims==" %%a in ('findstr /B "DB_MODE=" ".env"') do set "CURRENT_MODE=%%a"
-for /f "tokens=2 delims==" %%a in ('findstr /B "ORACLE_DB_HOST=" ".env"') do set "ORACLE_HOST=%%a"
+for /f "tokens=2 delims==" %%a in ('findstr /B "SUPABASE_DB_HOST=" ".env"') do set "SUPA_HOST=%%a"
 for /f "tokens=2 delims==" %%a in ('findstr /B "IW_DB_HOST=" ".env"') do set "IW_HOST=%%a"
 
-if not defined ORACLE_HOST set "ORACLE_HOST=129.153.47.225"
-if not defined IW_HOST set "IW_HOST=148.62.63.8"
+if not defined SUPA_HOST set "SUPA_HOST=db.hpodmkchdzwjtlnxjohf.supabase.co"
+if not defined IW_HOST set "IW_HOST=***********"
 
 REM Display current connection with clear visual
 echo    CURRENTLY CONNECTED TO:
 echo.
-if /i "%CURRENT_MODE%"=="oracle_cloud" (
+if /i "%CURRENT_MODE%"=="supabase" (
     echo      -------------------------------------------------------
     echo      ^|                                                     ^|
-    echo      ^|   [ACTIVE]  YOUR SERVER  ^(Oracle Cloud^)             ^|
-    echo      ^|             %ORACLE_HOST%                       ^|
+    echo      ^|   [ACTIVE]  SUPABASE  ^(Cloud Postgres^)              ^|
+    echo      ^|             %SUPA_HOST%     ^|
     echo      ^|                                                     ^|
     echo      -------------------------------------------------------
 ) else if /i "%CURRENT_MODE%"=="interweave" (
@@ -79,8 +79,8 @@ echo  ====================================================================
 echo    CHOOSE A CONNECTION:
 echo  ====================================================================
 echo.
-echo    1.  YOUR SERVER ^(Oracle Cloud^)
-echo        Best for development and testing
+echo    1.  SUPABASE ^(Cloud Postgres^)
+echo        Shared team database - recommended
 echo.
 echo    2.  INTERWEAVE SERVER
 echo        Connect to InterWeave's server ^(may not work externally^)
@@ -105,21 +105,21 @@ if errorlevel 5 goto quit
 if errorlevel 4 goto restart
 if errorlevel 3 goto switch_local
 if errorlevel 2 goto switch_interweave
-if errorlevel 1 goto switch_oracle
+if errorlevel 1 goto switch_supabase
 goto menu
 
-:switch_oracle
+:switch_supabase
 cls
 echo.
 echo  ====================================================================
-echo    SWITCHING TO: YOUR SERVER ^(Oracle Cloud^)
+echo    SWITCHING TO: SUPABASE ^(Cloud Postgres^)
 echo  ====================================================================
 echo.
 echo    Please wait...
 echo.
 
 REM Update DB_MODE in .env
-powershell -Command "(Get-Content '.env') -replace '^DB_MODE=.*', 'DB_MODE=oracle_cloud' | Set-Content '.env'"
+powershell -Command "(Get-Content '.env') -replace '^DB_MODE=.*', 'DB_MODE=supabase' | Set-Content '.env'"
 if errorlevel 1 (
     echo    [ERROR] Failed to update configuration
     pause
@@ -129,34 +129,34 @@ echo    [OK] Configuration updated
 echo.
 
 REM Load credentials from .env
-for /f "tokens=2 delims==" %%a in ('findstr /B "ORACLE_DB_HOST=" ".env"') do set "DB_HOST=%%a"
-for /f "tokens=2 delims==" %%a in ('findstr /B "ORACLE_DB_PORT=" ".env"') do set "DB_PORT=%%a"
-for /f "tokens=2 delims==" %%a in ('findstr /B "ORACLE_DB_NAME=" ".env"') do set "DB_NAME=%%a"
-for /f "tokens=2 delims==" %%a in ('findstr /B "ORACLE_DB_USER=" ".env"') do set "DB_USER=%%a"
-for /f "tokens=2 delims==" %%a in ('findstr /B "ORACLE_DB_PASSWORD=" ".env"') do set "DB_PASSWORD=%%a"
+for /f "tokens=2 delims==" %%a in ('findstr /B "SUPABASE_DB_HOST=" ".env"') do set "DB_HOST=%%a"
+for /f "tokens=2 delims==" %%a in ('findstr /B "SUPABASE_DB_PORT=" ".env"') do set "DB_PORT=%%a"
+for /f "tokens=2 delims==" %%a in ('findstr /B "SUPABASE_DB_NAME=" ".env"') do set "DB_NAME=%%a"
+for /f "tokens=2 delims==" %%a in ('findstr /B "SUPABASE_DB_USER=" ".env"') do set "DB_USER=%%a"
+for /f "tokens=2 delims==" %%a in ('findstr /B "SUPABASE_DB_PASSWORD=" ".env"') do set "DB_PASSWORD=%%a"
 
-if not defined DB_HOST set "DB_HOST=129.153.47.225"
-if not defined DB_PORT set "DB_PORT=3306"
-if not defined DB_NAME set "DB_NAME=iw_ide"
+if not defined DB_HOST set "DB_HOST=db.hpodmkchdzwjtlnxjohf.supabase.co"
+if not defined DB_PORT set "DB_PORT=5432"
+if not defined DB_NAME set "DB_NAME=postgres"
 
-REM Update context.xml
-set "CONTEXT_TEMPLATE=%SCRIPT_DIR%web_portal\tomcat\conf\context.xml.mysql"
+REM Update context.xml (Postgres template)
+set "CONTEXT_TEMPLATE=%SCRIPT_DIR%web_portal\tomcat\conf\context.xml.postgres"
 set "CONTEXT_FILE=%SCRIPT_DIR%web_portal\tomcat\conf\context.xml"
 if exist "%CONTEXT_TEMPLATE%" (
     powershell -Command "$c = Get-Content '%CONTEXT_TEMPLATE%' -Raw; $c = $c -replace '__DB_HOST__', '%DB_HOST%'; $c = $c -replace '__DB_PORT__', '%DB_PORT%'; $c = $c -replace '__DB_NAME__', '%DB_NAME%'; $c = $c -replace '__DB_USER__', '%DB_USER%'; $c = $c -replace '__DB_PASSWORD__', '%DB_PASSWORD%'; Set-Content '%CONTEXT_FILE%' -Value $c"
     echo    [OK] Server connection configured
 ) else (
-    echo    [SKIP] context.xml.mysql template not found
+    echo    [SKIP] context.xml.postgres template not found
 )
 
 REM Update Business Daemon config.xml
-set "CONFIG_TEMPLATE=%SCRIPT_DIR%docs\authentication\config.xml.oracle_cloud.template"
+set "CONFIG_TEMPLATE=%SCRIPT_DIR%docs\authentication\config.xml.supabase.template"
 set "BD_CONFIG=%SCRIPT_DIR%web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\config.xml"
 if exist "%CONFIG_TEMPLATE%" (
-    powershell -Command "$c = Get-Content '%CONFIG_TEMPLATE%' -Raw; $c = $c -replace 'YOUR_ORACLE_PASSWORD_HERE', '%DB_PASSWORD%'; Set-Content '%BD_CONFIG%' -Value $c"
+    powershell -Command "$c = Get-Content '%CONFIG_TEMPLATE%' -Raw; $c = $c -replace '__SUPABASE_HOST__', '%DB_HOST%'; $c = $c -replace '__SUPABASE_PORT__', '%DB_PORT%'; $c = $c -replace '__SUPABASE_DB_NAME__', '%DB_NAME%'; $c = $c -replace '__SUPABASE_USER__', '%DB_USER%'; $c = $c -replace '__SUPABASE_PASSWORD__', '%DB_PASSWORD%'; Set-Content '%BD_CONFIG%' -Value $c"
     echo    [OK] Login system configured
 ) else (
-    echo    [SKIP] config.xml.oracle_cloud.template not found
+    echo    [SKIP] config.xml.supabase.template not found
 )
 
 echo.
@@ -164,7 +164,7 @@ echo  ====================================================================
 echo    SUCCESS!
 echo  ====================================================================
 echo.
-echo    You are now set to connect to YOUR SERVER.
+echo    You are now set to connect to SUPABASE.
 echo.
 echo    Server Address: %DB_HOST%
 echo.
@@ -185,7 +185,7 @@ echo    SWITCHING TO: INTERWEAVE SERVER
 echo  ====================================================================
 echo.
 echo    NOTE: InterWeave's server may block external connections.
-echo          If you cannot log in after switching, try YOUR SERVER.
+echo          If you cannot log in after switching, try SUPABASE.
 echo.
 echo    Please wait...
 echo.
@@ -243,7 +243,7 @@ echo.
 echo    IMPORTANT: You must restart the web server for
 echo               changes to take effect.
 echo.
-echo    If login fails, come back here and choose YOUR SERVER instead.
+echo    If login fails, come back here and choose SUPABASE instead.
 echo.
 echo  ====================================================================
 echo.

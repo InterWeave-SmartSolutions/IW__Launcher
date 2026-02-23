@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  IW_IDE PostgreSQL (Supabase) Database Configuration Template
+
+  This template is used by the setup scripts to generate context.xml
+  with the correct database connection settings.
+
+  Placeholders replaced by setup script:
+  - __DB_HOST__     : Database host (e.g. db.xxxxx.supabase.co)
+  - __DB_PORT__     : Database port (5432)
+  - __DB_NAME__     : Database name (postgres)
+  - __DB_USER__     : Database username (postgres)
+  - __DB_PASSWORD__ : Database password
+-->
+<Context>
+    <!-- Disable session persistence across Tomcat restarts -->
+    <Manager pathname="" />
+
+    <!-- PostgreSQL DataSource for iw_ide (Supabase) -->
+    <Resource name="jdbc/IWDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+              driverClassName="org.postgresql.Driver"
+              url="jdbc:postgresql://__DB_HOST__:__DB_PORT__/__DB_NAME__?sslmode=require"
+              username="__DB_USER__"
+              password="__DB_PASSWORD__"
+              initialSize="5"
+              minIdle="5"
+              maxActive="20"
+              maxIdle="10"
+              maxWait="10000"
+              testOnBorrow="true"
+              testOnReturn="false"
+              testWhileIdle="true"
+              validationQuery="SELECT 1"
+              validationInterval="30000"
+              timeBetweenEvictionRunsMillis="30000"
+              removeAbandoned="true"
+              removeAbandonedTimeout="60"
+              logAbandoned="true"
+    />
+
+    <!-- WatchedResource for auto-reload on config changes -->
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>WEB-INF/tomcat-web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+</Context>

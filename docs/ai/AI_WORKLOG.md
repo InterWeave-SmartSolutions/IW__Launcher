@@ -1066,3 +1066,164 @@ Follow-ups / known issues:
 - ErrorHandlingFilter remains disabled (requires compiled web filter class)
 - InterWoven/ directory is untracked (separate concept project, intentional per CLAUDE.md)
 
+---
+
+## 2026-02-18 20:16 (UTC)
+Agent/tool: Warp Agent (Claude Opus 4.6)
+User request: Complete local servlet bridge — create remaining servlets, wire into web.xml, compile, fix runtime bugs, and document
+Actions taken:
+- Created LocalEditCompanyProfileServlet.java — authenticates company admin, loads profile into requestCompany TransactionThread, redirects to EditCompanyProfile.jsp
+- Created LocalSaveCompanyProfileServlet.java — updates admin user name + company solution_type, redirects to CompanyConfiguration.jsp
+- Updated web.xml: swapped servlet-class for all 8 management servlets to Local* implementations (LoginServlet was already done)
+- Compiled all 9 local servlets successfully (javac -source 1.8 -target 1.8)
+- Diagnosed and fixed 5 runtime bugs:
+  1. ConfigContext.isHosted() always false — added setHosted(true) to LocalLoginServlet on successful auth
+  2. LocalSaveCompanyProfileServlet read param "Company" but JSP sends "CompanyOrganization"; read "SolutionType" but JSP sends "Type"
+  3. TransactionThread has getFirstName()/getLastName()/getCompany()/getTitle() but NO setters — added setThreadField() reflection helper to LocalUserManagementServlet base class
+  4. LocalSaveCompanyProfileServlet missing ConfigContext.setAdminLoggedIn(true) and Solution param in redirect to CompanyConfiguration.jsp
+  5. LocalSaveCompanyProfileServlet lost extends clause during edits — restored
+- Recompiled all servlets after each fix round
+- Created ADR 003: docs/adr/003-local-servlet-bridge.md
+- Created technical reference: docs/development/LOCAL_SERVLETS.md
+- Appended this worklog entry
+- Updated CLAUDE.md with local servlet bridge documentation
+Files changed/created:
+- WEB-INF/src/.../config/LocalEditCompanyProfileServlet.java (new)
+- WEB-INF/src/.../config/LocalSaveCompanyProfileServlet.java (new)
+- WEB-INF/src/.../config/LocalUserManagementServlet.java (added reflection import + setThreadField helper)
+- WEB-INF/src/.../config/LocalEditProfileServlet.java (putParameter → setThreadField reflection)
+- WEB-INF/src/.../config/LocalEditCompanyProfileServlet.java (putParameter → setThreadField reflection)
+- WEB-INF/src/.../config/LocalLoginServlet.java (added ConfigContext.setHosted(true))
+- WEB-INF/src/.../config/LocalSaveCompanyProfileServlet.java (param names, adminLoggedIn, Solution, ConfigContext import, extends fix)
+- WEB-INF/web.xml (8 servlet-class entries → Local* variants)
+- All Local*.class files recompiled to WEB-INF/classes/
+- docs/adr/003-local-servlet-bridge.md (new)
+- docs/development/LOCAL_SERVLETS.md (new)
+- docs/ai/AI_WORKLOG.md (this entry)
+- CLAUDE.md (updated)
+Commands run:
+- javac -source 1.8 -target 1.8 (multiple rounds after fixes)
+- javap -p/-c to inspect TransactionThread.class and TransactionBase.class (discovered missing setters)
+- grep to find setHosted() callers across codebase
+- ls, head, tail to verify compiled class output
+Verification performed:
+- All 9 Local*.class files compiled without errors
+- web.xml grep confirms all 9 servlet mappings point to Local* classes
+- User tested company registration flow (Tester1) — initial "Company and Email are required" error led to discovery of param name mismatch
+- After fixes: company registration, login, and config page load working
+- TransactionThread bytecode analysis confirmed: private fields firstName/lastName/company/title have getters but no setters; putParameter() stores in separate Hashtable
+- ConfigContext bytecode analysis confirmed: hosted is a static boolean defaulting to false
+Follow-ups / known issues:
+- EditProfile.jsp profile data display not yet verified end-to-end (reflection may need testing)
+- test_portal.sh curl-based test script was drafted but not yet saved (file creation cancelled)
+- Static ConfigContext means servlet bridge is not multi-user safe (same as original architecture)
+- When iwtransformationserver is eventually deployed, revert web.xml servlet-class entries to originals
+
+---
+
+## 2026-02-23 20:30 (UTC)
+Agent/tool: Warp Agent (Claude Opus 4.6)
+User request: End-to-end verification of all outstanding work (Supabase migration, local servlet bridge, connectivity), then update docs and commit
+Actions taken:
+- Started Tomcat (scripts have CRLF issues; used direct startup.sh invocation)
+- Diagnosed Supabase direct host (IPv6 only) unreachable from WSL2; switched to Supabase connection pooler at aws-0-us-west-2.pooler.supabase.com
+- Switched from session mode (port 5432) to transaction mode (port 6543) to resolve MaxClientsInSessionMode pool exhaustion
+- Tuned connection pool: initialSize=1, minIdle=1, maxActive=5, maxIdle=3, added prepareThreshold=0 for transaction mode
+- Fixed XML entity escaping in context.xml (& → &amp;)
+- Fixed IWError bug: wrong-password login caused HTTP 500 because IWError.builder().build() has package-private constructor; removed all IWError/ErrorCode/ErrorLogger imports from LocalLoginServlet, replaced with log() calls and plain String error codes
+- Recompiled LocalLoginServlet with javac -source 1.8 -target 1.8
+- Ran web_portal/test_portal.sh — 29/29 E2E tests passed (pages, registration, login, profiles, password changes, input validation)
+- Enabled RLS on all 14 Supabase tables via SQL Editor (already present in postgres_schema.sql)
+- Assessed monitoring servlets: 10 source files, 0 compiled, blocked on javax.mail + IWError dependencies (medium effort ~1-2 hrs)
+- Cleaned .gitignore: added node_modules/, web_portal/tomcat/work/, package-lock.json; removed duplicate entries from cancelled edits
+- Updated CLAUDE.md, README.md, SYSTEM_READY.md to reflect verified state
+- Appended this AI_WORKLOG.md entry
+Files changed/created:
+- web_portal/tomcat/conf/context.xml (pooler URL, transaction mode port 6543, tuned pool, prepareThreshold=0) — gitignored, per-machine
+- WEB-INF/src/.../config/LocalLoginServlet.java (removed IWError imports, plain String error codes)
+- WEB-INF/classes/.../config/LocalLoginServlet*.class (recompiled)
+- .gitignore (added node_modules/, tomcat/work/, package-lock.json; cleaned duplicates)
+- CLAUDE.md (updated database, known issues, verified state)
+- README.md (updated known issues, version history)
+- SYSTEM_READY.md (updated to VERIFIED status)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- export CATALINA_HOME=.../tomcat && $CATALINA_HOME/bin/startup.sh (Tomcat start)
+- PGPASSWORD=... psql -h aws-0-us-west-2.pooler.supabase.com -p 6543 (connectivity tests)
+- curl POST/GET tests against all servlet endpoints
+- bash web_portal/test_portal.sh (29/29 E2E tests)
+- javac -source 1.8 -target 1.8 (recompile LocalLoginServlet)
+- javap -p to inspect monitoring servlet dependencies
+Verification performed:
+- ✅ Supabase Postgres connectivity via pooler (transaction mode, port 6543)
+- ✅ Admin login (__iw_admin__ / %iwps%) — success
+- ✅ Demo user login (demo@sample.com / demo123) — success
+- ✅ Company registration + login flow — success
+- ✅ EditProfile load + SaveProfile update — success
+- ✅ EditCompanyProfile + SaveCompanyProfile + CompanyConfiguration — success
+- ✅ ChangePassword flow — success
+- ✅ Input validation (SQL injection, XSS, empty fields) — success
+- ✅ 29/29 automated E2E tests pass with test data auto-cleanup
+- ✅ RLS enabled on all 14 tables (PostgREST blocked, JDBC bypasses)
+- ✅ Monitoring servlets assessed (deferred — medium effort)
+Follow-ups / known issues:
+- Monitoring servlets: 10 .java files uncompiled, blocked on javax.mail + IWError deps (~1-2 hrs to enable)
+- ErrorHandlingFilter: disabled, needs compiled error framework class
+- context.xml is per-machine (gitignored); context.xml.postgres template exists for reference
+- CRLF in shell scripts causes issues on Linux; use direct Tomcat bin/ invocation as workaround
+- Connection pool set conservatively (maxActive=5) for Supabase free tier; increase for production
+
+
+---
+
+## 2026-02-23 20:30 (UTC)
+Agent/tool: Warp Agent (Claude Opus 4.6)
+User request: End-to-end verification of all outstanding work (Supabase migration, local servlet bridge, connectivity), then update docs and commit
+Actions taken:
+- Started Tomcat (scripts have CRLF issues; used direct startup.sh invocation)
+- Diagnosed Supabase direct host (IPv6 only) unreachable from WSL2; switched to Supabase connection pooler at aws-0-us-west-2.pooler.supabase.com
+- Switched from session mode (port 5432) to transaction mode (port 6543) to resolve MaxClientsInSessionMode pool exhaustion
+- Tuned connection pool: initialSize=1, minIdle=1, maxActive=5, maxIdle=3, added prepareThreshold=0 for transaction mode
+- Fixed XML entity escaping in context.xml (& to &amp;)
+- Fixed IWError bug: wrong-password login caused HTTP 500 because IWError.builder().build() has package-private constructor; removed all IWError/ErrorCode/ErrorLogger imports from LocalLoginServlet, replaced with log() calls and plain String error codes
+- Recompiled LocalLoginServlet with javac -source 1.8 -target 1.8
+- Ran web_portal/test_portal.sh — 29/29 E2E tests passed (pages, registration, login, profiles, password changes, input validation)
+- Enabled RLS on all 14 Supabase tables via SQL Editor (already present in postgres_schema.sql)
+- Assessed monitoring servlets: 10 source files, 0 compiled, blocked on javax.mail + IWError dependencies (medium effort ~1-2 hrs)
+- Cleaned .gitignore: added node_modules/, web_portal/tomcat/work/, package-lock.json; removed duplicate entries
+- Updated CLAUDE.md, README.md, SYSTEM_READY.md to reflect verified state
+- Appended this AI_WORKLOG.md entry
+Files changed/created:
+- web_portal/tomcat/conf/context.xml (pooler URL, transaction mode port 6543, tuned pool, prepareThreshold=0) — gitignored, per-machine
+- WEB-INF/src/.../config/LocalLoginServlet.java (removed IWError imports, plain String error codes)
+- WEB-INF/classes/.../config/LocalLoginServlet*.class (recompiled)
+- .gitignore (added node_modules/, tomcat/work/, package-lock.json; cleaned duplicates)
+- CLAUDE.md (updated database, known issues, verified state)
+- README.md (updated known issues, version history)
+- SYSTEM_READY.md (updated to VERIFIED status)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- export CATALINA_HOME=.../tomcat && $CATALINA_HOME/bin/startup.sh (Tomcat start)
+- PGPASSWORD=... psql -h aws-0-us-west-2.pooler.supabase.com -p 6543 (connectivity tests)
+- curl POST/GET tests against all servlet endpoints
+- bash web_portal/test_portal.sh (29/29 E2E tests)
+- javac -source 1.8 -target 1.8 (recompile LocalLoginServlet)
+- javap -p to inspect monitoring servlet dependencies
+Verification performed:
+- Supabase Postgres connectivity via pooler (transaction mode, port 6543) — PASS
+- Admin login (__iw_admin__ / %iwps%) — PASS
+- Demo user login (demo@sample.com / demo123) — PASS
+- Company registration + login flow — PASS
+- EditProfile load + SaveProfile update — PASS
+- EditCompanyProfile + SaveCompanyProfile + CompanyConfiguration — PASS
+- ChangePassword flow — PASS
+- Input validation (SQL injection, XSS, empty fields) — PASS
+- 29/29 automated E2E tests pass with test data auto-cleanup
+- RLS enabled on all 14 tables (PostgREST blocked, JDBC bypasses)
+- Monitoring servlets assessed (deferred — medium effort)
+Follow-ups / known issues:
+- Monitoring servlets: 10 .java files uncompiled, blocked on javax.mail + IWError deps (~1-2 hrs to enable)
+- ErrorHandlingFilter: disabled, needs compiled error framework class
+- context.xml is per-machine (gitignored); context.xml.postgres template exists for reference
+- CRLF in shell scripts causes issues on Linux; use direct Tomcat bin/ invocation as workaround
+- Connection pool set conservatively (maxActive=5) for Supabase free tier; increase for production

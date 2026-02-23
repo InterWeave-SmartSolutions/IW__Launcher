@@ -10,9 +10,10 @@
     }
 
     // Get user context from session
-    String userId = (String) userSession.getAttribute("userId");
+    String userId = String.valueOf(userSession.getAttribute("userId"));
     String userName = (String) userSession.getAttribute("userName");
-    Integer companyId = (Integer) userSession.getAttribute("companyId");
+    Integer companyId = (userSession.getAttribute("companyId") instanceof Integer) ?
+        (Integer) userSession.getAttribute("companyId") : null;
     String companyName = (String) userSession.getAttribute("companyName");
     Boolean isAdmin = (Boolean) userSession.getAttribute("isAdmin");
 

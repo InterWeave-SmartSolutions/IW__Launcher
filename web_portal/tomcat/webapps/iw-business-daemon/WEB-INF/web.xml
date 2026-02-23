@@ -75,8 +75,8 @@
 		<display-name>
 		RegistrationServlet</display-name>
 		<servlet-name>RegistrationServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.RegistrationServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalRegistrationServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -129,8 +129,8 @@
 		<display-name>
 		ChangePasswordServlet</display-name>
 		<servlet-name>ChangePasswordServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.ChangePasswordServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalChangePasswordServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -138,8 +138,8 @@
 		<display-name>
 		EditProfileServlet</display-name>
 		<servlet-name>EditProfileServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.EditProfileServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalEditProfileServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -147,8 +147,8 @@
 		<display-name>
 		SaveProfileServlet</display-name>
 		<servlet-name>SaveProfileServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.SaveProfileServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalSaveProfileServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -156,8 +156,8 @@
 		<display-name>
 		CompanyRegistrationServlet</display-name>
 		<servlet-name>CompanyRegistrationServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.CompanyRegistrationServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalCompanyRegistrationServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -192,8 +192,8 @@
 		<display-name>
 		SaveCompanyProfileServlet</display-name>
 		<servlet-name>SaveCompanyProfileServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.SaveCompanyProfileServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalSaveCompanyProfileServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -201,8 +201,8 @@
 		<display-name>
 		EditCompanyProfileServlet</display-name>
 		<servlet-name>EditCompanyProfileServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.EditCompanyProfileServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalEditCompanyProfileServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -228,8 +228,8 @@
 		<display-name>
 		ChangeCompanyPasswordServlet</display-name>
 		<servlet-name>ChangeCompanyPasswordServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.ChangeCompanyPasswordServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalChangeCompanyPasswordServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>

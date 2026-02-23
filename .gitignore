@@ -114,6 +114,13 @@ Desktop.ini
 # ===== Database Connection (configured per-machine) =====
 web_portal/tomcat/conf/context.xml
 
+# ===== Tomcat Work Directory (compiled JSPs - regenerated at runtime) =====
+web_portal/tomcat/work/
+
+# ===== Node Modules & Lock Files =====
+node_modules/
+package-lock.json
+
 # ===== Downloaded Dependencies (can be re-downloaded) =====
 web_portal/tomcat/lib/postgresql-*.jar
 

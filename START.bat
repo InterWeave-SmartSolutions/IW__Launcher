@@ -40,40 +40,56 @@ if not exist "%IW_HOME%\.env" (
         exit /b 1
     )
 
-    REM Load defaults and configure
+    REM Load DB_MODE from .env
     for /f "tokens=1,* delims==" %%a in ('findstr /B "DB_MODE=" "%IW_HOME%\.env"') do set "DB_MODE=%%b"
-    for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_HOST=" "%IW_HOME%\.env"') do set "ORACLE_DB_HOST=%%b"
-    for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_PORT=" "%IW_HOME%\.env"') do set "ORACLE_DB_PORT=%%b"
-    for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_NAME=" "%IW_HOME%\.env"') do set "ORACLE_DB_NAME=%%b"
-    for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_USER=" "%IW_HOME%\.env"') do set "ORACLE_DB_USER=%%b"
-    for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_PASSWORD=" "%IW_HOME%\.env"') do set "ORACLE_DB_PASSWORD=%%b"
+    if not defined DB_MODE set "DB_MODE=supabase"
 
-    if not defined DB_MODE set "DB_MODE=oracle_cloud"
-    if not defined ORACLE_DB_HOST set "ORACLE_DB_HOST=129.153.47.225"
-    if not defined ORACLE_DB_PORT set "ORACLE_DB_PORT=3306"
-    if not defined ORACLE_DB_NAME set "ORACLE_DB_NAME=iw_ide"
-
-    set "DB_HOST=!ORACLE_DB_HOST!"
-    set "DB_PORT=!ORACLE_DB_PORT!"
-    set "DB_NAME=!ORACLE_DB_NAME!"
-    set "DB_USER=!ORACLE_DB_USER!"
-    set "DB_PASSWORD=!ORACLE_DB_PASSWORD!"
-
-    REM Configure Tomcat
-    set "CONTEXT_TEMPLATE=%IW_HOME%\web_portal\tomcat\conf\context.xml.mysql"
     set "CONTEXT_FILE=%IW_HOME%\web_portal\tomcat\conf\context.xml"
-
-    if exist "!CONTEXT_TEMPLATE!" (
-        powershell -Command "$c = Get-Content '!CONTEXT_TEMPLATE!' -Raw; $c = $c -replace '__DB_HOST__', '!DB_HOST!'; $c = $c -replace '__DB_PORT__', '!DB_PORT!'; $c = $c -replace '__DB_NAME__', '!DB_NAME!'; $c = $c -replace '__DB_USER__', '!DB_USER!'; $c = $c -replace '__DB_PASSWORD__', '!DB_PASSWORD!'; Set-Content '!CONTEXT_FILE!' -Value $c" 2>nul
-        echo  [OK] Database configured
-    )
-
-    REM Configure Business Daemon
-    set "CONFIG_TEMPLATE=%IW_HOME%\docs\authentication\config.xml.oracle_cloud.template"
     set "BD_CONFIG=%IW_HOME%\web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\config.xml"
 
+    if /i "!DB_MODE!"=="supabase" (
+        REM ---------- SUPABASE (Postgres) ----------
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_HOST=" "%IW_HOME%\.env"') do set "DB_HOST=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_PORT=" "%IW_HOME%\.env"') do set "DB_PORT=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_NAME=" "%IW_HOME%\.env"') do set "DB_NAME=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_USER=" "%IW_HOME%\.env"') do set "DB_USER=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_PASSWORD=" "%IW_HOME%\.env"') do set "DB_PASSWORD=%%b"
+        if not defined DB_HOST set "DB_HOST=db.hpodmkchdzwjtlnxjohf.supabase.co"
+        if not defined DB_PORT set "DB_PORT=5432"
+        if not defined DB_NAME set "DB_NAME=postgres"
+
+        set "CONTEXT_TEMPLATE=%IW_HOME%\web_portal\tomcat\conf\context.xml.postgres"
+        set "CONFIG_TEMPLATE=%IW_HOME%\docs\authentication\config.xml.supabase.template"
+    ) else if /i "!DB_MODE!"=="interweave" (
+        REM ---------- INTERWEAVE (MySQL) ----------
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_HOST=" "%IW_HOME%\.env"') do set "DB_HOST=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_PORT=" "%IW_HOME%\.env"') do set "DB_PORT=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_NAME=" "%IW_HOME%\.env"') do set "DB_NAME=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_USER=" "%IW_HOME%\.env"') do set "DB_USER=%%b"
+        for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_PASSWORD=" "%IW_HOME%\.env"') do set "DB_PASSWORD=%%b"
+        if not defined DB_HOST set "DB_HOST=***********"
+        if not defined DB_PORT set "DB_PORT=3306"
+        if not defined DB_NAME set "DB_NAME=hostedprofiles"
+
+        set "CONTEXT_TEMPLATE=%IW_HOME%\web_portal\tomcat\conf\context.xml.mysql"
+        set "CONFIG_TEMPLATE=%IW_HOME%\docs\authentication\config.xml.hosted.template"
+    ) else (
+        REM ---------- LOCAL / OFFLINE ----------
+        set "CONFIG_TEMPLATE=%IW_HOME%\docs\authentication\config.xml.local.template"
+        set "CONTEXT_TEMPLATE="
+    )
+
+    REM Configure Tomcat context.xml (skip for local/offline mode)
+    if defined CONTEXT_TEMPLATE (
+        if exist "!CONTEXT_TEMPLATE!" (
+            powershell -Command "$c = Get-Content '!CONTEXT_TEMPLATE!' -Raw; $c = $c -replace '__DB_HOST__', '!DB_HOST!'; $c = $c -replace '__DB_PORT__', '!DB_PORT!'; $c = $c -replace '__DB_NAME__', '!DB_NAME!'; $c = $c -replace '__DB_USER__', '!DB_USER!'; $c = $c -replace '__DB_PASSWORD__', '!DB_PASSWORD!'; $c = $c -replace '__SUPABASE_HOST__', '!DB_HOST!'; $c = $c -replace '__SUPABASE_PORT__', '!DB_PORT!'; $c = $c -replace '__SUPABASE_DB_NAME__', '!DB_NAME!'; $c = $c -replace '__SUPABASE_USER__', '!DB_USER!'; $c = $c -replace '__SUPABASE_PASSWORD__', '!DB_PASSWORD!'; Set-Content '!CONTEXT_FILE!' -Value $c" 2>nul
+            echo  [OK] Database configured ^(!DB_MODE!^)
+        )
+    )
+
+    REM Configure Business Daemon config.xml
     if exist "!CONFIG_TEMPLATE!" (
-        powershell -Command "$c = Get-Content '!CONFIG_TEMPLATE!' -Raw; $c = $c -replace 'YOUR_ORACLE_PASSWORD_HERE', '!DB_PASSWORD!'; Set-Content '!BD_CONFIG!' -Value $c" 2>nul
+        powershell -Command "$c = Get-Content '!CONFIG_TEMPLATE!' -Raw; $c = $c -replace '__DB_HOST__', '!DB_HOST!'; $c = $c -replace '__DB_PORT__', '!DB_PORT!'; $c = $c -replace '__DB_NAME__', '!DB_NAME!'; $c = $c -replace '__DB_USER__', '!DB_USER!'; $c = $c -replace '__DB_PASSWORD__', '!DB_PASSWORD!'; $c = $c -replace '__SUPABASE_HOST__', '!DB_HOST!'; $c = $c -replace '__SUPABASE_PORT__', '!DB_PORT!'; $c = $c -replace '__SUPABASE_DB_NAME__', '!DB_NAME!'; $c = $c -replace '__SUPABASE_USER__', '!DB_USER!'; $c = $c -replace '__SUPABASE_PASSWORD__', '!DB_PASSWORD!'; $c = $c -replace 'YOUR_ORACLE_PASSWORD_HERE', '!DB_PASSWORD!'; $c = $c -replace 'YOUR_IW_USERNAME', '!DB_USER!'; $c = $c -replace 'YOUR_IW_PASSWORD', '!DB_PASSWORD!'; Set-Content '!BD_CONFIG!' -Value $c" 2>nul
         echo  [OK] Login system configured
     )
 

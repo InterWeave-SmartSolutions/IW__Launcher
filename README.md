@@ -39,8 +39,8 @@ Either:
 ## Need to Change Database?
 
 Double-click `CHANGE_DATABASE.bat` to switch between:
-- **Your Server** (Oracle Cloud) - Recommended
-- **InterWeave Server** - May be blocked
+- **Supabase** (Cloud Postgres) - Recommended
+- **InterWeave Server** (MySQL) - May be blocked externally
 - **Offline Mode** - No database needed
 
 ---
@@ -176,15 +176,15 @@ IW_Launcher/
 ## Known Issues
 
 ### Authentication
-- The original `LoginServlet` used a proprietary password hash format incompatible with the MySQL schema.
-- **Fixed:** Replaced with `LocalLoginServlet` which uses SHA-256 hex hashing to match MySQL's `SHA2()` function.
-- Demo user login has not been verified end-to-end yet (requires database connectivity).
+- The original `LoginServlet` used a proprietary password hash format incompatible with the database schema.
+- **Fixed:** Replaced with `LocalLoginServlet` which uses SHA-256 hex hashing matching PostgreSQL `encode(digest(), 'hex')`.
+- **All accounts verified working** as of 2026-02-23 (29/29 E2E tests pass).
 
 ### Database Accounts
 | Account | Email | Password | Status |
 |---------|-------|----------|--------|
-| Admin | `__iw_admin__` | `%iwps%` | **WORKING** |
-| Demo | `demo@sample.com` | `demo123` | Needs verification |
+| Admin | `__iw_admin__` | `%iwps%` | **VERIFIED** |
+| Demo | `demo@sample.com` | `demo123` | **VERIFIED** |
 
 ---
 
@@ -192,10 +192,12 @@ IW_Launcher/
 
 | Date | Change |
 |------|--------|
-| 2025-12-10 | **Oracle Cloud MySQL** - Remote database fully configured |
+| 2026-02-23 | **E2E Verified** - 29/29 tests pass, all accounts verified working |
+| 2026-02-23 | **Supabase Postgres** - Migrated to Supabase cloud Postgres via connection pooler |
+| 2026-02-18 | **Local Servlet Bridge** - All 9 user/company servlets replaced with local SQL implementations |
+| 2026-02-13 | **Enterprise Docs** - ADRs, onboarding, security, credential rotation docs |
 | 2025-12-10 | **Simplified to 3 scripts** - START, STOP, CHANGE_DATABASE |
 | 2025-12-10 | **Auto-setup** - START.bat now handles first-time configuration |
-| 2025-12-10 | **MySQL Migration** - Using MySQL database |
 | 2025-12-04 | Initial Windows portability release |
 
 ---

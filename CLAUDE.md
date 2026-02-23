@@ -34,11 +34,12 @@ Do not use, read, or reference anything in `frontends/InterWoven/` unless the us
    - Hosts JSP interfaces for profile/config management
    - Default port: 8080
 
-3. **Database** - MySQL-based authentication and configuration
-   - Schemas: `database/mysql_schema.sql` (primary), `postgres_schema.sql`, `schema.sql`
+3. **Database** - Authentication and configuration (MySQL or Postgres)
+   - Schemas: `database/postgres_schema.sql` (primary/Supabase), `mysql_schema.sql` (legacy), `schema.sql`
+   - Connection via Supabase pooler (transaction mode, port 6543) with RLS on all 14 tables
    - Three connection modes (configured via `.env`):
-     - `oracle_cloud` - Shared Oracle Cloud MySQL (129.153.47.225)
-     - `interweave` - InterWeave hosted server (148.62.63.8)
+     - `supabase` - Shared Supabase Postgres (default, verified working)
+     - `interweave` - InterWeave hosted MySQL (***********)
      - `local` - Offline mode (admin only)
 
 ### Integration Flow Architecture
@@ -96,22 +97,22 @@ This:
 ```bash
 ./CHANGE_DATABASE.bat
 ```
-Interactive menu to switch between Oracle Cloud, InterWeave server, or offline mode.
+Interactive menu to switch between Supabase, InterWeave server, or offline mode.
 
 ## Database Configuration
 
 Database settings are in `.env` (auto-created from `.env.example`):
 
 ```bash
-# Set DB_MODE to: oracle_cloud | interweave | local
-DB_MODE=oracle_cloud
+# Set DB_MODE to: supabase | interweave | local
+DB_MODE=supabase
 
-# Oracle Cloud MySQL (default)
-ORACLE_DB_HOST=129.153.47.225
-ORACLE_DB_PORT=3306
-ORACLE_DB_NAME=iw_ide
-ORACLE_DB_USER=iw_admin
-ORACLE_DB_PASSWORD={{ORACLE_DB_PASSWORD}}
+# Supabase Postgres (default)
+SUPABASE_DB_HOST=db.hpodmkchdzwjtlnxjohf.supabase.co
+SUPABASE_DB_PORT=5432
+SUPABASE_DB_NAME=postgres
+SUPABASE_DB_USER=postgres
+SUPABASE_DB_PASSWORD={{SUPABASE_DB_PASSWORD}}
 
 # InterWeave Server (alternative)
 IW_DB_HOST=148.62.63.8
@@ -161,18 +162,52 @@ Edit `web_portal/tomcat/conf/server.xml`:
 
 ## Development Notes
 
+### Verified (2026-02-23)
+
+- **29/29 E2E tests pass** (`web_portal/test_portal.sh`) — pages, registration, login, profiles, password changes, input validation
+- Admin login (`__iw_admin__` / `%iwps%`) — verified
+- Demo user login (`demo@sample.com` / `demo123`) — verified
+- Company registration + full config workflow — verified
+- Supabase Postgres connectivity via pooler (transaction mode, port 6543) — verified
+
 ### Known Issues
 
-1. **Demo User Authentication Not Yet Verified**
-   - Admin account (`__iw_admin__` / `%iwps%`) works
-   - Demo user (`demo@sample.com` / `demo123`) needs end-to-end verification
-   - Original `LoginServlet` was replaced with `LocalLoginServlet` (SHA-256 hex hash, matches MySQL `SHA2()`)
-   - The proprietary hash mismatch issue is resolved; remaining question is whether demo account exists in the target database
+1. **Monitoring Servlets Disabled**
+   - 10 source files in `WEB-INF/src/com/interweave/monitoring/` (5 API + 5 service)
+   - No compiled `.class` files; blocked on `javax.mail` + `com.interweave.error.*` dependencies
+   - All entries commented out in `web.xml`; ~1-2 hours effort to enable
 
-2. **Windows-Centric Design**
+2. **ErrorHandlingFilter Disabled**
+   - Requires compiled error framework web filter class
+   - Commented out in `web.xml`
+
+3. **Windows-Centric Design**
    - Primary scripts are `.bat` files for Windows
    - Linux/Mac scripts available in `scripts/` but less maintained
+   - Shell scripts have CRLF issues on Linux; use direct Tomcat `bin/` invocation
    - Runs in WSL2 but expects Windows paths
+
+### Local Servlet Bridge (User/Company Management)
+
+The original compiled servlets depend on the `iwtransformationserver` webapp (not deployed). All 9 user/company management servlets have been replaced with local SQL-based implementations that query Supabase Postgres directly.
+
+- **Source**: `WEB-INF/src/com/interweave/businessDaemon/config/Local*.java`
+- **Base class**: `LocalUserManagementServlet` — DataSource init, SHA-256 hashing, reflection helper
+- **ADR**: `docs/adr/003-local-servlet-bridge.md`
+- **Full reference**: `docs/development/LOCAL_SERVLETS.md`
+
+Servlets: `LocalLoginServlet`, `LocalRegistrationServlet`, `LocalCompanyRegistrationServlet`, `LocalChangePasswordServlet`, `LocalChangeCompanyPasswordServlet`, `LocalEditProfileServlet`, `LocalSaveProfileServlet`, `LocalEditCompanyProfileServlet`, `LocalSaveCompanyProfileServlet`
+
+**Key gotchas for AI agents**:
+- `TransactionThread` fields (`firstName`, `lastName`, `company`, `title`) have getters but NO setters — must use `setThreadField()` reflection
+- JSP forms send `CompanyOrganization` (not `Company`) and `Type` (not `SolutionType`)
+- `ConfigContext.setHosted(true)` + `setAdminLoggedIn(true)` required before `CompanyConfiguration.jsp`
+- To revert to originals: change `web.xml` servlet-class entries back, restart Tomcat
+
+**Compile command**:
+```bash
+javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/Local*.java
+```
 
 ### Eclipse/IDE Specifics
 
@@ -291,5 +326,5 @@ IW_Launcher/
 
 - `.env` contains production database credentials (excluded from git)
 - Never commit `.env` file
-- Oracle Cloud MySQL credentials are shared across all users
+- Supabase Postgres credentials are shared across all team members
 - Admin password `%iwps%` is hardcoded in authentication system

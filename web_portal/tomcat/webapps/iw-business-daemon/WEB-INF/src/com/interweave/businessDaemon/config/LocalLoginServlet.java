@@ -18,9 +18,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
-import com.interweave.error.ErrorCode;
-import com.interweave.error.ErrorLogger;
-import com.interweave.error.IWError;
+import com.interweave.businessDaemon.ConfigContext;
+import com.interweave.businessDaemon.TransactionContext;
+import com.interweave.businessDaemon.TransactionThread;
+// Error framework imports removed - IWError constructor is not visible from this package.
+// Use servlet log() instead for error reporting.
 
 /**
  * LocalLoginServlet - Authenticates users against the local MySQL database
@@ -63,15 +65,8 @@ public class LocalLoginServlet extends HttpServlet {
         if (email == null || email.trim().isEmpty() ||
             password == null || password.trim().isEmpty()) {
 
-            IWError error = IWError.builder(ErrorCode.VALIDATION001)
-                .message("Please enter both email and password")
-                .affectedComponent("LocalLoginServlet")
-                .cause("Required login credentials not provided")
-                .suggestedResolution("Enter your email address and password to log in")
-                .build();
-
-            ErrorLogger.logError(error);
-            redirectToLogin(request, response, ErrorCode.VALIDATION001,
+            log("Login validation failed: missing email or password");
+            redirectToLogin(request, response, "VALIDATION001",
                            "Please enter both email and password",
                            email, portalBrand, portalSolutions);
             return;
@@ -100,33 +95,44 @@ public class LocalLoginServlet extends HttpServlet {
                 // Update last login timestamp
                 updateLastLogin(conn, userInfo.userId);
 
+                // Set ConfigContext flags so downstream JSPs recognize the login
+                ConfigContext.setHosted(true);
+                ConfigContext.setAdminLoggedIn(true);
+                if (userInfo.isAdmin) {
+                    ConfigContext.setLoggedUserType('A');
+                } else {
+                    ConfigContext.setLoggedUserType('U');
+                }
+
+                // Build profile name in the format expected by downstream JSPs
+                String profileName = userInfo.companyName + ":" + userInfo.email;
+
+                // Set up TransactionThreads in ConfigContext so downstream
+                // JSPs/servlets (CompanyConfiguration, CompanyConfigurationServletOS)
+                // can find the user's profile and configuration.
+                String defaultConfig = "<SF2QBConfiguration></SF2QBConfiguration>";
+                setupTransactionThread(ConfigContext.getCompanyRegistration(), profileName, defaultConfig);
+                setupTransactionThread(ConfigContext.getUpdateCompany(), profileName, defaultConfig);
+                setupTransactionThread(ConfigContext.getRequestCompany(), profileName, defaultConfig);
+
                 log("User authenticated successfully: " + email + " (Company: " + userInfo.companyName + ")");
 
-                // Redirect to company configuration page
-                String redirectUrl = "CompanyConfiguration.jsp";
+                // Redirect to company configuration page with profile
+                String redirectUrl = "CompanyConfiguration.jsp?CurrentProfile="
+                    + java.net.URLEncoder.encode(profileName, "UTF-8")
+                    + "&Solution=" + java.net.URLEncoder.encode(
+                        userInfo.solutionType != null ? userInfo.solutionType : "QB", "UTF-8");
                 if (portalBrand != null && !portalBrand.isEmpty()) {
-                    redirectUrl += "?PortalBrand=" + portalBrand;
-                    if (portalSolutions != null && !portalSolutions.isEmpty()) {
-                        redirectUrl += "&PortalSolutions=" + portalSolutions;
-                    }
-                } else if (portalSolutions != null && !portalSolutions.isEmpty()) {
-                    redirectUrl += "?PortalSolutions=" + portalSolutions;
+                    redirectUrl += "&PortalBrand=" + java.net.URLEncoder.encode(portalBrand, "UTF-8");
+                }
+                if (portalSolutions != null && !portalSolutions.isEmpty()) {
+                    redirectUrl += "&PortalSolutions=" + java.net.URLEncoder.encode(portalSolutions, "UTF-8");
                 }
 
                 response.sendRedirect(redirectUrl);
             } else {
-                // Authentication failed - log and redirect with specific error
-                IWError error = IWError.builder(authResult.errorCode)
-                    .message(authResult.errorMessage)
-                    .affectedComponent("LocalLoginServlet")
-                    .cause(authResult.cause)
-                    .suggestedResolution(authResult.resolution)
-                    .build();
-
-                ErrorLogger.logError(error);
-
-                // Don't log email for invalid credentials (security - avoid info leakage in logs)
-                if (authResult.errorCode == ErrorCode.AUTH001) {
+                // Authentication failed - log and redirect
+                if ("AUTH001".equals(authResult.errorCode)) {
                     log("Authentication failed: Invalid credentials");
                 } else {
                     log("Authentication failed for " + email + ": " + authResult.errorMessage);
@@ -138,17 +144,9 @@ public class LocalLoginServlet extends HttpServlet {
 
         } catch (SQLException e) {
             // Database connection or query error
-            IWError error = IWError.builder(ErrorCode.DB001)
-                .message("Unable to connect to authentication database")
-                .affectedComponent("LocalLoginServlet")
-                .cause("SQLException: " + e.getMessage())
-                .suggestedResolution("Please try again. If the problem persists, contact your system administrator")
-                .throwable(e)
-                .build();
+            log("Database error during authentication: " + e.getMessage());
 
-            ErrorLogger.logError(error);
-
-            redirectToLogin(request, response, ErrorCode.DB001,
+            redirectToLogin(request, response, "DB001",
                            "A system error occurred. Please try again later.",
                            email, portalBrand, portalSolutions);
         }
@@ -190,7 +188,7 @@ public class LocalLoginServlet extends HttpServlet {
                         // Wrong password - return generic invalid credentials error
                         // (don't reveal that the email exists - security best practice)
                         return AuthenticationResult.failure(
-                            ErrorCode.AUTH001,
+                            "AUTH001",
                             "Invalid email or password",
                             "Password verification failed",
                             "Verify your email address and password are correct. " +
@@ -203,7 +201,7 @@ public class LocalLoginServlet extends HttpServlet {
                     // Check if company is inactive
                     if (!companyActive) {
                         return AuthenticationResult.failure(
-                            ErrorCode.AUTH003,
+                            "AUTH003",
                             "Your company account is inactive",
                             "Company account disabled or suspended",
                             "Contact your company administrator or InterWeave support to reactivate your company account. " +
@@ -214,7 +212,7 @@ public class LocalLoginServlet extends HttpServlet {
                     // Check if user is inactive
                     if (!userActive) {
                         return AuthenticationResult.failure(
-                            ErrorCode.AUTH002,
+                            "AUTH002",
                             "Your user account is inactive",
                             "User account disabled",
                             "Contact your company administrator to activate your account. " +
@@ -240,8 +238,8 @@ public class LocalLoginServlet extends HttpServlet {
                     // User not found - return generic invalid credentials error
                     // (don't reveal that the email doesn't exist - security best practice)
                     return AuthenticationResult.failure(
-                        ErrorCode.AUTH001,
-"Invalid email or password",
+                        "AUTH001",
+                        "Invalid email or password",
                         "User not found in database",
                         "Verify your email address and password are correct. " +
                         "If you haven't registered yet, please register first. " +
@@ -311,7 +309,7 @@ public class LocalLoginServlet extends HttpServlet {
      * Redirects back to login page with an error message and error code
      */
     private void redirectToLogin(HttpServletRequest request, HttpServletResponse response,
-                                 ErrorCode errorCode, String errorMessage, String email,
+                                 String errorCode, String errorMessage, String email,
                                  String portalBrand, String portalSolutions) throws IOException {
 
         StringBuilder url = new StringBuilder("IWLogin.jsp?error=");
@@ -319,7 +317,7 @@ public class LocalLoginServlet extends HttpServlet {
 
         // Add error code for specific error handling in JSP
         if (errorCode != null) {
-            url.append("&errorCode=").append(java.net.URLEncoder.encode(errorCode.getCode(), "UTF-8"));
+            url.append("&errorCode=").append(java.net.URLEncoder.encode(errorCode, "UTF-8"));
         }
 
         if (email != null && !email.isEmpty()) {
@@ -336,17 +334,31 @@ public class LocalLoginServlet extends HttpServlet {
     }
 
     /**
+     * Sets up a TransactionThread in the given TransactionContext for the profile.
+     * Creates the thread with a default "configuration" parameter so downstream
+     * servlets (CompanyConfigurationServletOS) don't NPE.
+     */
+    private void setupTransactionThread(TransactionContext ctx, String profileName, String config) {
+        if (ctx == null) return;
+        TransactionThread tt = ctx.addTransactionThread(profileName);
+        if (tt != null) {
+            tt.putParameter("configuration", config);
+            tt.setCompanyConfiguration(config);
+        }
+    }
+
+    /**
      * Inner class to hold authentication result with detailed error information
      */
     private static class AuthenticationResult {
         boolean success;
         UserInfo userInfo;
-        ErrorCode errorCode;
+        String errorCode;
         String errorMessage;
         String cause;
         String resolution;
 
-        private AuthenticationResult(boolean success, UserInfo userInfo, ErrorCode errorCode,
+        private AuthenticationResult(boolean success, UserInfo userInfo, String errorCode,
                                     String errorMessage, String cause, String resolution) {
             this.success = success;
             this.userInfo = userInfo;
@@ -360,7 +372,7 @@ public class LocalLoginServlet extends HttpServlet {
             return new AuthenticationResult(true, userInfo, null, null, null, null);
         }
 
-        static AuthenticationResult failure(ErrorCode errorCode, String errorMessage,
+        static AuthenticationResult failure(String errorCode, String errorMessage,
                                            String cause, String resolution) {
             return new AuthenticationResult(false, null, errorCode, errorMessage, cause, resolution);
         }
