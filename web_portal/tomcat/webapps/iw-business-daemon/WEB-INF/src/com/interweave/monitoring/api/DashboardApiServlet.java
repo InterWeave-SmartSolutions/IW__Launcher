@@ -10,7 +10,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.interweave.error.ErrorCode;
 
 /**
  * DashboardApiServlet - Provides real-time dashboard data for monitoring UI.
@@ -75,7 +74,7 @@ public class DashboardApiServlet extends MonitoringApiServlet {
         // Only support GET for dashboard data
         if (!"GET".equalsIgnoreCase(request.getMethod())) {
             sendErrorResponse(response, HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                ErrorCode.VALIDATION001, "Only GET method is supported for dashboard endpoint");
+                "VALIDATION001", "Only GET method is supported for dashboard endpoint");
             return;
         }
 
@@ -93,7 +92,7 @@ public class DashboardApiServlet extends MonitoringApiServlet {
                 // Security check: non-admin users can only view their own company data
                 if (!isAdminUser && !filterCompanyId.equals(userCompanyId)) {
                     sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                        ErrorCode.AUTH005, "You are not authorized to view data for other companies");
+                        "AUTH005", "You are not authorized to view data for other companies");
                     return;
                 }
             } catch (NumberFormatException e) {
@@ -137,7 +136,7 @@ public class DashboardApiServlet extends MonitoringApiServlet {
         } catch (SQLException e) {
             log("Database error while fetching dashboard data", e);
             sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                ErrorCode.DB001, "Failed to retrieve dashboard data. Please try again.");
+                "DB001", "Failed to retrieve dashboard data. Please try again.");
         }
     }
 
@@ -156,13 +155,13 @@ public class DashboardApiServlet extends MonitoringApiServlet {
         String sql =
             "SELECT " +
             "  COUNT(CASE WHEN status = 'running' THEN 1 END) AS running_count, " +
-            "  COUNT(CASE WHEN status = 'success' AND started_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) THEN 1 END) AS success_24h, " +
-            "  COUNT(CASE WHEN status = 'failed' AND started_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) THEN 1 END) AS failed_24h, " +
-            "  COUNT(CASE WHEN status IN ('success', 'failed') AND started_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) THEN 1 END) AS total_24h, " +
-            "  COUNT(CASE WHEN status = 'success' AND started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) AS success_7d, " +
-            "  COUNT(CASE WHEN status = 'failed' AND started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) AS failed_7d, " +
-            "  COUNT(CASE WHEN status IN ('success', 'failed') AND started_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 END) AS total_7d, " +
-            "  AVG(CASE WHEN status = 'success' AND started_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) THEN duration_ms END) AS avg_duration_ms_24h " +
+            "  COUNT(CASE WHEN status = 'success' AND started_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours' THEN 1 END) AS success_24h, " +
+            "  COUNT(CASE WHEN status = 'failed' AND started_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours' THEN 1 END) AS failed_24h, " +
+            "  COUNT(CASE WHEN status IN ('success', 'failed') AND started_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours' THEN 1 END) AS total_24h, " +
+            "  COUNT(CASE WHEN status = 'success' AND started_at >= CURRENT_TIMESTAMP - INTERVAL '7 days' THEN 1 END) AS success_7d, " +
+            "  COUNT(CASE WHEN status = 'failed' AND started_at >= CURRENT_TIMESTAMP - INTERVAL '7 days' THEN 1 END) AS failed_7d, " +
+            "  COUNT(CASE WHEN status IN ('success', 'failed') AND started_at >= CURRENT_TIMESTAMP - INTERVAL '7 days' THEN 1 END) AS total_7d, " +
+            "  AVG(CASE WHEN status = 'success' AND started_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours' THEN duration_ms END) AS avg_duration_ms_24h " +
             "FROM transaction_executions " +
             (companyId != null ? "WHERE company_id = ? " : "");
 
@@ -247,7 +246,7 @@ public class DashboardApiServlet extends MonitoringApiServlet {
             "  te.flow_name, " +
             "  te.flow_type, " +
             "  te.started_at, " +
-            "  TIMESTAMPDIFF(SECOND, te.started_at, NOW()) * 1000 AS duration_ms, " +
+            "  EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - te.started_at)) * 1000 AS duration_ms, " +
             "  te.records_processed, " +
             "  te.records_failed, " +
             "  p.name AS project_name " +
@@ -315,7 +314,7 @@ public class DashboardApiServlet extends MonitoringApiServlet {
             "  COUNT(CASE WHEN status = 'success' THEN 1 END) AS success, " +
             "  COUNT(CASE WHEN status = 'failed' THEN 1 END) AS failed " +
             "FROM transaction_executions " +
-            "WHERE started_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR) " +
+            "WHERE started_at >= CURRENT_TIMESTAMP - INTERVAL '1 hour' " +
             (companyId != null ? "AND company_id = ? " : "");
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {

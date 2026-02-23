@@ -1227,3 +1227,62 @@ Follow-ups / known issues:
 - context.xml is per-machine (gitignored); context.xml.postgres template exists for reference
 - CRLF in shell scripts causes issues on Linux; use direct Tomcat bin/ invocation as workaround
 - Connection pool set conservatively (maxActive=5) for Supabase free tier; increase for production
+
+---
+
+## 2026-02-23 22:30 (UTC)
+Agent/tool: Warp Agent (Claude Opus 4.6)
+User request: Enable the full IWMonitor monitoring stack (Phase 1) — compile and deploy all monitoring services against Supabase Postgres
+Actions taken:
+- Created `database/monitoring_schema_postgres.sql`: ported all MySQL syntax to Postgres (ENUM→CHECK, TINYINT→BOOLEAN, AUTO_INCREMENT→SERIAL, DATE_FORMAT→to_char, ON DUPLICATE KEY UPDATE→ON CONFLICT, etc.). 6 tables, 3 views, indexes, triggers, default settings. Ran against Supabase — all objects created cleanly.
+- Stripped IWError dependency from all 11 monitoring Java files: removed `com.interweave.error.*` imports, replaced `ErrorCode.XXX` enum refs with String constants, rewrote `MonitoringApiServlet.sendErrorResponse()` signature, removed `IWError.builder()` blocks from all service `logError()` methods.
+- Ported MySQL SQL to Postgres across all 11 files: DATE_SUB→interval, TIMESTAMPDIFF→EXTRACT(EPOCH), DATE_FORMAT→to_char/date_trunc, ON DUPLICATE KEY UPDATE→ON CONFLICT DO UPDATE, NOW()→CURRENT_TIMESTAMP, CURDATE()→CURRENT_DATE, is_enabled=1→true, IF()→CASE WHEN.
+- Downloaded javax.mail-1.6.2.jar and javax.activation-1.2.0.jar from Maven Central into WEB-INF/lib/.
+- Compiled all 11 files with javac -source 1.8 -target 1.8 — clean (warnings only).
+- Uncommented MonitoringContextListener, 4 monitoring servlet definitions, and 5 servlet mappings in web.xml.
+- Restarted Tomcat — all 5 services initialized successfully (MetricsAggregator, AlertService, EmailNotificationService, WebhookNotificationService, TransactionLogger singleton).
+- Created monitoring.properties.template for future SMTP credential setup.
+- Added monitoring.properties to .gitignore (will contain real SMTP credentials).
+- Updated CLAUDE.md (monitoring enabled, compile commands, schema refs, dashboard URL).
+- Updated README.md (version history entry).
+Files changed/created:
+- database/monitoring_schema_postgres.sql (new — Postgres monitoring schema)
+- WEB-INF/src/com/interweave/monitoring/api/*.java (5 files — IWError removed, ErrorCode→String, MySQL→Postgres SQL)
+- WEB-INF/src/com/interweave/monitoring/service/*.java (6 files — IWError removed, MySQL→Postgres SQL)
+- WEB-INF/classes/com/interweave/monitoring/**/*.class (11 compiled class files)
+- WEB-INF/lib/javax.mail-1.6.2.jar (new)
+- WEB-INF/lib/javax.activation-1.2.0.jar (new)
+- WEB-INF/web.xml (uncommented listener + 4 servlets + 5 mappings)
+- WEB-INF/monitoring.properties.template (new — copy of existing config with placeholder SMTP creds)
+- .gitignore (added monitoring.properties exclusion)
+- CLAUDE.md (updated monitoring section, compile commands, schema refs)
+- README.md (added version history entry)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- psql against Supabase to create monitoring schema (6 tables, 3 views, indexes, triggers, RLS)
+- python3 scripts to batch-edit 11 Java files (IWError removal + MySQL→Postgres SQL)
+- wget to download javax.mail + javax.activation JARs
+- javac -source 1.8 -target 1.8 (all 11 monitoring files — clean compile)
+- python3 script to uncomment web.xml blocks
+- Tomcat shutdown/startup
+- curl to test all 4 API endpoints (401 JSON responses — correct, auth required)
+- curl to test Dashboard.jsp (302 redirect to login — correct)
+Verification performed:
+- ✅ All 11 Java files compiled without errors
+- ✅ MonitoringContextListener initialized all 5 services on Tomcat boot (confirmed in catalina.out)
+- ✅ MetricsAggregator running every 60 minutes
+- ✅ EmailNotificationService polling every 30 seconds
+- ✅ WebhookNotificationService polling every 30 seconds
+- ✅ /api/monitoring/dashboard returns JSON {"success":false,"error":{"code":"AUTH004",...}} with HTTP 401
+- ✅ /api/monitoring/metrics returns JSON HTTP 401
+- ✅ /api/monitoring/transactions returns JSON HTTP 401
+- ✅ /api/monitoring/alerts returns JSON HTTP 401
+- ✅ /monitoring/Dashboard.jsp returns 302 redirect to IWLogin.jsp (session required)
+- ✅ Clean shutdown: all services stopped gracefully on Tomcat stop
+Follow-ups / known issues:
+- Phase 1B deferred: TransactionLogger not instrumented into engine (core classes are compiled-only .class files — would need decompilation). Dashboard shows empty tables until instrumented.
+- Phase 1B deferred: Email/webhook delivery not tested (no SMTP credentials yet). Services run and poll but have no data to send.
+- monitoring.properties has placeholder SMTP creds (smtp.username=your-email@gmail.com). Copy .template, fill in real creds when available.
+- ErrorHandlingFilter still disabled in web.xml (requires compiled error framework class)
+- TransactionExecutionWrapper.java exists as the instrumentation hook — designed to wrap transaction execution with automatic monitoring. Will be wired in during Phase 2 (React UI) when we control the API layer.
+- Next: Phase 2 — React UI rebuild with InterWoven components

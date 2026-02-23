@@ -35,7 +35,7 @@ Do not use, read, or reference anything in `frontends/InterWoven/` unless the us
    - Default port: 8080
 
 3. **Database** - Authentication and configuration (MySQL or Postgres)
-   - Schemas: `database/postgres_schema.sql` (primary/Supabase), `mysql_schema.sql` (legacy), `schema.sql`
+   - Schemas: `database/postgres_schema.sql` (primary/Supabase), `database/monitoring_schema_postgres.sql` (monitoring), `mysql_schema.sql` (legacy), `schema.sql`
    - Connection via Supabase pooler (transaction mode, port 6543) with RLS on all 14 tables
    - Three connection modes (configured via `.env`):
      - `supabase` - Shared Supabase Postgres (default, verified working)
@@ -149,6 +149,7 @@ Key pages:
 - `/BDConfigurator.jsp` - Business daemon config
 - `/Registration.jsp` - User registration
 - `/CompanyRegistration.jsp` - Company registration
+- `/monitoring/Dashboard.jsp` - Monitoring dashboard (requires login)
 
 **Change Tomcat Port:**
 Edit `web_portal/tomcat/conf/server.xml`:
@@ -172,10 +173,14 @@ Edit `web_portal/tomcat/conf/server.xml`:
 
 ### Known Issues
 
-1. **Monitoring Servlets Disabled**
-   - 10 source files in `WEB-INF/src/com/interweave/monitoring/` (5 API + 5 service)
-   - No compiled `.class` files; blocked on `javax.mail` + `com.interweave.error.*` dependencies
-   - All entries commented out in `web.xml`; ~1-2 hours effort to enable
+1. **Monitoring System (ENABLED)**
+   - 11 Java files compiled and deployed: 5 API servlets + 6 services (incl. MonitoringContextListener)
+   - All services start on Tomcat boot: MetricsAggregator, AlertService, EmailNotificationService, WebhookNotificationService
+   - API endpoints: `/api/monitoring/dashboard`, `/api/monitoring/transactions/*`, `/api/monitoring/metrics`, `/api/monitoring/alerts/*`, `/api/monitoring/webhooks/*`
+   - Dashboard: `/monitoring/Dashboard.jsp` (requires session)
+   - Schema: `database/monitoring_schema_postgres.sql` (6 tables, 3 views, indexes, triggers, RLS)
+   - Email config: copy `monitoring.properties.template` → `monitoring.properties`, fill in SMTP credentials
+   - **Phase 1B deferred**: TransactionLogger instrumentation (needs engine class decompilation), email delivery testing (needs SMTP credentials)
 
 2. **ErrorHandlingFilter Disabled**
    - Requires compiled error framework web filter class
@@ -204,9 +209,14 @@ Servlets: `LocalLoginServlet`, `LocalRegistrationServlet`, `LocalCompanyRegistra
 - `ConfigContext.setHosted(true)` + `setAdminLoggedIn(true)` required before `CompanyConfiguration.jsp`
 - To revert to originals: change `web.xml` servlet-class entries back, restart Tomcat
 
-**Compile command**:
+**Compile command (Local servlets)**:
 ```bash
 javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/Local*.java
+```
+
+**Compile command (Monitoring)**:
+```bash
+javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/service/*.java web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/api/*.java
 ```
 
 ### Eclipse/IDE Specifics

@@ -13,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.interweave.error.ErrorCode;
 
 /**
  * MetricsApiServlet - Provides time-series performance metrics for trend analysis.
@@ -85,7 +84,7 @@ public class MetricsApiServlet extends MonitoringApiServlet {
         // Only support GET for metrics data
         if (!"GET".equalsIgnoreCase(request.getMethod())) {
             sendErrorResponse(response, HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                ErrorCode.VALIDATION001, "Only GET method is supported for metrics endpoint");
+                "VALIDATION001", "Only GET method is supported for metrics endpoint");
             return;
         }
 
@@ -212,7 +211,7 @@ public class MetricsApiServlet extends MonitoringApiServlet {
         } catch (SQLException e) {
             log("Database error while fetching metrics data", e);
             sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                ErrorCode.DB001, "Failed to retrieve metrics data. Please try again.");
+                "DB001", "Failed to retrieve metrics data. Please try again.");
         }
     }
 
@@ -372,12 +371,12 @@ public class MetricsApiServlet extends MonitoringApiServlet {
     private String getTimeBucketExpression(String granularity) {
         switch (granularity.toLowerCase()) {
             case "hourly":
-                return "DATE_FORMAT(started_at, '%Y-%m-%d %H:00:00')";
+                return "date_trunc('hour', started_at)";
             case "weekly":
-                return "DATE_FORMAT(DATE_SUB(started_at, INTERVAL WEEKDAY(started_at) DAY), '%Y-%m-%d')";
+                return "date_trunc('week', started_at)";
             case "daily":
             default:
-                return "DATE_FORMAT(started_at, '%Y-%m-%d')";
+                return "date_trunc('day', started_at)";
         }
     }
 
@@ -461,7 +460,7 @@ public class MetricsApiServlet extends MonitoringApiServlet {
                 // Security check: non-admin users can only view their own company data
                 if (!isAdmin && !filterCompanyId.equals(userCompanyId)) {
                     sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                        ErrorCode.AUTH005, "You are not authorized to view data for other companies");
+                        "AUTH005", "You are not authorized to view data for other companies");
                     return null;
                 }
 

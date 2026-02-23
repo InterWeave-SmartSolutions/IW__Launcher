@@ -14,7 +14,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.interweave.error.ErrorCode;
 
 /**
  * AlertConfigApiServlet - Provides CRUD operations for alert rules and webhook endpoints.
@@ -73,7 +72,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 handleWebhooksRequest(request, response, conn, method, null);
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                    ErrorCode.VALIDATION001, "Invalid endpoint path");
+                    "VALIDATION001", "Invalid endpoint path");
             }
         } else {
             // Resource-specific endpoints
@@ -85,7 +84,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                         handleAlertHistory(request, response, conn);
                     } else {
                         sendErrorResponse(response, HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                            ErrorCode.VALIDATION001, "Only GET method is supported for alert history endpoint");
+                            "VALIDATION001", "Only GET method is supported for alert history endpoint");
                     }
                 } else {
                     handleAlertRulesRequest(request, response, conn, method, resourcePath);
@@ -95,7 +94,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 handleWebhooksRequest(request, response, conn, method, resourceId);
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                    ErrorCode.VALIDATION001, "Invalid endpoint path");
+                    "VALIDATION001", "Invalid endpoint path");
             }
         }
     }
@@ -134,7 +133,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 break;
             default:
                 sendErrorResponse(response, HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                    ErrorCode.VALIDATION001, "Method " + method + " is not supported for alert rules");
+                    "VALIDATION001", "Method " + method + " is not supported for alert rules");
         }
     }
 
@@ -172,7 +171,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 break;
             default:
                 sendErrorResponse(response, HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                    ErrorCode.VALIDATION001, "Method " + method + " is not supported for webhooks");
+                    "VALIDATION001", "Method " + method + " is not supported for webhooks");
         }
     }
 
@@ -282,7 +281,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                     sendJsonResponse(response, successJson);
                 } else {
                     sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                        ErrorCode.VALIDATION001, "Alert rule not found or you do not have permission to view it");
+                        "VALIDATION001", "Alert rule not found or you do not have permission to view it");
                 }
             }
         }
@@ -388,7 +387,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 }
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    ErrorCode.DB001, "Failed to create alert rule");
+                    "DB001", "Failed to create alert rule");
             }
         }
     }
@@ -414,7 +413,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
         // Verify ownership
         if (!verifyAlertRuleOwnership(conn, id, userCompanyId, isAdminUser)) {
             sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                ErrorCode.AUTH005, "You do not have permission to update this alert rule");
+                "AUTH005", "You do not have permission to update this alert rule");
             return;
         }
 
@@ -569,7 +568,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 sendJsonResponse(response, successJson);
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                    ErrorCode.VALIDATION001, "Alert rule not found");
+                    "VALIDATION001", "Alert rule not found");
             }
         }
     }
@@ -595,7 +594,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
         // Verify ownership
         if (!verifyAlertRuleOwnership(conn, id, userCompanyId, isAdminUser)) {
             sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                ErrorCode.AUTH005, "You do not have permission to delete this alert rule");
+                "AUTH005", "You do not have permission to delete this alert rule");
             return;
         }
 
@@ -611,7 +610,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 sendJsonResponse(response, successJson);
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                    ErrorCode.VALIDATION001, "Alert rule not found");
+                    "VALIDATION001", "Alert rule not found");
             }
         }
     }
@@ -700,7 +699,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                     sendJsonResponse(response, successJson);
                 } else {
                     sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                        ErrorCode.VALIDATION001, "Webhook endpoint not found or you do not have permission to view it");
+                        "VALIDATION001", "Webhook endpoint not found or you do not have permission to view it");
                 }
             }
         }
@@ -794,7 +793,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 }
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    ErrorCode.DB001, "Failed to create webhook endpoint");
+                    "DB001", "Failed to create webhook endpoint");
             }
         }
     }
@@ -820,7 +819,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
         // Verify ownership
         if (!verifyWebhookOwnership(conn, id, userCompanyId, isAdminUser)) {
             sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                ErrorCode.AUTH005, "You do not have permission to update this webhook endpoint");
+                "AUTH005", "You do not have permission to update this webhook endpoint");
             return;
         }
 
@@ -974,7 +973,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 sendJsonResponse(response, successJson);
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                    ErrorCode.VALIDATION001, "Webhook endpoint not found");
+                    "VALIDATION001", "Webhook endpoint not found");
             }
         }
     }
@@ -1000,7 +999,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
         // Verify ownership
         if (!verifyWebhookOwnership(conn, id, userCompanyId, isAdminUser)) {
             sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                ErrorCode.AUTH005, "You do not have permission to delete this webhook endpoint");
+                "AUTH005", "You do not have permission to delete this webhook endpoint");
             return;
         }
 
@@ -1016,7 +1015,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
                 sendJsonResponse(response, successJson);
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                    ErrorCode.VALIDATION001, "Webhook endpoint not found");
+                    "VALIDATION001", "Webhook endpoint not found");
             }
         }
     }
@@ -1509,7 +1508,7 @@ public class AlertConfigApiServlet extends MonitoringApiServlet {
 
                 if (!isAdmin && !filterCompanyId.equals(userCompanyId)) {
                     sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                        ErrorCode.AUTH005, "You are not authorized to view data for other companies");
+                        "AUTH005", "You are not authorized to view data for other companies");
                     return null;
                 }
 

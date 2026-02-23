@@ -16,9 +16,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.interweave.error.ErrorCode;
-import com.interweave.error.ErrorLogger;
-import com.interweave.error.IWError;
 
 /**
  * AlertService - Service that evaluates alert rules and triggers notifications on transaction failures.
@@ -283,7 +280,7 @@ public class AlertService {
             "INSERT INTO alert_history " +
             "(alert_rule_id, execution_id, alert_type, recipient, subject, message, payload_sent, " +
             " status, sent_at, created_at) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW(), NOW())";
+            "VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -324,9 +321,9 @@ public class AlertService {
     private void updateAlertRuleAfterTrigger(int alertRuleId) {
         String sql =
             "UPDATE alert_rules " +
-            "SET last_triggered_at = NOW(), " +
+            "SET last_triggered_at = CURRENT_TIMESTAMP, " +
             "    alerts_sent_today = alerts_sent_today + 1, " +
-            "    updated_at = NOW() " +
+            "    updated_at = CURRENT_TIMESTAMP " +
             "WHERE id = ?";
 
         Connection conn = null;
@@ -364,8 +361,8 @@ public class AlertService {
             "       cooldown_minutes, max_alerts_per_day, last_triggered_at, alerts_sent_today " +
             "FROM alert_rules " +
             "WHERE company_id = ? " +
-            "  AND is_enabled = 1 " +
-            "  AND alert_on_failure = 1 " +  // Currently only handling failures
+            "  AND is_enabled = true " +
+            "  AND alert_on_failure = true " +  // Currently only handling failures
             "  AND (project_id IS NULL OR project_id = ?) " +
             "  AND (flow_name IS NULL OR flow_name = ?) " +
             "ORDER BY flow_name DESC, project_id DESC";  // Specific rules first
@@ -437,7 +434,7 @@ public class AlertService {
             "FROM transaction_executions " +
             "WHERE company_id = ? " +
             "  AND status IN ('failed', 'timeout') " +
-            "  AND started_at >= DATE_SUB(NOW(), INTERVAL ? MINUTE) " +
+            "  AND started_at >= CURRENT_TIMESTAMP - (? * INTERVAL '1 minute') " +
             "  AND (? IS NULL OR project_id = ?) " +
             "  AND (? IS NULL OR flow_name = ?)";
 
@@ -533,7 +530,7 @@ public class AlertService {
      * Gets webhook URL from webhook_endpoints table by ID.
      */
     private String getWebhookUrl(String webhookId) {
-        String sql = "SELECT endpoint_url FROM webhook_endpoints WHERE id = ? AND is_enabled = 1";
+        String sql = "SELECT endpoint_url FROM webhook_endpoints WHERE id = ? AND is_enabled = true";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -664,15 +661,6 @@ public class AlertService {
         if (e != null) {
             e.printStackTrace();
 
-            // Log to IWError framework
-            IWError error = IWError.builder(ErrorCode.DB001)
-                .message(message)
-                .affectedComponent("AlertService")
-                .cause(e.getClass().getSimpleName() + ": " + e.getMessage())
-                .throwable(e)
-                .build();
-
-            ErrorLogger.logError(error);
         }
     }
 

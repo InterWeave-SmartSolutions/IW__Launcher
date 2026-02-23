@@ -24,9 +24,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.interweave.error.ErrorCode;
-import com.interweave.error.ErrorLogger;
-import com.interweave.error.IWError;
 
 /**
  * WebhookNotificationService - Processes pending webhook alerts and dispatches them to external systems.
@@ -343,13 +340,13 @@ public class WebhookNotificationService {
                   "       auth_username, auth_password, auth_token, custom_headers, " +
                   "       timeout_seconds, retry_count, consecutive_failures " +
                   "FROM webhook_endpoints " +
-                  "WHERE id = ? AND is_enabled = 1";
+                  "WHERE id = ? AND is_enabled = true";
         } else {
             sql = "SELECT id, endpoint_name, endpoint_url, http_method, auth_type, " +
                   "       auth_username, auth_password, auth_token, custom_headers, " +
                   "       timeout_seconds, retry_count, consecutive_failures " +
                   "FROM webhook_endpoints " +
-                  "WHERE endpoint_url = ? AND is_enabled = 1";
+                  "WHERE endpoint_url = ? AND is_enabled = true";
         }
 
         Connection conn = null;
@@ -642,7 +639,7 @@ public class WebhookNotificationService {
             "UPDATE alert_history " +
             "SET status = 'retrying', " +
             "    retry_count = ?, " +
-            "    next_retry_at = DATE_ADD(NOW(), INTERVAL ? MINUTE), " +
+            "    next_retry_at = CURRENT_TIMESTAMP + (? * INTERVAL '1 minute'), " +
             "    status_message = ? " +
             "WHERE id = ?";
 
@@ -679,7 +676,7 @@ public class WebhookNotificationService {
             "UPDATE alert_history " +
             "SET status = ?, " +
             "    status_message = ?, " +
-            "    sent_at = NOW() " +
+            "    sent_at = CURRENT_TIMESTAMP " +
             "WHERE id = ?";
 
         Connection conn = null;
@@ -710,9 +707,9 @@ public class WebhookNotificationService {
     private void updateWebhookEndpointSuccess(int endpointId) {
         String sql =
             "UPDATE webhook_endpoints " +
-            "SET last_success_at = NOW(), " +
+            "SET last_success_at = CURRENT_TIMESTAMP, " +
             "    consecutive_failures = 0, " +
-            "    updated_at = NOW() " +
+            "    updated_at = CURRENT_TIMESTAMP " +
             "WHERE id = ?";
 
         Connection conn = null;
@@ -746,10 +743,10 @@ public class WebhookNotificationService {
 
         String sql =
             "UPDATE webhook_endpoints " +
-            "SET last_failure_at = NOW(), " +
+            "SET last_failure_at = CURRENT_TIMESTAMP, " +
             "    consecutive_failures = consecutive_failures + 1, " +
-            "    is_enabled = IF(consecutive_failures + 1 >= ?, 0, is_enabled), " +
-            "    updated_at = NOW() " +
+            "    is_enabled = CASE WHEN consecutive_failures + 1 >= ? THEN false ELSE is_enabled END, " +
+            "    updated_at = CURRENT_TIMESTAMP " +
             "WHERE id = ?";
 
         Connection conn = null;
@@ -858,15 +855,6 @@ public class WebhookNotificationService {
         if (e != null) {
             e.printStackTrace();
 
-            // Log to IWError framework
-            IWError error = IWError.builder(ErrorCode.DB001)
-                .message(message)
-                .affectedComponent("WebhookNotificationService")
-                .cause(e.getClass().getSimpleName() + ": " + e.getMessage())
-                .throwable(e)
-                .build();
-
-            ErrorLogger.logError(error);
         }
     }
 

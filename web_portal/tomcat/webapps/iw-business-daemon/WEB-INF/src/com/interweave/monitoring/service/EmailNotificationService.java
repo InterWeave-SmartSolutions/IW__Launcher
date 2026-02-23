@@ -24,9 +24,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.interweave.error.ErrorCode;
-import com.interweave.error.ErrorLogger;
-import com.interweave.error.IWError;
 
 /**
  * EmailNotificationService - Processes pending email alerts and sends them via JavaMail.
@@ -546,7 +543,7 @@ public class EmailNotificationService {
             "UPDATE alert_history " +
             "SET status = 'retrying', " +
             "    retry_count = ?, " +
-            "    next_retry_at = DATE_ADD(NOW(), INTERVAL ? MINUTE), " +
+            "    next_retry_at = CURRENT_TIMESTAMP + (? * INTERVAL '1 minute'), " +
             "    status_message = ? " +
             "WHERE id = ?";
 
@@ -583,7 +580,7 @@ public class EmailNotificationService {
             "UPDATE alert_history " +
             "SET status = ?, " +
             "    status_message = ?, " +
-            "    sent_at = NOW() " +
+            "    sent_at = CURRENT_TIMESTAMP " +
             "WHERE id = ?";
 
         Connection conn = null;
@@ -672,15 +669,6 @@ public class EmailNotificationService {
         if (e != null) {
             e.printStackTrace();
 
-            // Log to IWError framework
-            IWError error = IWError.builder(ErrorCode.DB001)
-                .message(message)
-                .affectedComponent("EmailNotificationService")
-                .cause(e.getClass().getSimpleName() + ": " + e.getMessage())
-                .throwable(e)
-                .build();
-
-            ErrorLogger.logError(error);
         }
     }
 

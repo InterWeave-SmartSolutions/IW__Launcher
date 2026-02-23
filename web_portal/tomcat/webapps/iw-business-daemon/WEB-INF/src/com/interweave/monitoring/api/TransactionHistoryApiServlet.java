@@ -13,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.interweave.error.ErrorCode;
 
 /**
  * TransactionHistoryApiServlet - Provides transaction execution history with search and filtering.
@@ -85,7 +84,7 @@ public class TransactionHistoryApiServlet extends MonitoringApiServlet {
         // Only support GET for transaction history
         if (!"GET".equalsIgnoreCase(request.getMethod())) {
             sendErrorResponse(response, HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                ErrorCode.VALIDATION001, "Only GET method is supported for transaction history endpoint");
+                "VALIDATION001", "Only GET method is supported for transaction history endpoint");
             return;
         }
 
@@ -208,7 +207,7 @@ public class TransactionHistoryApiServlet extends MonitoringApiServlet {
         } catch (SQLException e) {
             log("Database error while fetching transaction history", e);
             sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                ErrorCode.DB001, "Failed to retrieve transaction history. Please try again.");
+                "DB001", "Failed to retrieve transaction history. Please try again.");
         }
     }
 
@@ -237,7 +236,7 @@ public class TransactionHistoryApiServlet extends MonitoringApiServlet {
 
             if (executionJson == null) {
                 sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                    ErrorCode.VALIDATION001, "Transaction not found or you do not have permission to view it.");
+                    "VALIDATION001", "Transaction not found or you do not have permission to view it.");
                 return;
             }
 
@@ -258,7 +257,7 @@ public class TransactionHistoryApiServlet extends MonitoringApiServlet {
         } catch (SQLException e) {
             log("Database error while fetching transaction detail", e);
             sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                ErrorCode.DB001, "Failed to retrieve transaction details. Please try again.");
+                "DB001", "Failed to retrieve transaction details. Please try again.");
         }
     }
 
@@ -784,7 +783,7 @@ public class TransactionHistoryApiServlet extends MonitoringApiServlet {
                 // Security check: non-admin users can only view their own company data
                 if (!isAdmin && !filterCompanyId.equals(userCompanyId)) {
                     sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
-                        ErrorCode.AUTH005, "You are not authorized to view data for other companies");
+                        "AUTH005", "You are not authorized to view data for other companies");
                     return null;
                 }
 

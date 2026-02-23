@@ -14,9 +14,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.interweave.error.ErrorCode;
-import com.interweave.error.ErrorLogger;
-import com.interweave.error.IWError;
 
 /**
  * MetricsAggregator - Service that periodically aggregates raw execution data into hourly/daily metrics.
@@ -205,7 +202,7 @@ public class MetricsAggregator {
     /**
      * Aggregates hourly metrics from transaction_executions.
      * Only processes complete hours (not current hour).
-     * Uses INSERT ... ON DUPLICATE KEY UPDATE for idempotent aggregation.
+            "ON CONFLICT (company_id, project_id, flow_name, metric_period, period_start) DO UPDATE SET " +
      *
      * @return true if aggregation successful, false otherwise
      */
@@ -223,8 +220,8 @@ public class MetricsAggregator {
             "  project_id, " +
             "  flow_name, " +
             "  'hourly' AS metric_period, " +
-            "  DATE_FORMAT(started_at, '%Y-%m-%d %H:00:00') AS period_start, " +
-            "  DATE_FORMAT(started_at, '%Y-%m-%d %H:59:59') AS period_end, " +
+            "  date_trunc('hour', started_at) AS period_start, " +
+            "  date_trunc('hour', started_at) + INTERVAL '1 hour' - INTERVAL '1 second' AS period_end, " +
             "  COUNT(*) AS total_executions, " +
             "  SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successful_executions, " +
             "  SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed_executions, " +
@@ -238,27 +235,27 @@ public class MetricsAggregator {
             "  SUM(COALESCE(records_failed, 0)) AS total_records_failed, " +
             "  AVG(COALESCE(records_processed, 0)) AS avg_records_per_execution, " +
             "  ROUND(SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS success_rate_percent, " +
-            "  NOW() AS computed_at " +
+            "  CURRENT_TIMESTAMP AS computed_at " +
             "FROM transaction_executions " +
-            "WHERE started_at >= DATE_SUB(NOW(), INTERVAL 48 HOUR) " +  // Process last 48 hours
-            "  AND started_at < DATE_FORMAT(NOW(), '%Y-%m-%d %H:00:00') " +  // Only complete hours
+            "WHERE started_at >= CURRENT_TIMESTAMP - INTERVAL '48 hours' " +  // Process last 48 hours
+            "  AND started_at < date_trunc('hour', CURRENT_TIMESTAMP) " +  // Only complete hours
             "  AND status IN ('success', 'failed', 'cancelled', 'timeout') " +  // Exclude running
-            "GROUP BY company_id, project_id, flow_name, DATE_FORMAT(started_at, '%Y-%m-%d %H:00:00') " +
-            "ON DUPLICATE KEY UPDATE " +
-            "  total_executions = VALUES(total_executions), " +
-            "  successful_executions = VALUES(successful_executions), " +
-            "  failed_executions = VALUES(failed_executions), " +
-            "  cancelled_executions = VALUES(cancelled_executions), " +
-            "  timeout_executions = VALUES(timeout_executions), " +
-            "  total_duration_ms = VALUES(total_duration_ms), " +
-            "  avg_duration_ms = VALUES(avg_duration_ms), " +
-            "  min_duration_ms = VALUES(min_duration_ms), " +
-            "  max_duration_ms = VALUES(max_duration_ms), " +
-            "  total_records_processed = VALUES(total_records_processed), " +
-            "  total_records_failed = VALUES(total_records_failed), " +
-            "  avg_records_per_execution = VALUES(avg_records_per_execution), " +
-            "  success_rate_percent = VALUES(success_rate_percent), " +
-            "  computed_at = NOW()";
+            "GROUP BY company_id, project_id, flow_name, date_trunc('hour', started_at) " +
+            "ON CONFLICT (company_id, project_id, flow_name, metric_period, period_start) DO UPDATE SET " +
+            "  total_executions = EXCLUDED.total_executions, " +
+            "  successful_executions = EXCLUDED.successful_executions, " +
+            "  failed_executions = EXCLUDED.failed_executions, " +
+            "  cancelled_executions = EXCLUDED.cancelled_executions, " +
+            "  timeout_executions = EXCLUDED.timeout_executions, " +
+            "  total_duration_ms = EXCLUDED.total_duration_ms, " +
+            "  avg_duration_ms = EXCLUDED.avg_duration_ms, " +
+            "  min_duration_ms = EXCLUDED.min_duration_ms, " +
+            "  max_duration_ms = EXCLUDED.max_duration_ms, " +
+            "  total_records_processed = EXCLUDED.total_records_processed, " +
+            "  total_records_failed = EXCLUDED.total_records_failed, " +
+            "  avg_records_per_execution = EXCLUDED.avg_records_per_execution, " +
+            "  success_rate_percent = EXCLUDED.success_rate_percent, " +
+            "  computed_at = CURRENT_TIMESTAMP";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -283,7 +280,7 @@ public class MetricsAggregator {
     /**
      * Aggregates daily metrics from transaction_executions.
      * Only processes complete days (not today).
-     * Uses INSERT ... ON DUPLICATE KEY UPDATE for idempotent aggregation.
+            "ON CONFLICT (company_id, project_id, flow_name, metric_period, period_start) DO UPDATE SET " +
      *
      * @return true if aggregation successful, false otherwise
      */
@@ -301,8 +298,8 @@ public class MetricsAggregator {
             "  project_id, " +
             "  flow_name, " +
             "  'daily' AS metric_period, " +
-            "  DATE_FORMAT(started_at, '%Y-%m-%d 00:00:00') AS period_start, " +
-            "  DATE_FORMAT(started_at, '%Y-%m-%d 23:59:59') AS period_end, " +
+            "  date_trunc('day', started_at) AS period_start, " +
+            "  date_trunc('day', started_at) + INTERVAL '1 day' - INTERVAL '1 second' AS period_end, " +
             "  COUNT(*) AS total_executions, " +
             "  SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) AS successful_executions, " +
             "  SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed_executions, " +
@@ -316,27 +313,27 @@ public class MetricsAggregator {
             "  SUM(COALESCE(records_failed, 0)) AS total_records_failed, " +
             "  AVG(COALESCE(records_processed, 0)) AS avg_records_per_execution, " +
             "  ROUND(SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS success_rate_percent, " +
-            "  NOW() AS computed_at " +
+            "  CURRENT_TIMESTAMP AS computed_at " +
             "FROM transaction_executions " +
-            "WHERE started_at >= DATE_SUB(CURDATE(), INTERVAL 14 DAY) " +  // Process last 14 days
-            "  AND started_at < CURDATE() " +  // Only complete days (not today)
+            "WHERE started_at >= CURRENT_DATE - INTERVAL '14 days' " +  // Process last 14 days
+            "  AND started_at < CURRENT_DATE " +  // Only complete days (not today)
             "  AND status IN ('success', 'failed', 'cancelled', 'timeout') " +  // Exclude running
-            "GROUP BY company_id, project_id, flow_name, DATE_FORMAT(started_at, '%Y-%m-%d') " +
-            "ON DUPLICATE KEY UPDATE " +
-            "  total_executions = VALUES(total_executions), " +
-            "  successful_executions = VALUES(successful_executions), " +
-            "  failed_executions = VALUES(failed_executions), " +
-            "  cancelled_executions = VALUES(cancelled_executions), " +
-            "  timeout_executions = VALUES(timeout_executions), " +
-            "  total_duration_ms = VALUES(total_duration_ms), " +
-            "  avg_duration_ms = VALUES(avg_duration_ms), " +
-            "  min_duration_ms = VALUES(min_duration_ms), " +
-            "  max_duration_ms = VALUES(max_duration_ms), " +
-            "  total_records_processed = VALUES(total_records_processed), " +
-            "  total_records_failed = VALUES(total_records_failed), " +
-            "  avg_records_per_execution = VALUES(avg_records_per_execution), " +
-            "  success_rate_percent = VALUES(success_rate_percent), " +
-            "  computed_at = NOW()";
+            "GROUP BY company_id, project_id, flow_name, date_trunc('day', started_at) " +
+            "ON CONFLICT (company_id, project_id, flow_name, metric_period, period_start) DO UPDATE SET " +
+            "  total_executions = EXCLUDED.total_executions, " +
+            "  successful_executions = EXCLUDED.successful_executions, " +
+            "  failed_executions = EXCLUDED.failed_executions, " +
+            "  cancelled_executions = EXCLUDED.cancelled_executions, " +
+            "  timeout_executions = EXCLUDED.timeout_executions, " +
+            "  total_duration_ms = EXCLUDED.total_duration_ms, " +
+            "  avg_duration_ms = EXCLUDED.avg_duration_ms, " +
+            "  min_duration_ms = EXCLUDED.min_duration_ms, " +
+            "  max_duration_ms = EXCLUDED.max_duration_ms, " +
+            "  total_records_processed = EXCLUDED.total_records_processed, " +
+            "  total_records_failed = EXCLUDED.total_records_failed, " +
+            "  avg_records_per_execution = EXCLUDED.avg_records_per_execution, " +
+            "  success_rate_percent = EXCLUDED.success_rate_percent, " +
+            "  computed_at = CURRENT_TIMESTAMP";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -410,7 +407,7 @@ public class MetricsAggregator {
      * @return true if cleanup successful, false otherwise
      */
     private boolean cleanupOldExecutions(int retentionDays) {
-        String sql = "DELETE FROM transaction_executions WHERE started_at < DATE_SUB(NOW(), INTERVAL ? DAY)";
+        String sql = "DELETE FROM transaction_executions WHERE started_at < CURRENT_TIMESTAMP - (? * INTERVAL '1 day')";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -442,7 +439,7 @@ public class MetricsAggregator {
      * @return true if cleanup successful, false otherwise
      */
     private boolean cleanupOldMetrics(int retentionDays) {
-        String sql = "DELETE FROM transaction_metrics WHERE period_start < DATE_SUB(NOW(), INTERVAL ? DAY)";
+        String sql = "DELETE FROM transaction_metrics WHERE period_start < CURRENT_TIMESTAMP - (? * INTERVAL '1 day')";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -474,7 +471,7 @@ public class MetricsAggregator {
      * @return true if cleanup successful, false otherwise
      */
     private boolean cleanupOldAlerts(int retentionDays) {
-        String sql = "DELETE FROM alert_history WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)";
+        String sql = "DELETE FROM alert_history WHERE created_at < CURRENT_TIMESTAMP - (? * INTERVAL '1 day')";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -644,15 +641,6 @@ public class MetricsAggregator {
         if (e != null) {
             e.printStackTrace();
 
-            // Log to IWError framework
-            IWError error = IWError.builder(ErrorCode.DB001)
-                .message(message)
-                .affectedComponent("MetricsAggregator")
-                .cause(e.getClass().getSimpleName() + ": " + e.getMessage())
-                .throwable(e)
-                .build();
-
-            ErrorLogger.logError(error);
         }
     }
 }

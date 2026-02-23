@@ -15,9 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
-import com.interweave.error.ErrorCode;
-import com.interweave.error.ErrorLogger;
-import com.interweave.error.IWError;
 
 /**
  * MonitoringApiServlet - Base class for monitoring REST API servlets.
@@ -104,7 +101,7 @@ public abstract class MonitoringApiServlet extends HttpServlet {
             // Validate user session
             if (!isAuthenticated(request)) {
                 sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
-                    ErrorCode.AUTH004, "Session expired. Please log in again.");
+                    "AUTH004", "Session expired. Please log in again.");
                 return;
             }
 
@@ -112,33 +109,19 @@ public abstract class MonitoringApiServlet extends HttpServlet {
             try (Connection conn = dataSource.getConnection()) {
                 processRequest(request, response, conn);
             } catch (SQLException e) {
-                IWError error = IWError.builder(ErrorCode.DB001)
-                    .message("Database error occurred while processing request")
-                    .affectedComponent(this.getClass().getSimpleName())
-                    .cause("SQLException: " + e.getMessage())
-                    .suggestedResolution("Please try again. If the problem persists, contact your system administrator")
-                    .throwable(e)
-                    .build();
-
-                ErrorLogger.logError(error);
+                System.err.println("Database error in " + this.getClass().getSimpleName() + ": " + e.getMessage());
+                e.printStackTrace();
 
                 sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    ErrorCode.DB001, "A database error occurred. Please try again.");
+                    "DB001", "A database error occurred. Please try again.");
             }
 
         } catch (Exception e) {
-            IWError error = IWError.builder(ErrorCode.SYSTEM001)
-                .message("Unexpected error occurred while processing API request")
-                .affectedComponent(this.getClass().getSimpleName())
-                .cause("Exception: " + e.getMessage())
-                .suggestedResolution("Please try again. If the problem persists, contact your system administrator")
-                .throwable(e)
-                .build();
-
-            ErrorLogger.logError(error);
+            System.err.println("Unexpected error in " + this.getClass().getSimpleName() + ": " + e.getMessage());
+            e.printStackTrace();
 
             sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                ErrorCode.SYSTEM001, "An unexpected error occurred. Please try again.");
+                "SYSTEM001", "An unexpected error occurred. Please try again.");
         }
     }
 
@@ -325,16 +308,11 @@ public abstract class MonitoringApiServlet extends HttpServlet {
      * @throws IOException If an I/O error occurs
      */
     protected void sendErrorResponse(HttpServletResponse response, int statusCode,
-                                     ErrorCode errorCode, String message) throws IOException {
+                                     String errorCode, String message) throws IOException {
         response.setStatus(statusCode);
 
-        IWError error = IWError.builder(errorCode)
-            .message(message)
-            .affectedComponent(this.getClass().getSimpleName())
-            .build();
-
         PrintWriter out = response.getWriter();
-        out.print(buildErrorJson(error));
+        out.print(buildErrorJson(errorCode, message));
         out.flush();
     }
 
@@ -347,7 +325,7 @@ public abstract class MonitoringApiServlet extends HttpServlet {
      */
     protected void sendValidationError(HttpServletResponse response, String message) throws IOException {
         sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-            ErrorCode.VALIDATION001, message);
+            "VALIDATION001", message);
     }
 
     /**
@@ -356,19 +334,13 @@ public abstract class MonitoringApiServlet extends HttpServlet {
      * @param error The IWError object
      * @return JSON error response string
      */
-    private String buildErrorJson(IWError error) {
+    private String buildErrorJson(String errorCode, String message) {
         StringBuilder json = new StringBuilder();
         json.append("{");
         json.append("\"success\":false,");
         json.append("\"error\":{");
-        json.append("\"code\":\"").append(escapeJson(error.getCode())).append("\",");
-        json.append("\"message\":\"").append(escapeJson(error.getMessage())).append("\"");
-
-        if (error.getSuggestedResolution() != null) {
-            json.append(",\"suggestedResolution\":\"")
-                .append(escapeJson(error.getSuggestedResolution())).append("\"");
-        }
-
+        json.append("\"code\":\"").append(escapeJson(errorCode)).append("\",");
+        json.append("\"message\":\"").append(escapeJson(message)).append("\"");
         json.append("}");
         json.append("}");
         return json.toString();

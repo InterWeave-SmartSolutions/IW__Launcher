@@ -139,3 +139,7 @@ docs/tutorials/*.m4v
 
 # Audio
 *.mp3
+
+# ===== Monitoring Config (contains SMTP credentials) =====
+web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties
+!web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties.template

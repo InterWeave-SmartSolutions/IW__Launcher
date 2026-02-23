@@ -12,9 +12,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.interweave.error.ErrorCode;
-import com.interweave.error.ErrorLogger;
-import com.interweave.error.IWError;
 
 /**
  * TransactionLogger - Service class for logging detailed transaction execution data.
@@ -134,7 +131,7 @@ public class TransactionLogger {
             "INSERT INTO transaction_executions " +
             "(execution_id, company_id, project_id, transformation_id, flow_name, flow_type, " +
             " status, started_at, triggered_by, triggered_by_user_id, server_hostname, records_processed, records_failed, records_skipped) " +
-            "VALUES (?, ?, ?, ?, ?, ?, 'running', NOW(), ?, ?, ?, 0, 0, 0)";
+            "VALUES (?, ?, ?, ?, ?, ?, 'running', CURRENT_TIMESTAMP, ?, ?, ?, 0, 0, 0)";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -191,7 +188,7 @@ public class TransactionLogger {
 
         String sql =
             "UPDATE transaction_executions " +
-            "SET records_processed = ?, records_failed = ?, updated_at = NOW() " +
+            "SET records_processed = ?, records_failed = ?, updated_at = CURRENT_TIMESTAMP " +
             "WHERE execution_id = ? AND status = 'running'";
 
         Connection conn = null;
@@ -238,12 +235,12 @@ public class TransactionLogger {
         String sql =
             "UPDATE transaction_executions " +
             "SET status = 'success', " +
-            "    completed_at = NOW(), " +
-            "    duration_ms = TIMESTAMPDIFF(MICROSECOND, started_at, NOW()) / 1000, " +
+            "    completed_at = CURRENT_TIMESTAMP, " +
+            "    duration_ms = CAST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - started_at)) * 1000 AS INTEGER), " +
             "    records_processed = ?, " +
             "    records_failed = ?, " +
             "    records_skipped = ?, " +
-            "    updated_at = NOW() " +
+            "    updated_at = CURRENT_TIMESTAMP " +
             "WHERE execution_id = ? AND status = 'running'";
 
         Connection conn = null;
@@ -308,12 +305,12 @@ public class TransactionLogger {
         String sql =
             "UPDATE transaction_executions " +
             "SET status = 'failed', " +
-            "    completed_at = NOW(), " +
-            "    duration_ms = TIMESTAMPDIFF(MICROSECOND, started_at, NOW()) / 1000, " +
+            "    completed_at = CURRENT_TIMESTAMP, " +
+            "    duration_ms = CAST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - started_at)) * 1000 AS INTEGER), " +
             "    error_message = ?, " +
             "    error_code = ?, " +
             "    stack_trace = ?, " +
-            "    updated_at = NOW() " +
+            "    updated_at = CURRENT_TIMESTAMP " +
             "WHERE execution_id = ? AND status = 'running'";
 
         Connection conn = null;
@@ -365,11 +362,11 @@ public class TransactionLogger {
         String sql =
             "UPDATE transaction_executions " +
             "SET status = 'timeout', " +
-            "    completed_at = NOW(), " +
-            "    duration_ms = TIMESTAMPDIFF(MICROSECOND, started_at, NOW()) / 1000, " +
+            "    completed_at = CURRENT_TIMESTAMP, " +
+            "    duration_ms = CAST(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - started_at)) * 1000 AS INTEGER), " +
             "    error_message = ?, " +
             "    error_code = 'TIMEOUT', " +
-            "    updated_at = NOW() " +
+            "    updated_at = CURRENT_TIMESTAMP " +
             "WHERE execution_id = ? AND status = 'running'";
 
         Connection conn = null;
@@ -446,7 +443,7 @@ public class TransactionLogger {
             "INSERT INTO transaction_payloads " +
             "(execution_id, payload_type, payload_format, payload_data, payload_size, " +
             " captured_at, source_system, destination_system) " +
-            "VALUES (?, ?, ?, ?, ?, NOW(), ?, ?)";
+            "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -620,15 +617,6 @@ public class TransactionLogger {
         if (e != null) {
             e.printStackTrace();
 
-            // Log to IWError framework
-            IWError error = IWError.builder(ErrorCode.DB001)
-                .message(message)
-                .affectedComponent("TransactionLogger")
-                .cause(e.getClass().getSimpleName() + ": " + e.getMessage())
-                .throwable(e)
-                .build();
-
-            ErrorLogger.logError(error);
         }
     }
 }

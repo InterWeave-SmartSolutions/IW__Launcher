@@ -13,7 +13,6 @@
 	</welcome-file-list>
 
 	<!-- Monitoring Context Listener - starts/stops metrics aggregation scheduler -->
-	<!-- TEMPORARILY DISABLED - requires javax.mail dependency and compiled monitoring classes
 	<listener>
 		<listener-class>com.interweave.monitoring.service.MonitoringContextListener</listener-class>
 		<description>
@@ -21,7 +20,6 @@
 		on application shutdown. Manages the MetricsAggregator scheduler lifecycle.
 		</description>
 	</listener>
-	-->
 
 	<!-- Error Handling Filter - catches uncaught exceptions -->
 	<!-- TEMPORARILY DISABLED - requires compiled error framework classes
@@ -285,8 +283,7 @@
 		<servlet-class>
 		com.interweave.businessDaemon.config.CompanyConfigurationServletDTT2</servlet-class>
 	</servlet>
-	<!-- DISABLED: Monitoring API servlets - source exists in WEB-INF/src/com/interweave/monitoring/api/
-	     but has not been compiled. To enable: compile sources, deploy to WEB-INF/classes, then uncomment.
+	<!-- Monitoring API servlets -->
 	<servlet>
 		<servlet-name>DashboardApiServlet</servlet-name>
 		<servlet-class>com.interweave.monitoring.api.DashboardApiServlet</servlet-class>
@@ -307,7 +304,6 @@
 		<servlet-class>com.interweave.monitoring.api.AlertConfigApiServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
-	-->
         <servlet-mapping>
 		<servlet-name>IWBusinessDaemon</servlet-name>
 		<url-pattern>/failover</url-pattern>
@@ -422,7 +418,7 @@
         	<servlet-name>CompanyConfigurationServletDTT2</servlet-name>
         	<url-pattern>/CompanyConfigurationServletDTT2</url-pattern>
         </servlet-mapping>
-        <!-- DISABLED: Monitoring API mappings - see monitoring servlet comment above
+        <!-- Monitoring API mappings -->
         <servlet-mapping>
         	<servlet-name>DashboardApiServlet</servlet-name>
         	<url-pattern>/api/monitoring/dashboard</url-pattern>
@@ -443,7 +439,6 @@
         	<servlet-name>AlertConfigApiServlet</servlet-name>
         	<url-pattern>/api/monitoring/webhooks/*</url-pattern>
         </servlet-mapping>
-        -->
 	<session-config>
 		<session-timeout>30</session-timeout>
 	</session-config>
