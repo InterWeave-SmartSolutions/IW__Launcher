@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* ===== IW Portal Theme: ASSA-inspired dark/light ===== */
+
+:root {
+  /* Light mode (default for :root, overridden by .dark) */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --success: 142 71% 45%;
+  --success-foreground: 210 40% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 222.2 84% 4.9%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 217 91% 60%;
+  --radius: 1.125rem;
+
+  /* Sidebar (light) */
+  --sidebar: 210 40% 98%;
+  --sidebar-foreground: 222.2 84% 4.9%;
+  --sidebar-border: 214.3 31.8% 91.4%;
+  --sidebar-accent: 217 91% 60%;
+}
+
+.dark {
+  /* ASSA dark palette */
+  --background: 222 68% 6%;
+  --foreground: 226 100% 95%;
+  --card: 222 56% 12%;
+  --card-foreground: 226 100% 95%;
+  --popover: 222 56% 12%;
+  --popover-foreground: 226 100% 95%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 226 100% 95%;
+  --secondary: 222 56% 15%;
+  --secondary-foreground: 226 100% 95%;
+  --muted: 222 56% 15%;
+  --muted-foreground: 224 30% 76%;
+  --accent: 222 56% 18%;
+  --accent-foreground: 226 100% 95%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 226 100% 95%;
+  --success: 142 71% 45%;
+  --success-foreground: 226 100% 95%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 222 68% 6%;
+  --border: 0 0% 100% / 0.10;
+  --input: 0 0% 100% / 0.10;
+  --ring: 217 91% 60%;
+
+  /* Sidebar (dark — ASSA glassmorphism) */
+  --sidebar: 222 56% 10%;
+  --sidebar-foreground: 226 100% 95%;
+  --sidebar-border: 0 0% 100% / 0.10;
+  --sidebar-accent: 217 91% 60%;
+}
+
+/* Base styles */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ASSA-style radial gradient background (dark mode only) */
+.dark body,
+.dark .app-background {
+  background:
+    radial-gradient(1000px 700px at 15% 10%, hsl(217 91% 60% / 0.16), transparent 55%),
+    radial-gradient(800px 600px at 85% 15%, hsl(142 71% 45% / 0.12), transparent 60%),
+    radial-gradient(700px 500px at 55% 90%, hsl(38 92% 50% / 0.06), transparent 60%),
+    hsl(var(--background));
+}
+
+/* Utility classes */
+@layer utilities {
+  .glass-panel {
+    background: linear-gradient(180deg, hsl(var(--card) / 0.76), hsl(var(--card) / 0.76));
+    border: 1px solid hsl(var(--border));
+    backdrop-filter: blur(10px);
+  }
+  .glass-sidebar {
+    background: linear-gradient(180deg, hsl(var(--sidebar) / 0.92), hsl(var(--sidebar) / 0.92));
+    border-right: 1px solid hsl(var(--sidebar-border));
+    backdrop-filter: blur(10px);
+  }
+}

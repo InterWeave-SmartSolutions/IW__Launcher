@@ -1286,3 +1286,51 @@ Follow-ups / known issues:
 - ErrorHandlingFilter still disabled in web.xml (requires compiled error framework class)
 - TransactionExecutionWrapper.java exists as the instrumentation hook — designed to wrap transaction execution with automatic monitoring. Will be wired in during Phase 2 (React UI) when we control the API layer.
 - Next: Phase 2 — React UI rebuild with InterWoven components
+
+---
+
+## 2026-02-24 00:30 (UTC)
+Agent/tool: Warp Agent (Claude Opus 4.6)
+User request: Create Phase 2 IW Portal — modern React dashboard UI combining ASSA, InterWoven, and JSP designs. Must have classic view toggle, dark/light mode, and hook page architecture for existing web forms.
+Actions taken:
+- Deep analyzed all 3 UI sources: ASSA portals (20 HTML pages, dark glassmorphism theme, 12-col grid, KPI cards, operational queue tables), InterWoven (109 TSX components, shadcn/ui, Sidebar/Dashboard/MonitoringCenter/AuthLogin patterns), JSP pages (27 pages, 30+ servlets, session auth flow map)
+- Created Phase 2 implementation plan with 6 steps
+- Chose stack: Vite + React 18 + TypeScript strict + Tailwind + shadcn/ui + TanStack Query + React Router v7 + Recharts + react-hook-form + zod
+- Scaffolded `frontends/iw-portal/` with `npm create vite` + installed all dependencies
+- Created 24 source files: vite.config.ts (proxy to Tomcat), Tailwind CSS with ASSA dark/light theme vars, ThemeProvider (dark/light/system toggle, localStorage), QueryProvider, AppShell + Sidebar + Topbar + ClassicViewBanner layout, DashboardPage (KPI cards, transaction table, quick actions), MonitoringPage (tab nav), LoginPage (ASSA split-panel layout), ClassicRedirectPage (hook page pattern), routes.tsx (React Router with classic path mapping), API fetch wrapper, type definitions
+- Fixed 10 TypeScript strict-mode errors (unused imports, null assertions)
+- Verified: `tsc --noEmit` passes with zero errors, `vite build` succeeds (359KB JS + 20KB CSS)
+Files changed/created:
+- frontends/iw-portal/ (24 new files — full project scaffold)
+- frontends/iw-portal/package.json (Vite + React 18 + all deps)
+- frontends/iw-portal/vite.config.ts (proxy + build config)
+- frontends/iw-portal/src/index.css (ASSA dark/light Tailwind theme)
+- frontends/iw-portal/src/components/layout/*.tsx (AppShell, Sidebar, Topbar, ClassicViewBanner)
+- frontends/iw-portal/src/pages/*.tsx (Dashboard, Monitoring, Login, ClassicRedirect, NotFound)
+- frontends/iw-portal/src/providers/*.tsx (Theme, Query)
+- frontends/iw-portal/src/lib/*.ts (api, utils, classic-routes)
+- frontends/iw-portal/src/types/*.ts (api, auth, monitoring)
+- frontends/iw-portal/src/routes.tsx, App.tsx, main.tsx
+- web_portal/tomcat/webapps/iw-portal/ (production build output)
+- CLAUDE.md (added IW Portal section)
+- README.md (added version history entry)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- npm create vite (scaffold)
+- npm install (227+ packages)
+- npx tsc --noEmit (type check — 0 errors)
+- npx vite build (success — 359KB JS, 20KB CSS)
+- python3 scripts to create source files and fix TS errors
+Verification performed:
+- TypeScript strict mode: 0 errors (tsc --noEmit)
+- Vite build: success, outputs to web_portal/tomcat/webapps/iw-portal/
+- All 24 source files created and valid
+- Classic view mapping covers all 9 JSP page groups
+- Theme system: dark (ASSA) / light / system with localStorage persistence
+Follow-ups / known issues:
+- ApiLoginServlet not yet created (login page redirects to classic JSP for now)
+- Monitoring dashboard shows placeholder data (needs TanStack Query hooks wired to /api/monitoring/* endpoints)
+- Profile/Company pages use ClassicRedirectPage (hook to JSP) until React forms are built
+- shadcn/ui component primitives not yet copied in (will add as needed)
+- Dev server proxy not tested end-to-end (Tomcat must be running on :8080)
+- Production build deploys to iw-portal/ but Tomcat context may need explicit config

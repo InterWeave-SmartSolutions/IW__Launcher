@@ -143,3 +143,7 @@ docs/tutorials/*.m4v
 # ===== Monitoring Config (contains SMTP credentials) =====
 web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties
 !web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties.template
+
+# ===== IW Portal (React app) =====
+frontends/iw-portal/node_modules/
+frontends/iw-portal/dist/

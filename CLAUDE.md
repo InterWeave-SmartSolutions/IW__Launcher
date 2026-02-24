@@ -219,6 +219,36 @@ javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_por
 javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/service/*.java web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/api/*.java
 ```
 
+
+### IW Portal (Modern React UI)
+
+New React-based portal at `frontends/iw-portal/` — replaces JSP pages incrementally.
+
+- **Stack**: Vite + React 18 + TypeScript (strict) + Tailwind CSS + shadcn/ui + TanStack Query + React Router v7 + Recharts
+- **Theme**: ASSA dark palette (default) + light mode, toggle in topbar, persisted to localStorage
+- **Classic View**: Every React route maps to its JSP equivalent. "Switch to Classic" banner on every page. Users can set "always classic" preference.
+- **Hook Page Pattern**: Pages not yet rebuilt in React redirect to the corresponding JSP page. Both apps share Tomcat session cookies (same origin).
+- **Dev**: `cd frontends/iw-portal && npm run dev` → Vite on :5173, proxies `/iw-business-daemon` to Tomcat :8080
+- **Build**: `npm run build` → outputs to `web_portal/tomcat/webapps/iw-portal/`
+- **TypeScript**: strict mode, zero errors required before commit
+
+**Route → Classic JSP mapping**:
+- `/dashboard` → `IWLogin.jsp` (post-login landing)
+- `/monitoring` → `monitoring/Dashboard.jsp`
+- `/profile` → `EditProfile.jsp`
+- `/company` → `EditCompanyProfile.jsp`
+- `/company/config` → `CompanyConfiguration.jsp`
+- `/admin/configurator` → `BDConfigurator.jsp`
+- `/admin/logging` → `Logging.jsp`
+
+**Key directories**:
+- `src/components/layout/` — AppShell, Sidebar, Topbar, ClassicViewBanner
+- `src/components/monitoring/` — dashboard components (TODO)
+- `src/pages/` — route pages
+- `src/providers/` — ThemeProvider, QueryProvider, AuthProvider (TODO)
+- `src/hooks/` — TanStack Query hooks (TODO)
+- `src/lib/` — api.ts (fetch wrapper), classic-routes.ts, utils.ts
+- `src/types/` — TypeScript interfaces for API responses
 ### Eclipse/IDE Specifics
 
 - Based on Eclipse 3.1 with custom InterWeave SDK plugin
