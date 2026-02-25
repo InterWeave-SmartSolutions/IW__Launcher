@@ -61,6 +61,9 @@ out/
 !web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/**
 !web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/**
 !web_portal/tomcat/lib/mysql-connector-java-*.jar
+# Override *.class and bin/ ignores for the iw_sdk Eclipse plugin (required for IDE to launch)
+!plugins/iw_sdk_1.0.0/bin/
+!plugins/iw_sdk_1.0.0/bin/**
 
 # ===== Logs =====
 *.log
