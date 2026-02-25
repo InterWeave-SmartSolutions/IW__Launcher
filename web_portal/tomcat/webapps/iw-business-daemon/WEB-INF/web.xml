@@ -283,6 +283,15 @@
 		<servlet-class>
 		com.interweave.businessDaemon.config.CompanyConfigurationServletDTT2</servlet-class>
 	</servlet>
+	<!-- Auth API servlets (JSON endpoints for React IW Portal) -->
+	<servlet>
+		<servlet-name>ApiLoginServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiLoginServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ApiSessionServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiSessionServlet</servlet-class>
+	</servlet>
 	<!-- Monitoring API servlets -->
 	<servlet>
 		<servlet-name>DashboardApiServlet</servlet-name>
@@ -417,6 +426,15 @@
         <servlet-mapping>
         	<servlet-name>CompanyConfigurationServletDTT2</servlet-name>
         	<url-pattern>/CompanyConfigurationServletDTT2</url-pattern>
+        </servlet-mapping>
+        <!-- Auth API mappings -->
+        <servlet-mapping>
+        	<servlet-name>ApiLoginServlet</servlet-name>
+        	<url-pattern>/api/auth/login</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>ApiSessionServlet</servlet-name>
+        	<url-pattern>/api/auth/session</url-pattern>
         </servlet-mapping>
         <!-- Monitoring API mappings -->
         <servlet-mapping>

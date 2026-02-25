@@ -5,6 +5,7 @@ import { MonitoringPage } from "@/pages/MonitoringPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ClassicRedirectPage } from "@/pages/ClassicRedirectPage";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export const router = createBrowserRouter(
   [
@@ -14,7 +15,11 @@ export const router = createBrowserRouter(
     },
     {
       path: "/",
-      element: <AppShell />,
+      element: (
+        <ProtectedRoute>
+          <AppShell />
+        </ProtectedRoute>
+      ),
       children: [
         { index: true, element: <Navigate to="/dashboard" replace /> },
         { path: "dashboard", element: <DashboardPage /> },

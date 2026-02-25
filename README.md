@@ -161,6 +161,7 @@ IW_Launcher/
 │   ├── testing/           # Test plans
 │   └── tutorials/         # Training materials
 ├── frontends/             # Front-end applications
+│   ├── iw-portal/         # React dashboard (active development)
 │   ├── InterWoven/        # React SPA (concept/prototype)
 │   └── assa/              # ASSA portal prototype
 ├── jre/                   # Bundled Java 8 runtime
@@ -192,6 +193,7 @@ IW_Launcher/
 
 | Date | Change |
 |------|--------|
+| 2026-02-24 | **Auth API + Live Dashboard** - ApiLoginServlet/ApiSessionServlet (JSON auth, shared Tomcat session), React AuthProvider with protected routes, monitoring dashboard wired to live /api/monitoring/* endpoints via TanStack Query |
 | 2026-02-23 | **IW Portal Scaffold** - React 18 + TypeScript + Tailwind + shadcn/ui, ASSA dark/light theme, sidebar nav, classic view toggle, monitoring + dashboard pages |
 | 2026-02-23 | **Monitoring Stack Enabled** - 11 Java files compiled, 4 API endpoints, 5 background services, Postgres schema, Dashboard.jsp |
 | 2026-02-23 | **E2E Verified** - 29/29 tests pass, all accounts verified working |

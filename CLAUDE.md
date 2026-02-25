@@ -163,7 +163,7 @@ Edit `web_portal/tomcat/conf/server.xml`:
 
 ## Development Notes
 
-### Verified (2026-02-23)
+### Verified (2026-02-24)
 
 - **29/29 E2E tests pass** (`web_portal/test_portal.sh`) — pages, registration, login, profiles, password changes, input validation
 - Admin login (`__iw_admin__` / `%iwps%`) — verified
@@ -177,6 +177,7 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - 11 Java files compiled and deployed: 5 API servlets + 6 services (incl. MonitoringContextListener)
    - All services start on Tomcat boot: MetricsAggregator, AlertService, EmailNotificationService, WebhookNotificationService
    - API endpoints: `/api/monitoring/dashboard`, `/api/monitoring/transactions/*`, `/api/monitoring/metrics`, `/api/monitoring/alerts/*`, `/api/monitoring/webhooks/*`
+   - Auth API endpoints: `POST /api/auth/login`, `GET /api/auth/session` (JSON, shared Tomcat session)
    - Dashboard: `/monitoring/Dashboard.jsp` (requires session)
    - Schema: `database/monitoring_schema_postgres.sql` (6 tables, 3 views, indexes, triggers, RLS)
    - Email config: copy `monitoring.properties.template` → `monitoring.properties`, fill in SMTP credentials
@@ -220,6 +221,23 @@ javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_por
 ```
 
 
+
+### Auth API Servlets (JSON endpoints for React IW Portal)
+
+Two servlets in `com.interweave.businessDaemon.api` provide JSON authentication for the React frontend while sharing the same Tomcat session as the classic JSP login.
+
+- **ApiLoginServlet** — `POST /api/auth/login` — accepts `{"email","password"}`, runs same DB auth as LocalLoginServlet, sets identical session attributes, returns `{"success":true,"user":{...}}` or `{"success":false,"error":"..."}`
+- **ApiSessionServlet** — `GET /api/auth/session` — reads session attributes, returns `{"authenticated":true,"user":{...}}` or `{"authenticated":false}`
+- **Source**: `WEB-INF/src/com/interweave/businessDaemon/api/Api*.java`
+- **Session sharing**: Login via ApiLoginServlet sets the same session attributes as LocalLoginServlet, so users authenticated via React can use classic JSP pages and vice versa.
+
+**Compile command (Auth API)**:
+```bash
+javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/*.java
+```
+
+**Test credentials**: `demo@sample.com` / `demo123` (user), `admin@sample.com` / `admin123` (admin)
+
 ### IW Portal (Modern React UI)
 
 New React-based portal at `frontends/iw-portal/` — replaces JSP pages incrementally.
@@ -243,10 +261,10 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 
 **Key directories**:
 - `src/components/layout/` — AppShell, Sidebar, Topbar, ClassicViewBanner
-- `src/components/monitoring/` — dashboard components (TODO)
+- `src/components/` — ProtectedRoute (auth gate), layout/ (AppShell, Sidebar, Topbar, ClassicViewBanner)
 - `src/pages/` — route pages
-- `src/providers/` — ThemeProvider, QueryProvider, AuthProvider (TODO)
-- `src/hooks/` — TanStack Query hooks (TODO)
+- `src/providers/` — ThemeProvider, QueryProvider, AuthProvider (session check + login/logout)
+- `src/hooks/` — useMonitoring.ts (useDashboard with 30s auto-refresh, useTransactions with pagination)
 - `src/lib/` — api.ts (fetch wrapper), classic-routes.ts, utils.ts
 - `src/types/` — TypeScript interfaces for API responses
 ### Eclipse/IDE Specifics

@@ -1,9 +1,11 @@
-import { Search, Sun, Moon, Monitor } from "lucide-react";
+import { Search, Sun, Moon, Monitor, LogOut, User } from "lucide-react";
 import { useTheme } from "@/providers/ThemeProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 
 export function Topbar() {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const cycleTheme = () => {
     const order: Array<"dark" | "light" | "system"> = ["dark", "light", "system"];
@@ -26,6 +28,14 @@ export function Topbar() {
         />
       </div>
 
+      {/* User pill */}
+      {user && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] text-xs text-muted-foreground">
+          <User className="w-3.5 h-3.5" />
+          <span className="max-w-[120px] truncate">{user.userName}</span>
+        </div>
+      )}
+
       {/* Theme toggle */}
       <button
         onClick={cycleTheme}
@@ -38,6 +48,20 @@ export function Topbar() {
       >
         <ThemeIcon className="w-3.5 h-3.5" />
         <span>{themeLabel}</span>
+      </button>
+
+      {/* Logout */}
+      <button
+        onClick={() => void logout()}
+        className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs",
+          "border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]",
+          "text-muted-foreground hover:text-[hsl(var(--destructive))] transition-colors cursor-pointer"
+        )}
+        title="Log out"
+      >
+        <LogOut className="w-3.5 h-3.5" />
+        <span>Logout</span>
       </button>
     </div>
   );

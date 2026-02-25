@@ -1,11 +1,24 @@
 import { useState } from "react";
-import { Shield, Info } from "lucide-react";
+import { Navigate } from "react-router-dom";
+import { Shield, Info, Loader2 } from "lucide-react";
+import { useAuth } from "@/providers/AuthProvider";
 
 export function LoginPage() {
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Already logged in — redirect to dashboard
+  if (authLoading) {
+    return (
+      <div className="app-background min-h-screen grid place-items-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -13,11 +26,10 @@ export function LoginPage() {
     setError("");
 
     try {
-      // TODO: Replace with ApiLoginServlet call
-      // For now, redirect to classic login
-      window.location.href = "/iw-business-daemon/LoginServlet";
-    } catch {
-      setError("Login failed. Please try again.");
+      await login({ email, password });
+      // AuthProvider sets user → isAuthenticated → redirect above fires
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +78,7 @@ export function LoginPage() {
             <Info className="w-4 h-4 text-[hsl(var(--primary))] shrink-0 mt-0.5" />
             <div className="text-xs">
               <p className="font-medium">Demo accounts:</p>
-              <p className="text-muted-foreground mt-0.5">Admin: __iw_admin__ / %iwps%</p>
+              <p className="text-muted-foreground mt-0.5">Admin: admin@sample.com / admin123</p>
               <p className="text-muted-foreground">User: demo@sample.com / demo123</p>
             </div>
           </div>
@@ -80,6 +92,7 @@ export function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-foreground rounded-[14px] px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.5)]"
                 placeholder="email@company.com"
+                autoComplete="email"
               />
             </div>
             <div>
@@ -90,6 +103,7 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-foreground rounded-[14px] px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.5)]"
                 placeholder="••••••••"
+                autoComplete="current-password"
               />
             </div>
             {error && <p className="text-xs text-[hsl(var(--destructive))]">{error}</p>}
@@ -98,7 +112,7 @@ export function LoginPage() {
               disabled={loading}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[14px] bg-[hsl(var(--primary)/0.18)] border border-[hsl(var(--primary)/0.35)] text-sm font-medium hover:bg-[hsl(var(--primary)/0.25)] transition-colors cursor-pointer disabled:opacity-50"
             >
-              <Shield className="w-4 h-4" />
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
               {loading ? "Signing in..." : "Continue"}
             </button>
           </form>
