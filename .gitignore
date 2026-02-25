@@ -147,3 +147,4 @@ web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties
 # ===== IW Portal (React app) =====
 frontends/iw-portal/node_modules/
 frontends/iw-portal/dist/
+web_portal/tomcat/webapps/iw-portal/
