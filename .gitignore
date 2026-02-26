@@ -96,6 +96,12 @@ Desktop.ini
 *.orig
 *.tmp
 *.temp
+*.save
+
+# ===== Test/Debug Artifacts =====
+scripts/test_db.ps1
+scripts/extract_strings.ps1
+web_portal/tomcat/webapps/iw-business-daemon/db_test.jsp
 
 # ===== Archives (don't commit large archives) =====
 *.zip
