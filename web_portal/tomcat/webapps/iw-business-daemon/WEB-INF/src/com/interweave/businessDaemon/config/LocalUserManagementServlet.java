@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -84,6 +86,20 @@ public abstract class LocalUserManagementServlet extends HttpServlet {
     protected String param(HttpServletRequest req, String name) {
         String val = req.getParameter(name);
         return (val != null) ? val.trim() : "";
+    }
+
+    /**
+     * Checks whether the current JDBC connection is to a PostgreSQL database.
+     * Useful for any future cases where dialect-specific SQL is unavoidable.
+     */
+    protected boolean isPostgres(Connection conn) {
+        try {
+            String dbName = conn.getMetaData().getDatabaseProductName();
+            return dbName != null && dbName.toLowerCase().contains("postgre");
+        } catch (SQLException e) {
+            log("Could not determine database product name", e);
+            return false;
+        }
     }
 
     /**

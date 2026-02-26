@@ -23,11 +23,11 @@ public class LocalRegistrationServlet extends LocalUserManagementServlet {
 
         String firstName = param(req, "FirstName");
         String lastName = param(req, "LastName");
+        String title = param(req, "Title");
         String email = param(req, "Email");
         String password = param(req, "Password");
         String confirmPassword = param(req, "ConfirmPassword");
         String company = param(req, "CompanyOrganization");
-        String title = param(req, "Title");
 
         // Validation
         if (firstName.isEmpty()) { redirectToError(req, resp, "First name is missing.", "Registration.jsp"); return; }
@@ -69,13 +69,14 @@ public class LocalRegistrationServlet extends LocalUserManagementServlet {
             // Insert the new user
             String hashedPw = hashPassword(password);
             try (PreparedStatement stmt = conn.prepareStatement(
-                    "INSERT INTO users (company_id, email, password, first_name, last_name, role, is_active) " +
-                    "VALUES (?, ?, ?, ?, ?, 'user', TRUE)")) {
+                    "INSERT INTO users (company_id, email, password, first_name, last_name, title, role, is_active) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, 'user', TRUE)")) {
                 stmt.setInt(1, companyId);
                 stmt.setString(2, email.toLowerCase());
                 stmt.setString(3, hashedPw);
                 stmt.setString(4, firstName);
                 stmt.setString(5, lastName);
+                stmt.setString(6, title);
                 stmt.executeUpdate();
             }
 

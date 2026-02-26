@@ -9,8 +9,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.interweave.businessDaemon.ConfigContext;
-
 public class LocalSaveCompanyProfileServlet extends LocalUserManagementServlet {
     private static final long serialVersionUID = 1L;
 
@@ -29,15 +27,29 @@ public class LocalSaveCompanyProfileServlet extends LocalUserManagementServlet {
         }
 
         try (Connection conn = dataSource.getConnection()) {
+            // Look up company_id first (cross-DB compatible — avoids Postgres UPDATE...FROM)
+            int companyId = -1;
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT id FROM companies WHERE LOWER(company_name) = LOWER(?)")) {
+                stmt.setString(1, company);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        companyId = rs.getInt("id");
+                    }
+                }
+            }
+            if (companyId == -1) {
+                redirectToError(req, resp, "Company not found.", "EditCompanyProfile.jsp");
+                return;
+            }
+
             // Update admin user's name
             try (PreparedStatement stmt = conn.prepareStatement(
                     "UPDATE users SET first_name = ?, last_name = ?, updated_at = NOW() " +
-                    "FROM companies c " +
-                    "WHERE users.company_id = c.id AND LOWER(c.company_name) = LOWER(?) " +
-                    "AND LOWER(users.email) = LOWER(?) AND users.role = 'admin'")) {
+                    "WHERE company_id = ? AND LOWER(email) = LOWER(?) AND role = 'admin'")) {
                 stmt.setString(1, firstName);
                 stmt.setString(2, lastName);
-                stmt.setString(3, company);
+                stmt.setInt(3, companyId);
                 stmt.setString(4, email);
                 stmt.executeUpdate();
             }
@@ -46,15 +58,15 @@ public class LocalSaveCompanyProfileServlet extends LocalUserManagementServlet {
             if (!solutionType.isEmpty()) {
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "UPDATE companies SET solution_type = ?, updated_at = NOW() " +
-                        "WHERE LOWER(company_name) = LOWER(?)")) {
+                        "WHERE id = ?")) {
                     stmt.setString(1, solutionType);
-                    stmt.setString(2, company);
+                    stmt.setInt(2, companyId);
                     stmt.executeUpdate();
                 }
             }
 
             // Set flags required by CompanyConfiguration.jsp
-            ConfigContext.setAdminLoggedIn(true);
+            com.interweave.businessDaemon.ConfigContext.setAdminLoggedIn(true);
 
             String brand = param(req, "PortalBrand");
             String solutions = param(req, "PortalSolutions");

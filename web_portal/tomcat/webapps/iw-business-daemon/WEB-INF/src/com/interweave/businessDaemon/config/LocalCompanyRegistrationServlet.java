@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -64,18 +65,22 @@ public class LocalCompanyRegistrationServlet extends LocalUserManagementServlet 
                     }
                 }
 
-                // Insert company
+                // Insert company (cross-DB: uses getGeneratedKeys instead of RETURNING)
                 String hashedPw = hashPassword(password);
                 int companyId;
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "INSERT INTO companies (company_name, email, password, solution_type, is_active) " +
-                        "VALUES (?, ?, ?, ?, TRUE) RETURNING id")) {
+                        "VALUES (?, ?, ?, ?, TRUE)",
+                        Statement.RETURN_GENERATED_KEYS)) {
                     stmt.setString(1, company);
                     stmt.setString(2, email.toLowerCase());
                     stmt.setString(3, hashedPw);
                     stmt.setString(4, solutionType);
-                    try (ResultSet rs = stmt.executeQuery()) {
-                        rs.next();
+                    stmt.executeUpdate();
+                    try (ResultSet rs = stmt.getGeneratedKeys()) {
+                        if (!rs.next()) {
+                            throw new SQLException("Failed to retrieve generated company ID");
+                        }
                         companyId = rs.getInt(1);
                     }
                 }

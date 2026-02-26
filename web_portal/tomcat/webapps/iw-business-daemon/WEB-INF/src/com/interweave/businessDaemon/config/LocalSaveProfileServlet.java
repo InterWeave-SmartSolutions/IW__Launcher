@@ -16,16 +16,19 @@ public class LocalSaveProfileServlet extends LocalUserManagementServlet {
             throws ServletException, IOException {
         String firstName = param(req, "FirstName");
         String lastName = param(req, "LastName");
+        String title = param(req, "Title");
         String email = param(req, "Email");
 
         if (email.isEmpty()) { redirectToError(req, resp, "Email is missing.", "EditProfile.jsp"); return; }
 
         try (Connection conn = dataSource.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(
-                    "UPDATE users SET first_name = ?, last_name = ? WHERE LOWER(email) = LOWER(?)")) {
+                    "UPDATE users SET first_name = ?, last_name = ?, title = ?, updated_at = NOW() " +
+                    "WHERE LOWER(email) = LOWER(?)")) {
                 stmt.setString(1, firstName);
                 stmt.setString(2, lastName);
-                stmt.setString(3, email);
+                stmt.setString(3, title);
+                stmt.setString(4, email);
                 int rows = stmt.executeUpdate();
                 if (rows == 0) {
                     redirectToError(req, resp, "User not found.", "EditProfile.jsp");

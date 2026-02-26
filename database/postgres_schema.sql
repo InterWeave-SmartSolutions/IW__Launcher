@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
+    title VARCHAR(255),
     phone VARCHAR(50),
     role VARCHAR(50) DEFAULT 'user',
     is_active BOOLEAN DEFAULT TRUE,

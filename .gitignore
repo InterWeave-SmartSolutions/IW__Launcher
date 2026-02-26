@@ -120,6 +120,12 @@ web_portal/tomcat/webapps/iw-business-daemon/db_test.jsp
 .env.production
 .env.*.local
 
+# Override *password* ignore for ChangePassword feature files (these are CODE, not secrets)
+!**/LocalChangePasswordServlet.*
+!**/LocalChangeCompanyPasswordServlet.*
+!**/ChangePassword.jsp
+!**/ChangeCompanyPassword.jsp
+
 # ===== Database Connection (configured per-machine) =====
 web_portal/tomcat/conf/context.xml
 web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml
@@ -131,8 +137,9 @@ web_portal/tomcat/work/
 node_modules/
 package-lock.json
 
-# ===== Downloaded Dependencies (can be re-downloaded) =====
-web_portal/tomcat/lib/postgresql-*.jar
+# ===== Downloaded Dependencies =====
+# PostgreSQL driver MUST be tracked - required for Supabase connectivity
+!web_portal/tomcat/lib/postgresql-*.jar
 
 
 # ===== AI Tool Config (user-specific) =====

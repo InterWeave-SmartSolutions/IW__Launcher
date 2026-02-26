@@ -303,24 +303,54 @@ REM ============================================================================
     exit /b 0
 
 :check_supabase_connectivity
-    set "PS_DB_HOST=%DB_HOST%"
-    set "PS_DB_PORT=%DB_PORT%"
-    set "DB_HOST_REACHABLE="
-    for /f %%i in ('powershell -NoProfile -Command "Test-NetConnection -ComputerName $env:PS_DB_HOST -Port $env:PS_DB_PORT -InformationLevel Quiet -WarningAction SilentlyContinue" 2^>nul') do set "DB_HOST_REACHABLE=%%i"
-    if /i "%DB_HOST_REACHABLE%"=="True" exit /b 0
-    if not defined POOLER_HOST (
-        echo  [ERROR] Supabase direct host unreachable ^(likely IPv6 blocked^).
-        echo          Set SUPABASE_POOLER_HOST / SUPABASE_POOLER_USER in .env, or enable IPv6.
-        pause
-        exit /b 1
-    )
-    if not defined POOLER_USER (
-        echo  [ERROR] SUPABASE_POOLER_USER is not set. It should look like: postgres.^<project_ref^>
-        pause
-        exit /b 1
-    )
-    echo  [WARN] Supabase direct host unreachable. Switching to pooler.
+    REM Strategy: test pooler first (IPv4, works on most networks), then direct.
+    REM Uses a 4-second TCP socket timeout to avoid long waits.
+    if not defined POOLER_HOST goto :check_direct
+    if not defined POOLER_USER goto :check_direct
+
+    REM --- Try pooler first (fast path for most users) ---
+    echo  Checking Supabase pooler...
+    set "PS_TEST_HOST=%POOLER_HOST%"
+    set "PS_TEST_PORT=%POOLER_PORT%"
+    set "CONN_REACHABLE="
+    for /f %%i in ('powershell -NoProfile -Command "try { $c = New-Object System.Net.Sockets.TcpClient; $r = $c.BeginConnect($env:PS_TEST_HOST, [int]$env:PS_TEST_PORT, $null, $null); $ok = $r.AsyncWaitHandle.WaitOne(4000); $c.Close(); if ($ok) { 'True' } else { 'False' } } catch { 'False' }" 2^>nul') do set "CONN_REACHABLE=%%i"
+    if /i "%CONN_REACHABLE%"=="True" goto :use_pooler
+    goto :check_direct
+
+:use_pooler
+    echo  [OK] Supabase pooler reachable
     set "DB_HOST=%POOLER_HOST%"
     set "DB_PORT=%POOLER_PORT%"
     set "DB_USER=%POOLER_USER%"
     exit /b 0
+
+:check_direct
+    echo  Checking Supabase direct host...
+    set "PS_TEST_HOST=%DB_HOST%"
+    set "PS_TEST_PORT=%DB_PORT%"
+    set "CONN_REACHABLE="
+    for /f %%i in ('powershell -NoProfile -Command "try { $c = New-Object System.Net.Sockets.TcpClient; $r = $c.BeginConnect($env:PS_TEST_HOST, [int]$env:PS_TEST_PORT, $null, $null); $ok = $r.AsyncWaitHandle.WaitOne(4000); $c.Close(); if ($ok) { 'True' } else { 'False' } } catch { 'False' }" 2^>nul') do set "CONN_REACHABLE=%%i"
+    if /i "%CONN_REACHABLE%"=="True" goto :use_direct
+    goto :check_failed
+
+:use_direct
+    echo  [OK] Supabase direct host reachable
+    exit /b 0
+
+:check_failed
+    echo.
+    echo  [ERROR] Cannot reach Supabase database.
+    echo.
+    echo          Tried:
+    echo            - Pooler:  %POOLER_HOST%:%POOLER_PORT%
+    echo            - Direct:  %DB_HOST%:%DB_PORT%
+    echo.
+    echo          Possible causes:
+    echo            - No internet connection
+    echo            - Firewall blocking outbound PostgreSQL ports
+    echo            - VPN/proxy interference
+    echo.
+    echo          To skip this check, set DB_MODE=local in .env
+    echo.
+    pause
+    exit /b 1

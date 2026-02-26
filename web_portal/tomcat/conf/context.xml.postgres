@@ -22,7 +22,7 @@
               type="javax.sql.DataSource"
               factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
               driverClassName="org.postgresql.Driver"
-              url="jdbc:postgresql://__DB_HOST__:__DB_PORT__/__DB_NAME__?sslmode=require"
+              url="jdbc:postgresql://__DB_HOST__:__DB_PORT__/__DB_NAME__?sslmode=require&amp;prepareThreshold=0"
               username="__DB_USER__"
               password="__DB_PASSWORD__"
               initialSize="2"

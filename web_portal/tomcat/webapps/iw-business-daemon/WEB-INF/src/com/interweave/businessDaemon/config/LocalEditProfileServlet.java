@@ -36,12 +36,12 @@ public class LocalEditProfileServlet extends LocalUserManagementServlet {
             String storedHash = null;
             String firstName = null;
             String lastName = null;
+            String title = null;
             String companyName = null;
-            String solutionType = null;
 
             try (PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT u.password, u.first_name, u.last_name, " +
-                    "c.company_name, c.solution_type " +
+                    "SELECT u.password, u.first_name, u.last_name, u.title, " +
+                    "c.company_name " +
                     "FROM users u JOIN companies c ON u.company_id = c.id " +
                     "WHERE LOWER(u.email) = LOWER(?)")) {
                 stmt.setString(1, email);
@@ -53,8 +53,8 @@ public class LocalEditProfileServlet extends LocalUserManagementServlet {
                     storedHash = rs.getString("password");
                     firstName = rs.getString("first_name");
                     lastName = rs.getString("last_name");
+                    title = rs.getString("title");
                     companyName = rs.getString("company_name");
-                    solutionType = rs.getString("solution_type");
                 }
             }
 
@@ -73,7 +73,7 @@ public class LocalEditProfileServlet extends LocalUserManagementServlet {
                     setThreadField(tt, "firstName", firstName);
                     setThreadField(tt, "lastName", lastName);
                     setThreadField(tt, "company", companyName);
-                    setThreadField(tt, "title", solutionType);
+                    setThreadField(tt, "title", title != null ? title : "");
                     tt.setEmail(email.toLowerCase());
                 }
             }

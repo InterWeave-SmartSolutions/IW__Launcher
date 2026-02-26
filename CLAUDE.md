@@ -36,10 +36,10 @@ Do not use, read, or reference anything in `frontends/InterWoven/` unless the us
 
 3. **Database** - Authentication and configuration (MySQL or Postgres)
    - Schemas: `database/postgres_schema.sql` (primary/Supabase), `database/monitoring_schema_postgres.sql` (monitoring), `mysql_schema.sql` (legacy), `schema.sql`
-   - Connection via Supabase direct (port 5432, username `postgres`) with RLS on all 14 tables
-   - **IMPORTANT**: Supabase pooler (`pooler.supabase.com:6543`) returns "Tenant or user not found" — use direct connection only
+   - Connection via Supabase **pooler** (port 6543, username `postgres.hpodmkchdzwjtlnxjohf`) with RLS on all 14 tables
+   - **IMPORTANT (2026-02-26)**: Direct connection (port 5432) is **blocked/unreachable** from this network. Use the **pooler** (port 6543) with `prepareThreshold=0` in the JDBC URL. See `context.xml` for working config.
    - Three connection modes (configured via `.env`):
-     - `supabase` - Shared Supabase Postgres (default, verified working)
+     - `supabase` - Shared Supabase Postgres (default, verified working via pooler)
      - `interweave` - InterWeave hosted MySQL (***********)
      - `local` - Offline mode (admin only)
 
@@ -93,6 +93,8 @@ This:
 # Full stop
 ./STOP.bat
 ```
+
+**⚠️ WARNING (AI agents):** Do NOT set `$env:CATALINA_HOME` / `$env:JRE_HOME` and call Tomcat `.bat` scripts inline from PowerShell — this hangs the terminal. Always use the wrapper scripts above.
 
 ### Change Database Connection
 ```bash
@@ -170,8 +172,10 @@ Edit `web_portal/tomcat/conf/server.xml`:
 - Admin login (`__iw_admin__` / `%iwps%`) — verified
 - Demo user login (`demo@sample.com` / `demo123`) — verified
 - Company registration + full config workflow — verified
-- Supabase Postgres connectivity via direct connection (port 5432) — verified from Windows native
-- **WSL2 cannot reach Supabase direct host** (IPv6/network unreachable) — must run Tomcat from Windows PowerShell
+- Supabase Postgres connectivity via **pooler** (port 6543, `prepareThreshold=0`) — verified from Windows native (2026-02-26)
+- Direct connection (port 5432) is **blocked/unreachable** — do not use
+- Login, EditProfile save, EditCompanyProfile save — all verified working through pooler
+- Must run Tomcat from Windows PowerShell (not WSL2)
 
 ### Known Issues
 
@@ -191,8 +195,9 @@ Edit `web_portal/tomcat/conf/server.xml`:
 
 3. **Windows-Native Required for Database**
    - **Tomcat MUST run from Windows (PowerShell)**, not WSL2
-   - WSL2 cannot reach Supabase direct host (`db.*.supabase.co:5432`) due to IPv6/networking limitations
-   - Supabase pooler (`pooler.supabase.com:6543`) rejects with "Tenant or user not found"
+   - Supabase direct host (`db.*.supabase.co:5432`) is **blocked/unreachable** (connect timeout) — do NOT use
+   - Supabase pooler (`aws-0-us-west-2.pooler.supabase.com:6543`) is the **only working endpoint** (verified 2026-02-26)
+   - JDBC URL **must** include `prepareThreshold=0` for pooler compatibility (PgBouncer/Supavisor)
    - Primary scripts are `.bat` files for Windows
    - Linux/Mac scripts available in `scripts/` but less maintained
    - Shell scripts have CRLF issues on Linux; use direct Tomcat `bin/` invocation
@@ -213,6 +218,7 @@ Servlets: `LocalLoginServlet`, `LocalRegistrationServlet`, `LocalCompanyRegistra
 - JSP forms send `CompanyOrganization` (not `Company`) and `Type` (not `SolutionType`)
 - `ConfigContext.setHosted(true)` + `setAdminLoggedIn(true)` required before `CompanyConfiguration.jsp`
 - To revert to originals: change `web.xml` servlet-class entries back, restart Tomcat
+- **NEVER set `$env:CATALINA_HOME` or `$env:JRE_HOME` in the user's PowerShell session and then call Tomcat bat scripts inline** — this causes the terminal to hang and become unresponsive. Instead, use the project's own scripts: `scripts/start_webportal.bat`, `scripts/stop_webportal.bat`, `START.bat`, `STOP.bat`.
 
 **Compile command (Local servlets)**:
 ```bash
