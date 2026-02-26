@@ -119,8 +119,8 @@ set /a wait_interval=2
 timeout /t !wait_interval! /nobreak >nul
 set /a counter+=!wait_interval!
 
-REM Check if port 8080 is responding
-powershell -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:8080/iw-business-daemon/' -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop; if ($r.StatusCode -eq 200 -or $r.StatusCode -eq 404) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
+REM Check if port 9090 is responding
+powershell -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/' -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop; if ($r.StatusCode -eq 200 -or $r.StatusCode -eq 404) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
 
 if !errorlevel! equ 0 (
     echo [OK] Tomcat is responsive!
@@ -148,11 +148,11 @@ echo [STEP 5] Verifying Web Application...
 echo.
 
 REM Check if login page is accessible
-powershell -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:8080/iw-business-daemon/IWLogin.jsp' -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
+powershell -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/IWLogin.jsp' -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
 
 if !errorlevel! equ 0 (
     echo [OK] Web Portal is accessible at:
-    echo     http://localhost:8080/iw-business-daemon/IWLogin.jsp
+    echo     http://localhost:9090/iw-business-daemon/IWLogin.jsp
 ) else (
     echo [WARNING] Could not verify web portal accessibility
     echo           It may still be initializing...
@@ -167,7 +167,7 @@ echo [STEP 6] Opening Web Browser...
 echo.
 
 timeout /t 2 /nobreak >nul
-start "" "http://localhost:8080/iw-business-daemon/IWLogin.jsp"
+start "" "http://localhost:9090/iw-business-daemon/IWLogin.jsp"
 
 echo [OK] Browser opened to login page
 echo.
@@ -194,12 +194,12 @@ echo ===========================================================================
 echo.
 echo BACKEND (Tomcat):
 echo   Status:   RUNNING
-echo   Port:     8080
-echo   URL:      http://localhost:8080/iw-business-daemon/
+echo   Port:     9090
+echo   URL:      http://localhost:9090/iw-business-daemon/
 echo.
 echo WEB APPLICATION:
 echo   Status:   READY
-echo   Login:    http://localhost:8080/iw-business-daemon/IWLogin.jsp
+echo   Login:    http://localhost:9090/iw-business-daemon/IWLogin.jsp
 echo   User:     __iw_admin__
 echo   Pass:     %%iwps%%
 echo.

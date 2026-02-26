@@ -116,6 +116,7 @@ Desktop.ini
 
 # ===== Database Connection (configured per-machine) =====
 web_portal/tomcat/conf/context.xml
+web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml
 
 # ===== Tomcat Work Directory (compiled JSPs - regenerated at runtime) =====
 web_portal/tomcat/work/

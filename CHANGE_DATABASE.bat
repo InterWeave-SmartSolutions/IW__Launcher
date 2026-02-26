@@ -343,7 +343,7 @@ echo.
 echo    A browser window will open automatically when ready.
 echo.
 echo    If the browser doesn't open, go to:
-echo        http://localhost:8080/iw-business-daemon/IWLogin.jsp
+echo        http://localhost:9090/iw-business-daemon/IWLogin.jsp
 echo.
 echo  ====================================================================
 echo.

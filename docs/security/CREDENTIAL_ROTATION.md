@@ -128,7 +128,7 @@ A clean startup will show Tomcat initialization messages without database errors
 
 ### 3.2 Verify login works
 
-1. Open `http://localhost:8080/iw-business-daemon/IWLogin.jsp`
+1. Open `http://localhost:9090/iw-business-daemon/IWLogin.jsp`
 2. Log in with `__iw_admin__` / `%iwps%`
 3. Confirm the portal loads without database errors
 
@@ -137,7 +137,7 @@ A clean startup will show Tomcat initialization messages without database errors
 Test the monitoring endpoint to confirm the database connection is active:
 
 ```bash
-curl http://localhost:8080/iw-business-daemon/api/monitoring
+curl http://localhost:9090/iw-business-daemon/api/monitoring
 ```
 
 The response should indicate a healthy database connection.

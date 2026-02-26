@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class ErrorDocumentation {
 
-    private static final String BASE_DOCS_URL = "http://localhost:8080/iw-business-daemon/help/errors/";
+    private static final String BASE_DOCS_URL = "http://localhost:9090/iw-business-daemon/help/errors/";
 
     /**
      * Documentation entry containing resolution steps and documentation link

@@ -33,7 +33,7 @@ The `.env` file holds database hostnames, usernames, and passwords in plaintext.
 
 The default admin account (`__iw_admin__` / `%iwps%`) has a hardcoded password baked into the authentication system. It cannot be changed without modifying compiled servlet bytecode.
 
-**Mitigation**: Restrict network access to the Tomcat port (8080) in production. Do not expose the web portal to the public internet.
+**Mitigation**: Restrict network access to the Tomcat port (9090) in production. Do not expose the web portal to the public internet.
 
 ### 3. LoginServlet Uses Proprietary Hash
 
@@ -72,7 +72,7 @@ The file `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml` store
 
 4. **Restrict Tomcat to localhost.** Unless the web portal must be externally accessible, bind Tomcat to `127.0.0.1` in `web_portal/tomcat/conf/server.xml`:
    ```xml
-   <Connector port="8080" address="127.0.0.1" ... />
+   <Connector port="9090" address="127.0.0.1" ... />
    ```
 
 5. **Audit `.gitignore` before pushing.** Confirm that `.env`, `context.xml`, `config.xml`, and any credential files are excluded.

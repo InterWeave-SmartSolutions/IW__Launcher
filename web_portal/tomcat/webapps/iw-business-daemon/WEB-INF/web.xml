@@ -161,10 +161,10 @@
 		<description>
 		Synchronization Object Selection Processing</description>
 		<display-name>
-		CompanyConfigurationServletOS</display-name>
+	CompanyConfigurationServletOS</display-name>
 		<servlet-name>CompanyConfigurationServletOS</servlet-name>
 		<servlet-class>
-		com.interweave.businessDaemon.config.CompanyConfigurationServletOS</servlet-class>
+		com.interweave.businessDaemon.config.LocalCompanyConfigurationServletOS</servlet-class>
 	</servlet>
 	<servlet>
 		<description>

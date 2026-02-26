@@ -22,13 +22,13 @@ Once started, access the portal at:
 
 | Page | URL |
 |------|-----|
-| **Login** | http://localhost:8080/iw-business-daemon/IWLogin.jsp |
-| Edit Profile | http://localhost:8080/iw-business-daemon/EditProfile.jsp |
-| Edit Company | http://localhost:8080/iw-business-daemon/EditCompanyProfile.jsp |
-| Company Config | http://localhost:8080/iw-business-daemon/CompanyConfiguration.jsp |
-| BD Configurator | http://localhost:8080/iw-business-daemon/BDConfigurator.jsp |
-| Registration | http://localhost:8080/iw-business-daemon/Registration.jsp |
-| Company Registration | http://localhost:8080/iw-business-daemon/CompanyRegistration.jsp |
+| **Login** | http://localhost:9090/iw-business-daemon/IWLogin.jsp |
+| Edit Profile | http://localhost:9090/iw-business-daemon/EditProfile.jsp |
+| Edit Company | http://localhost:9090/iw-business-daemon/EditCompanyProfile.jsp |
+| Company Config | http://localhost:9090/iw-business-daemon/CompanyConfiguration.jsp |
+| BD Configurator | http://localhost:9090/iw-business-daemon/BDConfigurator.jsp |
+| Registration | http://localhost:9090/iw-business-daemon/Registration.jsp |
+| Company Registration | http://localhost:9090/iw-business-daemon/CompanyRegistration.jsp |
 
 ## Requirements
 
@@ -41,11 +41,11 @@ Once started, access the portal at:
 
 ## Changing the Port
 
-Default port is **8080**. To change it:
+Default port is **9090**. To change it:
 
 1. Edit `tomcat/conf/server.xml`
-2. Find: `<Connector port="8080" ...`
-3. Change `8080` to your desired port
+2. Find: `<Connector port="9090" ...`
+3. Change `9090` to your desired port
 4. Restart the server
 
 ## Directory Structure
@@ -80,7 +80,7 @@ Server logs are in `tomcat/logs/`:
 ```
 Error: Address already in use
 ```
-Another application is using port 8080. Either:
+Another application is using port 9090. Either:
 - Stop that application, or
 - Change this portal's port (see above)
 

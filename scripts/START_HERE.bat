@@ -77,7 +77,7 @@ set /a max_wait=30
 timeout /t 2 /nobreak >nul
 set /a counter+=1
 
-powershell -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:8080/' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
+powershell -Command "try { $r = Invoke-WebRequest -Uri 'http://localhost:9090/' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
 if %errorlevel%==0 goto server_ready
 
 if %counter% geq %max_wait% (
@@ -93,7 +93,7 @@ echo.
 echo  [3/3] Server ready! Opening browser...
 
 :open_browser
-start "" "http://localhost:8080/iw-business-daemon/IWLogin.jsp"
+start "" "http://localhost:9090/iw-business-daemon/IWLogin.jsp"
 
 REM Launch IDE if it exists
 cd /d "%IW_HOME%"
@@ -110,7 +110,7 @@ echo       IW_IDE IS RUNNING
 echo.
 echo  =====================================================================
 echo.
-echo   Web Portal: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+echo   Web Portal: http://localhost:9090/iw-business-daemon/IWLogin.jsp
 echo.
 echo   Login Credentials:
 echo      Username: __iw_admin__

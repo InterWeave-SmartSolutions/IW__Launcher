@@ -79,7 +79,7 @@ grep -A 2 "servlet-name>LoginServlet" ./web_portal/tomcat/webapps/iw-business-da
 
 ### Step 2: Navigate to Login Page
 1. Open web browser
-2. Navigate to: `http://localhost:8080/iw-business-daemon/IWLogin.jsp`
+2. Navigate to: `http://localhost:9090/iw-business-daemon/IWLogin.jsp`
 3. Verify login form displays correctly
 
 ### Step 3: Attempt Login with Demo Account
@@ -91,7 +91,7 @@ grep -A 2 "servlet-name>LoginServlet" ./web_portal/tomcat/webapps/iw-business-da
 
 ### Step 4: Verify Successful Redirect
 **Expected Behavior:**
-- Browser redirects to: `http://localhost:8080/iw-business-daemon/CompanyConfiguration.jsp`
+- Browser redirects to: `http://localhost:9090/iw-business-daemon/CompanyConfiguration.jsp`
 - No error messages displayed
 - Page loads successfully
 

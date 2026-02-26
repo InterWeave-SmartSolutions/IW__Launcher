@@ -10,7 +10,7 @@ When you ran `START.bat`, you saw an Apache 404 error because **Tomcat's executa
 
 ### Option 1: Automatic Installation (Recommended) ⚡
 
-1. **Double-click:** `INSTALL_TOMCAT.bat`
+1. **Double-click:** `scripts\setup\install_tomcat.bat`
 2. **Wait for completion** (may take 5-15 minutes depending on internet speed)
 3. The script downloads Tomcat 9.0.83 and extracts it automatically
 4. When done, run `START.bat` again
@@ -26,7 +26,7 @@ When you ran `START.bat`, you saw an Apache 404 error because **Tomcat's executa
 
 ### Option 2: Manual Download (If Automatic Fails)
 
-If `INSTALL_TOMCAT.bat` doesn't work, download manually:
+If `scripts\setup\install_tomcat.bat` doesn't work, download manually:
 
 #### Step 1: Download Tomcat
 
@@ -70,17 +70,23 @@ If yes, you're ready!
 
 ## ▶️ After Installation: Launch the App
 
+> **IMPORTANT:** Tomcat must run from **Windows natively** (PowerShell or CMD), not from WSL2.
+> WSL2 cannot reach the Supabase database due to IPv6/networking limitations.
+
 Once Tomcat is installed:
 
-```bash
-# Double-click to launch everything:
-START.bat
+```powershell
+# From Windows PowerShell — double-click or run:
+C:\IW__Launcher\START.bat
+
+# Or start Tomcat directly:
+C:\IW__Launcher\web_portal\tomcat\bin\startup.bat
 ```
 
 **You should see:**
 
 1. ✅ Console window showing "Waiting for server..."
-2. ✅ Browser opens to login page (http://localhost:8080/iw-business-daemon/)
+2. ✅ Browser opens to login page (http://localhost:9090/iw-business-daemon/)
 3. ✅ Eclipse IDE launches (may take 30-60 seconds)
 
 **Login with:**
@@ -102,14 +108,14 @@ C:\IW__Launcher\web_portal\tomcat\bin\startup.bat
 
 If not, re-run the installation.
 
-### Port 8080 already in use
+### Port 9090 already in use
 
-If another application uses port 8080:
+If another application uses port 9090:
 
 1. Close the other application, OR
 2. Change Tomcat port in `web_portal/tomcat/conf/server.xml`
-   - Find: `<Connector port="8080"`
-   - Change `8080` to `8081` (or any free port)
+   - Find: `<Connector port="9090"`
+   - Change `9090` to `9091` (or any free port)
    - Update browser URL accordingly
 
 ### No internet connection?
@@ -143,7 +149,7 @@ Tomcat executables are large (~200MB) and are typically downloaded separately ra
 
 ## ✨ Next Steps
 
-1. **Option 1:** Wait for `INSTALL_TOMCAT.bat` to complete (check if `bin/` directory appears)
+1. **Option 1:** Wait for `scripts\setup\install_tomcat.bat` to complete (check if `bin/` directory appears)
 2. **Option 2:** Use the manual download instructions above
 3. Once Tomcat is installed, run `START.bat`
 

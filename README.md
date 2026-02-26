@@ -51,11 +51,17 @@ Double-click `CHANGE_DATABASE.bat` to switch between:
 - Right-click → Run as Administrator
 
 ### Browser doesn't open
-- Wait 30 seconds, then go to: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+- Wait 30 seconds, then go to: http://localhost:9090/iw-business-daemon/IWLogin.jsp
 
 ### Can't login
 - Username: `__iw_admin__`
 - Password: `%iwps%`
+
+### Database connection failed / timed out
+- Some networks block IPv6. Supabase direct host is often IPv6-only.
+- Use the Supabase **pooler** connection in `.env`:
+  - Set `SUPABASE_POOLER_HOST`, `SUPABASE_POOLER_PORT=6543`, `SUPABASE_POOLER_USER` (e.g. `postgres.<project_ref>`).
+  - Re-run `START.bat`.
 
 ### Need to reset everything
 1. Delete the `.env` file

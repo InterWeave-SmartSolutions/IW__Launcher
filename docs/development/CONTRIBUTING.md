@@ -113,7 +113,7 @@ mvn verify                  # full verification
 After any web portal change:
 
 1. Start Tomcat: `scripts/start_webportal.bat`
-2. Open `http://localhost:8080/iw-business-daemon/IWLogin.jsp`
+2. Open `http://localhost:9090/iw-business-daemon/IWLogin.jsp`
 3. Login with `__iw_admin__` / `%iwps%`
 4. Verify the affected pages load without errors
 5. Check `web_portal/tomcat/logs/catalina.out` for exceptions

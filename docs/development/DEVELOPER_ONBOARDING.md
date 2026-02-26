@@ -112,13 +112,13 @@ START.bat
 
 This script:
 1. Creates `.env` from `.env.example` if it does not exist
-2. Starts the Tomcat web server (port 8080)
+2. Starts the Tomcat web server (port 9090)
 3. Launches the Eclipse IDE (`iw_ide.exe`)
 4. Opens your default browser to the login page
 
 ### Log in
 
-Open `http://localhost:8080/iw-business-daemon/IWLogin.jsp` and use:
+Open `http://localhost:9090/iw-business-daemon/IWLogin.jsp` and use:
 
 | Field    | Value          |
 |----------|----------------|
@@ -255,7 +255,7 @@ mvn test -P all-tests
 After making changes, verify the following manually:
 
 - [ ] `START.bat` launches without errors
-- [ ] Tomcat starts and `http://localhost:8080/iw-business-daemon/IWLogin.jsp` loads
+- [ ] Tomcat starts and `http://localhost:9090/iw-business-daemon/IWLogin.jsp` loads
 - [ ] Admin login (`__iw_admin__` / `%iwps%`) succeeds
 - [ ] The Eclipse IDE launches and opens the workspace
 - [ ] API endpoints return valid JSON (e.g., `GET /api/monitoring`)
@@ -317,11 +317,11 @@ Switch `DB_MODE` in `.env` and re-run `CHANGE_DATABASE.bat` to verify your chang
 
 **Fix:** Ensure you are using Java 8 (JDK 1.8). The bundled JRE at `jre/` is Java 8. If building with Maven, set `JAVA_HOME` to a JDK 8 installation.
 
-### Port 8080 already in use
+### Port 9090 already in use
 
 **Symptom:** Tomcat fails to start with "Address already in use" error.
 
-**Fix:** Either stop the other process using port 8080, or change the Tomcat port in `web_portal/tomcat/conf/server.xml`.
+**Fix:** Either stop the other process using port 9090, or change the Tomcat port in `web_portal/tomcat/conf/server.xml`.
 
 ### .env not created
 

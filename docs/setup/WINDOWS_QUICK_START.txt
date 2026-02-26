@@ -18,33 +18,37 @@ No system Java installation required.
 
 Option A: Start Everything (Recommended)
 ----------------------------------------
-1. Double-click: start_all.bat
+1. Double-click: START.bat
 2. Wait 15-30 seconds for Web Portal to initialize
 3. IDE will launch automatically
-4. Open browser to: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+4. Open browser to: http://localhost:9090/iw-business-daemon/IWLogin.jsp
 
 Option B: Start Components Individually
 ---------------------------------------
-Start IDE only:        Double-click start_ide.bat (or iw_ide.exe)
-Start Web Portal only: Double-click start_webportal.bat
-Stop Web Portal:       Double-click stop_webportal.bat
+Start IDE only:        Double-click scripts\start_ide.bat (or iw_ide.exe)
+Start Web Portal only: Double-click scripts\start_webportal.bat
+Stop Web Portal:       Double-click scripts\stop_webportal.bat
 
 ================================================================================
                         AVAILABLE SCRIPTS
 ================================================================================
 
 Root Directory (C:\IW_IDE\IW_Launcher\):
-  start_all.bat         - Starts both Web Portal and IDE
+  START.bat             - Starts Web Portal + IDE (recommended)
+  STOP.bat              - Stops Web Portal
+  CHANGE_DATABASE.bat   - Switch database mode
+  iw_ide.exe            - IDE executable (direct launch)
+
+Scripts (C:\IW_IDE\IW_Launcher\scripts\):
   start_ide.bat         - Starts IW_IDE application
   start_webportal.bat   - Starts Tomcat (Web Portal)
   stop_webportal.bat    - Stops Tomcat
-  iw_ide.exe            - IDE executable (direct launch)
 
 ================================================================================
                         ADMIN LOGIN
 ================================================================================
 
-URL:      http://localhost:8080/iw-business-daemon/IWLogin.jsp
+URL:      http://localhost:9090/iw-business-daemon/IWLogin.jsp
 Username: __iw_admin__
 Password: %iwps%
 
@@ -54,8 +58,8 @@ Other admin accounts available - see docs\authentication\ADMIN_CREDENTIALS.txt
                         TROUBLESHOOTING
 ================================================================================
 
-Issue: "Port 8080 already in use"
-  -> Another app is using port 8080
+Issue: "Port 9090 already in use"
+  -> Another app is using port 9090
   -> Either stop that app, or edit web_portal\tomcat\conf\server.xml to change port
 
 Issue: Tomcat window closes immediately
@@ -65,7 +69,7 @@ Issue: Tomcat window closes immediately
 Issue: "localhost refused to connect" in browser
   -> Wait longer for Tomcat to start (can take 30+ seconds)
   -> Check if java.exe is running in Task Manager
-  -> Check Windows Firewall isn't blocking port 8080
+  -> Check Windows Firewall isn't blocking port 9090
 
 Issue: IDE won't start
   -> Ensure 'jre' folder exists in IW_Launcher directory

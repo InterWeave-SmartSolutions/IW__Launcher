@@ -220,7 +220,7 @@ public class ErrorHandlingIntegrationTest {
                 "<BusinessDaemonConfiguration Name=\"TestIM\" " +
                 "HartbeatInterval=\"30000\" " +
                 "RefreshInterval=\"60000\" " +
-                "PrimaryTSURL=\"http://localhost:8080/ts\" " +
+                "PrimaryTSURL=\"http://localhost:9090/ts\" " +
                 "SecondaryTSURL=\"\" " +
                 "PrimaryTSURLT=\"\" " +
                 "SecondaryTSURLT=\"\" " +
@@ -675,7 +675,7 @@ public class ErrorHandlingIntegrationTest {
         @Override public String getProtocol() { return "HTTP/1.1"; }
         @Override public String getScheme() { return "http"; }
         @Override public String getServerName() { return "localhost"; }
-        @Override public int getServerPort() { return 8080; }
+        @Override public int getServerPort() { return 9090; }
         @Override public java.io.BufferedReader getReader() { return null; }
         @Override public String getRemoteAddr() { return "127.0.0.1"; }
         @Override public String getRemoteHost() { return "localhost"; }
@@ -688,7 +688,7 @@ public class ErrorHandlingIntegrationTest {
         @Override public int getRemotePort() { return 0; }
         @Override public String getLocalName() { return "localhost"; }
         @Override public String getLocalAddr() { return "127.0.0.1"; }
-        @Override public int getLocalPort() { return 8080; }
+        @Override public int getLocalPort() { return 9090; }
         @Override public javax.servlet.ServletContext getServletContext() { return null; }
         @Override public javax.servlet.AsyncContext startAsync() { return null; }
         @Override public javax.servlet.AsyncContext startAsync(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) { return null; }

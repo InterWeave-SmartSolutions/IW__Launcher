@@ -2,10 +2,10 @@
 # =============================================================================
 # IW Web Portal - End-to-End Test Script
 # Usage: bash test_portal.sh [BASE_URL]
-# Default: http://localhost:8080/iw-business-daemon
+# Default: http://localhost:9090/iw-business-daemon
 # =============================================================================
 
-BASE_URL="${1:-http://localhost:8080/iw-business-daemon}"
+BASE_URL="${1:-http://localhost:9090/iw-business-daemon}"
 COOKIE_JAR="/tmp/iw_test_cookies.txt"
 
 TS=$(date +%s)

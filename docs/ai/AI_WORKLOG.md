@@ -1410,3 +1410,189 @@ Follow-ups / remaining work:
 - shadcn/ui component primitives not yet copied in (will add as forms are built)
 - Dev server (npm run dev on :5173) not yet tested end-to-end with live Tomcat
 - Need to commit Phase 2 Step 3+4 changes to git
+
+---
+
+## 2026-02-25 19:04 (UTC)
+Agent/tool: Warp Agent (Claude Opus 4.6 max)
+User request: Diagnose HTTP 500 "Cannot initialize database connection" error on Tomcat startup, fix database connectivity, switch to Windows-native execution
+Actions taken:
+- Diagnosed root cause from stack trace: `PSQLException: FATAL: Tenant or user not found` — Supabase connection pooler (`aws-0-us-east-1.pooler.supabase.com:6543`) rejecting tenant ID `hpodmkchdzwjtlnxjohf`
+- Traced JNDI datasource config in `web_portal/tomcat/conf/context.xml` (Resource name `jdbc/IWDB`)
+- User reset Supabase password to same value — pooler still rejected with same error (confirmed issue is tenant lookup, not credentials)
+- Tested direct Supabase connection (`db.hpodmkchdzwjtlnxjohf.supabase.co:5432`) from WSL2: `Network is unreachable` (IPv6/WSL2 networking limitation)
+- Tested direct connection from Windows PowerShell via `Test-NetConnection`: **TcpTestSucceeded: True**
+- Tested pooler connection from WSL2: TCP connects on port 6543 but returns "Tenant or user not found"
+- Decision: Switch to direct Supabase connection (port 5432, username `postgres`) and run Tomcat from Windows PowerShell
+- Updated `context.xml`: URL changed from pooler (`aws-0-us-east-1.pooler.supabase.com:6543`) to direct (`db.hpodmkchdzwjtlnxjohf.supabase.co:5432`), username from `postgres.hpodmkchdzwjtlnxjohf` to `postgres`
+- Updated CLAUDE.md: database connection docs (direct not pooler), WSL2 limitations, Windows-native requirement
+- Updated SYSTEM_READY.md: database config, network requirements, WSL2 warning, date stamp
+- Updated TOMCAT_INSTALLATION.md: added Windows-native requirement warning, PowerShell launch commands
+Files changed/created:
+- web_portal/tomcat/conf/context.xml (pooler → direct connection, username change)
+- CLAUDE.md (4 sections updated: database tier, verified section, known issues, WSL2 environment)
+- docs/SYSTEM_READY.md (database config, network requirements, date, status line)
+- docs/setup/TOMCAT_INSTALLATION.md (added Windows-native warning + PowerShell commands)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- nslookup db.hpodmkchdzwjtlnxjohf.supabase.co (DNS resolves OK)
+- timeout 5 bash -c 'echo > /dev/tcp/db.hpodmkchdzwjtlnxjohf.supabase.co/5432' (Network is unreachable from WSL2)
+- timeout 5 bash -c 'echo > /dev/tcp/aws-0-us-east-1.pooler.supabase.com/6543' (TCP connects OK)
+- psql pooler connection test (Tenant or user not found)
+- powershell.exe Test-NetConnection -ComputerName db.hpodmkchdzwjtlnxjohf.supabase.co -Port 5432 (TcpTestSucceeded: True)
+Verification performed:
+- ✅ DNS resolution for Supabase direct host works
+- ✅ Supabase direct connection (port 5432) reachable from Windows native
+- ❌ Supabase direct connection unreachable from WSL2 (IPv6/networking)
+- ❌ Supabase pooler (port 6543) rejects with "Tenant or user not found" (from both WSL2 and direct)
+- ✅ context.xml updated to direct connection
+- ✅ CLAUDE.md, SYSTEM_READY.md, TOMCAT_INSTALLATION.md updated
+- ⏳ Tomcat restart from Windows PowerShell pending (user switching to PowerShell tab)
+Follow-ups / known issues:
+- Tomcat must be started from Windows PowerShell (`C:\IW__Launcher\web_portal\tomcat\bin\startup.bat`), NOT from WSL2
+- WSL2 is fine for code editing, git, and file management — just not for running Tomcat
+- Supabase pooler (`pooler.supabase.com:6543`) is broken for this project — do not use
+- After starting Tomcat from PowerShell, verify with: `Get-Content C:\IW__Launcher\web_portal\tomcat\logs\catalina.out -Tail 100`
+- Previous pooler config used `aws-0-us-east-1` region but earlier worklog mentions `aws-0-us-west-2` — region may have been inconsistent
+Date: 2026-02-25
+Agent/tool: ChatGPT Codex
+User request: Ensure IW__Launcher can start on any Windows machine via START.bat, default to Supabase storage, and keep a clean path to switch back to InterWeave server later.
+Actions taken:
+- Hardened START.bat to always regenerate DB config from .env, validate credentials, check JDBC drivers, detect Git LFS placeholders, and point to the Tomcat installer when missing.
+- Updated SETUP_DB_Windows.bat and SETUP_DB_Linux.sh to support Supabase as default, with placeholder checks and correct JDBC template selection.
+- Added gitignore coverage for generated Business Daemon config.xml and replaced it with a non-secret template stub.
+- Standardized local URLs/ports to 9090 across core docs and updated the API reference to current auth + monitoring endpoints.
+- Updated monitoring/email template link and error framework help URLs to 9090 for consistency.
+Files changed/created:
+- START.bat
+- scripts/SETUP_DB_Windows.bat
+- scripts/SETUP_DB_Linux.sh
+- scripts/run-migrations.bat
+- .env.example
+- .gitignore
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml
+- docs/authentication/README.txt
+- docs/authentication/config.xml.*.template (hosted/local/oracle_cloud)
+- docs/authentication/HOSTED_DATABASE_SETUP.txt
+- docs/development/API.md
+- docs/development/BUILD.md
+- docs/development/DEVELOPER_ONBOARDING.md
+- docs/development/CONTRIBUTING.md
+- docs/security/SECURITY.md
+- docs/security/CREDENTIAL_ROTATION.md
+- docs/testing/test-plan-5.2-custom-user.md
+- docs/SYSTEM_READY.md
+- docs/setup/TOMCAT_INSTALLATION.md
+- docs/setup/WINDOWS_QUICK_START.txt
+- docs/errors/error-codes.md
+- docs/legacy-pdfs/README.txt
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties.template
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/api/README_DASHBOARD_API.md
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/service/EmailNotificationService.java
+- src/main/java/com/interweave/help/HelpLinkService.java
+- src/main/java/com/interweave/error/ErrorDocumentation.java
+- src/test/java/com/interweave/integration/ErrorHandlingIntegrationTest.java
+Commands run:
+- Get-ChildItem, Get-Content, rg
+- git --no-pager status -sb
+- apply_patch, PowerShell replace operations
+Verification performed:
+- Not run (no tests or runtime checks executed).
+Follow-ups / known issues:
+- If you want EmailNotificationService or error framework URL changes to take effect, recompile and redeploy those classes.
+- Consider untracking config.xml once (git rm --cached) to fully prevent future commits.
+- Run START.bat on Windows to validate end-to-end startup.
+---
+Date: 2026-02-25
+Agent/tool: ChatGPT Codex
+User request: START.bat reports 'Java runtime appears to be a Git LFS placeholder' when running.
+Actions taken:
+- Verified jre/bin/java.exe size and PE header; not an LFS pointer.
+- Adjusted START.bat LFS placeholder check threshold from 1,000,000 bytes to 100,000 bytes to avoid false positives.
+Commands run:
+- Get-Item .\jre\bin\java.exe
+- git lfs version
+- git lfs pull
+- Format-Hex .\jre\bin\java.exe
+Verification performed:
+- Not run (user should re-run START.bat).
+Files changed/created:
+- START.bat
+---
+Date: 2026-02-25
+Agent/tool: ChatGPT Codex
+User request: Login fails with DB connection timeout; make startup robust across machines.
+Actions taken:
+- Diagnosed IPv6-only Supabase host resolution; direct 5432 connection times out when IPv6 is blocked.
+- Added optional Supabase pooler variables to .env.example and fallback logic in START.bat.
+- Added troubleshooting notes to README.md and SYSTEM_READY.md.
+Commands run:
+- findstr /B DB_MODE/SUPABASE_* .env
+- nslookup db.hpodmkchdzwjtlnxjohf.supabase.co
+- nslookup -type=A db.hpodmkchdzwjtlnxjohf.supabase.co
+- ping -6 db.hpodmkchdzwjtlnxjohf.supabase.co
+Verification performed:
+- Not run (user should re-run START.bat after setting pooler values).
+Files changed/created:
+- START.bat
+- .env.example
+- README.md
+- docs/SYSTEM_READY.md
+---
+Date: 2026-02-25
+Agent/tool: ChatGPT Codex
+User request: START.bat closes immediately; login shows DB error and batch parsing error.
+Actions taken:
+- Removed delayed expansion usage in START.bat to avoid password parsing issues with '!'.
+- Reworked DB placeholder check to use findstr instead of variable expansion.
+- Ran PowerShell templating with delayed expansion disabled to preserve passwords containing '!'.
+Commands run:
+- rg -n "!" START.bat
+Verification performed:
+- Not run (user should re-run START.bat).
+Files changed/created:
+- START.bat
+---
+---
+Date: 2026-02-25 16:58:58 (local)
+Agent/tool: ChatGPT Codex
+User request: START.bat still errors with ". was unexpected at this time" and Tomcat shows "Tenant or user not found".
+Actions taken:
+- Removed a batch-unsafe PowerShell connectivity check that contained parentheses inside a parenthesized block.
+- Replaced it with a safe Test-NetConnection call captured via for /f to avoid batch parse errors.
+Commands run:
+- Get-Content START.bat
+- Get-Date
+Verification performed:
+- Not run (user should re-run START.bat).
+Files changed/created:
+- START.bat
+---
+Date: 2026-02-25 17:03:30 (local)
+Agent/tool: ChatGPT Codex
+User request: START.bat still reports ". was unexpected at this time." after prior fix.
+Actions taken:
+- Moved PowerShell template rendering out of parenthesized blocks to avoid batch parse errors when DB_PASSWORD contains ')'.
+- Added render helper labels to run the PowerShell replacement safely.
+Commands run:
+- rg -n "DB_PASSWORD" START.bat
+- Get-Date
+Verification performed:
+- Not run (user should re-run START.bat).
+Files changed/created:
+- START.bat
+---
+Date: 2026-02-25 17:17:51 (local)
+Agent/tool: ChatGPT Codex
+User request: START.bat still reports ". was unexpected at this time.".
+Actions taken:
+- Disabled delayed expansion globally to avoid !-related parsing issues.
+- Reworked PowerShell template rendering to read password from .env inside PowerShell and use string Replace to avoid cmd special-character breakage.
+- Added password key selection per DB mode for rendering.
+Commands run:
+- rg -n "DB_PASSWORD" START.bat
+- Get-Date
+Verification performed:
+- Not run (user should re-run START.bat).
+Files changed/created:
+- START.bat

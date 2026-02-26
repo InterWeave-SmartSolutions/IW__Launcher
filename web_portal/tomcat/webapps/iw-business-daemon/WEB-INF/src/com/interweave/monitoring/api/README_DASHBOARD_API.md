@@ -156,5 +156,5 @@ Before deploying, verify:
 Test endpoint manually:
 ```bash
 # After logging in, get session cookie
-curl -b cookies.txt 'http://localhost:8080/iw-business-daemon/api/monitoring/dashboard'
+curl -b cookies.txt 'http://localhost:9090/iw-business-daemon/api/monitoring/dashboard'
 ```

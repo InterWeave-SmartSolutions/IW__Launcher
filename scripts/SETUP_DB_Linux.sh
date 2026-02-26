@@ -2,7 +2,7 @@
 # =============================================================================
 # IW_IDE DATABASE SETUP - LINUX / WSL / macOS
 # =============================================================================
-# Run this FIRST before using the IDE. Sets up MySQL database connection.
+# Run this FIRST before using the IDE. Sets up database connection.
 # =============================================================================
 
 set -e
@@ -63,9 +63,17 @@ echo ""
 echo -e "${BLUE}[Step 2 of 3]${NC} Configuring database connection..."
 echo ""
 
-DB_MODE="${DB_MODE:-oracle_cloud}"
+DB_MODE="${DB_MODE:-supabase}"
 
-if [ "$DB_MODE" = "interweave" ]; then
+if [ "$DB_MODE" = "supabase" ]; then
+    echo "   Mode: SUPABASE (Postgres)"
+    DB_HOST="${SUPABASE_DB_HOST:-db.hpodmkchdzwjtlnxjohf.supabase.co}"
+    DB_PORT="${SUPABASE_DB_PORT:-5432}"
+    DB_NAME="${SUPABASE_DB_NAME:-postgres}"
+    DB_USER="${SUPABASE_DB_USER}"
+    DB_PASSWORD="${SUPABASE_DB_PASSWORD}"
+    CONFIG_TEMPLATE="$SCRIPT_DIR/docs/authentication/config.xml.supabase.template"
+elif [ "$DB_MODE" = "interweave" ]; then
     echo "   Mode: INTERWEAVE SERVER"
     DB_HOST="${IW_DB_HOST:-148.62.63.8}"
     DB_PORT="${IW_DB_PORT:-3306}"
@@ -108,12 +116,21 @@ if [ "$DB_MODE" != "local" ]; then
     fi
 fi
 
+if [ "$DB_MODE" = "supabase" ] && [ "$DB_PASSWORD" = "YOUR_SUPABASE_PASSWORD_HERE" ]; then
+    echo -e "   ${RED}[ERROR]${NC} Supabase password placeholder detected. Edit .env and re-run."
+    exit 1
+fi
+
 # === Step 3: Apply configuration ===
 echo ""
 echo -e "${BLUE}[Step 3 of 3]${NC} Applying configuration..."
 echo ""
 
-CONTEXT_TEMPLATE="$SCRIPT_DIR/web_portal/tomcat/conf/context.xml.mysql"
+if [ "$DB_MODE" = "supabase" ]; then
+    CONTEXT_TEMPLATE="$SCRIPT_DIR/web_portal/tomcat/conf/context.xml.postgres"
+else
+    CONTEXT_TEMPLATE="$SCRIPT_DIR/web_portal/tomcat/conf/context.xml.mysql"
+fi
 CONTEXT_FILE="$SCRIPT_DIR/web_portal/tomcat/conf/context.xml"
 BD_CONFIG="$SCRIPT_DIR/web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml"
 
@@ -139,11 +156,19 @@ else
     echo -e "   ${YELLOW}[WARN]${NC} Config template not found"
 fi
 
-# Check MySQL driver
-if [ -f "$SCRIPT_DIR/web_portal/tomcat/lib/mysql-connector-java-8.0.33.jar" ]; then
-    echo -e "   ${GREEN}[OK]${NC} MySQL driver present"
+# Check JDBC driver
+if [ "$DB_MODE" = "supabase" ]; then
+    if ls "$SCRIPT_DIR/web_portal/tomcat/lib/postgresql-"*.jar >/dev/null 2>&1; then
+        echo -e "   ${GREEN}[OK]${NC} PostgreSQL driver present"
+    else
+        echo -e "   ${YELLOW}[WARN]${NC} PostgreSQL driver missing from tomcat/lib/"
+    fi
 else
-    echo -e "   ${YELLOW}[WARN]${NC} MySQL driver missing from tomcat/lib/"
+    if [ -f "$SCRIPT_DIR/web_portal/tomcat/lib/mysql-connector-java-8.0.33.jar" ]; then
+        echo -e "   ${GREEN}[OK]${NC} MySQL driver present"
+    else
+        echo -e "   ${YELLOW}[WARN]${NC} MySQL driver missing from tomcat/lib/"
+    fi
 fi
 
 # Make Linux scripts executable (best-effort)
@@ -192,7 +217,7 @@ if [[ "$response" =~ ^[Yy]$ ]]; then
     echo ""
     echo "Web Portal is starting. Please wait a moment."
     echo ""
-    echo "  Login Page:  http://localhost:8080/iw-business-daemon/IWLogin.jsp"
+    echo "  Login Page:  http://localhost:9090/iw-business-daemon/IWLogin.jsp"
     echo ""
     echo "  Admin Login:"
     echo "    Username: __iw_admin__"
@@ -202,9 +227,9 @@ if [[ "$response" =~ ^[Yy]$ ]]; then
     # Try to open browser
     sleep 3
     if command -v xdg-open &> /dev/null; then
-        xdg-open http://localhost:8080/iw-business-daemon/IWLogin.jsp 2>/dev/null || true
+        xdg-open http://localhost:9090/iw-business-daemon/IWLogin.jsp 2>/dev/null || true
     elif command -v open &> /dev/null; then
-        open http://localhost:8080/iw-business-daemon/IWLogin.jsp 2>/dev/null || true
+        open http://localhost:9090/iw-business-daemon/IWLogin.jsp 2>/dev/null || true
     fi
 fi
 

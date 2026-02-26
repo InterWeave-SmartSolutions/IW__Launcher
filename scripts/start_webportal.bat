@@ -92,7 +92,7 @@ timeout /t 2 /nobreak >nul
 set /a counter+=1
 
 REM Check if Tomcat is responding
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:8080/' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:9090/' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
 if %errorlevel%==0 goto server_ready
 
 if %counter% geq %max_wait% (
@@ -116,13 +116,13 @@ echo.
 
 :open_browser
 echo Opening browser to login page...
-start "" "http://localhost:8080/iw-business-daemon/IWLogin.jsp"
+start "" "http://localhost:9090/iw-business-daemon/IWLogin.jsp"
 
 echo.
 echo ============================================================
 echo Web Portal is running!
 echo.
-echo Login URL: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+echo Login URL: http://localhost:9090/iw-business-daemon/IWLogin.jsp
 echo.
 echo Admin Login:
 echo   Username: __iw_admin__

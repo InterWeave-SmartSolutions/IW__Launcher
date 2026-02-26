@@ -1,6 +1,6 @@
 # 🚀 InterWeave IDE - System Readiness Report
 
-## ✅ SYSTEM STATUS: VERIFIED (2026-02-23)
+## ✅ SYSTEM STATUS: VERIFIED (2026-02-25)
 
 This repository contains everything needed to run InterWeave IDE. A fresh clone requires
 running `START.bat` which handles first-time database configuration via `.env.example`.
@@ -16,11 +16,12 @@ running `START.bat` which handles first-time database configuration via `.env.ex
 | **Web Portal (Tomcat)** | ✅ Ready    | Apache Tomcat 9.0.83 configured                            |
 | **Web Application**     | ✅ Ready    | 27 servlets deployed + 49 .class files + 4 WEB-INF JARs   |
 | **Database Connector**  | ✅ Ready    | PostgreSQL JDBC + mysql-connector-java-8.0.33.jar in tomcat/lib |
-| **Database Config**     | ✅ Verified | Supabase Postgres via pooler (transaction mode, port 6543)  |
+| **Database Config**     | ✅ Verified | Supabase Postgres via direct connection (port 5432)         |
+| **Runtime Environment** | ⚠️ Note    | **Tomcat must run from Windows PowerShell**, not WSL2       |
 | **Startup Scripts**     | ✅ Ready    | `START.bat`, `STOP.bat`, `CHANGE_DATABASE.bat`             |
 | **Java Source Code**    | ✅ Ready    | Maven project structure in `src/` + servlet source in `WEB-INF/src/` |
 | **Build System**        | ✅ Ready    | `pom.xml` configured for Maven (optional — pre-built classes included) |
-| **Network Port**        | ⚠️ Check   | Port 8080 (confirm not in use)                             |
+| **Network Port**        | ⚠️ Check   | Port 9090 (confirm not in use)                             |
 
 ---
 
@@ -73,7 +74,7 @@ This will:
 - Username: `__iw_admin__`
 - Password: `%iwps%`
 
-**Access URL:** `http://localhost:8080/iw-business-daemon/IWLogin.jsp`
+**Access URL:** `http://localhost:9090/iw-business-daemon/IWLogin.jsp`
 
 ---
 
@@ -81,7 +82,7 @@ This will:
 
 **Run:** `./scripts/start_webportal.bat`
 
-Then open browser to: `http://localhost:8080/iw-business-daemon/`
+Then open browser to: `http://localhost:9090/iw-business-daemon/`
 
 ---
 
@@ -95,7 +96,25 @@ This launches just the Eclipse IDE without Tomcat.
 
 ## ⚠️ TROUBLESHOOTING
 
-### Issue: "Port 8080 already in use"
+### Issue: PowerShell freezes when starting Tomcat
+
+**Cause:** Calling `startup.bat` with `& "...\startup.bat" 2>&1` in PowerShell
+prevents the internal `start` command from detaching. PowerShell hangs and
+cannot be canceled with Ctrl+C.
+
+**Solution:** Use `Start-Process` or the project's `START.bat`:
+
+```powershell
+# Safe — use Start-Process
+Start-Process -FilePath "C:\IW__Launcher\web_portal\tomcat\bin\startup.bat"
+
+# Or just use the project launcher
+C:\IW__Launcher\START.bat
+```
+
+---
+
+### Issue: "Port 9090 already in use"
 
 **Solution:** Either stop the other service or change Tomcat port in:
 
@@ -103,7 +122,7 @@ This launches just the Eclipse IDE without Tomcat.
 web_portal/tomcat/conf/server.xml
 ```
 
-Find `<Connector port="8080"...` and change to a different port (e.g., 8081)
+Find `<Connector port="9090"...` and change to a different port (e.g., 8081)
 
 ---
 
@@ -134,10 +153,10 @@ Find `<Connector port="8080"...` and change to a different port (e.g., 8081)
    web_portal/tomcat/logs/catalina.out
    ```
 
-3. **Browser can't connect** - Ensure port 8080 is accessible:
+3. **Browser can't connect** - Ensure port 9090 is accessible:
    - Check firewall settings
    - Verify Tomcat started (no errors in logs)
-   - Try: `http://localhost:8080/iw-business-daemon/`
+   - Try: `http://localhost:9090/iw-business-daemon/`
 
 ---
 
@@ -162,9 +181,12 @@ Find `<Connector port="8080"...` and change to a different port (e.g., 8081)
 
 ### Network Requirements
 
-- ✅ Internet (for Oracle Cloud database) - OR use offline mode
-- ✅ Port 8080 (Tomcat web server)
-- ✅ Port 3306 (MySQL database) - if using cloud/hosted mode
+- ✅ Internet (for Supabase Postgres database) - OR use offline mode
+- ✅ Port 9090 (Tomcat web server)
+- ✅ Port 5432 (Supabase Postgres) - direct connection from Windows only
+- ⚠️ If IPv6 is blocked, use Supabase pooler (set SUPABASE_POOLER_* in .env)
+- ⚠️ WSL2 cannot reach Supabase direct host (IPv6/networking limitation)
+- ⚠️ Supabase pooler (port 6543) returns "Tenant or user not found" — do not use
 
 ---
 
@@ -296,12 +318,12 @@ If you encounter issues:
 ✅ **You're all set when you see:**
 
 1. Windows console showing "IW_IDE IS RUNNING"
-2. Browser opens to http://localhost:8080/iw-business-daemon/IWLogin.jsp
+2. Browser opens to http://localhost:9090/iw-business-daemon/IWLogin.jsp
 3. Login form displays without errors
 4. Eclipse IDE window appears (may take 30-60 seconds)
 5. "Welcome to CompanyConfiguration.jsp" after login
 
 ---
 
-**Updated:** February 23, 2026  
-**Status:** ✅ VERIFIED — 29/29 E2E tests pass, Supabase Postgres connected, all accounts working
+**Updated:** February 25, 2026  
+**Status:** ✅ VERIFIED — Supabase Postgres direct connection (port 5432) from Windows native. Tomcat must run from PowerShell, not WSL2.

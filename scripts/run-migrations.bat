@@ -64,7 +64,7 @@ for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_USER=" "%ENV_FILE%
 for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_PASSWORD=" "%ENV_FILE%"') do set "SUPABASE_DB_PASSWORD=%%b"
 for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_SSLMODE=" "%ENV_FILE%"') do set "SUPABASE_DB_SSLMODE=%%b"
 
-if not defined DB_MODE set "DB_MODE=oracle_cloud"
+if not defined DB_MODE set "DB_MODE=supabase"
 echo   DB_MODE = %DB_MODE%
 
 REM ---- Step 2: Resolve connection details ----

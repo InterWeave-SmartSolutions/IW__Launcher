@@ -43,7 +43,7 @@ SETUP INSTRUCTIONS
    ./bin/shutdown.sh
    ./bin/startup.sh
 
-6. Test login at: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+6. Test login at: http://localhost:9090/iw-business-daemon/IWLogin.jsp
 
 WHAT THIS ENABLES
 -----------------

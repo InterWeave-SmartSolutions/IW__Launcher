@@ -1309,7 +1309,7 @@ The request rate limit for the external system has been exceeded.
 
 ## Additional Resources
 
-- **InterWeave IDE Documentation:** http://localhost:8080/iw-business-daemon/help/
+- **InterWeave IDE Documentation:** http://localhost:9090/iw-business-daemon/help/
 - **Support:** Contact your system administrator or InterWeave support
 - **Training Materials:** See `docs/tutorials/` directory
 

@@ -5,21 +5,25 @@ This document describes the HTTP endpoints exposed by the InterWeave IDE web por
 ## Base URL
 
 ```
-http://localhost:8080/iw-business-daemon/
+http://localhost:9090/iw-business-daemon/
 ```
 
 The web portal is deployed as an expanded WAR (`iw-business-daemon`) under Tomcat's `webapps/` directory. The Tomcat port can be changed by editing `web_portal/tomcat/conf/server.xml`.
 
 ## Authentication
 
-**Current limitation:** Only the built-in admin account is functional for authentication.
+Authentication is session-based. Users can authenticate via the classic JSP form
+or via the JSON auth API (for the React portal). Both methods create the same
+Tomcat session (`JSESSIONID`) and share credentials.
 
 | Field    | Value           |
 |----------|-----------------|
 | Username | `__iw_admin__`  |
 | Password | `%iwps%`        |
 
-Custom user authentication (e.g., `demo@sample.com` / `demo123`) does not work due to a proprietary password hash format in the compiled `LoginServlet.class`. See ADR 002 (`docs/adr/002-additive-only-changes.md`) for context on why this servlet cannot be modified.
+Custom user authentication works when the database contains users with SHA-256
+password hashes (LocalLoginServlet / ApiLoginServlet). See ADR 003 and
+`docs/development/LOCAL_SERVLETS.md` for implementation details.
 
 Authentication is session-based. After a successful login via `IWLogin.jsp`, Tomcat issues a `JSESSIONID` cookie that must be included in subsequent requests to access protected pages.
 
@@ -40,7 +44,7 @@ These endpoints serve HTML pages rendered by JavaServer Pages. They are the orig
 ### Login Flow
 
 1. `GET /IWLogin.jsp` -- Renders the login form.
-2. `POST /IWLogin.jsp` -- Submits `username` and `password` form fields. On success, redirects to the main portal page with a valid session. On failure, re-renders the login page with an error message.
+2. `POST /LoginServlet` -- Submits `Email` and `Password` form fields. On success, redirects to the main portal page with a valid session.
 
 ### Notes on JSP Pages
 
@@ -54,91 +58,35 @@ These endpoints are newer additions that return JSON data. They are mapped via s
 
 All API endpoints require an active session (authenticated via the login flow above).
 
-### GET /api/monitoring
+### Auth API (JSON)
 
-Returns the current system monitoring status.
+**POST /api/auth/login**  
+Authenticates and creates a Tomcat session for the React portal.
 
-**Response:**
-```json
-{
-  "status": "ok",
-  "uptime": "...",
-  "components": {
-    "database": "connected",
-    "tomcat": "running",
-    "ide": "..."
-  }
-}
-```
+**GET /api/auth/session**  
+Returns session state for the React portal.
 
-### GET /api/dashboard
+### Monitoring API (JSON)
 
-Returns dashboard summary data for the web portal home screen.
+**GET /api/monitoring/dashboard**  
+Real-time dashboard summary.
 
-**Response:**
-```json
-{
-  "activeFlows": 0,
-  "recentTransactions": [],
-  "systemHealth": "..."
-}
-```
+**GET /api/monitoring/transactions**  
+Paginated transaction list.
 
-### GET /api/transactions
+**GET /api/monitoring/transactions/{id}**  
+Transaction detail.
 
-Returns a list of recent integration transactions.
+**GET /api/monitoring/metrics**  
+Time-series metrics.
 
-**Query parameters:**
+**GET/POST/PUT/DELETE /api/monitoring/alerts/***  
+Alert rules and alert history.
 
-| Parameter | Type   | Required | Description                          |
-|-----------|--------|----------|--------------------------------------|
-| `limit`   | int    | No       | Maximum number of results (default: 50) |
-| `offset`  | int    | No       | Pagination offset (default: 0)       |
-| `status`  | string | No       | Filter by status (e.g., `success`, `failed`) |
+**GET/POST/PUT/DELETE /api/monitoring/webhooks/***  
+Webhook endpoint configuration.
 
-**Response:**
-```json
-{
-  "transactions": [
-    {
-      "id": "...",
-      "flowName": "...",
-      "status": "...",
-      "timestamp": "...",
-      "duration": "..."
-    }
-  ],
-  "total": 0
-}
-```
-
-### GET /api/metrics
-
-Returns system and application metrics.
-
-**Response:**
-```json
-{
-  "cpu": "...",
-  "memory": "...",
-  "dbConnections": "...",
-  "requestsPerMinute": "...",
-  "errorRate": "..."
-}
-```
-
-### GET /api/alerts
-
-Returns active alerts and recent alert history.
-
-**Response:**
-```json
-{
-  "active": [],
-  "recent": [],
-  "acknowledgedCount": 0
-}
-```
+Full list: `WEB-INF/src/com/interweave/monitoring/api/API_ENDPOINTS.md`
 
 ## Error Responses
 
@@ -174,7 +122,7 @@ API endpoints return JSON error responses:
 
 ## Tomcat Configuration
 
-- **Port**: 8080 (configurable in `web_portal/tomcat/conf/server.xml`)
+- **Port**: 9090 (configurable in `web_portal/tomcat/conf/server.xml`)
 - **WAR deployment**: `web_portal/tomcat/webapps/iw-business-daemon/`
 - **Logs**: `web_portal/tomcat/logs/`
   - `catalina.out` -- Main server log

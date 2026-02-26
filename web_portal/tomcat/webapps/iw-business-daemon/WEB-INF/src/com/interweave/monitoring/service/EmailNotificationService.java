@@ -457,7 +457,7 @@ public class EmailNotificationService {
 
         // Add link to dashboard (if execution ID available)
         if (email.executionId != null) {
-            html.append("<a href='http://localhost:8080/iw-business-daemon/monitoring/Dashboard.jsp' class='button'>");
+            html.append("<a href='http://localhost:9090/iw-business-daemon/monitoring/Dashboard.jsp' class='button'>");
             html.append("View Details in Dashboard");
             html.append("</a>");
         }

@@ -2,7 +2,7 @@
 REM =============================================================================
 REM IW_IDE DATABASE SETUP - WINDOWS
 REM =============================================================================
-REM Run this FIRST before using the IDE. Sets up MySQL database connection.
+REM Run this FIRST before using the IDE. Sets up database connection.
 REM =============================================================================
 
 setlocal enabledelayedexpansion
@@ -54,6 +54,11 @@ if not exist ".env" (
 
 REM === Load environment variables ===
 for /f "tokens=1,* delims==" %%a in ('findstr /B "DB_MODE=" ".env"') do set "DB_MODE=%%b"
+for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_HOST=" ".env"') do set "SUPABASE_DB_HOST=%%b"
+for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_PORT=" ".env"') do set "SUPABASE_DB_PORT=%%b"
+for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_NAME=" ".env"') do set "SUPABASE_DB_NAME=%%b"
+for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_USER=" ".env"') do set "SUPABASE_DB_USER=%%b"
+for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_PASSWORD=" ".env"') do set "SUPABASE_DB_PASSWORD=%%b"
 for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_HOST=" ".env"') do set "ORACLE_DB_HOST=%%b"
 for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_PORT=" ".env"') do set "ORACLE_DB_PORT=%%b"
 for /f "tokens=1,* delims==" %%a in ('findstr /B "ORACLE_DB_NAME=" ".env"') do set "ORACLE_DB_NAME=%%b"
@@ -65,14 +70,25 @@ for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_NAME=" ".env"') do set "
 for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_USER=" ".env"') do set "IW_DB_USER=%%b"
 for /f "tokens=1,* delims==" %%a in ('findstr /B "IW_DB_PASSWORD=" ".env"') do set "IW_DB_PASSWORD=%%b"
 
-if not defined DB_MODE set "DB_MODE=oracle_cloud"
+if not defined DB_MODE set "DB_MODE=supabase"
 
 REM === Set database variables based on mode ===
 echo.
 echo  [Step 2 of 3] Configuring database connection...
 echo.
 
-if /i "%DB_MODE%"=="interweave" (
+if /i "%DB_MODE%"=="supabase" (
+    echo    Mode: SUPABASE (Postgres)
+    if not defined SUPABASE_DB_HOST set "SUPABASE_DB_HOST=db.hpodmkchdzwjtlnxjohf.supabase.co"
+    if not defined SUPABASE_DB_PORT set "SUPABASE_DB_PORT=5432"
+    if not defined SUPABASE_DB_NAME set "SUPABASE_DB_NAME=postgres"
+    set "DB_HOST=!SUPABASE_DB_HOST!"
+    set "DB_PORT=!SUPABASE_DB_PORT!"
+    set "DB_NAME=!SUPABASE_DB_NAME!"
+    set "DB_USER=!SUPABASE_DB_USER!"
+    set "DB_PASSWORD=!SUPABASE_DB_PASSWORD!"
+    set "CONFIG_TEMPLATE=%SCRIPT_DIR%docs\authentication\config.xml.supabase.template"
+) else if /i "%DB_MODE%"=="interweave" (
     echo    Mode: INTERWEAVE SERVER
     if not defined IW_DB_HOST set "IW_DB_HOST=148.62.63.8"
     if not defined IW_DB_PORT set "IW_DB_PORT=3306"
@@ -109,12 +125,41 @@ echo    Server:   %DB_HOST%:%DB_PORT%
 echo    Database: %DB_NAME%
 echo    User:     %DB_USER%
 
+if /i not "%DB_MODE%"=="local" (
+    if "%DB_USER%"=="" (
+        echo.
+        echo    [ERROR] Database user is missing in .env
+        pause
+        exit /b 1
+    )
+    if "%DB_PASSWORD%"=="" (
+        echo.
+        echo    [ERROR] Database password is missing in .env
+        pause
+        exit /b 1
+    )
+)
+
+if /i "%DB_MODE%"=="supabase" (
+    if /i "%DB_PASSWORD%"=="YOUR_SUPABASE_PASSWORD_HERE" (
+        echo.
+        echo    [ERROR] Supabase password placeholder detected in .env
+        echo    Edit .env and re-run this script.
+        pause
+        exit /b 1
+    )
+)
+
 REM === Configure Tomcat context.xml ===
 echo.
 echo  [Step 3 of 3] Applying configuration...
 echo.
 
-set "CONTEXT_TEMPLATE=%SCRIPT_DIR%web_portal\tomcat\conf\context.xml.mysql"
+if /i "%DB_MODE%"=="supabase" (
+    set "CONTEXT_TEMPLATE=%SCRIPT_DIR%web_portal\tomcat\conf\context.xml.postgres"
+) else (
+    set "CONTEXT_TEMPLATE=%SCRIPT_DIR%web_portal\tomcat\conf\context.xml.mysql"
+)
 set "CONTEXT_FILE=%SCRIPT_DIR%web_portal\tomcat\conf\context.xml"
 set "BD_CONFIG=%SCRIPT_DIR%web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\config.xml"
 
@@ -135,11 +180,26 @@ if exist "%CONFIG_TEMPLATE%" (
     echo    [WARN] Config template not found: %CONFIG_TEMPLATE%
 )
 
-REM Check MySQL driver
-if exist "%SCRIPT_DIR%web_portal\tomcat\lib\mysql-connector-java-8.0.33.jar" (
-    echo    [OK] MySQL driver present
-) else (
-    echo    [WARN] MySQL driver missing from tomcat/lib/
+REM Check JDBC driver
+if /i "%DB_MODE%"=="supabase" (
+    dir /b "%SCRIPT_DIR%web_portal\tomcat\lib\postgresql-*.jar" >nul 2>&1
+    if errorlevel 1 (
+        echo    [WARN] PostgreSQL driver missing from tomcat/lib/
+    ) else (
+        echo    [OK] PostgreSQL driver present
+    )
+) else if /i "%DB_MODE%"=="interweave" (
+    if exist "%SCRIPT_DIR%web_portal\tomcat\lib\mysql-connector-java-8.0.33.jar" (
+        echo    [OK] MySQL driver present
+    ) else (
+        echo    [WARN] MySQL driver missing from tomcat/lib/
+    )
+) else if /i "%DB_MODE%"=="oracle_cloud" (
+    if exist "%SCRIPT_DIR%web_portal\tomcat\lib\mysql-connector-java-8.0.33.jar" (
+        echo    [OK] MySQL driver present
+    ) else (
+        echo    [WARN] MySQL driver missing from tomcat/lib/
+    )
 )
 
 echo.

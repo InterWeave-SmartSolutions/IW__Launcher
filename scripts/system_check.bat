@@ -136,12 +136,12 @@ echo.
 
 REM ========== CHECK 9: Port Availability ==========
 echo  [9/9] Checking Network Port Availability...
-netstat -ano | findstr ":8080" >nul 2>&1
+netstat -ano | findstr ":9090" >nul 2>&1
 if %errorlevel% equ 0 (
-    echo    ⚠ Port 8080 is already in use
+    echo    ⚠ Port 9090 is already in use
     echo      (Tomcat may already be running, or another service is using the port)
 ) else (
-    echo    ✓ Port 8080 is available
+    echo    ✓ Port 9090 is available
     set /a PASS_COUNT+=1
 )
 echo.

@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class HelpLinkService {
 
-    private static final String BASE_HELP_URL = "http://localhost:8080/iw-business-daemon/help/";
+    private static final String BASE_HELP_URL = "http://localhost:9090/iw-business-daemon/help/";
     private static final String HELP_POPUP_URL = BASE_HELP_URL + "help-popup.jsp";
 
     /**

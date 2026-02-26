@@ -32,11 +32,12 @@ Do not use, read, or reference anything in `frontends/InterWoven/` unless the us
    - Deploys `iw-business-daemon.war` (deployed as expanded directory in `webapps/`)
    - User authentication and company management
    - Hosts JSP interfaces for profile/config management
-   - Default port: 8080
+   - Default port: 9090
 
 3. **Database** - Authentication and configuration (MySQL or Postgres)
    - Schemas: `database/postgres_schema.sql` (primary/Supabase), `database/monitoring_schema_postgres.sql` (monitoring), `mysql_schema.sql` (legacy), `schema.sql`
-   - Connection via Supabase pooler (transaction mode, port 6543) with RLS on all 14 tables
+   - Connection via Supabase direct (port 5432, username `postgres`) with RLS on all 14 tables
+   - **IMPORTANT**: Supabase pooler (`pooler.supabase.com:6543`) returns "Tenant or user not found" — use direct connection only
    - Three connection modes (configured via `.env`):
      - `supabase` - Shared Supabase Postgres (default, verified working)
      - `interweave` - InterWeave hosted MySQL (***********)
@@ -139,7 +140,7 @@ Key tables (see `database/mysql_schema.sql`):
 
 ## Web Portal Access
 
-Base URL: `http://localhost:8080/iw-business-daemon/`
+Base URL: `http://localhost:9090/iw-business-daemon/`
 
 Key pages:
 - `/IWLogin.jsp` - Login page
@@ -154,7 +155,7 @@ Key pages:
 **Change Tomcat Port:**
 Edit `web_portal/tomcat/conf/server.xml`:
 ```xml
-<Connector port="8080" ... />
+<Connector port="9090" ... />
 ```
 
 **Logs:** `web_portal/tomcat/logs/`
@@ -169,7 +170,8 @@ Edit `web_portal/tomcat/conf/server.xml`:
 - Admin login (`__iw_admin__` / `%iwps%`) — verified
 - Demo user login (`demo@sample.com` / `demo123`) — verified
 - Company registration + full config workflow — verified
-- Supabase Postgres connectivity via pooler (transaction mode, port 6543) — verified
+- Supabase Postgres connectivity via direct connection (port 5432) — verified from Windows native
+- **WSL2 cannot reach Supabase direct host** (IPv6/network unreachable) — must run Tomcat from Windows PowerShell
 
 ### Known Issues
 
@@ -187,11 +189,13 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - Requires compiled error framework web filter class
    - Commented out in `web.xml`
 
-3. **Windows-Centric Design**
+3. **Windows-Native Required for Database**
+   - **Tomcat MUST run from Windows (PowerShell)**, not WSL2
+   - WSL2 cannot reach Supabase direct host (`db.*.supabase.co:5432`) due to IPv6/networking limitations
+   - Supabase pooler (`pooler.supabase.com:6543`) rejects with "Tenant or user not found"
    - Primary scripts are `.bat` files for Windows
    - Linux/Mac scripts available in `scripts/` but less maintained
    - Shell scripts have CRLF issues on Linux; use direct Tomcat `bin/` invocation
-   - Runs in WSL2 but expects Windows paths
 
 ### Local Servlet Bridge (User/Company Management)
 
@@ -246,7 +250,7 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - **Theme**: ASSA dark palette (default) + light mode, toggle in topbar, persisted to localStorage
 - **Classic View**: Every React route maps to its JSP equivalent. "Switch to Classic" banner on every page. Users can set "always classic" preference.
 - **Hook Page Pattern**: Pages not yet rebuilt in React redirect to the corresponding JSP page. Both apps share Tomcat session cookies (same origin).
-- **Dev**: `cd frontends/iw-portal && npm run dev` → Vite on :5173, proxies `/iw-business-daemon` to Tomcat :8080
+- **Dev**: `cd frontends/iw-portal && npm run dev` → Vite on :5173, proxies `/iw-business-daemon` to Tomcat :9090
 - **Build**: `npm run build` → outputs to `web_portal/tomcat/webapps/iw-portal/`
 - **TypeScript**: strict mode, zero errors required before commit
 
@@ -370,8 +374,9 @@ IW_Launcher/
 - Scripts available in `scripts/`
 
 **WSL2:**
-- Works but uses Windows paths (`/mnt/c/IW_IDE/IW_Launcher`)
-- Run Windows `.bat` scripts directly
+- Can browse/edit files at `/mnt/c/IW__Launcher/` but **cannot run Tomcat** (Supabase unreachable from WSL2 networking)
+- Use WSL2 for code editing, git operations, and file management only
+- **Run Tomcat from Windows PowerShell**: `C:\IW__Launcher\web_portal\tomcat\bin\startup.bat`
 
 **Git LFS Requirement (Developers):**
 - If cloning this repo, you MUST have Git LFS installed

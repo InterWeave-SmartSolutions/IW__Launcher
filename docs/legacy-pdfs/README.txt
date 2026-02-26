@@ -7,7 +7,7 @@ QUICK START
 -----------
 1. Double-click: start_all.bat
 2. Wait 15-30 seconds
-3. Open browser to: http://localhost:8080/iw-business-daemon/IWLogin.jsp
+3. Open browser to: http://localhost:9090/iw-business-daemon/IWLogin.jsp
 4. Login with:  __iw_admin__ / %iwps%
 
 No Java installation required - everything is bundled!
@@ -30,6 +30,6 @@ REQUIREMENTS
 ------------
   - Windows 7 or later
   - 512 MB RAM minimum
-  - Port 8080 available
+  - Port 9090 available
 
 ================================================================================
