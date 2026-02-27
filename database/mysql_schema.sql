@@ -241,6 +241,20 @@ CREATE TABLE IF NOT EXISTS execution_log (
     INDEX idx_log_started (started_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Company configurations - stores XML config from the Company Configuration wizard
+CREATE TABLE IF NOT EXISTS company_configurations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_id INT NOT NULL,
+    profile_name VARCHAR(255) NOT NULL,
+    solution_type VARCHAR(50),
+    configuration_xml TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    UNIQUE KEY uk_company_config (company_id, profile_name),
+    INDEX idx_company_config_company (company_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Settings table - application configuration
 CREATE TABLE IF NOT EXISTS settings (
     setting_key VARCHAR(100) PRIMARY KEY,

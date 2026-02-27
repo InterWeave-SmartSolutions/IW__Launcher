@@ -251,6 +251,21 @@ CREATE TABLE IF NOT EXISTS execution_log (
 CREATE INDEX IF NOT EXISTS idx_log_transformation ON execution_log(transformation_id);
 CREATE INDEX IF NOT EXISTS idx_log_started ON execution_log(started_at);
 
+-- Company configurations - stores XML config from the Company Configuration wizard
+CREATE TABLE IF NOT EXISTS company_configurations (
+    id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL,
+    profile_name VARCHAR(255) NOT NULL,
+    solution_type VARCHAR(50),
+    configuration_xml TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    UNIQUE (company_id, profile_name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_company_config_company ON company_configurations(company_id);
+
 -- Settings table - application configuration
 -- NOTE: Uses setting_key/setting_value (not key/value) because key is reserved in Postgres
 CREATE TABLE IF NOT EXISTS settings (
@@ -279,7 +294,7 @@ DECLARE
 BEGIN
     FOR tbl IN SELECT unnest(ARRAY[
         'companies', 'users', 'profiles', 'company_credentials',
-        'projects', 'pages', 'forms', 'transformations', 'settings'
+        'company_configurations', 'projects', 'pages', 'forms', 'transformations', 'settings'
     ]) LOOP
         EXECUTE format(
             'DROP TRIGGER IF EXISTS update_%s_timestamp ON %I; ' ||
@@ -380,8 +395,9 @@ ALTER TABLE forms               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE form_fields         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transformations     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE data_mappings       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE execution_log       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE settings            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE execution_log           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE company_configurations  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings                ENABLE ROW LEVEL SECURITY;
 
 -- -----------------------------------------------------------------------------
 -- VIEWS FOR COMPATIBILITY

@@ -177,12 +177,12 @@
 	</servlet>
 	<servlet>
 		<description>
-		Servlet with Company Credentials</description>
+		Servlet with Company Credentials - persists configuration to local database</description>
 		<display-name>
 		CompanyCredentialsServlet</display-name>
 		<servlet-name>CompanyCredentialsServlet</servlet-name>
-		<servlet-class>
-		com.interweave.businessDaemon.config.CompanyCredentialsServlet</servlet-class>
+	<servlet-class>
+	com.interweave.businessDaemon.config.LocalCompanyCredentialsServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
