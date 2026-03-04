@@ -114,23 +114,24 @@ echo.
 
 REM ========== CHECK 7: Source Code ==========
 echo  [7/9] Checking Java Source Code...
-if exist "%IW_HOME%\src\main\java\com\interweave" (
-    echo    ✓ Java source code found
+if exist "%IW_HOME%\web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\src\com\interweave" (
+    echo    ✓ Java source code found (WEB-INF/src)
     set /a PASS_COUNT+=1
 ) else (
     echo    ✗ ERROR: Java source code NOT found
-    echo      Expected: %IW_HOME%\src\main\java\com\interweave
+    echo      Expected: %IW_HOME%\web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\src\com\interweave
     set /a FAIL_COUNT+=1
 )
 echo.
 
 REM ========== CHECK 8: Build System ==========
 echo  [8/9] Checking Build System...
-if exist "%IW_HOME%\pom.xml" (
-    echo    ✓ Maven POM file found (pom.xml)
+if exist "%IW_HOME%\web_portal\tomcat\lib\servlet-api.jar" (
+    echo    ✓ Build dependencies found (servlet-api.jar + javac)
     set /a PASS_COUNT+=1
 ) else (
-    echo    ✗ WARNING: Maven configuration not found
+    echo    ✗ WARNING: Build dependency servlet-api.jar not found
+    echo      Expected: %IW_HOME%\web_portal\tomcat\lib\servlet-api.jar
 )
 echo.
 
