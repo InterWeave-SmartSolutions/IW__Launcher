@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-- **Windows** (primary) or WSL2. Linux/Mac scripts exist but are less maintained.
+- **Windows** is the primary supported runtime path. Linux/Mac scripts exist, but the bundled portal/IDE workflow is maintained for Windows first.
 - **Git LFS** -- required before cloning. Many binaries (`.exe`, `.jar`) are LFS-tracked.
   ```bash
   git lfs install
@@ -116,7 +116,7 @@ After any web portal change:
 2. Open `http://localhost:9090/iw-business-daemon/IWLogin.jsp`
 3. Login with `__iw_admin__` / `%iwps%`
 4. Verify the affected pages load without errors
-5. Check `web_portal/tomcat/logs/catalina.out` for exceptions
+5. Check `web_portal/tomcat/logs/catalina*.log` for exceptions
 
 ## Pull Request Process
 
@@ -130,7 +130,7 @@ After any web portal change:
 
 ## AI-Assisted Development
 
-All AI agents (Claude Code, Cursor, ChatGPT, etc.) working in this repo **must** follow the mandatory workflow defined in **`AI_WORKFLOW.md`**. Key requirements:
+All AI agents (Claude Code, Cursor, ChatGPT, etc.) working in this repo **must** follow the mandatory workflow defined in **`docs/ai/AI_WORKFLOW.md`**. Key requirements:
 
 - Read `CLAUDE.md` and `README.md` at session start.
 - Run `git status` and `git diff` before making changes.
@@ -140,7 +140,7 @@ All AI agents (Claude Code, Cursor, ChatGPT, etc.) working in this repo **must**
 
 ## Known Limitations
 
-1. **Authentication**: Only the admin account (`__iw_admin__` / `%iwps%`) works. The compiled `LoginServlet.class` uses a proprietary password hash format. Custom user registration completes but login fails. Source for the hash is unavailable.
+1. **Authentication**: The current supported runtime uses `LocalLoginServlet` / `ApiLoginServlet`. Admin login works locally, and DB-backed users work when their credentials exist in the active database. Prefer testing against the shared Supabase-backed profiles or the `Tester1` regression profile rather than assuming admin-only behavior.
 
 2. **MonitoringContextListener**: Disabled in `web.xml` because it depends on `javax.mail` which is not bundled. Re-enabling requires adding `javax.mail.jar` to `WEB-INF/lib/`.
 

@@ -125,7 +125,7 @@ API endpoints return JSON error responses:
 - **Port**: 9090 (configurable in `web_portal/tomcat/conf/server.xml`)
 - **WAR deployment**: `web_portal/tomcat/webapps/iw-business-daemon/`
 - **Logs**: `web_portal/tomcat/logs/`
-  - `catalina.out` -- Main server log
+  - `catalina.YYYY-MM-DD.log` -- Main Tomcat log on Windows
   - `localhost.*.log` -- Application-level logs
 
 ## Integration Flow Endpoints (Queries)

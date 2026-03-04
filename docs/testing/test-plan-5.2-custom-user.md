@@ -1,8 +1,13 @@
 # Test Plan 5.2: Custom User Account Authentication
 
+> Historical note: this file is a preserved subtask-specific manual test plan.
+> For the current supported regression path, use
+> `docs/testing/PROFILE_COMPILER_REGRESSION.md` and
+> `scripts\verify_profile_compiler.bat`.
+
 **Subtask ID:** 5.2
 **Phase:** Testing & Verification
-**Status:** Ready for Testing
+**Status:** Historical Reference (supplemental)
 **Date:** 2026-01-09
 
 ## Objective
@@ -74,7 +79,7 @@ grep -A 2 "servlet-name>LoginServlet" ./web_portal/tomcat/webapps/iw-business-da
 ./scripts/start_webportal.bat
 
 # Wait for Tomcat to fully start (15-20 seconds)
-# Monitor logs: tail -f ./web_portal/tomcat/logs/catalina.out
+# Monitor logs: tail -f ./web_portal/tomcat/logs/catalina*.log
 ```
 
 ### Step 2: Navigate to Login Page
@@ -126,10 +131,10 @@ Review the Tomcat logs for authentication confirmation:
 
 ```bash
 # View recent Tomcat logs
-tail -n 50 ./web_portal/tomcat/logs/catalina.out
+tail -n 50 ./web_portal/tomcat/logs/catalina*.log
 
 # Or check for specific log entries
-grep "demo@sample.com" ./web_portal/tomcat/logs/catalina.out
+grep "demo@sample.com" ./web_portal/tomcat/logs/catalina*.log
 ```
 
 **Expected Log Entries:**

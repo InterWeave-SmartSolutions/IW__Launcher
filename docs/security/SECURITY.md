@@ -35,20 +35,32 @@ The default admin account (`__iw_admin__` / `%iwps%`) has a hardcoded password b
 
 **Mitigation**: Restrict network access to the Tomcat port (9090) in production. Do not expose the web portal to the public internet.
 
-### 3. LoginServlet Uses Proprietary Hash
+### 3. Legacy LoginServlet Bytecode Still Exists
 
-The compiled `LoginServlet.class` uses a proprietary, undocumented password hashing algorithm. Source code is not available. This means:
-- Password hashing cannot be audited.
-- Hash algorithm strength is unknown.
-- Custom user accounts cannot authenticate (only admin works).
+The historical compiled `LoginServlet.class` still exists in the legacy webapp,
+but the current supported runtime path is `LocalLoginServlet` /
+`ApiLoginServlet`.
 
-**Mitigation**: Use the admin account only. Plan to replace LoginServlet with an auditable implementation.
+Practical security implications:
+- The historical `LoginServlet.class` remains unauditable bytecode.
+- The supported local login path is now auditable source and uses standard
+  SHA-256-based password verification against the active database.
+- DB-backed non-admin users can authenticate when their credentials exist in
+  the configured database.
 
-### 4. Oracle Cloud Database Credentials Are Shared
+**Mitigation**: Continue routing production/local use through the local servlet
+bridge. Treat the legacy compiled servlet as historical fallback code, not the
+current authentication source of truth.
 
-All users connecting via `DB_MODE=oracle_cloud` share the same MySQL username and password. Any user with `.env` access has full database access.
+### 4. Legacy MySQL Compatibility Modes Use Shared Credentials
 
-**Mitigation**: Use `DB_MODE=supabase` with per-environment credentials. Limit Oracle Cloud access to development/testing only.
+Legacy MySQL-style modes (`DB_MODE=interweave`, and the historical
+`DB_MODE=oracle_cloud` compatibility label) typically use a single shared MySQL
+username/password. Any user with `.env` access has broad database access in
+those modes.
+
+**Mitigation**: Use `DB_MODE=supabase` as the primary team mode. Limit legacy
+MySQL modes to explicit fallback scenarios only.
 
 ### 5. `config.xml` Contains Database Password in Plaintext
 

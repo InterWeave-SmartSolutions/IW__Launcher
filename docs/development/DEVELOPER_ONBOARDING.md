@@ -25,7 +25,7 @@ Before you begin, ensure you have the following installed:
 | Git LFS     | 3.0+      | Large file storage (required for binary artifacts)|
 | JDK         | 8         | Java development (must be Java 8, not newer)     |
 | Maven       | 3.6+      | Build automation                                 |
-| Windows 10+ | --        | Primary supported OS (WSL2 also works)           |
+| Windows 10+ | --        | Primary supported OS (Windows native runtime path) |
 
 **Why Java 8?** The Eclipse 3.1 runtime and the InterWeave SDK plugin (`iw_sdk_1.0.0`) are compiled for Java 8. Newer Java versions may introduce class format or API incompatibilities.
 
@@ -86,19 +86,21 @@ If any of these files are very small (under 200 bytes), Git LFS did not pull cor
 cp .env.example .env
 ```
 
-Edit `.env` to set your database credentials. The default mode is `supabase`:
+Edit `.env` to set your database credentials. The default team mode is
+`DB_MODE=supabase` with `TS_MODE=local`:
 
 ```bash
 DB_MODE=supabase
+TS_MODE=local
 SUPABASE_DB_HOST=your-host-here
 SUPABASE_DB_PORT=5432
 SUPABASE_DB_NAME=your-db-name
 SUPABASE_DB_USER=your-db-user
 SUPABASE_DB_PASSWORD=your-db-password
-SUPABASE_DB_SSLMODE=require
 ```
 
-Ask your team lead for the current Supabase credentials if they are not provided in your onboarding materials.
+Use the shared team Supabase password. `START.bat` will not complete the first
+successful startup until `SUPABASE_DB_PASSWORD` is replaced in `.env`.
 
 ---
 
@@ -112,9 +114,12 @@ START.bat
 
 This script:
 1. Creates `.env` from `.env.example` if it does not exist
-2. Starts the Tomcat web server (port 9090)
-3. Launches the Eclipse IDE (`iw_ide.exe`)
-4. Opens your default browser to the login page
+2. Loads the active `DB_MODE` / `TS_MODE`
+3. Prepares the legacy runtime assets
+4. Starts the Tomcat web server (port 9090)
+5. Exports and compiles saved workspace profile overlays
+6. Launches the Eclipse IDE (`iw_ide.exe`)
+7. Opens your default browser to the login page
 
 ### Log in
 
@@ -125,7 +130,10 @@ Open `http://localhost:9090/iw-business-daemon/IWLogin.jsp` and use:
 | Username | `__iw_admin__` |
 | Password | `%iwps%`       |
 
-**Note:** Only the admin account works. Custom user accounts fail due to a proprietary password hash in the compiled `LoginServlet.class`. See `docs/adr/002-additive-only-changes.md` for details.
+**Current behavior:** The admin account works, and DB-backed users also work
+through `LocalLoginServlet` / `ApiLoginServlet` when their credentials exist in
+the active database. The seeded regression profile is `Tester1`
+(`amagown@interweave.biz`) in `CRM2QB3`.
 
 ### Start individual components
 
@@ -149,7 +157,12 @@ STOP.bat
 CHANGE_DATABASE.bat
 ```
 
-This interactive script lets you switch between Supabase, Oracle Cloud, InterWeave server, and local (offline) modes.
+This interactive script lets you switch between Supabase, InterWeave hosted, and local (offline) modes.
+
+The runtime flow/log host is controlled separately by `TS_MODE` in `.env`:
+
+- `TS_MODE=local` keeps flow/query/log traffic on the bundled local runtime
+- `TS_MODE=legacy` points those runtime URLs at the historical InterWeave host
 
 ---
 
@@ -257,9 +270,11 @@ After making changes, verify the following manually:
 - [ ] `START.bat` launches without errors
 - [ ] Tomcat starts and `http://localhost:9090/iw-business-daemon/IWLogin.jsp` loads
 - [ ] Admin login (`__iw_admin__` / `%iwps%`) succeeds
+- [ ] `scripts\verify_legacy_engine.ps1` passes
+- [ ] `scripts\verify_profile_compiler.ps1` passes
 - [ ] The Eclipse IDE launches and opens the workspace
 - [ ] API endpoints return valid JSON (e.g., `GET /api/monitoring`)
-- [ ] No new errors in `web_portal/tomcat/logs/catalina.out`
+- [ ] No new errors in `web_portal/tomcat/logs/catalina*.log`
 - [ ] Database connectivity works for the configured `DB_MODE`
 
 ### Testing different database modes
@@ -267,7 +282,7 @@ After making changes, verify the following manually:
 Switch `DB_MODE` in `.env` and re-run `CHANGE_DATABASE.bat` to verify your changes work across:
 
 - `supabase` -- Primary Postgres database
-- `oracle_cloud` -- Legacy MySQL
+- `interweave` -- Legacy hosted MySQL
 - `local` -- Offline/admin-only mode
 
 ---
@@ -277,8 +292,8 @@ Switch `DB_MODE` in `.env` and re-run `CHANGE_DATABASE.bat` to verify your chang
 | File                     | Purpose                                                       |
 |--------------------------|---------------------------------------------------------------|
 | `CLAUDE.md`              | AI agent instructions and full project architecture overview  |
-| `AI_WORKFLOW.md`         | Mandatory workflow for AI agents working in this repo         |
-| `BUILD.md`               | Build system documentation (Maven, servlet compilation)       |
+| `docs/ai/AI_WORKFLOW.md` | Mandatory workflow for AI agents working in this repo         |
+| `docs/development/BUILD.md` | Build system documentation (Maven, servlet compilation)   |
 | `CONTRIBUTING.md`        | Contribution guidelines and coding standards                  |
 | `README.md`              | Project introduction and quick-start guide                    |
 | `.env.example`           | Template for database and environment configuration           |
@@ -304,6 +319,11 @@ Switch `DB_MODE` in `.env` and re-run `CHANGE_DATABASE.bat` to verify your chang
 **Symptom:** Login fails, pages show database connection errors, or Tomcat logs show JDBC exceptions.
 
 **Fix:** Check `.env` to ensure `DB_MODE` matches a database you have credentials for. Run `CHANGE_DATABASE.bat` to reconfigure.
+
+Also verify `TS_MODE` matches your intended flow/log host:
+
+- `local` for the bundled runtime
+- `legacy` for the historical hosted runtime
 
 ### Modifying protected directories
 

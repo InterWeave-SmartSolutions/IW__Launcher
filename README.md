@@ -4,6 +4,21 @@ Enterprise data integration platform for creating synchronization workflows betw
 
 ---
 
+## Documentation Map
+
+Use the repo entry points below instead of hunting through the tree manually:
+
+- Runtime use: `README.md`
+- Full documentation index: `docs/README.md`
+- AI operating guidance: `docs/ai/README.md`
+- Developer onboarding: `docs/development/DEVELOPER_ONBOARDING.md`
+- Setup/install docs: `docs/setup/`
+- Legacy manuals and imported historical references: `docs/legacy-pdfs/`
+
+This keeps the repository navigable without changing the underlying legacy file layout.
+
+---
+
 ## How to Use (3 Simple Scripts)
 
 | Script | What It Does |
@@ -25,14 +40,17 @@ That's it! Just double-click `START.bat` to begin.
    - **Password:** `%iwps%`
 
 The first time you run `START.bat`, it automatically configures everything for you.
+It also prepares the legacy InterWeave transformation runtime and defaults the first
+generated `.env` file to `DB_MODE=supabase` and `TS_MODE=local` so team members
+land on the shared Supabase database while keeping flow/log traffic on the local
+bundled runtime. On a brand-new checkout, replace the `SUPABASE_DB_PASSWORD`
+placeholder in `.env` after the first launch creates it, then re-run `START.bat`.
 
 ---
 
 ## When You're Done
 
-Either:
-- Press any key in the black window to stop, OR
-- Double-click `STOP.bat`
+Double-click `STOP.bat`
 
 ---
 
@@ -43,6 +61,18 @@ Double-click `CHANGE_DATABASE.bat` to switch between:
 - **InterWeave Server** (MySQL) - May be blocked externally
 - **Offline Mode** - No database needed
 
+Runtime endpoint host is controlled separately in `.env`:
+- `TS_MODE=local` (default) keeps flow queries/logs on `localhost`
+- `TS_MODE=legacy` points runtime flow/log URLs at the historical InterWeave host
+
+Workspace sync is also automatic:
+- startup exports saved profile configuration into IDE-visible workspace mirror files
+- startup also compiles generated per-profile engine overlays
+- successful logins and wizard saves refresh and compile the current profile
+- manual sync is available through `scripts\sync_workspace_profiles.bat`
+- manual compile is available through `scripts\compile_workspace_profiles.bat`
+- manual regression verification is available through `scripts\verify_profile_compiler.bat`
+
 ---
 
 ## Troubleshooting
@@ -51,13 +81,18 @@ Double-click `CHANGE_DATABASE.bat` to switch between:
 - Right-click → Run as Administrator
 
 ### Browser doesn't open
-- Wait 30 seconds, then go to: http://localhost:9090/iw-business-daemon/IWLogin.jsp
+- Wait up to 90 seconds on first start, then go to: http://localhost:9090/iw-business-daemon/IWLogin.jsp
 
 ### Can't login
 - Username: `__iw_admin__`
 - Password: `%iwps%`
 
 ### Database connection failed / timed out
+- Fresh installs now default to `DB_MODE=supabase`.
+- If `START.bat` stops on first run, update `SUPABASE_DB_PASSWORD` in `.env`
+  with the shared team password, then re-run it.
+- If you need to work offline instead, use `CHANGE_DATABASE.bat` to move to
+  **Offline Mode** or change `.env` to `DB_MODE=local`.
 - Some networks block IPv6. Supabase direct host is often IPv6-only.
 - Use the Supabase **pooler** connection in `.env`:
   - Set `SUPABASE_POOLER_HOST`, `SUPABASE_POOLER_PORT=6543`, `SUPABASE_POOLER_USER` (e.g. `postgres.<project_ref>`).
@@ -159,6 +194,7 @@ IW_Launcher/
 │   └── schemas/           # XSD schemas
 ├── docs/                  # Documentation
 │   ├── ai/                # AI workflow & worklog
+│   ├── README.md          # Docs index and placement rules
 │   ├── assa-specs/        # ASSA specification docs
 │   ├── development/       # Build, API, contributing guides
 │   ├── legacy-pdfs/       # Original PDF documentation
@@ -199,6 +235,7 @@ IW_Launcher/
 
 | Date | Change |
 |------|--------|
+| 2026-03-04 | **Profile Compiler Deepening** - Added `CRM2QB3` semantic compiler selection, generated `compiler-selection` artifacts, and `Tester1` regression verification (`scripts\\verify_profile_compiler.bat`) |
 | 2026-02-24 | **Auth API + Live Dashboard** - ApiLoginServlet/ApiSessionServlet (JSON auth, shared Tomcat session), React AuthProvider with protected routes, monitoring dashboard wired to live /api/monitoring/* endpoints via TanStack Query |
 | 2026-02-23 | **IW Portal Scaffold** - React 18 + TypeScript + Tailwind + shadcn/ui, ASSA dark/light theme, sidebar nav, classic view toggle, monitoring + dashboard pages |
 | 2026-02-23 | **Monitoring Stack Enabled** - 11 Java files compiled, 4 API endpoints, 5 background services, Postgres schema, Dashboard.jsp |

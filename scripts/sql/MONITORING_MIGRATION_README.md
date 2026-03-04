@@ -186,11 +186,13 @@ The migration properly references existing tables:
 
 ## Database Connection Modes
 
-This migration works with all three IW_IDE database modes:
+This migration works with the current supported database modes and the legacy
+compatibility alias:
 
-1. **Oracle Cloud MySQL** (oracle_cloud) - `129.153.47.225:3306/iw_ide`
+1. **Supabase Postgres** (supabase) - Primary team database
 2. **InterWeave Server** (interweave) - `148.62.63.8:3306/hostedprofiles`
 3. **Local Mode** (local) - Admin-only offline mode
+4. **Historical alias** (`oracle_cloud`) - compatibility-only for old self-managed MySQL setups
 
 ## Testing After Migration
 

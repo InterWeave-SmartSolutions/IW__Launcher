@@ -5,21 +5,24 @@ All AI agents that read or modify anything under `IW_Launcher/` MUST follow the 
 
 ## 0) Non‑negotiables
 - Do not commit or paste secrets. Never commit `.env`. Treat any database host/user/password as sensitive.
-- Do not use/read/reference `InterWoven/` unless the user explicitly requests it (see `CLAUDE.md`).
+- Do not use/read/reference `frontends/InterWoven/` application code unless the user explicitly requests it (see `CLAUDE.md`).
+- Exception: mirrored legacy manuals under `frontends/InterWoven/docs/IW_Docs/**` may be used when the task needs historical InterWeave context and `docs/ai/INTERWEAVE_PDF_CONTEXT.md` calls them out.
 - Do not delete or overwrite user data (e.g. `workspace/`, `data/`) unless explicitly requested.
 - Do not commit to git unless the user explicitly asks.
 
 ## 1) Session start checklist (required)
 1. Read `CLAUDE.md` and `README.md` in the repo root.
-2. Run:
+2. If the task involves repository navigation, documentation changes, or broad context gathering, also read `docs/README.md` and `docs/ai/README.md`.
+3. If the task touches legacy InterWeave workflows, labels, user training, or old integrations, also read `docs/ai/INTERWEAVE_PDF_CONTEXT.md`.
+4. Run:
    - `git --no-pager status -sb`
    - `git --no-pager diff` (or `git --no-pager diff --stat`)
-3. State (in the chat) what you believe the user is asking for and what you will change.
-4. If you will make changes: create/update the session entry in `AI_WORKLOG.md` (see §5).
+5. State (in the chat) what you believe the user is asking for and what you will change.
+6. If you will make changes: create/update the session entry in `AI_WORKLOG.md` (see §5).
 
 ## 2) Context gathering rules
 - Prefer existing project docs/scripts as the source of truth:
-  - `README.md`, `docs/development/BUILD.md`, `scripts/*.bat|*.sh`, `docs/**`, `web_portal/**`, `pom.xml`.
+  - `README.md`, `docs/README.md`, `docs/ai/README.md`, `docs/development/BUILD.md`, `docs/ai/INTERWEAVE_PDF_CONTEXT.md`, `scripts/*.bat|*.sh`, `docs/**`, `web_portal/**`, `pom.xml`.
 - If something in docs references a file/script, verify it exists and matches the name.
 - If the task is non-trivial (multi-step, risk of breaking startup, or touches many files), propose a plan first.
 
@@ -32,6 +35,7 @@ All AI agents that read or modify anything under `IW_Launcher/` MUST follow the 
 - When changing documentation:
   - Prefer checklists and concrete “copy/paste” commands.
   - Explicitly distinguish “runtime users” vs “developers/building from source”.
+- If legacy PDF context is used, merge it additively with current docs and current behavior; do not replace current guidance unless the user explicitly asks. See `docs/adr/002-additive-only-changes.md`.
 
 ## 4) Verification rules (required before saying “done”)
 Pick the smallest reasonable verification for the change you made:
@@ -70,6 +74,7 @@ Guidance:
 - Keep entries concise.
 - Never include secrets (DB passwords, tokens, private URLs).
 - If multiple AIs worked in parallel on the same task, produce one consolidated entry.
+- If legacy PDF context materially informed the work, list the specific PDF filenames consulted.
 
 ## 6) Claude Code-specific enhancements (recommended)
 This repo is designed to work well with Claude Code using:

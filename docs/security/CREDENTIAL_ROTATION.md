@@ -5,7 +5,7 @@ This document describes how to rotate database credentials for the InterWeave ID
 ## Table of Contents
 
 1. [Supabase Postgres Credential Rotation](#1-supabase-postgres-credential-rotation)
-2. [Oracle Cloud MySQL Credential Rotation](#2-oracle-cloud-mysql-credential-rotation)
+2. [Legacy MySQL Credential Rotation](#2-legacy-mysql-credential-rotation)
 3. [Verification Steps After Rotation](#3-verification-steps-after-rotation)
 4. [Notifications and Restarts](#4-notifications-and-restarts)
 5. [Emergency: Credential Leak Response](#5-emergency-credential-leak-response)
@@ -64,28 +64,38 @@ See [Verification Steps](#3-verification-steps-after-rotation) below.
 
 ---
 
-## 2. Oracle Cloud MySQL Credential Rotation
+## 2. Legacy MySQL Credential Rotation
 
-Oracle Cloud MySQL is the legacy database option (`DB_MODE=oracle_cloud`). The instance is at `129.153.47.225:3306`.
+The current legacy hosted MySQL mode is `DB_MODE=interweave`.
+
+The older `DB_MODE=oracle_cloud` label is now compatibility-only for historical
+self-managed MySQL setups. It is no longer part of the primary interactive
+switching workflow.
 
 ### Step 1: Change the MySQL password
 
-Connect to the Oracle Cloud MySQL instance with current admin credentials and change the password:
+Connect to the active legacy MySQL target with current admin credentials and
+change the password:
 
 ```sql
 ALTER USER 'iw_admin'@'%' IDENTIFIED BY '<new-password-here>';
 FLUSH PRIVILEGES;
 ```
 
-Alternatively, use the Oracle Cloud console if MySQL is managed through Oracle Cloud Infrastructure.
+If you are maintaining an old self-managed MySQL deployment that still uses the
+historical `oracle_cloud` label, use the corresponding host and credentials for
+that deployment instead.
 
 ### Step 2: Update the local .env file
 
 Edit `.env`:
 
 ```bash
-ORACLE_DB_PASSWORD=<new-password-here>
+IW_DB_PASSWORD=<new-password-here>
 ```
+
+If you are intentionally using the historical compatibility label, update the
+matching `ORACLE_DB_*` values instead.
 
 ### Step 3: Regenerate Tomcat config.xml
 
@@ -93,7 +103,11 @@ ORACLE_DB_PASSWORD=<new-password-here>
 CHANGE_DATABASE.bat
 ```
 
-Select the `oracle_cloud` option.
+Select the `interweave` option.
+
+If you are intentionally maintaining a historical `oracle_cloud` configuration,
+edit `.env` manually and then run `scripts\SETUP_DB_Windows.bat` to regenerate
+the config files.
 
 ### Step 4: Restart Tomcat
 
@@ -119,7 +133,7 @@ After rotating credentials for any database backend, perform the following check
 :: (on Windows, open the file; on WSL2/Linux, use grep)
 ```
 
-Open `web_portal/tomcat/logs/catalina.out` and look for:
+Open the latest `web_portal/tomcat/logs/catalina.YYYY-MM-DD.log` and look for:
 - `java.sql.SQLException` -- indicates connection failure
 - `Access denied` -- indicates wrong credentials
 - `Communications link failure` -- indicates network/host issue
@@ -193,8 +207,8 @@ Do not wait. Rotate the affected credentials immediately using the procedures in
 - Reset the database password via the Supabase dashboard immediately.
 - If the Supabase project URL or API keys were also leaked, consider creating a new Supabase project entirely.
 
-**For Oracle Cloud MySQL:**
-- Change the `iw_admin` password via SQL or the Oracle Cloud console.
+**For legacy MySQL modes (`interweave` / historical `oracle_cloud`):**
+- Change the `iw_admin` password via SQL or your MySQL host's management plane.
 - If the MySQL instance is exposed to the internet, consider restricting access to known IP addresses.
 
 ### Step 2: Check git history for leaked credentials
@@ -220,15 +234,15 @@ After rotating, explicitly verify that the old credentials no longer work:
 psql "postgresql://<user>:<OLD-password>@<host>:<port>/<dbname>?sslmode=require"
 # This should FAIL with "password authentication failed"
 
-# For Oracle Cloud MySQL
-mysql -h 129.153.47.225 -u iw_admin -p'<OLD-password>' iw_ide
+# For legacy MySQL
+mysql -h <host> -u iw_admin -p'<OLD-password>' <database>
 # This should FAIL with "Access denied"
 ```
 
 ### Step 4: Audit for unauthorized access
 
 - Check Supabase dashboard logs for any unusual queries or connections during the exposure window.
-- Check Oracle Cloud MySQL slow query log and general log if enabled.
+- Check the legacy MySQL host's slow query log and general log if enabled.
 - Look for any data that may have been exfiltrated or modified.
 
 ### Step 5: Document the incident

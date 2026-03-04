@@ -1,5 +1,11 @@
 # ADR 001: Migration from Oracle Cloud MySQL to Supabase Postgres
 
+> Historical note: this ADR captures the migration away from the former Oracle
+> Cloud MySQL primary database. The current supported operational modes are
+> `supabase` (primary), `interweave` (legacy hosted), and `local` (offline).
+> `oracle_cloud` now survives only as a compatibility label in a few legacy
+> scripts/templates.
+
 ## Status
 
 Implemented
@@ -24,14 +30,14 @@ Migrate the primary database backend from Oracle Cloud MySQL to Supabase Postgre
 
 2. **Per-environment credential isolation**: Supabase supports creating separate database roles and credentials, enabling distinct configurations for development, staging, and production environments.
 
-3. **Retain legacy MySQL support**: The Oracle Cloud MySQL and InterWeave-hosted MySQL options remain available as `DB_MODE` alternatives (`oracle_cloud`, `interweave`, `local`) for backward compatibility and offline use.
+3. **Retain legacy MySQL support**: InterWeave-hosted MySQL remains available as the current legacy hosted `DB_MODE` (`interweave`), while the older `oracle_cloud` label is retained only for compatibility with historical scripts/templates. Offline fallback remains `local`.
 
 4. **Dual-dialect SQL maintenance**: Database schema and migration scripts must be maintained in both MySQL and Postgres dialects:
    - `database/mysql_schema.sql` -- MySQL dialect (legacy)
    - `database/postgres_schema.sql` -- Postgres dialect (primary)
    - `database/schema.sql` -- Original reference schema
 
-5. **Configuration generation**: The `scripts/` setup scripts and `CHANGE_DATABASE.bat` were updated to generate the appropriate JDBC connection strings and Tomcat `config.xml` for whichever `DB_MODE` is selected.
+5. **Configuration generation**: The `scripts/` setup scripts generate the appropriate JDBC connection strings and Tomcat `config.xml` for the selected `DB_MODE`. The current interactive switcher path is centered on `supabase`, `interweave`, and `local`.
 
 ## Consequences
 

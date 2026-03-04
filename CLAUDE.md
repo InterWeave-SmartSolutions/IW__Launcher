@@ -6,11 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 All AI tools/agents working in this repo MUST follow `docs/ai/AI_WORKFLOW.md`.
 - If you make changes, you MUST append a session entry to `docs/ai/AI_WORKLOG.md`.
 - Every response MUST include `What I did (this response)`.
+- For tasks involving legacy InterWeave behavior, terminology, user workflows, or vendor mappings, read `docs/ai/INTERWEAVE_PDF_CONTEXT.md` and use the approved PDF corpus listed there as supporting context.
+- PDF-derived guidance is additive context only. Do not replace existing repository docs or established behavior unless the user explicitly asks for replacement.
 
 ## IMPORTANT: InterWoven concept directory
 If a `frontends/InterWoven/` directory exists in this repo, it is a concept/prototype snapshot for potential future IDE launcher + Java form web page improvements.
 
-Do not use, read, or reference anything in `frontends/InterWoven/` unless the user explicitly requests it.
+Do not use, read, or reference application code in `frontends/InterWoven/` unless the user explicitly requests it.
+
+Exception: the mirrored legacy manuals under `frontends/InterWoven/docs/IW_Docs/**` may be consulted when they are explicitly referenced by `docs/ai/INTERWEAVE_PDF_CONTEXT.md` or by the user. Treat those files as historical documentation only, not as the source of truth for the prototype frontend.
 
 ---
 

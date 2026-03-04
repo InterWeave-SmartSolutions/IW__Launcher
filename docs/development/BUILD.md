@@ -311,7 +311,7 @@ After building:
 1. **Deploy to Tomcat**: Copy JAR to `WEB-INF/lib/` or classes to `WEB-INF/classes/`
 2. **Restart Tomcat**: `./web_portal/tomcat/bin/shutdown.sh && ./web_portal/tomcat/bin/startup.sh`
 3. **Test Error Pages**: Visit `http://localhost:9090/iw-business-daemon/ErrorMessage.jsp`
-4. **Check Logs**: Monitor `web_portal/tomcat/logs/catalina.out` for errors
+4. **Check Logs**: Monitor `web_portal/tomcat/logs/catalina*.log` for errors
 
 ## Additional Resources
 

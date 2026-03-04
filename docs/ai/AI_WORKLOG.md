@@ -1596,3 +1596,415 @@ Verification performed:
 - Not run (user should re-run START.bat).
 Files changed/created:
 - START.bat
+
+---
+
+## 2026-02-27 20:00 (UTC)
+Agent/tool: Warp Agent (Claude Opus 4.6 max)
+User request: Multiple topics — (1) Continue IM page investigation from prior session, (2) Explain how JSP pages technically work, (3) Explain what a servlet is, (4) Can React/TypeScript replace JSP UI, (5) Can React be implemented as hooks instead, (6) Can hooks support live data/log feeds/interactivity, (7) What's the best enterprise long-term choice, (8) Log all session prompts/responses
+Actions taken:
+- Continued Integration Manager page investigation:
+  - Read IWDAEMON_TROUBLESHOOTING_GUIDE.md and JRE_CONSOLIDATION_SUMMARY.md
+  - Located all JSP files under web_portal/tomcat/webapps/iw-business-daemon/
+  - Found config.xml files in workspace/ and plugins/ directories (not in WEB-INF/)
+  - Read BusinessDaemon.xsd — documented TransactionDescription schema
+  - Decompiled ConfigContext.class — confirmed /WEB-INF/config.xml loading, TransactionDescription parsing
+  - Explored IW_IDE_1.0/ (legacy executables: IWDaemon.exe, IWDeveloper.exe, IWServer.exe)
+  - Read plugin.xml — mapped Eclipse-based IDE with Transaction Flow perspective, Build IM/TS actions, wizards
+  - Read workspace XSLT files — sitetran_host.xslt has system transactions, soltran is empty, transactions.xml is empty
+  - Identified root cause of empty flows table: no TransactionDescription elements anywhere, no config.xml in WEB-INF/
+- Provided technical education:
+  - Explained JSP lifecycle (compiled to servlet by Tomcat) and 4 invocation mechanisms (HTTP request, sendRedirect, jsp:forward, framesets, form POST)
+  - Explained servlets as Java HTTP request handlers with web.xml URL mapping
+  - Clarified JSP vs servlet: same under the hood, different authoring style
+- Evaluated UI modernization approaches:
+  - Full React SPA rewrite (high effort, high value)
+  - React hooks into existing JSPs (low effort, quick wins, hybrid complexity)
+  - Phased migration: hooks → standalone SPA (RECOMMENDED)
+- Demonstrated React capabilities: live polling, inline editing, SSE log streaming, toast notifications
+- Provided enterprise long-term recommendation with reasoning (team scalability, testability, deployment flexibility, security, hiring, extensibility)
+- Created comprehensive session documentation
+Files changed/created:
+- docs/ai/SESSION_LOG_2026-02-27.md (new — full prompt/response log with what worked vs didn't)
+- docs/ai/UI_MODERNIZATION_NOTES.md (new — architectural discussion, 3 approaches, phased plan, API endpoints, code examples)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- Get-ChildItem to explore directory structures (IW_IDE_1.0, IW_CDs, web_portal, plugins, workspace)
+- file_glob to locate JSPs, config.xml files, ProductDemoServlet
+- grep for ConfigContext, TransactionDescription, TransactionContext across WEB-INF/src
+- javap -private -c on ConfigContext.class to decompile and trace config.xml loading
+Verification performed:
+- ✅ Confirmed config.xml NOT present at WEB-INF/ (file_glob returned empty)
+- ✅ Confirmed workspace config.xml files have zero TransactionDescription elements
+- ✅ Confirmed transactions.xml is empty (<iwmappings></iwmappings>)
+- ✅ Confirmed ConfigContext reads /WEB-INF/config.xml via decompilation
+- ✅ Confirmed plugin.xml defines Build IM action that would generate config.xml with TransactionDescription
+- ❌ ProductDemoServlet not found (no .java or .class anywhere in project)
+- ❌ IW IDE Eclipse app untested (requires legacy JDK 1.5)
+Follow-ups / known issues:
+- ProductDemoServlet is referenced by all BDConfigurator form actions but doesn't exist in the project — may be in a JAR or was never deployed locally
+- IW IDE Eclipse app (iw_ide.exe) needs JDK 1.5 (32-bit) — likely not runnable on modern systems without work
+- No sample TransactionDescription XML exists — only the XSD schema defines the structure
+- UI modernization decision pending: user needs to decide when to start Phase 1 (React hooks)
+- ~5 API servlets needed for interactive features (flows status, config save, log streaming, auth, query execution)
+- See docs/ai/SESSION_LOG_2026-02-27.md for full prompt/response transcript
+- See docs/ai/UI_MODERNIZATION_NOTES.md for detailed architecture notes and phased plan
+
+---
+
+## 2026-02-27 16:39:51 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Integrate the legacy InterWeave PDF corpus into repository guidance so future AI agents treat those manuals as additive documentation, instruction, and logging context rather than ignoring them.
+Actions taken:
+- Inventoried and fully read the PDF corpus across the repo and parent directory, including duplicate detection and full-text extraction.
+- Consulted the key legacy manuals used for the new guidance: `serverStartup.pdf`, `IT Professional Services Agreement - First Universal 06_05_08.pdf`, `echeck.pdf`, `aim_guide.pdf`, `developerGuide.pdf`, `CIM_SOAP_guide.pdf`, both `IW_IDE_UR.pdf` variants, `userGuide.pdf`, `InterWeave%20HelpandTraining.pdf`, `IDETutorial.pdf`, `InterWeave_IDE_Binder.pdf`, `IDE Quick Installation Guide _2_.pdf`, and `Protocol Translation Engine 8.pdf`.
+- Identified the canonical legacy manuals most relevant to InterWeave usage, platform behavior, and historical integrations.
+- Added an AI-facing PDF context guide that defines which legacy PDFs are approved reference material and how to use them safely.
+- Updated AI workflow instructions so agents consult the PDF guide for legacy InterWeave tasks, keep PDF-derived guidance additive, and log which PDFs informed their work.
+- Updated CLAUDE.md to allow the documented PDF mirrors under `frontends/InterWoven/docs/IW_Docs/**` while keeping `frontends/InterWoven/` application code out of scope by default.
+Files changed/created:
+- CLAUDE.md
+- docs/ai/AI_WORKFLOW.md
+- docs/ai/INTERWEAVE_PDF_CONTEXT.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- Recursive PDF inventory across the repo and parent directory
+- Python-based PDF text extraction and duplicate hashing
+- File reads for CLAUDE.md, README.md, AI workflow docs, and ADR 002
+- Git status and diff-stat checks before editing
+Verification performed:
+- Verified the new guide file exists and every referenced canonical PDF/document path resolves in the current repo layout.
+Follow-ups / known issues:
+- The legacy PDF corpus is historical and contains outdated platform and vendor assumptions; agents should use it for context, not as the sole authority for current implementation behavior.
+
+---
+
+## 2026-02-27 16:45:04 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Make the documentation, file layout, and navigation more orderly so the repository is easier to navigate for users and easier for AI agents to read and use.
+Actions taken:
+- Audited the existing documentation tree and identified that the repo had grouped folders but no top-level docs index or AI-docs landing page.
+- Added `docs/README.md` as the canonical documentation map, including folder purposes, placement rules, naming rules, and navigation order.
+- Added `docs/ai/README.md` as the AI-specific landing page with read order, file purposes, and organization rules.
+- Updated the root `README.md` with a new documentation map section that points users to the right entry points.
+- Updated `docs/ai/AI_WORKFLOW.md` so AI agents read the new index files for navigation and documentation tasks before diving into topic-specific docs.
+Files changed/created:
+- docs/README.md
+- docs/ai/README.md
+- README.md
+- docs/ai/AI_WORKFLOW.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- git status -sb
+- git diff --stat
+- Get-ChildItem on `docs/` and `docs/ai/`
+- Get-Content on `README.md` and `docs/ai/AI_WORKFLOW.md`
+- Get-Date
+Verification performed:
+- Verified `docs/README.md` and `docs/ai/README.md` were created and confirmed all new cross-references in `README.md` and `AI_WORKFLOW.md` resolve.
+Follow-ups / known issues:
+- This is an additive navigation cleanup only; existing legacy filenames and imported documents remain in place, so some older file names are still inconsistent by modern naming standards.
+
+---
+
+## 2026-02-27 17:16:45 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Probe the live IDE Navigator more deeply, map the workspace project model to the JSP/runtime engine flow, and help define what must align for the IDE, JSP pages, wizards, and database to support full transactional flows together.
+Actions taken:
+- Extracted live text from the running IDE Navigator tree by reading the native `SysTreeView32` control in the SWT-based IDE window.
+- Verified the live project structure exposed by the IDE matches the historical InterWeave training and legacy PDF model (Configuration, Transactions, Connections, XSLT, Integration Flows).
+- Mapped the Navigator labels to the actual workspace filesystem layout and verified the current sample projects' `configuration/im`, `configuration/ts`, and `xslt` data.
+- Verified the current web runtime wiring: `START.bat` startup order, `BDConfigurator.jsp` dependency on `ConfigContext.getTransactionList()`, `CompanyConfiguration.jsp` wizard flow, and `ProductDemoServlet` presence as a compiled class.
+- Added a new engineering reference document describing the verified sync points and the remaining requirements for real end-to-end transactional flow support.
+Files changed/created:
+- docs/development/ENGINE_SYNC_MAP.md
+- docs/README.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- PowerShell + Win32 interop to inspect the live IDE window and native tree control
+- File reads for `START.bat`, JSPs, local servlet docs, workspace XML files, and training docs
+- String inspection of compiled `ConfigContext.class` and `ProductDemoServlet.class`
+- Repo search for integration-related symbols (`ProductDemoServlet`, `TransactionDescription`, `iwtransformationserver`)
+Verification performed:
+- Verified the live Navigator roots and child labels from the running IDE window.
+- Verified the mapped workspace files and the new `ENGINE_SYNC_MAP.md` reference file exist.
+- Verified `ProductDemoServlet.class` exists even though source is absent, correcting earlier assumptions in older session notes.
+Follow-ups / known issues:
+- The deployed runtime config currently contains secret-bearing hosted configuration and should be treated as sensitive.
+- Full transactional execution still depends on valid runtime flow definitions and a functioning `iwtransformationserver` endpoint or compatible replacement.
+
+---
+
+## 2026-02-27 17:47:33 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Perform the next practical setup steps so the repo stays close to the natural InterWeave setup and becomes fully operational for a Windows user immediately after a pull/download.
+Actions taken:
+- Diagnosed the legacy transformation server startup failures under the bundled Java 8 runtime and confirmed the root causes in sequence: bytecode verification failure, JAXB API mismatch, and missing legacy XML parser classes.
+- Updated Tomcat startup to run with `-Xverify:none` and added conditional support for a generated legacy JAXB compatibility jar in `web_portal/tomcat/bin/setenv.bat`.
+- Added `scripts/setup/build_legacy_jaxb_compat.ps1` to generate a minimal compatibility jar from the legacy `jaxb-rt-1.0-ea.jar`, including only the required JAXB 1.0 and parser classes needed by the InterWeave transformation server.
+- Added `scripts/setup/prepare_legacy_runtime.ps1` to make startup idempotently prepare the legacy engine by importing/deploying the sample InterWeave project and rebuilding the JAXB compatibility jar.
+- Updated `START.bat` and `scripts/start_webportal.bat` to run the new runtime-preparation step automatically before startup, wait for the Business Daemon login page (instead of the Tomcat root), extend the wait window for slower legacy initialization, and stop shutting Tomcat down when the launcher window closes.
+- Changed `.env.example` to default first-run checkouts to `DB_MODE=local` so fresh clones can start without hosted database credentials.
+- Updated `docs/authentication/config.xml.local.template` so local mode targets the deployed `iwtransformationserver` endpoint instead of the old project-specific path.
+- Expanded `scripts/verify_legacy_engine.ps1` to report whether the JAXB compatibility jar exists and to verify both `/iwtransformationserver/index` and `/iwtransformationserver/transform`.
+- Updated user-facing docs in `README.md` and `docs/SYSTEM_READY.md` to reflect the new local-first startup behavior and automatic legacy runtime preparation.
+Files changed/created:
+- web_portal/tomcat/bin/setenv.bat
+- scripts/setup/build_legacy_jaxb_compat.ps1
+- scripts/setup/prepare_legacy_runtime.ps1
+- START.bat
+- scripts/start_webportal.bat
+- scripts/verify_legacy_engine.ps1
+- .env.example
+- docs/authentication/config.xml.local.template
+- README.md
+- docs/SYSTEM_READY.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- Tomcat `startup.bat` / `shutdown.bat` cycles from `web_portal/tomcat/bin`
+- `Invoke-WebRequest` probes against `/iw-business-daemon/IWLogin.jsp`, `/iwtransformationserver/index`, and `/iwtransformationserver/transform`
+- Log inspection of `web_portal/tomcat/logs/catalina.2026-02-27.log`
+- PowerShell ZIP inspection of the legacy `jaxb-rt-1.0-ea.jar`
+- `powershell -ExecutionPolicy Bypass -File .\scripts\setup\build_legacy_jaxb_compat.ps1`
+Verification performed:
+- Verified the Business Daemon login page returns HTTP 200.
+- Verified `/iwtransformationserver/index` returns HTTP 200 with the expected InterWeave XML payload.
+- Verified `/iwtransformationserver/transform` returns HTTP 200 with the expected InterWeave XML payload.
+- Verified the generated compatibility jar exists and Tomcat starts with the expected compatibility flags.
+Follow-ups / known issues:
+- The first startup after regenerating the compatibility jar can take noticeably longer because the legacy transformation webapp performs heavy initialization.
+- Local mode now supports immediate startup, but teams that need hosted/shared profiles must still switch `.env` to `supabase` or `interweave` and supply valid credentials.
+
+## 2026-02-27 22:19:58 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Continue the next practical step by making the JSP/wizard/runtime path behave like a real InterWeave hosted flow after login, staying as close to the natural setup as possible.
+Actions taken:
+- Inspected the live Business Daemon runtime path and confirmed `BDConfigurator.jsp` was rendering empty tables because `LocalLoginServlet` only initialized the company-wizard contexts and did not bind the authenticated profile into the global `ConfigContext` transaction and query collections.
+- Verified the shipped runtime APIs with `javap`, confirming the available methods were `TransactionContext.addTransactionThread(String)`, `QueryContext.addQueryInstance(String)`, `ConfigContext.getTransactionThreadByProfileName(...)`, and `ConfigContext.getQueryInstanceByProfileName(...)`.
+- Updated `LocalLoginServlet.java` so successful login now reuses or creates the per-profile `TransactionThread`/query instances across the hosted runtime, registers the profile descriptor only when missing, and keeps the profile configuration synchronized with the classic JSP path.
+- Updated `ApiLoginServlet.java` to mirror the same hosted-profile binding logic, load any saved configuration XML from the database, and sanitize persisted XML the same way as the classic login flow so the API and JSP paths stay compatible.
+- Recompiled both modified servlet classes into `WEB-INF/classes` with a Java 8-compatible target (`--release 8`) so the bundled Tomcat runtime can load them safely.
+- Updated `docs/development/ENGINE_SYNC_MAP.md` to record the new login-to-runtime binding behavior and the Java 8 compile-target requirement for future servlet edits.
+Files changed/created:
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/LocalLoginServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiLoginServlet.java
+- docs/development/ENGINE_SYNC_MAP.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- `javap` against `TransactionContext`, `QueryContext`, `ConfigContext`, `HostedTransactionBase`, and `TransactionThread`
+- `javac --release 8` against the modified Business Daemon servlet sources
+- `STOP.bat` and `scripts/start_webportal.bat`
+- `Invoke-WebRequest` against `LoginServlet`, `IMConfig.jsp`, `BDConfigurator.jsp`, `api/auth/login`, and a live query `GO` link
+- `powershell -ExecutionPolicy Bypass -File .\\scripts\\verify_legacy_engine.ps1`
+Verification performed:
+- Verified classic `LoginServlet` login returns HTTP `302` to `IMConfig.jsp`.
+- Verified `BDConfigurator.jsp` now renders `70` live flow links (`24` transaction descriptions plus `46` query links) for the authenticated `IW Admin:__iw_admin__` profile instead of an empty page.
+- Verified the API login path (`/api/auth/login`) also returns HTTP `200` and produces the same populated `BDConfigurator.jsp` state under the same session.
+- Verified a live query `GO` link resolves to the deployed `iwtransformationserver/transform` endpoint and returns HTTP `200`.
+- Re-ran `scripts/verify_legacy_engine.ps1` and confirmed the base runtime checks still pass (`iw-business-daemon`, `/iwtransformationserver/index`, and `/iwtransformationserver/transform` all `200`).
+Follow-ups / known issues:
+- `ProductDemoServlet` source is still not present in the repo, so the start/stop flow control path can be exercised at runtime but not yet directly patched from source if deeper behavior changes are needed.
+- Because the bundled Tomcat uses Java 8, any future recompilation of servlet sources must continue to target Java 8 or Tomcat will reject the updated class files.
+
+## 2026-03-02 12:40:12 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Implement the concrete next steps so runtime flow/log URLs are local by default, remain switchable back to legacy InterWeave hosts, and keep the IDE/runtime startup path aligned.
+Actions taken:
+- Added a separate transformation/log endpoint mode to the repo configuration model (`TS_MODE`) so runtime host selection is no longer implicitly tied to `DB_MODE`.
+- Updated `.env.example` with `TS_MODE`, `TS_BASE_LOCAL`, `TS_BASE_LEGACY`, `TS_FAILOVER_LOCAL`, and `TS_FAILOVER_LEGACY`, defaulting fresh installs to the local bundled transformation server.
+- Updated `START.bat` to read the new TS settings from `.env`, validate them, expose them to the Tomcat process, and render `WEB-INF/config.xml` templates with `__TS_BASE_URL__` / `__FAILOVER_URL__` placeholders.
+- Updated `scripts/start_webportal.bat` to load the same TS environment values from `.env` (or fall back to local defaults) before launching Tomcat, so web-only startup stays consistent with `START.bat`.
+- Parameterized the Business Daemon configuration templates (`config.xml.local.template`, `config.xml.supabase.template`, `config.xml.hosted.template`, and `config.xml.oracle_cloud.template`) so transformation/log endpoint hosts are rendered from the active TS mode instead of being hardcoded.
+- Updated `LocalLoginServlet.java` and `ApiLoginServlet.java` so login-time hosted profile binding now rewrites existing runtime URLs by host/origin while preserving their original endpoint suffixes (for example `/transform` and `/scheduledtransform`) and sets `ConfigContext.getMyGlobalIP()` to the active host.
+- Corrected the runtime URL normalization after verifying the compiled `HostedTransactionBase` / `QueryContext` behavior: the final implementation preserves path suffixes and stops stale legacy hosts from leaking into fresh local sessions, while still allowing a future `TS_MODE=legacy` switch.
+- Updated `README.md`, `docs/SYSTEM_READY.md`, and `docs/development/ENGINE_SYNC_MAP.md` so the new TS-mode split and the IDE/runtime alignment expectations are documented.
+Files changed/created:
+- .env.example
+- START.bat
+- scripts/start_webportal.bat
+- docs/authentication/config.xml.local.template
+- docs/authentication/config.xml.supabase.template
+- docs/authentication/config.xml.hosted.template
+- docs/authentication/config.xml.oracle_cloud.template
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/LocalLoginServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiLoginServlet.java
+- README.md
+- docs/SYSTEM_READY.md
+- docs/development/ENGINE_SYNC_MAP.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- `javac --release 8` against the updated `LocalLoginServlet.java` and `ApiLoginServlet.java`
+- `STOP.bat`
+- `scripts/start_webportal.bat`
+- `Invoke-WebRequest` checks against `IWLogin.jsp`, `/iwtransformationserver/index`, `/iwtransformationserver/transform`, the rendered `BDConfigurator.jsp` links for `Tester1`, and the local `/iwtransformationserver/scheduledtransform` endpoint
+- `javap -c` inspection of `HostedTransactionBase` and `QueryContext`
+Verification performed:
+- Verified the portal still responds after rebuild (`IWLogin.jsp`, `/iwtransformationserver/index`, `/iwtransformationserver/transform` all `200`).
+- Verified `Tester1` now renders a local `GO` URL again: `http://localhost:9090/iwtransformationserver/transform?...`
+- Verified `Tester1` now renders a local `Runs`/log URL again: `Logging.jsp?TCURL=http://localhost:9090/iwtransformationserver/scheduledtransform...`
+- Verified the local `scheduledtransform` endpoint responds with HTTP `200`, confirming local logs are now reachable for the rendered flow link path.
+Follow-ups / known issues:
+- `TS_MODE=legacy` is now wired into startup and login-time runtime normalization, but it was not live-tested in this session to avoid redirecting the active local environment back to the remote host.
+- The Eclipse IDE still treats workspace project files as design-time assets; launching through `START.bat` now keeps the IDE and web runtime on the same `TS_MODE`, but wizard saves are still profile/runtime state rather than automatic workspace project rewrites.
+
+## 2026-03-02 14:05:00 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Build a practical IDE/runtime bridge so wizard-saved profile configuration can be exported into IDE-visible workspace files and imported back, while keeping pull-and-run startup simple for Windows users.
+Actions taken:
+- Implemented a workspace profile sync bridge centered on the wizard's real persistence artifact: the flat `SF2QBConfiguration` XML saved in `company_configurations`.
+- Added `WorkspaceProfileSyncSupport.java` to mirror saved profile XML into IDE-visible workspace sidecar files instead of overwriting `configuration/im/config.xml`, which uses a different schema.
+- Added `WorkspaceProfileSyncServlet.java` with local-only `exportAll`, `exportProfile`, and `importProfile` actions for DB-to-workspace and workspace-to-DB synchronization.
+- Updated `LocalCompanyCredentialsServlet.java` to refresh the workspace mirror immediately after a successful wizard save.
+- Updated `LocalLoginServlet.java` and `ApiLoginServlet.java` to refresh the current profile mirror on successful login when saved configuration already exists.
+- Updated `WEB-INF/web.xml` to register `/WorkspaceProfileSyncServlet`.
+- Updated `START.bat` and `scripts/start_webportal.bat` so startup automatically calls `WorkspaceProfileSyncServlet?action=exportAll` after Tomcat is ready.
+- Added `config/workspace-profile-map.properties` for solution-to-project routing (`CRM2QB3 -> Creatio_QuickBooks_Integration`, `SF2AUTH -> SF2AuthNet`).
+- Added a dedicated IDE-visible sync project under `workspace/IW_Runtime_Sync` plus helper scripts `scripts/sync_workspace_profiles.ps1` and `scripts/sync_workspace_profiles.bat`.
+- Added `docs/development/WORKSPACE_PROFILE_SYNC.md` and updated `README.md`, `docs/SYSTEM_READY.md`, and `docs/development/ENGINE_SYNC_MAP.md` to document the bridge and its operating model.
+Files changed/created:
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileSyncSupport.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileSyncServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/LocalCompanyCredentialsServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/LocalLoginServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiLoginServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml
+- START.bat
+- scripts/start_webportal.bat
+- config/workspace-profile-map.properties
+- workspace/IW_Runtime_Sync/.project
+- workspace/IW_Runtime_Sync/.gitignore
+- workspace/IW_Runtime_Sync/README.md
+- scripts/sync_workspace_profiles.ps1
+- scripts/sync_workspace_profiles.bat
+- docs/development/WORKSPACE_PROFILE_SYNC.md
+- README.md
+- docs/SYSTEM_READY.md
+- docs/development/ENGINE_SYNC_MAP.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- `javac --release 8` against the new workspace sync classes plus the updated login/save servlets
+- `STOP.bat`
+- `scripts/start_webportal.bat`
+- `Invoke-WebRequest` checks against `IWLogin.jsp` and `/WorkspaceProfileSyncServlet`
+- `Invoke-WebRequest` import round-trip for `Tester1:amagown@interweave.biz`
+Verification performed:
+- Verified the portal still responds after rebuild (`IWLogin.jsp` returned `200`).
+- Verified `/WorkspaceProfileSyncServlet?action=exportAll` returned `200` and exported both the admin profile and `Tester1`.
+- Verified the workspace mirror files were created under `workspace/IW_Runtime_Sync/profiles/**`.
+- Verified the mapped project mirror was created for `Tester1` at `workspace/Creatio_QuickBooks_Integration/configuration/runtime_profiles/Tester1_amagown_interweave.biz.xml`.
+- Verified a controlled `importProfile` round-trip for `Tester1` returned `200` and re-imported the same XML payload back into the DB.
+Follow-ups / known issues:
+- The bridge intentionally mirrors wizard-saved runtime profile XML into sidecar files instead of mutating `configuration/im/config.xml`, because the IDE engine config uses a different XML schema.
+- This keeps the IDE and web runtime working in tandem at the profile/runtime layer, but it is still not a full semantic compiler that converts wizard selections into transaction-definition edits inside the original InterWeave project files.
+
+## 2026-03-02 18:20:00 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Build a practical local compiler, as close as possible to the missing original InterWeave behavior, that turns wizard-saved profile configuration into generated engine artifacts for the IDE/runtime stack.
+Actions taken:
+- Added `WorkspaceProfileCompiler.java` as a deterministic local compiler that takes saved `SF2QBConfiguration` XML, refreshes the profile mirror, and generates a per-profile engine overlay under `workspace/GeneratedProfiles/<profile>/`.
+- Added `WorkspaceProfileCompilerServlet.java` with local-only `compileAll` and `compileProfile` actions.
+- Updated `LocalCompanyCredentialsServlet.java`, `LocalLoginServlet.java`, and `ApiLoginServlet.java` so successful saves/logins now trigger compilation of the active profile.
+- Updated `WEB-INF/web.xml` to register `/WorkspaceProfileCompilerServlet`.
+- Updated `START.bat` and `scripts/start_webportal.bat` so startup now compiles all saved profiles after the sync export pass.
+- Added manual compile helpers: `scripts/compile_workspace_profiles.ps1` and `scripts/compile_workspace_profiles.bat`.
+- Updated `WorkspaceProfileSyncSupport.java` to expose reusable mapped-project and profile-key helpers for the compiler.
+- Updated documentation to describe the generated overlay model and compiler behavior.
+- Fixed a runtime compatibility issue (`AbstractMethodError` against Xerces `getTextContent()`) by replacing DOM text extraction with Java 8-safe node traversal.
+Files changed/created:
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileCompiler.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileCompilerServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileSyncSupport.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/LocalCompanyCredentialsServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/LocalLoginServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiLoginServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml
+- START.bat
+- scripts/start_webportal.bat
+- scripts/compile_workspace_profiles.ps1
+- scripts/compile_workspace_profiles.bat
+- README.md
+- docs/SYSTEM_READY.md
+- docs/development/ENGINE_SYNC_MAP.md
+- docs/development/WORKSPACE_PROFILE_SYNC.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- `javac --release 8` against the compiler classes and updated save/login servlets
+- `STOP.bat`
+- `scripts/start_webportal.bat`
+- `Invoke-WebRequest` checks against `/WorkspaceProfileCompilerServlet?action=compileAll`
+Verification performed:
+- Verified the compiler servlet returns `200` and compiled both `IW Admin:__iw_admin__` and `Tester1`.
+- Verified generated overlay projects now exist under `workspace/GeneratedProfiles/`.
+- Verified `Tester1` generated engine config exists at `workspace/GeneratedProfiles/Tester1_amagown_interweave.biz/configuration/im/config.xml`.
+- Verified the generated engine config uses local `TS_MODE` endpoints (`http://localhost:9090/iwtransformationserver`) and profile-derived values such as `ReturnString=?Env2Con=Tst`.
+Follow-ups / known issues:
+- This is a practical local compiler, not an exact recreation of the missing InterWeave backend compiler.
+- It currently generates per-profile overlays from the seeded runtime template and mapped project context; it does not yet perform deep semantic transformation of legacy XSLT logic based on every wizard field.
+
+## 2026-03-04 08:05:02 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Perform a deeper audit of the repository and bring the Markdown documentation up to date with the current runtime, compiler, and startup behavior.
+Actions taken:
+- Audited the current repo layout, startup/runtime scripts, generated profile artifacts, and core Markdown docs for drift against the current Supabase-first and local runtime model.
+- Rewrote `docs/SYSTEM_READY.md` to reflect the real supported startup path, current `DB_MODE` / `TS_MODE` defaults, profile sync/compiler behavior, and Windows log locations.
+- Updated user/developer docs to remove stale admin-only login guidance and align them with the current `LocalLoginServlet` / `ApiLoginServlet` behavior.
+- Expanded the workspace sync documentation to include `CRM2QB3` compiler-selection outputs and the current `Tester1` regression workflow.
+- Added a dedicated compiler regression guide and marked the older custom-user test plan as historical/supplemental.
+- Corrected the PDF context doc to use the in-repo `Protocol Translation Engine 8.pdf` path instead of an external machine path.
+Files changed/created:
+- README.md
+- docs/README.md
+- docs/SYSTEM_READY.md
+- docs/ai/AI_WORKLOG.md
+- docs/ai/INTERWEAVE_PDF_CONTEXT.md
+- docs/development/API.md
+- docs/development/BUILD.md
+- docs/development/CONTRIBUTING.md
+- docs/development/DEVELOPER_ONBOARDING.md
+- docs/development/WORKSPACE_PROFILE_SYNC.md
+- docs/security/CREDENTIAL_ROTATION.md
+- docs/testing/PROFILE_COMPILER_REGRESSION.md
+- docs/testing/test-plan-5.2-custom-user.md
+Commands run:
+- `git status --short`
+- `Get-ChildItem` / `rg` scans over docs, scripts, tests, workspace, and PDF files
+- `Get-Date` for the worklog timestamp
+Verification performed:
+- Re-scanned the docs for previously stale claims (admin-only login, local/offline default, `catalina.out`, outdated WSL wording) and confirmed those active guidance statements were removed or corrected.
+- Verified the new regression doc exists and the referenced `tests/compiler-regression/Tester1.CRM2QB3.expected.properties` corpus is present.
+- Verified the updated PDF context now points at an in-repo `Protocol Translation Engine 8.pdf` path.
+Follow-ups / known issues:
+- `docs/ai/AI_WORKLOG.md` intentionally retains historical statements from older sessions; those are preserved as log history and should not be read as current guidance.
+- Additional deep cleanup is still possible in older historical ADR/security documents if you want legacy `oracle_cloud` language reduced further, but the current operational docs now point at the supported Supabase-first path.
+
+## 2026-03-04 08:26:08 (-05:00)
+Agent/tool: ChatGPT Codex
+User request: Perform a second-pass audit on older historical docs and non-Markdown operational artifacts, then reduce outdated `oracle_cloud` wording where it is no longer operationally relevant.
+Actions taken:
+- Audited `docs/adr/`, `docs/security/`, database setup/validation/migration batch scripts, and authentication config templates for mismatches against the current supported runtime model.
+- Updated ADR/security docs to distinguish historical Oracle Cloud context from current supported modes, and corrected stale authentication guidance so the local servlet bridge is treated as the active login path.
+- Normalized legacy `oracle_cloud` handling in scripts to a clearly documented compatibility alias rather than a primary current mode.
+- Fixed `SETUP_DB_Windows.bat` drift so its instructions now point to `START.bat` / `CHANGE_DATABASE.bat`, and its immediate launch path now starts the root `START.bat`.
+- Parameterized the legacy self-managed MySQL compatibility template so it now follows `.env` values instead of hardcoding the former Oracle Cloud host.
+Files changed/created:
+- docs/adr/001-supabase-migration.md
+- docs/security/SECURITY.md
+- docs/security/CREDENTIAL_ROTATION.md
+- docs/authentication/config.xml.hosted.template
+- docs/authentication/config.xml.oracle_cloud.template
+- scripts/validate-env.bat
+- scripts/run-migrations.bat
+- scripts/SETUP_DB_Windows.bat
+- scripts/sql/MONITORING_MIGRATION_README.md
+- docs/ai/AI_WORKLOG.md
+Commands run:
+- `rg` scans over docs/scripts/templates for `oracle_cloud`, stale script labels, and outdated help text
+- `cmd /c "call scripts\\run-migrations.bat --help"` for a lightweight batch-script sanity check
+- `Select-String` checks against updated batch/security files
+Verification performed:
+- Confirmed `run-migrations.bat --help` still executes successfully after the text/path updates.
+- Confirmed `SETUP_DB_Windows.bat` now advertises the legacy alias explicitly, points users to `CHANGE_DATABASE.bat`, and launches root `START.bat`.
+- Re-scanned the repo and confirmed remaining `oracle_cloud` mentions outside the AI worklog are now limited to intentional historical or compatibility references.
+Follow-ups / known issues:
+- The `oracle_cloud` label still exists in a few scripts/templates by design for backward compatibility with older `.env` files; it is no longer treated as the primary interactive operating mode.
+- `docs/adr/001-supabase-migration.md` intentionally retains Oracle Cloud language as historical context because it is a decision record, not an operational quick-start.
