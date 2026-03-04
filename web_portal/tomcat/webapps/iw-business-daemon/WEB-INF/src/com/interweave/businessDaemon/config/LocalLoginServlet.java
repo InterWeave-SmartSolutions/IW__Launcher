@@ -19,6 +19,8 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import com.interweave.businessDaemon.ConfigContext;
+import com.interweave.businessDaemon.HostedTransactionBase;
+import com.interweave.businessDaemon.QueryContext;
 import com.interweave.businessDaemon.TransactionContext;
 import com.interweave.businessDaemon.TransactionThread;
 // Error framework imports removed - IWError constructor is not visible from this package.
@@ -107,26 +109,49 @@ public class LocalLoginServlet extends HttpServlet {
                 // Build profile name in the format expected by downstream JSPs
                 String profileName = userInfo.companyName + ":" + userInfo.email;
 
-                // Set up TransactionThreads in ConfigContext so downstream
-                // JSPs/servlets (CompanyConfiguration, CompanyConfigurationServletOS)
-                // can find the user's profile and configuration.
-                String defaultConfig = "<SF2QBConfiguration></SF2QBConfiguration>";
-                setupTransactionThread(ConfigContext.getCompanyRegistration(), profileName, defaultConfig);
-                setupTransactionThread(ConfigContext.getUpdateCompany(), profileName, defaultConfig);
-                setupTransactionThread(ConfigContext.getRequestCompany(), profileName, defaultConfig);
+                // Load previously saved configuration from DB, or use empty default
+                String savedConfig = loadSavedConfig(conn, userInfo.companyId, profileName);
+                String config = (savedConfig != null) ? savedConfig
+                    : "<SF2QBConfiguration></SF2QBConfiguration>";
+
+                // Register the logged-in profile across the hosted runtime so
+                // the classic wizard pages, BDConfigurator.jsp, and query list
+                // all see the same per-profile state.
+                bindHostedProfile(profileName, config);
+                if (savedConfig != null) {
+                    try {
+                        WorkspaceProfileCompiler.compileProfile(
+                            getServletContext(), profileName, userInfo.solutionType, savedConfig);
+                    } catch (IOException ioe) {
+                        log("Login succeeded but workspace compiler failed for " + profileName, ioe);
+                    }
+                }
 
                 log("User authenticated successfully: " + email + " (Company: " + userInfo.companyName + ")");
 
-                // Redirect to company configuration page with profile
-                String redirectUrl = "CompanyConfiguration.jsp?CurrentProfile="
-                    + java.net.URLEncoder.encode(profileName, "UTF-8")
-                    + "&Solution=" + java.net.URLEncoder.encode(
-                        userInfo.solutionType != null ? userInfo.solutionType : "QB", "UTF-8");
+                // Build common query string parts
+                String encodedProfile = java.net.URLEncoder.encode(profileName, "UTF-8");
+                String encodedSolution = java.net.URLEncoder.encode(
+                    userInfo.solutionType != null ? userInfo.solutionType : "QB", "UTF-8");
+                String brandSol = "";
                 if (portalBrand != null && !portalBrand.isEmpty()) {
-                    redirectUrl += "&PortalBrand=" + java.net.URLEncoder.encode(portalBrand, "UTF-8");
+                    brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(portalBrand, "UTF-8");
                 }
                 if (portalSolutions != null && !portalSolutions.isEmpty()) {
-                    redirectUrl += "&PortalSolutions=" + java.net.URLEncoder.encode(portalSolutions, "UTF-8");
+                    brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(portalSolutions, "UTF-8");
+                }
+
+                // Route: returning users → flows page (IMConfig.jsp)
+                //        first-time users  → wizard    (CompanyConfiguration.jsp)
+                String redirectUrl;
+                if (savedConfig != null) {
+                    // User has saved config → go to flows management page
+                    // (matches original LoginServlet which forwards to IMConfig.jsp)
+                    redirectUrl = "IMConfig.jsp?CurrentProfile=" + encodedProfile + brandSol;
+                } else {
+                    // No saved config → go to wizard for initial setup
+                    redirectUrl = "CompanyConfiguration.jsp?CurrentProfile=" + encodedProfile
+                        + "&Solution=" + encodedSolution + brandSol;
                 }
 
                 response.sendRedirect(redirectUrl);
@@ -337,14 +362,238 @@ public class LocalLoginServlet extends HttpServlet {
      * Sets up a TransactionThread in the given TransactionContext for the profile.
      * Creates the thread with a default "configuration" parameter so downstream
      * servlets (CompanyConfigurationServletOS) don't NPE.
+     *
+     * IMPORTANT: CompanyConfiguration.jsp (line 101) appends the closing
+     * {@code </SF2QBConfiguration>} tag before parsing, so the "configuration"
+     * parameter must NOT include it.  {@code setCompanyConfiguration()} keeps
+     * the full XML because CompanyConfiguration.jsp line 80 parses it as-is.
      */
+    private static final String CONFIG_CLOSE_TAG = "</SF2QBConfiguration>";
+
+    /**
+     * Removes ALL occurrences of the closing tag — see LocalUserManagementServlet
+     * for the full rationale.  Compiled intermediate servlets append new elements
+     * at the end of the buffer, so the parameter must never contain a closing tag.
+     */
+    private static String sanitizeConfig(String xml) {
+        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration>";
+        return xml.replace(CONFIG_CLOSE_TAG, "");
+    }
+
+    private static String sanitizeFullConfig(String xml) {
+        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration></SF2QBConfiguration>";
+        return xml.replace(CONFIG_CLOSE_TAG, "") + CONFIG_CLOSE_TAG;
+    }
+
     private void setupTransactionThread(TransactionContext ctx, String profileName, String config) {
         if (ctx == null) return;
-        TransactionThread tt = ctx.addTransactionThread(profileName);
-        if (tt != null) {
-            tt.putParameter("configuration", config);
-            tt.setCompanyConfiguration(config);
+        applyEndpointMode(ctx);
+        TransactionThread tt = ConfigContext.getTransactionThreadByProfileName(ctx, profileName);
+        if (tt == null) {
+            tt = ctx.addTransactionThread(profileName);
         }
+        if (tt != null) {
+            // Strip ALL closing tags — the JSP appends one before parsing
+            String paramConfig = sanitizeConfig(config);
+            tt.putParameter("configuration", paramConfig);
+            // Full valid XML for getCompanyConfiguration() (JSP Path A)
+            tt.setCompanyConfiguration(sanitizeFullConfig(config));
+            applyEndpointMode(tt);
+        }
+    }
+
+    private void setupQueryInstance(QueryContext ctx, String profileName) {
+        if (ctx == null) return;
+        applyEndpointMode(ctx);
+        if (ConfigContext.getQueryInstanceByProfileName(ctx, profileName) == null) {
+            ctx.addQueryInstance(profileName);
+        }
+    }
+
+    private void bindHostedProfile(String profileName, String config) {
+        applyRuntimeEndpointMode();
+
+        if (!ConfigContext.getMonitorsStarted().contains(profileName)) {
+            ConfigContext.getMonitorsStarted().add(profileName);
+        }
+        if (!ConfigContext.getProfileDescriptors().containsKey(profileName)) {
+            ConfigContext.getProfileDescriptors().put(profileName,
+                new ConfigContext.ProfileDescriptor());
+        }
+
+        setupTransactionThread(ConfigContext.getCompanyRegistration(), profileName, config);
+        setupTransactionThread(ConfigContext.getUpdateCompany(), profileName, config);
+        setupTransactionThread(ConfigContext.getRequestCompany(), profileName, config);
+
+        for (TransactionContext ctx : ConfigContext.getTransactionList()) {
+            setupTransactionThread(ctx, profileName, config);
+        }
+        for (QueryContext ctx : ConfigContext.getQueryList()) {
+            setupQueryInstance(ctx, profileName);
+        }
+    }
+
+    private void applyRuntimeEndpointMode() {
+        ConfigContext.setMyGlobalIP(resolveTransformationServerHost());
+        ConfigContext.setPrimaryTransformationServerURL(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURL()));
+        ConfigContext.setPrimaryTransformationServerURLT(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURLT()));
+        ConfigContext.setPrimaryTransformationServerURL1(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURL1()));
+        ConfigContext.setPrimaryTransformationServerURLT1(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURLT1()));
+        ConfigContext.setPrimaryTransformationServerURLD(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURLD()));
+        ConfigContext.setSecondaryTransformationServerURL(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURL()));
+        ConfigContext.setSecondaryTransformationServerURLT(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURLT()));
+        ConfigContext.setSecondaryTransformationServerURL1(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURL1()));
+        ConfigContext.setSecondaryTransformationServerURLT1(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURLT1()));
+        ConfigContext.setSecondaryTransformationServerURLD(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURLD()));
+    }
+
+    private void applyEndpointMode(HostedTransactionBase runtimeItem) {
+        runtimeItem.setPrimaryTransformationServerURL(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURL()));
+        runtimeItem.setPrimaryTransformationServerURLT(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURLT()));
+        runtimeItem.setPrimaryTransformationServerURL1(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURL1()));
+        runtimeItem.setPrimaryTransformationServerURLT1(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURLT1()));
+        runtimeItem.setPrimaryTransformationServerURLD(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURLD()));
+        runtimeItem.setSecondaryTransformationServerURL(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURL()));
+        runtimeItem.setSecondaryTransformationServerURLT(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURLT()));
+        runtimeItem.setSecondaryTransformationServerURL1(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURL1()));
+        runtimeItem.setSecondaryTransformationServerURLT1(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURLT1()));
+        runtimeItem.setSecondaryTransformationServerURLD(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURLD()));
+    }
+
+    private void applyEndpointMode(TransactionThread thread) {
+        thread.setPrimaryDedicatedURL(rewriteRuntimeUrl(thread.getPrimaryDedicatedURL()));
+        thread.setPrimaryDedicatedURLc(rewriteRuntimeUrl(thread.getPrimaryDedicatedURLc()));
+        thread.setSecondaryDedicatedURL(rewriteRuntimeUrl(thread.getSecondaryDedicatedURL()));
+        thread.setSecondaryDedicatedURLc(rewriteRuntimeUrl(thread.getSecondaryDedicatedURLc()));
+    }
+
+    private static String resolveTransformationServerBase() {
+        if (isLegacyTsMode()) {
+            return envOrDefault("TS_BASE_LEGACY",
+                "http://iw0.interweave.biz:9090/iwtransformationserver");
+        }
+        return envOrDefault("TS_BASE_LOCAL",
+            "http://localhost:9090/iwtransformationserver");
+    }
+
+    private static String resolveTransformationServerOrigin() {
+        String base = resolveTransformationServerBase();
+        int marker = base.indexOf("/iwtransformationserver");
+        if (marker >= 0) {
+            return base.substring(0, marker);
+        }
+        int scheme = base.indexOf("://");
+        if (scheme < 0) {
+            return base;
+        }
+        int slash = base.indexOf('/', scheme + 3);
+        return (slash >= 0) ? base.substring(0, slash) : base;
+    }
+
+    private static String resolveTransformationServerHost() {
+        String origin = resolveTransformationServerOrigin();
+        int scheme = origin.indexOf("://");
+        if (scheme >= 0) {
+            origin = origin.substring(scheme + 3);
+        }
+        int slash = origin.indexOf('/');
+        if (slash >= 0) {
+            origin = origin.substring(0, slash);
+        }
+        int colon = origin.lastIndexOf(':');
+        if (colon > -1) {
+            return origin.substring(0, colon);
+        }
+        return origin;
+    }
+
+    private static String rewriteRuntimeUrl(String url) {
+        if (url == null) return "";
+        String value = url.trim();
+        if (value.isEmpty() || "null".equalsIgnoreCase(value)) {
+            return value;
+        }
+
+        String origin = resolveTransformationServerOrigin();
+        String fallback = resolveTransformationServerBase();
+        int marker = value.indexOf("/iwtransformationserver");
+        if (marker >= 0) {
+            return origin + value.substring(marker);
+        }
+
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            int scheme = value.indexOf("://");
+            int slash = value.indexOf('/', scheme + 3);
+            if (slash >= 0) {
+                return origin + value.substring(slash);
+            }
+            return fallback;
+        }
+
+        return fallback;
+    }
+
+    private static boolean isLegacyTsMode() {
+        String mode = System.getenv("TS_MODE");
+        return mode != null && "legacy".equalsIgnoreCase(mode.trim());
+    }
+
+    private static String envOrDefault(String name, String fallback) {
+        String value = System.getenv(name);
+        if (value == null || value.trim().isEmpty()) {
+            value = fallback;
+        }
+        value = value.trim();
+        while (value.endsWith("/")) {
+            value = value.substring(0, value.length() - 1);
+        }
+        return value;
+    }
+
+    /**
+     * Loads previously saved configuration XML from company_configurations.
+     * Returns the saved XML, or null if none found.
+     */
+    private String loadSavedConfig(Connection conn, int companyId, String profileName) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT configuration_xml FROM company_configurations " +
+                "WHERE company_id = ? AND profile_name = ?")) {
+            stmt.setInt(1, companyId);
+            stmt.setString(2, profileName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String xml = rs.getString("configuration_xml");
+                    if (xml != null && !xml.isEmpty()) {
+                        log("Loaded saved configuration for " + profileName
+                            + " (" + xml.length() + " chars)");
+                        return xml;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log("Could not load saved configuration for " + profileName, e);
+        }
+        return null;
     }
 
     /**

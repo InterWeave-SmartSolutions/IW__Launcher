@@ -1,12 +1,15 @@
 package com.interweave.businessDaemon.config;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -25,15 +28,12 @@ import com.interweave.businessDaemon.TransactionBase;
  *
  * This servlet reproduces the exact same logic but adds null checks and
  * auto-recovers by creating the missing TransactionThread on the fly.
+ * When recovering, it loads previously saved configuration from the
+ * company_configurations table so wizard selections persist across sessions.
  */
-public class LocalCompanyConfigurationServletOS extends HttpServlet {
+public class LocalCompanyConfigurationServletOS extends LocalUserManagementServlet {
 
     private static final long serialVersionUID = 1L;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -101,7 +101,15 @@ public class LocalCompanyConfigurationServletOS extends HttpServlet {
             log("TransactionThread not found for profile '" + profile
                 + "' — recreating (session may have been lost from static context)");
 
-            String defaultConfig = "<SF2QBConfiguration></SF2QBConfiguration>";
+        // Try to load previously saved configuration from the database
+            String defaultConfig = loadSavedConfig(profile);
+            if (defaultConfig == null) {
+                defaultConfig = "<SF2QBConfiguration>";
+            } else {
+            // Strip ALL closing tags — JSP appends one before parsing
+                defaultConfig = sanitizeConfig(defaultConfig);
+            }
+
             TransactionContext ctx;
 
             if (oldProfile == null) {
@@ -125,7 +133,7 @@ public class LocalCompanyConfigurationServletOS extends HttpServlet {
             ptt = ctx.addTransactionThread(profile);
             if (ptt != null) {
                 ptt.putParameter("configuration", defaultConfig);
-                ptt.setCompanyConfiguration(defaultConfig);
+                ptt.setCompanyConfiguration(sanitizeFullConfig(defaultConfig));
             } else {
                 log("Failed to create TransactionThread for profile: " + profile);
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -135,12 +143,14 @@ public class LocalCompanyConfigurationServletOS extends HttpServlet {
         }
 
         // --- Build the configuration XML from form parameters ---
-        // Get current configuration string
-        String configStr = "<SF2QBConfiguration></SF2QBConfiguration>";
+        // Get current configuration string.
+        // NOTE: must NOT include closing </SF2QBConfiguration> here because
+        // the JSP (CompanyConfiguration.jsp line 101) appends it before parsing.
+        String configStr = "<SF2QBConfiguration>";
         try {
             TransactionBase.ParameterValue pv = ptt.getParameters().get("configuration");
             if (pv != null) {
-                configStr = pv.getParameterValue();
+                configStr = sanitizeConfig(pv.getParameterValue());
             }
         } catch (Exception e) {
             log("Could not read existing configuration, using default", e);
@@ -164,8 +174,14 @@ public class LocalCompanyConfigurationServletOS extends HttpServlet {
             int ftpos = cnfg.indexOf(ft);
 
             if (ftpos < 0) {
-                // Tag doesn't exist — append it
-                cnfg.append(ft + vl + "</" + fn + ">");
+                // Tag doesn't exist — insert before closing root tag
+                String closeRoot = "</SF2QBConfiguration>";
+                int closePos = cnfg.indexOf(closeRoot);
+                if (closePos >= 0) {
+                    cnfg.insert(closePos, ft + vl + "</" + fn + ">");
+                } else {
+                    cnfg.append(ft + vl + "</" + fn + ">");
+                }
             } else {
                 // Tag exists — replace value
                 ftpos = ftpos + ft.length();
@@ -193,5 +209,39 @@ public class LocalCompanyConfigurationServletOS extends HttpServlet {
         if (dispatcher != null) {
             dispatcher.forward(request, response);
         }
+    }
+
+    /**
+     * Loads previously saved configuration XML from the company_configurations table.
+     * Profile format is "CompanyName:user@email.com".
+     * Returns the saved XML, or null if none found.
+     */
+    private String loadSavedConfig(String profile) {
+        if (profile == null || !profile.contains(":")) return null;
+
+        String companyName = profile.substring(0, profile.indexOf(":"));
+
+        try (Connection conn = dataSource.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT configuration_xml FROM company_configurations " +
+                    "WHERE company_id = (SELECT id FROM companies WHERE LOWER(company_name) = LOWER(?)) " +
+                    "AND profile_name = ?")) {
+                stmt.setString(1, companyName);
+                stmt.setString(2, profile);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        String xml = rs.getString("configuration_xml");
+                        if (xml != null && !xml.isEmpty()) {
+                            log("Loaded saved configuration for profile: " + profile
+                                + " (" + xml.length() + " chars)");
+                            return xml;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log("Could not load saved configuration for profile: " + profile, e);
+        }
+        return null;
     }
 }

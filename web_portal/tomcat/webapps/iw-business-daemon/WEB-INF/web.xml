@@ -240,6 +240,24 @@
 	</servlet>
 	<servlet>
 		<description>
+		Local workspace profile import/export bridge</description>
+		<display-name>
+		WorkspaceProfileSyncServlet</display-name>
+		<servlet-name>WorkspaceProfileSyncServlet</servlet-name>
+		<servlet-class>
+		com.interweave.businessDaemon.config.WorkspaceProfileSyncServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<description>
+		Local workspace profile compiler bridge</description>
+		<display-name>
+		WorkspaceProfileCompilerServlet</display-name>
+		<servlet-name>WorkspaceProfileCompilerServlet</servlet-name>
+		<servlet-class>
+		com.interweave.businessDaemon.config.WorkspaceProfileCompilerServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<description>
 		SErvlet for transaction page</description>
 		<display-name>
 		CompanyConfigurationServletDTT</display-name>
@@ -406,6 +424,14 @@
         <servlet-mapping>
         	<servlet-name>CustomMappings</servlet-name>
         	<url-pattern>/CustomMappings</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>WorkspaceProfileSyncServlet</servlet-name>
+        	<url-pattern>/WorkspaceProfileSyncServlet</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>WorkspaceProfileCompilerServlet</servlet-name>
+        	<url-pattern>/WorkspaceProfileCompilerServlet</url-pattern>
         </servlet-mapping>
         <servlet-mapping>
         	<servlet-name>CompanyConfigurationServletDTT</servlet-name>

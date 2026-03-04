@@ -82,6 +82,8 @@ public class LocalChangeCompanyPasswordServlet extends LocalUserManagementServle
             } catch (SQLException e) {
                 conn.rollback();
                 throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
 
             log("Company password changed for: " + company + " by admin: " + email);
@@ -89,7 +91,7 @@ public class LocalChangeCompanyPasswordServlet extends LocalUserManagementServle
 
         } catch (SQLException e) {
             log("Change company password failed", e);
-            redirectToError(req, resp, "Failed to change company password: " + e.getMessage(), "ChangeCompanyPassword.jsp");
+            redirectToError(req, resp, "Failed to change company password. Please try again.", "ChangeCompanyPassword.jsp");
         }
     }
 

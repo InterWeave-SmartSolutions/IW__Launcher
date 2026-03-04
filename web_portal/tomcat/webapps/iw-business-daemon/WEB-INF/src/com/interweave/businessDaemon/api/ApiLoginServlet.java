@@ -21,8 +21,11 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import com.interweave.businessDaemon.ConfigContext;
+import com.interweave.businessDaemon.HostedTransactionBase;
+import com.interweave.businessDaemon.QueryContext;
 import com.interweave.businessDaemon.TransactionContext;
 import com.interweave.businessDaemon.TransactionThread;
+import com.interweave.businessDaemon.config.WorkspaceProfileCompiler;
 
 /**
  * ApiLoginServlet - JSON API endpoint for user authentication.
@@ -156,12 +159,22 @@ public class ApiLoginServlet extends HttpServlet {
                     ConfigContext.setAdminLoggedIn(true);
                     ConfigContext.setLoggedUserType(isAdmin ? 'A' : 'U');
 
-                    // Set up TransactionThreads for downstream JSP/servlet compatibility
+                    // Mirror the classic hosted runtime setup so the API login
+                    // path keeps the JSP, servlet, and flow state in sync.
                     String profileName = companyName + ":" + userEmail;
-                    String defaultConfig = "<SF2QBConfiguration></SF2QBConfiguration>";
-                    setupTransactionThread(ConfigContext.getCompanyRegistration(), profileName, defaultConfig);
-                    setupTransactionThread(ConfigContext.getUpdateCompany(), profileName, defaultConfig);
-                    setupTransactionThread(ConfigContext.getRequestCompany(), profileName, defaultConfig);
+                    String savedConfig = loadSavedConfig(conn, companyId, profileName);
+                    String config = (savedConfig != null)
+                        ? savedConfig
+                        : "<SF2QBConfiguration></SF2QBConfiguration>";
+                    bindHostedProfile(profileName, config);
+                    if (savedConfig != null) {
+                        try {
+                            WorkspaceProfileCompiler.compileProfile(
+                                getServletContext(), profileName, solutionType, savedConfig);
+                        } catch (IOException ioe) {
+                            log("API login succeeded but workspace compiler failed for " + profileName, ioe);
+                        }
+                    }
 
                     log("API login successful: " + userEmail + " (Company: " + companyName + ")");
 
@@ -274,11 +287,216 @@ public class ApiLoginServlet extends HttpServlet {
 
     private void setupTransactionThread(TransactionContext ctx, String profileName, String config) {
         if (ctx == null) return;
-        TransactionThread tt = ctx.addTransactionThread(profileName);
-        if (tt != null) {
-            tt.putParameter("configuration", config);
-            tt.setCompanyConfiguration(config);
+        applyEndpointMode(ctx);
+        TransactionThread tt = ConfigContext.getTransactionThreadByProfileName(ctx, profileName);
+        if (tt == null) {
+            tt = ctx.addTransactionThread(profileName);
         }
+        if (tt != null) {
+            tt.putParameter("configuration", sanitizeConfig(config));
+            tt.setCompanyConfiguration(sanitizeFullConfig(config));
+            applyEndpointMode(tt);
+        }
+    }
+
+    private void setupQueryInstance(QueryContext ctx, String profileName) {
+        if (ctx == null) return;
+        applyEndpointMode(ctx);
+        if (ConfigContext.getQueryInstanceByProfileName(ctx, profileName) == null) {
+            ctx.addQueryInstance(profileName);
+        }
+    }
+
+    private void bindHostedProfile(String profileName, String config) {
+        applyRuntimeEndpointMode();
+
+        if (!ConfigContext.getMonitorsStarted().contains(profileName)) {
+            ConfigContext.getMonitorsStarted().add(profileName);
+        }
+        if (!ConfigContext.getProfileDescriptors().containsKey(profileName)) {
+            ConfigContext.getProfileDescriptors().put(profileName,
+                new ConfigContext.ProfileDescriptor());
+        }
+
+        setupTransactionThread(ConfigContext.getCompanyRegistration(), profileName, config);
+        setupTransactionThread(ConfigContext.getUpdateCompany(), profileName, config);
+        setupTransactionThread(ConfigContext.getRequestCompany(), profileName, config);
+
+        for (TransactionContext ctx : ConfigContext.getTransactionList()) {
+            setupTransactionThread(ctx, profileName, config);
+        }
+        for (QueryContext ctx : ConfigContext.getQueryList()) {
+            setupQueryInstance(ctx, profileName);
+        }
+    }
+
+    private void applyRuntimeEndpointMode() {
+        ConfigContext.setMyGlobalIP(resolveTransformationServerHost());
+        ConfigContext.setPrimaryTransformationServerURL(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURL()));
+        ConfigContext.setPrimaryTransformationServerURLT(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURLT()));
+        ConfigContext.setPrimaryTransformationServerURL1(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURL1()));
+        ConfigContext.setPrimaryTransformationServerURLT1(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURLT1()));
+        ConfigContext.setPrimaryTransformationServerURLD(
+            rewriteRuntimeUrl(ConfigContext.getPrimaryTransformationServerURLD()));
+        ConfigContext.setSecondaryTransformationServerURL(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURL()));
+        ConfigContext.setSecondaryTransformationServerURLT(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURLT()));
+        ConfigContext.setSecondaryTransformationServerURL1(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURL1()));
+        ConfigContext.setSecondaryTransformationServerURLT1(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURLT1()));
+        ConfigContext.setSecondaryTransformationServerURLD(
+            rewriteRuntimeUrl(ConfigContext.getSecondaryTransformationServerURLD()));
+    }
+
+    private void applyEndpointMode(HostedTransactionBase runtimeItem) {
+        runtimeItem.setPrimaryTransformationServerURL(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURL()));
+        runtimeItem.setPrimaryTransformationServerURLT(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURLT()));
+        runtimeItem.setPrimaryTransformationServerURL1(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURL1()));
+        runtimeItem.setPrimaryTransformationServerURLT1(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURLT1()));
+        runtimeItem.setPrimaryTransformationServerURLD(
+            rewriteRuntimeUrl(runtimeItem.getPrimaryTransformationServerURLD()));
+        runtimeItem.setSecondaryTransformationServerURL(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURL()));
+        runtimeItem.setSecondaryTransformationServerURLT(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURLT()));
+        runtimeItem.setSecondaryTransformationServerURL1(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURL1()));
+        runtimeItem.setSecondaryTransformationServerURLT1(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURLT1()));
+        runtimeItem.setSecondaryTransformationServerURLD(
+            rewriteRuntimeUrl(runtimeItem.getSecondaryTransformationServerURLD()));
+    }
+
+    private void applyEndpointMode(TransactionThread thread) {
+        thread.setPrimaryDedicatedURL(rewriteRuntimeUrl(thread.getPrimaryDedicatedURL()));
+        thread.setPrimaryDedicatedURLc(rewriteRuntimeUrl(thread.getPrimaryDedicatedURLc()));
+        thread.setSecondaryDedicatedURL(rewriteRuntimeUrl(thread.getSecondaryDedicatedURL()));
+        thread.setSecondaryDedicatedURLc(rewriteRuntimeUrl(thread.getSecondaryDedicatedURLc()));
+    }
+
+    private static String resolveTransformationServerBase() {
+        if (isLegacyTsMode()) {
+            return envOrDefault("TS_BASE_LEGACY",
+                "http://iw0.interweave.biz:9090/iwtransformationserver");
+        }
+        return envOrDefault("TS_BASE_LOCAL",
+            "http://localhost:9090/iwtransformationserver");
+    }
+
+    private static String resolveTransformationServerOrigin() {
+        String base = resolveTransformationServerBase();
+        int marker = base.indexOf("/iwtransformationserver");
+        if (marker >= 0) {
+            return base.substring(0, marker);
+        }
+        int scheme = base.indexOf("://");
+        if (scheme < 0) {
+            return base;
+        }
+        int slash = base.indexOf('/', scheme + 3);
+        return (slash >= 0) ? base.substring(0, slash) : base;
+    }
+
+    private static String resolveTransformationServerHost() {
+        String origin = resolveTransformationServerOrigin();
+        int scheme = origin.indexOf("://");
+        if (scheme >= 0) {
+            origin = origin.substring(scheme + 3);
+        }
+        int slash = origin.indexOf('/');
+        if (slash >= 0) {
+            origin = origin.substring(0, slash);
+        }
+        int colon = origin.lastIndexOf(':');
+        if (colon > -1) {
+            return origin.substring(0, colon);
+        }
+        return origin;
+    }
+
+    private static String rewriteRuntimeUrl(String url) {
+        if (url == null) return "";
+        String value = url.trim();
+        if (value.isEmpty() || "null".equalsIgnoreCase(value)) {
+            return value;
+        }
+
+        String origin = resolveTransformationServerOrigin();
+        String fallback = resolveTransformationServerBase();
+        int marker = value.indexOf("/iwtransformationserver");
+        if (marker >= 0) {
+            return origin + value.substring(marker);
+        }
+
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            int scheme = value.indexOf("://");
+            int slash = value.indexOf('/', scheme + 3);
+            if (slash >= 0) {
+                return origin + value.substring(slash);
+            }
+            return fallback;
+        }
+
+        return fallback;
+    }
+
+    private static boolean isLegacyTsMode() {
+        String mode = System.getenv("TS_MODE");
+        return mode != null && "legacy".equalsIgnoreCase(mode.trim());
+    }
+
+    private static String envOrDefault(String name, String fallback) {
+        String value = System.getenv(name);
+        if (value == null || value.trim().isEmpty()) {
+            value = fallback;
+        }
+        value = value.trim();
+        while (value.endsWith("/")) {
+            value = value.substring(0, value.length() - 1);
+        }
+        return value;
+    }
+
+    private static final String CONFIG_CLOSE_TAG = "</SF2QBConfiguration>";
+
+    private static String sanitizeConfig(String xml) {
+        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration>";
+        return xml.replace(CONFIG_CLOSE_TAG, "");
+    }
+
+    private static String sanitizeFullConfig(String xml) {
+        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration></SF2QBConfiguration>";
+        return xml.replace(CONFIG_CLOSE_TAG, "") + CONFIG_CLOSE_TAG;
+    }
+
+    private String loadSavedConfig(Connection conn, int companyId, String profileName) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT configuration_xml FROM company_configurations " +
+                "WHERE company_id = ? AND profile_name = ?")) {
+            stmt.setInt(1, companyId);
+            stmt.setString(2, profileName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String xml = rs.getString("configuration_xml");
+                    if (xml != null && !xml.isEmpty()) {
+                        return xml;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log("Could not load saved configuration for " + profileName, e);
+        }
+        return null;
     }
 
     private void setCorsHeaders(HttpServletResponse response) {

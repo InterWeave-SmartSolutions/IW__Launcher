@@ -142,13 +142,15 @@ public class LocalCompanyCredentialsServlet extends LocalUserManagementServlet {
         }
 
         // --- Build/update the configuration XML from form parameters ---
-        String configStr = "<SF2QBConfiguration></SF2QBConfiguration>";
+        // NOTE: "configuration" parameter must NOT include closing </SF2QBConfiguration>
+        // because the JSP appends it before parsing (CompanyConfiguration.jsp line 101).
+        String configStr = "<SF2QBConfiguration>";
         try {
             TransactionBase.ParameterValue pv = ptt.getParameters().get("configuration");
             if (pv != null) {
                 String existing = pv.getParameterValue();
                 if (existing != null && !existing.isEmpty()) {
-                    configStr = existing;
+                    configStr = sanitizeConfig(existing);
                 }
             }
         } catch (Exception e) {
@@ -166,18 +168,27 @@ public class LocalCompanyCredentialsServlet extends LocalUserManagementServlet {
             if (CONFIRM_PARAMS.contains(fn)) continue;
             if (fn.startsWith("QBPswdCfrm")) continue;
 
+            // XML-escape the value to prevent malformed XML
+            String safeVal = xmlEscape(vl);
+
             String ft = "<" + fn + ">";
             int ftpos = cnfg.indexOf(ft);
 
             if (ftpos < 0) {
-                // Tag doesn't exist — append it before the closing root tag if present
-                cnfg.append(ft + vl + "</" + fn + ">");
+                // Tag doesn't exist — insert before the closing root tag
+                String closeRoot = "</SF2QBConfiguration>";
+                int closePos = cnfg.indexOf(closeRoot);
+                if (closePos >= 0) {
+                    cnfg.insert(closePos, ft + safeVal + "</" + fn + ">");
+                } else {
+                    cnfg.append(ft + safeVal + "</" + fn + ">");
+                }
             } else {
                 // Tag exists — replace value
                 ftpos = ftpos + ft.length();
                 int ftlpos = cnfg.indexOf("</", ftpos);
                 if (ftlpos >= 0) {
-                    cnfg.replace(ftpos, ftlpos, vl);
+                    cnfg.replace(ftpos, ftlpos, safeVal);
                 }
             }
         }
@@ -250,7 +261,8 @@ public class LocalCompanyCredentialsServlet extends LocalUserManagementServlet {
             }
 
             // Upsert configuration (works for both Postgres and MySQL)
-            String configXml = cnfg.toString();
+            // Ensure closing tag is present for valid XML in the database
+            String configXml = sanitizeFullConfig(cnfg.toString());
             if (isPostgres(conn)) {
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "INSERT INTO company_configurations (company_id, profile_name, solution_type, configuration_xml) " +
@@ -284,10 +296,20 @@ public class LocalCompanyCredentialsServlet extends LocalUserManagementServlet {
                 + "), profile=" + profile + ", solution=" + solutionType
                 + ", xml length=" + configXml.length());
 
+            try {
+                WorkspaceProfileCompiler.CompileResult compiled =
+                    WorkspaceProfileCompiler.compileProfile(
+                        getServletContext(), profile, solutionType, configXml);
+                log("Workspace compiler refreshed for " + compiled.profileName
+                    + " -> " + compiled.generatedRoot);
+            } catch (IOException ioe) {
+                log("Configuration saved but workspace compiler failed for " + profile, ioe);
+            }
+
         } catch (SQLException e) {
             log("Failed to save configuration to database", e);
             redirectToError(request, response,
-                "Failed to save configuration: " + e.getMessage(),
+                "Failed to save configuration. Please try again.",
                 "IWLogin.jsp");
             return;
         }
@@ -301,5 +323,15 @@ public class LocalCompanyCredentialsServlet extends LocalUserManagementServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Not used
+    }
+
+    /** Escape XML special characters in a value. */
+    private static String xmlEscape(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
 }

@@ -64,7 +64,7 @@ public class LocalChangePasswordServlet extends LocalUserManagementServlet {
 
         } catch (SQLException e) {
             log("Change password failed", e);
-            redirectToError(req, resp, "Failed to change password: " + e.getMessage(), "ChangePassword.jsp");
+            redirectToError(req, resp, "Failed to change password. Please try again.", "ChangePassword.jsp");
         }
     }
 

@@ -103,6 +103,39 @@ public abstract class LocalUserManagementServlet extends HttpServlet {
     }
 
     /**
+     * The closing root-tag that CompanyConfiguration.jsp appends before parsing.
+     * The "configuration" TransactionThread parameter must NEVER contain this tag
+     * because the JSP adds it (see CompanyConfiguration.jsp line 101).
+     */
+    protected static final String CONFIG_CLOSE_TAG = "</SF2QBConfiguration>";
+
+    /**
+     * Removes ALL occurrences of {@code </SF2QBConfiguration>} from the XML.
+     * <p>
+     * The compiled intermediate servlets (CompanyConfigurationSetvletDT, DTT,
+     * etc.) APPEND new tags at the end of the StringBuffer rather than inserting
+     * before the closing tag. If the "configuration" parameter ever contains a
+     * closing tag, those appended elements end up OUTSIDE the root element,
+     * producing malformed XML that DOMParser rejects.  By stripping ALL
+     * occurrences (not just the trailing one) we guarantee the parameter stays
+     * clean regardless of how many save cycles have occurred.
+     * </p>
+     */
+    protected static String sanitizeConfig(String xml) {
+        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration>";
+        return xml.replace(CONFIG_CLOSE_TAG, "");
+    }
+
+    /**
+     * Produces valid, complete XML for storage in the database.
+     * Strips every {@code </SF2QBConfiguration>} and appends exactly one.
+     */
+    protected static String sanitizeFullConfig(String xml) {
+        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration></SF2QBConfiguration>";
+        return xml.replace(CONFIG_CLOSE_TAG, "") + CONFIG_CLOSE_TAG;
+    }
+
+    /**
      * Sets a private field on TransactionThread via reflection.
      * Needed because TransactionThread has getFirstName()/getLastName()/getCompany()/getTitle()
      * but no corresponding setters — only private fields.
