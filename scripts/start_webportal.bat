@@ -24,6 +24,20 @@ set "JAVA_HOME=%IW_HOME%\jre"
 set "JRE_HOME=%IW_HOME%\jre"
 set "CATALINA_HOME=%IW_HOME%\web_portal\tomcat"
 
+REM Load transformation endpoint mode (kept separate from DB mode).
+if exist "%IW_HOME%\.env" (
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_MODE=" "%IW_HOME%\.env"') do set "TS_MODE=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_BASE_LOCAL=" "%IW_HOME%\.env"') do set "TS_BASE_LOCAL=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_BASE_LEGACY=" "%IW_HOME%\.env"') do set "TS_BASE_LEGACY=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_FAILOVER_LOCAL=" "%IW_HOME%\.env"') do set "TS_FAILOVER_LOCAL=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_FAILOVER_LEGACY=" "%IW_HOME%\.env"') do set "TS_FAILOVER_LEGACY=%%b"
+)
+if not defined TS_MODE set "TS_MODE=local"
+if not defined TS_BASE_LOCAL set "TS_BASE_LOCAL=http://localhost:9090/iwtransformationserver"
+if not defined TS_BASE_LEGACY set "TS_BASE_LEGACY=http://iw0.interweave.biz:9090/iwtransformationserver"
+if not defined TS_FAILOVER_LOCAL set "TS_FAILOVER_LOCAL="
+if not defined TS_FAILOVER_LEGACY set "TS_FAILOVER_LEGACY=http://iw0.interweave.biz:8080/iw-business-daemon/failover"
+
 echo IW_IDE Home:     %IW_HOME%
 echo.
 
@@ -52,6 +66,15 @@ if not exist "%CATALINA_HOME%\bin\catalina.bat" (
 
 echo Using Java from: %JAVA_HOME%
 echo Tomcat home:     %CATALINA_HOME%
+echo.
+
+echo Preparing legacy runtime...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\setup\prepare_legacy_runtime.ps1"
+if errorlevel 1 (
+    echo ERROR: Legacy runtime preparation failed.
+    echo.
+    exit /b 1
+)
 echo.
 
 REM Test that Java works
@@ -85,14 +108,14 @@ REM Wait for Tomcat to start (check every 2 seconds, up to 60 seconds)
 echo.
 echo Waiting for Tomcat to start...
 set /a counter=0
-set /a max_wait=30
+set /a max_wait=60
 
 :wait_loop
 timeout /t 2 /nobreak >nul
 set /a counter+=1
 
-REM Check if Tomcat is responding
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:9090/' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
+REM Check if the Business Daemon login page is responding
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/IWLogin.jsp' -UseBasicParsing -TimeoutSec 2; exit 0 } catch { exit 1 }" >nul 2>&1
 if %errorlevel%==0 goto server_ready
 
 if %counter% geq %max_wait% (
@@ -113,6 +136,11 @@ echo ============================================================
 echo Tomcat is ready!
 echo ============================================================
 echo.
+echo Syncing workspace profile mirrors...
+powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/WorkspaceProfileSyncServlet?action=exportAll' -UseBasicParsing -TimeoutSec 10 | Out-Null; exit 0 } catch { exit 0 }" >nul 2>&1
+echo Compiling generated profile overlays...
+powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/WorkspaceProfileCompilerServlet?action=compileAll' -UseBasicParsing -TimeoutSec 20 | Out-Null; exit 0 } catch { exit 0 }" >nul 2>&1
+echo.
 
 :open_browser
 echo Opening browser to login page...
@@ -129,15 +157,8 @@ echo   Username: __iw_admin__
 echo   Password: %%iwps%%
 echo.
 echo To stop the server, run: stop_webportal.bat
-echo Or close this window (will also stop Tomcat)
 echo ============================================================
 echo.
-echo Press any key to stop Tomcat and exit...
-pause >nul
-
-REM Stop Tomcat when user presses a key
-echo.
-echo Stopping Tomcat...
-call shutdown.bat
-echo Tomcat stopped.
-timeout /t 2 >nul
+echo Launcher complete. This window can be closed.
+timeout /t 3 >nul
+exit /b 0

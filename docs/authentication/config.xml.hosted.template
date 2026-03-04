@@ -20,7 +20,8 @@ NOTE: You must obtain hostedUser and hostedPassword from InterWeave support.
       Contact: (800) 671-8692 x 101
 
 WARNING: InterWeave's MySQL may only accept localhost connections. If you get
-         "Host is not allowed to connect" errors, use the Oracle Cloud option.
+         "Host is not allowed to connect" errors, use the historical
+         self-managed MySQL compatibility template instead.
 ================================================================================
 -->
 <BusinessDaemonConfiguration
@@ -28,18 +29,18 @@ WARNING: InterWeave's MySQL may only accept localhost connections. If you get
     HartbeatInterval="0"
     RefreshInterval="1000"
 
-    PrimaryTSURL="http://127.0.0.1:9090/iwtransformationserver"
+    PrimaryTSURL="__TS_BASE_URL__"
     SecondaryTSURL=""
-    PrimaryTSURLT="http://127.0.0.1:9090/iwtransformationserver"
+    PrimaryTSURLT="__TS_BASE_URL__"
     SecondaryTSURLT=""
-    PrimaryTSURL1="http://127.0.0.1:9090/iwtransformationserver"
+    PrimaryTSURL1="__TS_BASE_URL__"
     SecondaryTSURL1=""
-    PrimaryTSURLT1="http://127.0.0.1:9090/iwtransformationserver"
+    PrimaryTSURLT1="__TS_BASE_URL__"
     SecondaryTSURLT1=""
-    PrimaryTSURLD="http://127.0.0.1:9090/iwtransformationserver"
+    PrimaryTSURLD="__TS_BASE_URL__"
     SecondaryTSURLD=""
 
-    FailoverURL="http://iw0.interweave.biz:8080/iw-business-daemon/failover"
+    FailoverURL="__FAILOVER_URL__"
 
     IsPrimary="1"
     RunAtStartUp="1"

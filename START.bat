@@ -96,7 +96,16 @@ if defined CATALINA_JAR_SIZE if %CATALINA_JAR_SIZE% LSS 100000 (
     exit /b 1
 )
 
-REM ========== START APPLICATION ==========
+REM ========== PREPARE LEGACY RUNTIME ========== 
+echo  Preparing legacy runtime...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\setup\prepare_legacy_runtime.ps1"
+if errorlevel 1 (
+    echo  [ERROR] Legacy runtime preparation failed.
+    pause
+    exit /b 1
+)
+
+REM ========== START APPLICATION ========== 
 echo  Starting...
 echo.
 
@@ -106,13 +115,13 @@ call startup.bat >nul 2>&1
 echo  Waiting for server...
 echo.
 set /a counter=0
-set /a max_wait=30
+set /a max_wait=60
 
 :wait_loop
 timeout /t 2 /nobreak >nul
 set /a counter+=1
 
-powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:9090/' -UseBasicParsing -TimeoutSec 2 | Out-Null; exit 0 } catch { exit 1 }" >nul 2>&1
+powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/IWLogin.jsp' -UseBasicParsing -TimeoutSec 2 | Out-Null; exit 0 } catch { exit 1 }" >nul 2>&1
 if %errorlevel%==0 goto server_ready
 
 if %counter% geq %max_wait% goto open_browser
@@ -122,6 +131,11 @@ goto wait_loop
 
 :server_ready
 echo  Server ready!
+echo.
+echo  Syncing workspace profile mirrors...
+powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/WorkspaceProfileSyncServlet?action=exportAll' -UseBasicParsing -TimeoutSec 10 | Out-Null; exit 0 } catch { exit 0 }" >nul 2>&1
+echo  Compiling generated profile overlays...
+powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:9090/iw-business-daemon/WorkspaceProfileCompilerServlet?action=compileAll' -UseBasicParsing -TimeoutSec 20 | Out-Null; exit 0 } catch { exit 0 }" >nul 2>&1
 echo.
 
 :open_browser
@@ -146,21 +160,14 @@ echo      Username: __iw_admin__
 echo      Password: %%iwps%%
 echo.
 echo  ------------------------------------------------------------------
-echo   To stop: Run STOP.bat or close this window
+echo   To stop: Run STOP.bat
 echo  ==================================================================
 echo.
-echo  Press any key to STOP and exit...
-pause >nul
-
-echo.
-echo  Stopping...
-cd /d "%CATALINA_HOME%\bin"
-call shutdown.bat >nul 2>&1
-echo  Stopped.
-timeout /t 2 >nul
+echo  Launcher complete. This window can be closed.
+timeout /t 3 >nul
 
 endlocal
-goto :eof
+exit /b 0
 
 REM ============================================================================
 REM CONFIGURATION HELPERS
@@ -169,6 +176,29 @@ REM ============================================================================
     REM Load DB_MODE from .env
     for /f "tokens=1,* delims==" %%a in ('findstr /B "DB_MODE=" "%IW_HOME%\.env"') do set "DB_MODE=%%b"
     if not defined DB_MODE set "DB_MODE=supabase"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_MODE=" "%IW_HOME%\.env"') do set "TS_MODE=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_BASE_LOCAL=" "%IW_HOME%\.env"') do set "TS_BASE_LOCAL=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_BASE_LEGACY=" "%IW_HOME%\.env"') do set "TS_BASE_LEGACY=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_FAILOVER_LOCAL=" "%IW_HOME%\.env"') do set "TS_FAILOVER_LOCAL=%%b"
+    for /f "tokens=1,* delims==" %%a in ('findstr /B "TS_FAILOVER_LEGACY=" "%IW_HOME%\.env"') do set "TS_FAILOVER_LEGACY=%%b"
+    if not defined TS_MODE set "TS_MODE=local"
+    if not defined TS_BASE_LOCAL set "TS_BASE_LOCAL=http://localhost:9090/iwtransformationserver"
+    if not defined TS_BASE_LEGACY set "TS_BASE_LEGACY=http://iw0.interweave.biz:9090/iwtransformationserver"
+    if not defined TS_FAILOVER_LOCAL set "TS_FAILOVER_LOCAL="
+    if not defined TS_FAILOVER_LEGACY set "TS_FAILOVER_LEGACY=http://iw0.interweave.biz:8080/iw-business-daemon/failover"
+
+    if /i "%TS_MODE%"=="legacy" (
+        set "TS_BASE_URL=%TS_BASE_LEGACY%"
+        set "TS_FAILOVER_URL=%TS_FAILOVER_LEGACY%"
+    ) else if /i "%TS_MODE%"=="local" (
+        set "TS_BASE_URL=%TS_BASE_LOCAL%"
+        set "TS_FAILOVER_URL=%TS_FAILOVER_LOCAL%"
+    ) else (
+        echo  [ERROR] Unknown TS_MODE: %TS_MODE%
+        echo  Valid values: local, legacy
+        pause
+        exit /b 1
+    )
 
     set "CONTEXT_FILE=%IW_HOME%\web_portal\tomcat\conf\context.xml"
     set "BD_CONFIG=%IW_HOME%\web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\config.xml"
@@ -297,9 +327,12 @@ REM ============================================================================
     set "IW_RENDER_DB_USER=%DB_USER%"
     set "IW_RENDER_ENV_FILE=%IW_HOME%\.env"
     set "IW_RENDER_PASSWORD_KEY=%PASSWORD_KEY%"
-    powershell -NoProfile -Command "$pwdKey = $env:IW_RENDER_PASSWORD_KEY; $pw = ''; if ($pwdKey) { $prefix = $pwdKey + '='; $line = Get-Content $env:IW_RENDER_ENV_FILE | Where-Object { $_.StartsWith($prefix) } | Select-Object -First 1; if ($line) { $pw = $line.Substring($prefix.Length) } }; $c = Get-Content $env:IW_RENDER_TEMPLATE -Raw; $c = $c.Replace('__DB_HOST__', $env:IW_RENDER_DB_HOST); $c = $c.Replace('__DB_PORT__', $env:IW_RENDER_DB_PORT); $c = $c.Replace('__DB_NAME__', $env:IW_RENDER_DB_NAME); $c = $c.Replace('__DB_USER__', $env:IW_RENDER_DB_USER); $c = $c.Replace('__DB_PASSWORD__', $pw); $c = $c.Replace('__SUPABASE_HOST__', $env:IW_RENDER_DB_HOST); $c = $c.Replace('__SUPABASE_PORT__', $env:IW_RENDER_DB_PORT); $c = $c.Replace('__SUPABASE_DB_NAME__', $env:IW_RENDER_DB_NAME); $c = $c.Replace('__SUPABASE_USER__', $env:IW_RENDER_DB_USER); $c = $c.Replace('__SUPABASE_PASSWORD__', $pw); $c = $c.Replace('YOUR_ORACLE_PASSWORD_HERE', $pw); $c = $c.Replace('YOUR_IW_USERNAME', $env:IW_RENDER_DB_USER); $c = $c.Replace('YOUR_IW_PASSWORD', $pw); Set-Content $env:IW_RENDER_OUT -Value $c" 2>nul
+    set "IW_RENDER_TS_BASE=%TS_BASE_URL%"
+    set "IW_RENDER_FAILOVER=%TS_FAILOVER_URL%"
+    powershell -NoProfile -Command "$pwdKey = $env:IW_RENDER_PASSWORD_KEY; $pw = ''; if ($pwdKey) { $prefix = $pwdKey + '='; $line = Get-Content $env:IW_RENDER_ENV_FILE | Where-Object { $_.StartsWith($prefix) } | Select-Object -First 1; if ($line) { $pw = $line.Substring($prefix.Length) } }; $c = Get-Content $env:IW_RENDER_TEMPLATE -Raw; $c = $c.Replace('__DB_HOST__', $env:IW_RENDER_DB_HOST); $c = $c.Replace('__DB_PORT__', $env:IW_RENDER_DB_PORT); $c = $c.Replace('__DB_NAME__', $env:IW_RENDER_DB_NAME); $c = $c.Replace('__DB_USER__', $env:IW_RENDER_DB_USER); $c = $c.Replace('__DB_PASSWORD__', $pw); $c = $c.Replace('__SUPABASE_HOST__', $env:IW_RENDER_DB_HOST); $c = $c.Replace('__SUPABASE_PORT__', $env:IW_RENDER_DB_PORT); $c = $c.Replace('__SUPABASE_DB_NAME__', $env:IW_RENDER_DB_NAME); $c = $c.Replace('__SUPABASE_USER__', $env:IW_RENDER_DB_USER); $c = $c.Replace('__SUPABASE_PASSWORD__', $pw); $c = $c.Replace('__TS_BASE_URL__', $env:IW_RENDER_TS_BASE); $c = $c.Replace('__FAILOVER_URL__', $env:IW_RENDER_FAILOVER); $c = $c.Replace('YOUR_ORACLE_PASSWORD_HERE', $pw); $c = $c.Replace('YOUR_IW_USERNAME', $env:IW_RENDER_DB_USER); $c = $c.Replace('YOUR_IW_PASSWORD', $pw); Set-Content $env:IW_RENDER_OUT -Value $c" 2>nul
     endlocal
     echo  [OK] Login system configured
+    echo  [OK] Transformation endpoints configured (%TS_MODE%)
     exit /b 0
 
 :check_supabase_connectivity

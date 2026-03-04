@@ -5,7 +5,7 @@ REM ============================================================================
 REM Validates the .env configuration file and tests database connectivity.
 REM
 REM Usage:
-REM   _internal\validate-env.bat
+REM   scripts\validate-env.bat
 REM
 REM Exit codes:
 REM   0 = All checks passed
@@ -93,13 +93,19 @@ if /i "%DB_MODE%"=="interweave" goto :valid_mode
 if /i "%DB_MODE%"=="local" goto :valid_mode
 
 echo   [FAIL] DB_MODE='%DB_MODE%' is not a recognized value
-echo          Valid values: supabase, oracle_cloud, interweave, local
+echo          Valid values: supabase, interweave, local
+echo          Legacy compatibility alias accepted: oracle_cloud
 set /a FAIL_COUNT+=1
 goto :check3
 
 :valid_mode
 echo   [PASS] DB_MODE='%DB_MODE%' is valid
 set /a PASS_COUNT+=1
+if /i "%DB_MODE%"=="oracle_cloud" (
+    echo   [WARN] DB_MODE=oracle_cloud is a historical compatibility alias
+    echo          Prefer DB_MODE=interweave or DB_MODE=supabase for current use
+    set /a WARN_COUNT+=1
+)
 
 REM ============================================================
 REM CHECK 3: Required variables for the selected mode

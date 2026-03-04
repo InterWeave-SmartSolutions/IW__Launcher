@@ -107,8 +107,8 @@ if /i "%DB_MODE%"=="supabase" (
     set "DB_USER=none"
     set "DB_PASSWORD=none"
     set "CONFIG_TEMPLATE=%SCRIPT_DIR%docs\authentication\config.xml.local.template"
-) else (
-    echo    Mode: YOUR SERVER ^(Oracle Cloud^)
+) else if /i "%DB_MODE%"=="oracle_cloud" (
+    echo    Mode: LEGACY SELF-MANAGED MYSQL ^(historical alias^)
     if not defined ORACLE_DB_HOST set "ORACLE_DB_HOST=129.153.47.225"
     if not defined ORACLE_DB_PORT set "ORACLE_DB_PORT=3306"
     if not defined ORACLE_DB_NAME set "ORACLE_DB_NAME=iw_ide"
@@ -118,6 +118,12 @@ if /i "%DB_MODE%"=="supabase" (
     set "DB_USER=!ORACLE_DB_USER!"
     set "DB_PASSWORD=!ORACLE_DB_PASSWORD!"
     set "CONFIG_TEMPLATE=%SCRIPT_DIR%docs\authentication\config.xml.oracle_cloud.template"
+) else (
+    echo    [ERROR] Unsupported DB_MODE: %DB_MODE%
+    echo    Supported modes: supabase, interweave, local
+    echo    Legacy compatibility alias: oracle_cloud
+    pause
+    exit /b 1
 )
 
 echo.
@@ -174,7 +180,7 @@ if /i not "%DB_MODE%"=="local" (
 
 REM Configure Business Daemon config.xml
 if exist "%CONFIG_TEMPLATE%" (
-    powershell -Command "$c = Get-Content '%CONFIG_TEMPLATE%' -Raw; $c = $c -replace 'YOUR_ORACLE_PASSWORD_HERE', '%DB_PASSWORD%'; $c = $c -replace 'YOUR_IW_USERNAME', '%DB_USER%'; $c = $c -replace 'YOUR_IW_PASSWORD', '%DB_PASSWORD%'; Set-Content '%BD_CONFIG%' -Value $c"
+    powershell -Command "$c = Get-Content '%CONFIG_TEMPLATE%' -Raw; $c = $c -replace 'YOUR_ORACLE_PASSWORD_HERE', '%DB_PASSWORD%'; $c = $c -replace '__LEGACY_MYSQL_HOST__', '%DB_HOST%'; $c = $c -replace '__LEGACY_MYSQL_PORT__', '%DB_PORT%'; $c = $c -replace '__LEGACY_MYSQL_DB_NAME__', '%DB_NAME%'; $c = $c -replace '__LEGACY_MYSQL_USER__', '%DB_USER%'; $c = $c -replace '__LEGACY_MYSQL_PASSWORD__', '%DB_PASSWORD%'; $c = $c -replace 'YOUR_IW_USERNAME', '%DB_USER%'; $c = $c -replace 'YOUR_IW_PASSWORD', '%DB_PASSWORD%'; Set-Content '%BD_CONFIG%' -Value $c"
     echo    [OK] Login system configured
 ) else (
     echo    [WARN] Config template not found: %CONFIG_TEMPLATE%
@@ -222,12 +228,12 @@ echo  ---------------------------------------------------------------------
 echo   NEXT STEPS:
 echo  ---------------------------------------------------------------------
 echo.
-echo   1. Double-click START_HERE.bat to launch everything
+echo   1. Double-click START.bat in the repo root to launch everything
 echo.
 echo   OR use individual scripts:
 echo      - start_webportal.bat  = Start web server only
 echo      - start_ide.bat        = Start IDE only
-echo      - switch_database.bat  = Change database connection
+echo      - ..\CHANGE_DATABASE.bat  = Change database connection
 echo.
 echo  =====================================================================
 echo.
@@ -238,7 +244,7 @@ if errorlevel 1 goto :start_now
 :start_now
 echo.
 echo  Starting...
-start "" "%SCRIPT_DIR%START_HERE.bat"
+start "" "%SCRIPT_DIR%..\START.bat"
 goto :done
 
 :done
