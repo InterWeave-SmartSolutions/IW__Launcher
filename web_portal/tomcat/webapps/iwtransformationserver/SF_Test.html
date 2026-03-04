@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>Salesforce SOAP Messages</title>
+    </head>
+    <body>
+    <center>
+ <form name="dbwork" method="post" action="transform">
+ <input type="hidden" name= "applicationname" value="iwtransformationserver"/>
+ <input type="hidden" name= "tranname" value="select_from_db"/>
+ <input type="submit" value="Get Data from MySQL" />
+ </form>  
+ 
+ <form name="sfout" method="post" action="transform">
+ <input type="hidden" name= "applicationname" value="iwtransformationserver"/>
+ <input type="hidden" name= "tranname" value="UpdateSF"/>
+ <input type="submit" value="Send Data to SF" />
+ </form>  
+ 
+ <form name="sfin" method="post" action="transform">
+ <input type="hidden" name= "applicationname" value="iwtransformationserver"/>
+ <input type="hidden" name= "tranname" value="SFGetUpdated"/>
+ <input type="submit" value="Request Data from SF" />
+ </form>  
+ 
+ <form name="dbin" method="post" action="transform">
+ <input type="hidden" name= "applicationname" value="iwtransformationserver"/>
+ <input type="hidden" name= "tranname" value="insert_to_db"/>
+ <input type="submit" value="Insert data into MySQL" />
+ </form>  
+ 
+    </center>
+    </body>
+</html>

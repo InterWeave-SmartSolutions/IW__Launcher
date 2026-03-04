@@ -3,11 +3,11 @@ REM ============================================================================
 REM IW_IDE - DATABASE MIGRATION RUNNER (Windows)
 REM =============================================================================
 REM Reads .env for DB_MODE and connection details, then applies all pending
-REM SQL migration files from _internal\sql\ in version order.
+REM SQL migration files from scripts\sql\ in version order.
 REM
 REM Usage:
-REM   _internal\run-migrations.bat              Apply pending migrations
-REM   _internal\run-migrations.bat --dry-run    Show what would be applied
+REM   scripts\run-migrations.bat              Apply pending migrations
+REM   scripts\run-migrations.bat --dry-run    Show what would be applied
 REM =============================================================================
 
 setlocal enabledelayedexpansion
@@ -66,6 +66,10 @@ for /f "tokens=1,* delims==" %%a in ('findstr /B "SUPABASE_DB_SSLMODE=" "%ENV_FI
 
 if not defined DB_MODE set "DB_MODE=supabase"
 echo   DB_MODE = %DB_MODE%
+if /i "%DB_MODE%"=="oracle_cloud" (
+    echo   [WARN] DB_MODE=oracle_cloud is a historical compatibility alias
+    echo          Prefer DB_MODE=interweave or DB_MODE=supabase for current use
+)
 
 REM ---- Step 2: Resolve connection details ----
 echo.
@@ -114,7 +118,8 @@ if /i "%DB_MODE%"=="supabase" (
     goto :exit_ok
 ) else (
     echo   [ERROR] Unknown DB_MODE: %DB_MODE%
-    echo   Valid modes: supabase, oracle_cloud, interweave, local
+    echo   Valid modes: supabase, interweave, local
+    echo   Legacy compatibility alias accepted: oracle_cloud
     goto :exit_error
 )
 
