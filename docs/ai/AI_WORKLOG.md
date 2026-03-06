@@ -2203,3 +2203,27 @@ Follow-ups / known issues:
 - Tomcat restart required to load new servlet classes
 - End-to-end testing needed: login → /profile → save → password change → /company → same
 - company/config and admin/* routes still use ClassicRedirectPage hooks (future migration)
+
+## 2026-03-06 17:00 (EST)
+What I did (this response):
+- Fixed SPA 404 routing: created WEB-INF/web.xml for iw-portal webapp with explicit servlet-mapping for all React Router routes (returns 200 + index.html)
+- Added public/WEB-INF/web.xml so Vite builds preserve the SPA routing config
+- Created shared styles/modern-portal.css: ASSA dark palette, glass panels, form elements, buttons, alerts, responsive grid (290 lines)
+- Modernized all 7 JSP pages with ASSA dark theme while preserving ALL form actions and field names:
+  - IWLogin.jsp: two-panel split layout (matching React LoginPage), demo credentials, feature pills, quick links, "Try modern portal" link
+  - EditProfile.jsp: sectioned cards, modern inputs, "Open in modern portal" link
+  - EditCompanyProfile.jsp: same treatment
+  - ChangePassword.jsp: modern form layout
+  - ChangeCompanyPassword.jsp: modern form layout
+  - Registration.jsp: modern form with field hints
+  - CompanyRegistration.jsp: modern form with solution type dropdown, clone config section
+Files changed:
+- NEW: styles/modern-portal.css, frontends/iw-portal/public/WEB-INF/web.xml
+- MOD: IWLogin.jsp, EditProfile.jsp, EditCompanyProfile.jsp, ChangePassword.jsp, ChangeCompanyPassword.jsp, Registration.jsp, CompanyRegistration.jsp
+Verification performed:
+- All SPA routes return HTTP 200 (/iw-portal/profile, /company, /login, /dashboard)
+- All 7 JSP pages return HTTP 200 with modern CSS classes
+- API endpoints verified working (login, profile GET, company GET)
+- modern-portal.css loads (200, 10KB)
+Follow-ups / known issues:
+- Browser visual testing recommended for all pages
