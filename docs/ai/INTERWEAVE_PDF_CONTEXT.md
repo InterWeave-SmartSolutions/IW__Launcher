@@ -30,6 +30,8 @@ Primary InterWeave references:
   Tomcat startup sequence diagram useful for understanding the embedded portal's legacy server architecture.
 - `frontends/InterWoven/docs/IW_Docs/CDs/PTE_8.0/Protocol Translation Engine 8.pdf`
   Legacy Protocol Transformation Engine architecture and mapping concepts that explain the platform's transformation model.
+- `C:\IW_IDE\IW_CDs\IW_IDE_1.0\IWInstallation.doc` (external — not in repo)
+  Original 2004 Word document describing the IW IDE 1.0 installation process. Available on this machine but not tracked in git. Useful for understanding legacy install expectations (IWDaemon.exe, IWServer.exe, IWDeveloper.exe roles).
 
 Payment and partner integration references:
 

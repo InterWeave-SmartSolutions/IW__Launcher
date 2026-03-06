@@ -2051,3 +2051,38 @@ Follow-ups / known issues:
 - ErrorHandlingFilter still disabled pending mvn build + deploy (next quick-win task)
 - frontends/InterWoven submodule drift still present (cosmetic)
 - Phase 1B (TransactionLogger), Phase 2 Step 5 (React forms), Phase 2 Step 6 (Recharts) all still pending — see docs/NEXT_STEPS.md
+
+## 2026-03-06 (UTC) — Continuation: Parent directory audit completion + git-lfs resolved
+Agent/tool: Claude Code (claude-sonnet-4-6)
+User request: Complete parent directory audit (IW_IDE) — ensure nothing critical is missing from IW_Launcher. Push pending commit.
+Actions taken:
+- Completed exhaustive audit of all C:\IW_IDE subdirectories:
+  - `IW_CDs/IW_IDE_1.0/`: Legacy installers from Oct 2004 — IWDaemon.exe (9.2MB), IWDeveloper.exe (9.6MB), IWServer.exe (12.2MB), IWInstallation.doc. Historical reference only; runtime uses iw_ide.exe at IW_IDE root.
+  - `IW_CDs/PTE_8.0/`: Protocol Translation Engine 8.pdf — already referenced in INTERWEAVE_PDF_CONTEXT.md.
+  - `IW_CDs/PhoenixGenesisCore/`: Empty PGC Consortium folder (2007 artifact).
+  - `IW_CDs/SecurDigital/`: DISA presentation PPT from 2010. Not operationally relevant.
+  - `IW_IDE_Import/TrappTechnology/`: EMPTY — previously contained workspace project templates (IW_QBConnector, OldSampleProjects_1, QB_sample, SF2MM, SN2QBSP, Templates, SPworkspace, SalesProdigy1, etc.) but cleaned up during duplicate analysis.
+  - `IW_IDE_Import/ttt/`: EMPTY — previously contained ACCPAC connector (AccpacCom DLLs, ARModel HTMs, user guide). Removed via duplicate_analysis_report.json cleanup (39,335 files, 1.22GB saved).
+  - `IW_IDE_Import/Altova/`: XMLSpy 2024 installation. XSLT development tool available on this machine.
+  - `IW_IDE_Import/Apache Software Foundation/`: Tomcat 5.5 install reference.
+  - `IW_IDE_1.0/Third Party/`: Eclipse SDK 3.0.1 installer, JDK 1.5 installer, Jetty 5.0.0, JBoss PDFs, redirectPackage.jar. All 2004 vintage.
+  - `IW_IDE/workspace/`: ACTIVE — 2 live IDE workspace projects: `Creatio_QuickBooks_Integration` and `FirstTest`. Each has: `.project`, `configuration/` (IM config.xml + TS config.xml), `xslt/` (dataconnections, Site/ tree with appconstants, globals, sitetran, transactions). Workspace-profile-map.properties already references these.
+  - `bin/`, `config/` at IW_IDE root: Both EMPTY.
+- Conclusion: Nothing critical is missing from IW_Launcher. The workspace at /c/IW_IDE/workspace/ is already tracked via config/workspace-profile-map.properties. All other parent-dir content is either historical reference or empty.
+- Resolved git-lfs push blocker: Downloaded git-lfs v3.6.0 (windows-amd64) from GitHub releases, extracted to C:\Users\amago\AppData\Local\Programs\git-lfs\git-lfs-3.6.0\, added to PATH, ran git push successfully.
+Files changed/created:
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- ls -la across all IW_IDE subdirectories (IW_CDs, IW_IDE_Import, IW_IDE_1.0, workspace, bin, config)
+- find /c/IW_IDE/workspace/* for project file structure
+- cat workspace/*/configuration/im/config.xml and ts/config.xml and xslt/include/dataconnections.xslt
+- Invoke-WebRequest to download git-lfs-windows-amd64-v3.6.0.zip
+- git push origin main (succeeded — commit 69a4671)
+Verification performed:
+- Confirmed workspace projects match workspace-profile-map.properties mapping (CRM2QB3 → Creatio_QuickBooks_Integration)
+- Confirmed IM config points to http://127.0.0.1:8080/iwtransformationserver (correct local TS URL)
+- Confirmed git-lfs v3.6.0 operational (git-lfs version returns correctly)
+- Confirmed push succeeded: 7d82a05..69a4671 main -> main
+Follow-ups / known issues:
+- git-lfs is only on PATH for the current bash session; install permanently by adding to Windows User PATH via System Properties or `setx PATH`
+- Workspace projects outside IW_Launcher repo — changes to XSLT/config there are not version-controlled in IW_Launcher git
