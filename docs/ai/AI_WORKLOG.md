@@ -2086,3 +2086,87 @@ Verification performed:
 Follow-ups / known issues:
 - git-lfs is only on PATH for the current bash session; install permanently by adding to Windows User PATH via System Properties or `setx PATH`
 - Workspace projects outside IW_Launcher repo — changes to XSLT/config there are not version-controlled in IW_Launcher git
+
+## 2026-03-06 12:15 (-05:00)
+Agent/tool: Claude Code (claude-opus-4-6)
+User request: Full comprehensive audit of the entire IW_Launcher directory — read every folder and file, understand the system, verify operational readiness after git pull from a different machine.
+Actions taken:
+- Performed exhaustive audit of all directories: root files, docs/ (46 files), web_portal/ (111 .class files, 37 JSPs, 30 Java sources), frontends/ (26 TS/TSX files + ASSA prototypes), scripts/ (34 files), database/ (8 schemas), src/ (27 Java files), workspace/ (5 projects), plugins/ (308 plugin classes), config/, .claude/, .github/, tests/
+- Ran 20+ operational verification checks: JRE (working, OpenJDK 1.8.0_382), LFS (1 tracked file), Tomcat (not running, all configs valid), servlet classes (all 21 mapped classes present), context.xml (pooler port 6543, prepareThreshold=0), .env (Supabase configured), system JDK (Java 24 available), Node.js (v22.14.0), TypeScript (zero errors)
+- Identified 3 operational issues after git pull from different machine:
+  1. `frontends/iw-portal/node_modules/.bin/` has Unix symlinks only (no .cmd shims) — `npm install` required
+  2. React build output `web_portal/tomcat/webapps/iw-portal/` does not exist — `npm run build` required after fix
+  3. `.env` missing `TS_MODE`/`TS_BASE_*` settings added in latest .env.example (safe — START.bat defaults work)
+- Created 4 persistent memory files for future sessions (MEMORY.md, architecture.md, operational-status.md, development-patterns.md)
+- Launched 5 parallel sub-agents for deep directory exploration; all completed successfully
+Files changed/created:
+- C:\Users\amago\.claude\projects\C--IW-Launcher\memory\MEMORY.md (NEW)
+- C:\Users\amago\.claude\projects\C--IW-Launcher\memory\architecture.md (NEW)
+- C:\Users\amago\.claude\projects\C--IW-Launcher\memory\operational-status.md (NEW)
+- C:\Users\amago\.claude\projects\C--IW-Launcher\memory\development-patterns.md (NEW)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- git status, git log --oneline -15, git remote -v, git lfs status, git lfs ls-files
+- jre/bin/java.exe -version (verified JRE working)
+- ls/find across all directories for file inventory
+- diff .env.example .env (found TS_MODE drift)
+- node node_modules/typescript/bin/tsc --noEmit (zero errors)
+- npm run build attempt (failed — Unix symlinks, no .cmd shims)
+- javac check (bundled JRE has no javac; system Java 24 available)
+- mvn check (not installed)
+- tasklist/netstat (Tomcat not running)
+- Servlet class existence verification (all 21 OK)
+Verification performed:
+- JRE binary real (210KB, not LFS stub), catalina.jar real (1.7MB)
+- All 21 mapped servlet/listener .class files verified present
+- TypeScript strict compilation: zero errors
+- context.xml JDBC URL correct for pooler (port 6543, prepareThreshold=0)
+- PostgreSQL driver postgresql-42.7.4.jar present
+- 308 Eclipse plugin classes present
+- Git working tree clean, up to date with origin/main
+Follow-ups / known issues:
+- Run `cd frontends/iw-portal && npm install` to fix Windows .cmd shims (node_modules from different OS)
+- Run `npm run build` after install to deploy React portal to Tomcat webapps
+- Maven not installed — blocks ErrorHandlingFilter build (NEXT_STEPS item 1)
+- git-lfs may not be on permanent Windows PATH
+- Tomcat not running — use START.bat or scripts/start_webportal.bat from PowerShell
+
+## 2026-03-06 13:30 (-05:00)
+Agent/tool: Claude Code (claude-opus-4-6)
+User request: Run START.bat to verify operational sync; then link InterWoven repo from C:\InterWoven after git pull.
+Actions taken:
+- Fixed `scripts/setup/enable_legacy_sample_engine.ps1`: added workspace fallback logic so startup works when InterWoven source directory is empty (lines 74-92). Also replaced em-dash characters that broke PowerShell parser.
+- Fixed `scripts/setup/prepare_legacy_runtime.ps1`: made JAXB compat build conditional — skips when source JAR (`jaxb-rt-1.0-ea.jar`) and dest JAR are both absent (lines 34-43).
+- Started Tomcat via `catalina.sh start` (START.bat's `timeout` and `startup.bat` don't work from Git Bash).
+- Verified full portal stack operational: admin login, demo login, API auth, monitoring dashboard, profile sync, profile compiler — all working.
+- Created Windows directory junction: `frontends/InterWoven` → `C:\InterWoven` (InterWoven repo git-pulled to C: drive).
+- Verified junction provides all startup dependencies: SF2AuthNet project, config.xml, transformation server webapp, JAXB JAR.
+- Ran `npm install` in `frontends/iw-portal/` — regenerated Windows .cmd shims (vite.cmd, tsc.cmd, etc.).
+- Ran `npm run build` — TypeScript compiled clean, Vite built (376KB JS + 21KB CSS), deployed to `web_portal/tomcat/webapps/iw-portal/`.
+- Added TS_MODE settings to `.env` (TS_MODE=local, TS_BASE_LOCAL, TS_BASE_LEGACY) from .env.example.
+- Ran 9/9 operational verification checks — all PASS (InterWoven junction, SF2AuthNet source, JAXB JAR, React portal, .cmd shims, .env TS_MODE, Tomcat 200, React portal 200, API auth 200).
+- Updated persistent memory files (MEMORY.md, operational-status.md).
+Files changed/created:
+- scripts/setup/enable_legacy_sample_engine.ps1 (workspace fallback + em-dash fix)
+- scripts/setup/prepare_legacy_runtime.ps1 (conditional JAXB build)
+- .env (added TS_MODE/TS_BASE_* settings)
+- web_portal/tomcat/webapps/iw-portal/ (React build output — index.html + assets/)
+- frontends/iw-portal/node_modules/ (npm install — Windows .cmd shims)
+- frontends/InterWoven (junction → C:\InterWoven)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- PowerShell: enable_legacy_sample_engine.ps1 (via START.bat), prepare_legacy_runtime.ps1
+- catalina.sh start (Tomcat startup)
+- curl to verify /IWLogin.jsp (200), /iw-portal/ (200), /api/auth/session (200), /api/auth/login (POST)
+- rmdir frontends/InterWoven && mklink /J (Windows junction)
+- npm install && npm run build (frontends/iw-portal/)
+Verification performed:
+- 9/9 operational checks PASS
+- Tomcat port 9090 responding (JSP, React portal, API auth)
+- InterWoven junction resolves all 5 sample projects + JAXB JAR
+- TypeScript zero errors, Vite build clean
+Follow-ups / known issues:
+- Maven still not installed — blocks ErrorHandlingFilter build
+- git-lfs may not be on permanent Windows PATH
+- Broken submodule ref in git index (mode 160000, no .gitmodules) — harmless, junction works around it
+- Uncommitted changes: 2 script fixes, worklog, eclipse config, workspace profile

@@ -31,7 +31,15 @@ if (-not (Test-Path $jaxbCompatScript)) {
 Write-Step "Preparing legacy workspace/runtime assets"
 & $engineSetupScript -SampleProjectName $SampleProjectName
 
-Write-Step "Building legacy JAXB compatibility jar"
-& $jaxbCompatScript
+$jaxbSourceJar = Join-Path $repoRoot "web_portal\tomcat\webapps\iwtransformationserver\WEB-INF\lib\jaxb-rt-1.0-ea.jar"
+$jaxbDestJar = Join-Path $repoRoot "web_portal\tomcat\lib\interweave-jaxb-compat.jar"
+
+if ((Test-Path $jaxbSourceJar) -or (Test-Path $jaxbDestJar)) {
+    Write-Step "Building legacy JAXB compatibility jar"
+    & $jaxbCompatScript
+}
+else {
+    Write-Step "JAXB source jar not present and compat jar not built - skipping (portal functions without it)"
+}
 
 Write-Step "Legacy runtime preparation complete"

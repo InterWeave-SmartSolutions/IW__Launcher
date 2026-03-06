@@ -34,6 +34,8 @@ This is a living roadmap, updated after each major development session. It refle
 
 **[PRIORITY: HIGH]** **[Effort: ~30 min]**
 
+**Prerequisite:** Maven 3.6+ must be installed and available in PATH. If Maven is not available, this step can be deferred — the application is fully operational without it. The ErrorHandlingFilter is an enhancement that provides structured error pages; all servlets and JSPs have fallback error handling that works without it.
+
 **Rationale:** A complete error-handling and validation framework is already written and compiled. It is not active because the filter registration block in `web.xml` is commented out. Enabling it takes minutes and immediately provides structured error pages and consistent error codes across all servlets, replacing the default Tomcat 500 stack trace pages.
 
 **Source files:**
@@ -76,24 +78,11 @@ scripts\start_webportal.bat
 
 ---
 
-### 2. Fix frontends/InterWoven Submodule Drift
+### 2. ~~Fix frontends/InterWoven Submodule Drift~~ — RESOLVED
 
-**[PRIORITY: MEDIUM]** **[Effort: ~10 min]**
+**[RESOLVED: 2026-03-06]**
 
-**Rationale:** `git status -sb` shows `frontends/InterWoven` as modified due to submodule pointer drift. This does not affect runtime but produces noise in git status output and can cause confusion when diffing or auditing repo state. Resolving it takes under ten minutes.
-
-**If the submodule was NOT intentionally advanced — reset to the tracked commit:**
-
-```bash
-git submodule update --init frontends/InterWoven
-```
-
-**If the submodule WAS intentionally advanced to a newer commit — record the new pointer:**
-
-```bash
-git add frontends/InterWoven
-git commit -m "chore: advance InterWoven submodule pointer"
-```
+**Resolution:** The submodule reference (mode 160000, no `.gitmodules`) was never properly configured. A Windows directory junction now links `frontends/InterWoven` → `C:\InterWoven` (the separately cloned InterWoven repo). This provides transparent access to all InterWoven source files (5 sample projects, JAXB JARs, transformation server webapps) without submodule complexity. The `enable_legacy_sample_engine.ps1` script also has workspace fallback logic for machines where neither the submodule nor junction is available.
 
 ---
 

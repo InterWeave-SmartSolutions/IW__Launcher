@@ -71,15 +71,26 @@ $workspaceTarget = Join-Path $repoRoot "workspace\$SampleProjectName"
 $transformationTarget = Join-Path $repoRoot "web_portal\tomcat\webapps\iwtransformationserver"
 $runtimeConfigPath = Join-Path $repoRoot "web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\config.xml"
 
-if (-not (Test-Path $sampleProjectRoot)) {
-    throw "Sample project not found: $sampleProjectRoot"
+# Determine whether the InterWoven source directory is available.
+# When cloned on a different machine the submodule/directory may be empty.
+# Fall back to the already-imported workspace project if targets exist.
+$hasInterWovenSource = (Test-Path $sampleProjectRoot) -and (Test-Path $sampleProjectConfig)
+
+if (-not $hasInterWovenSource) {
+    $workspaceConfigFallback = Join-Path $workspaceTarget "configuration\im\config.xml"
+
+    if ((Test-Path $workspaceTarget) -and (Test-Path $transformationTarget) -and (Test-Path $workspaceConfigFallback)) {
+        Write-Step "InterWoven source not present - using workspace fallback for '$SampleProjectName'"
+        $sampleProjectRoot = $workspaceTarget
+        $sampleProjectConfig = $workspaceConfigFallback
+        $SkipWorkspaceImport = $true
+        $SkipTransformationServerDeploy = $true
+    }
+    else {
+        throw "Sample project not found at InterWoven source ($sampleProjectRoot) and workspace fallback is incomplete"
+    }
 }
-if (-not (Test-Path $sampleProjectConfig)) {
-    throw "Sample project IM config not found: $sampleProjectConfig"
-}
-if (-not (Test-Path $sampleTransformationRoot)) {
-    throw "Sample transformation server webapp not found: $sampleTransformationRoot"
-}
+
 if (-not (Test-Path $runtimeConfigPath)) {
     throw "Runtime Business Daemon config not found: $runtimeConfigPath"
 }
@@ -91,6 +102,9 @@ if (-not $SkipWorkspaceImport) {
         Write-Step "Workspace project already present, skipping import: $workspaceTarget"
     }
     else {
+        if (-not (Test-Path $sampleTransformationRoot)) {
+            throw "Sample transformation server webapp not found: $sampleTransformationRoot"
+        }
         Write-Step "Importing sample project into workspace"
         Copy-Item -Path $sampleProjectRoot -Destination $workspaceTarget -Recurse
     }
@@ -101,6 +115,9 @@ if (-not $SkipTransformationServerDeploy) {
         Write-Step "Transformation server webapp already present, skipping deploy: $transformationTarget"
     }
     else {
+        if (-not (Test-Path $sampleTransformationRoot)) {
+            throw "Sample transformation server webapp not found: $sampleTransformationRoot"
+        }
         Write-Step "Deploying legacy transformation server webapp to /iwtransformationserver"
         Copy-Item -Path $sampleTransformationRoot -Destination $transformationTarget -Recurse
     }
