@@ -16,6 +16,9 @@
 .error-msg-help{font-weight:normal; font-size:11px; background-color:#fff; padding:8px; margin-top:8px; border-left:3px solid #cc0000; color:#666;}
 .error-code{font-family:monospace; font-size:10px; color:#999; float:right;}
 .success-msg{color:#006600; font-weight:bold; background-color:#eeffee; padding:8px; border:1px solid #006600; margin:10px 0; border-radius:4px;}
+.modern-banner{background:#1e3a5f; color:#fff; padding:10px 14px; border-radius:4px; margin:8px 0; font-family:Arial, sans-serif; font-size:12px; display:flex; align-items:center; justify-content:space-between;}
+.modern-banner a{color:#5bb8ff; font-weight:bold; text-decoration:none; padding:5px 12px; border:1px solid #5bb8ff; border-radius:3px; font-size:11px;}
+.modern-banner a:hover{background:#5bb8ff; color:#1e3a5f;}
 </style>
 </head>
 
@@ -119,6 +122,14 @@ String errorHelp = errorCode != null ? getErrorHelp(errorCode) : null;
     <td><div class="success-msg"><%= successMsg %></div></td>
   </tr>
   <% } %>
+  <tr>
+    <td>
+      <div class="modern-banner">
+        <span>&#10024; A new modern portal experience is available.</span>
+        <a href="/iw-portal/login">Switch to Modern Portal &rarr;</a>
+      </div>
+    </td>
+  </tr>
   <tr>
     <td bgcolor="E7E6E3"  style="border:1px solid #B2B2B2"><table width="100%"  border="0" cellspacing="0" cellpadding="0">
       <tr>

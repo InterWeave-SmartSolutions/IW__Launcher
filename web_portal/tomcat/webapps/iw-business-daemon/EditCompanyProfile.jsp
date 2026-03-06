@@ -82,6 +82,9 @@ email = oldEmail;
 		<td><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">Edit
 		Company Profile</span><br/></td><td align="right"><a href='<%= "monitoring/Dashboard.jsp" + brandSol1%>' target="_top" class="labels">Monitoring Dashboard</a></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Logout</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
 	</tr>
+	<tr>
+		<td colspan="4" style="padding:4px 5px;"><a href="/iw-portal/company" style="font-family:Arial,sans-serif; font-size:11px; color:#336699;">&#9654; Open in Modern Portal</a></td>
+	</tr>
 </table>
 <form action="EditCompanyProfileServlet" method="post">
 <input type="hidden" name="PortalBrand" value="<%= brand%>"/>
