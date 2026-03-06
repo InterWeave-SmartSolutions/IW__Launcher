@@ -14,6 +14,7 @@ import {
   Settings,
   ExternalLink,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
 import {
@@ -279,8 +280,8 @@ export function CompanyPage() {
               <h3 className="font-semibold text-sm">Quick Actions</h3>
             </div>
             <div className="space-y-2">
-              <a
-                href="/iw-business-daemon/CompanyConfiguration.jsp"
+              <Link
+                to="/company/config"
                 className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition text-sm"
               >
                 <span className="flex items-center gap-2">
@@ -288,9 +289,9 @@ export function CompanyPage() {
                   Company Configuration
                 </span>
                 <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-              </a>
-              <a
-                href="/iw-business-daemon/BDConfigurator.jsp"
+              </Link>
+              <Link
+                to="/admin/configurator"
                 className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition text-sm"
               >
                 <span className="flex items-center gap-2">
@@ -298,7 +299,7 @@ export function CompanyPage() {
                   BD Configurator
                 </span>
                 <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-              </a>
+              </Link>
             </div>
           </div>
 

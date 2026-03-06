@@ -1,64 +1,88 @@
-<!DOCTYPE html>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%
 String brand = request.getParameter("PortalBrand");
-if(brand==null) brand="";
+if(brand==null){
+brand="";
+}
 String solutions = request.getParameter("PortalSolutions");
-if(solutions==null) solutions="";
+if(solutions==null){
+solutions="";
+}
 String brandSol1 = "";
-if (brand != null && brand.length() > 0) brandSol1 += "?PortalBrand=" + brand;
-if (solutions != null && solutions.length() > 0)
-    brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+if (brand != null && brand.length() > 0) {
+	brandSol1 += "?PortalBrand=" + brand;
+}
+if (solutions != null && solutions.length() > 0) {
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+}
 %>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Change Company Password</title>
-<link rel="stylesheet" href="styles/modern-portal.css"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Change Company Password</title><style>
+<!--
+.labels
+   {
+   color: black; font-family: Verdana; font-size: 12pt; font-style: normal; font-weight: bold;
+   }
+.table
+   {
+   color: black; font-family: Verdana; font-size: 10pt; font-style: normal; font-weight: normal;
+   }
+-->
+</style>
 </head>
 <body>
-<div class="portal-page">
+<table border="0" cellpadding="5" width="100%">
+	<tr>
+		<td colspan="3"><img src="<%= "images" + ((brand==null || brand.equals(""))?"":("/" + brand)) + "/IT Banner.png"%>" alt="Title" align="left" width="100%" height="94"/></td>
+	</tr>
+	<tr>
+		<td><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">Change
+		Company Password</span><br/></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Back to Login</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
+	</tr>
+</table>
+<form action="ChangeCompanyPasswordServlet" method="post">
+<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
 
-  <div class="portal-header">
-    <h1>Change Company Password</h1>
-    <div class="portal-header-links">
-      <a href='<%= "IWLogin.jsp" + brandSol1%>' class="portal-link">Back to Login</a>
-      <a href='http://interweave.biz' class="portal-link-muted" target="_blank">InterWeave</a>
-    </div>
-  </div>
+<table border="0" cellpadding="5" width="100%" class="labels">
+	<tr>
+		<td width="25%"><span class="table">Company</span></td>
+		<td>
+			<span class="table"><input type="text" name="Company" maxlength="255" class="table"/></span>
+		</td>
+	</tr>
+	<tr>
+		<td width="25%"><span class="table">Administrator's E-mail</span></td>
+		<td>
+			<span class="table"><input type="text" name="Email" maxlength="255" class="table"/></span>
+		</td>
+	</tr>
+	<tr>
+		<td width="25%"><span class="table">Current Password</span></td>
+		<td>
+			<span class="table"><input type="password" name="OldPassword" maxlength="255" class="table"/>
+		</span></td>
+	</tr>
+	<tr>
+		<td width="25%"><span class="table">New Password</span></td>
+		<td>
+			<span class="table"><input type="password" name="NewPassword" maxlength="255" class="table"/>
+		</span></td>
+	</tr>
+	<tr>
+		<td width="25%"><span class="table">Confirm New Password</span></td>
+		<td>
+			<span class="table"><input type="password" name="ConfirmNewPassword" maxlength="255" class="table"/>
+		</span></td>
+	</tr>
+</table>
+	<p>
+		<input type="submit" name="submit" value="Change Company Password" class="labels"/>
+	</p>
+	</form>
 
-  <div class="portal-section">
-    <form action="ChangeCompanyPasswordServlet" method="post">
-      <input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-      <input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
-
-      <div class="portal-field">
-        <label class="portal-label">Company</label>
-        <input type="text" name="Company" maxlength="255" class="portal-input" placeholder="Company name"/>
-      </div>
-      <div class="portal-field">
-        <label class="portal-label">Administrator's E-mail</label>
-        <input type="text" name="Email" maxlength="255" class="portal-input" placeholder="admin@company.com" autocomplete="email"/>
-      </div>
-      <div class="portal-field">
-        <label class="portal-label">Current Password</label>
-        <input type="password" name="OldPassword" maxlength="255" class="portal-input" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"/>
-      </div>
-      <div class="portal-field-row">
-        <div class="portal-field">
-          <label class="portal-label">New Password</label>
-          <input type="password" name="NewPassword" maxlength="255" class="portal-input"/>
-        </div>
-        <div class="portal-field">
-          <label class="portal-label">Confirm New Password</label>
-          <input type="password" name="ConfirmNewPassword" maxlength="255" class="portal-input"/>
-        </div>
-      </div>
-      <button type="submit" name="submit" value="Change Company Password" class="portal-btn portal-btn-primary">Change Company Password</button>
-    </form>
-  </div>
-
-</div>
 </body>
 </html>
