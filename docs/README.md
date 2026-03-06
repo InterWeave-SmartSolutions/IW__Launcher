@@ -14,6 +14,8 @@ Use this file as the entry point before drilling into individual folders. It is 
   Start with `docs/ai/README.md`, then follow `docs/ai/AI_WORKFLOW.md`.
 - Reviewers and maintainers:
   Use `docs/adr/` for design decisions and `docs/testing/` for validation references.
+- Planning and roadmap:
+  See `docs/NEXT_STEPS.md` for the current prioritized work queue with effort estimates and step-by-step instructions.
 
 ## Folder Map
 
@@ -41,6 +43,8 @@ Use this file as the entry point before drilling into individual folders. It is 
   Test plans, regression references, and validation checklists.
 - `docs/tutorials/`
   Tutorial-style learning material and training walkthroughs.
+- `docs/NEXT_STEPS.md`
+  Prioritized development roadmap. Updated after each major session. Quick wins, medium-term goals, and long-term complex tasks with effort estimates and commands.
 
 ## What Belongs In The Docs Root
 

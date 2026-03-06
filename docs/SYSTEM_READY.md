@@ -114,6 +114,8 @@ Do not rely on `catalina.out` as the primary log path on this Windows setup.
 ## Known Limits
 
 - The local compiler is a practical replacement for the missing legacy InterWeave backend compiler; it is not a byte-for-byte reproduction of the original backend.
+- `ErrorHandlingFilter` is currently disabled in `web.xml`. The source is available at `src/main/java/com/interweave/web/ErrorHandlingFilter.java` and can be compiled and deployed using `mvn -DskipTests package`. See `docs/NEXT_STEPS.md` item 1 for the full procedure.
+- The `iwtransformationserver` webapp is compiled-only (no Java source in this repo). It uses native JNI (`TS_JNI.dll` / `TS_JNI.so`) and 137 JAR dependencies. Instrumentation requires either bytecode interception or a Tomcat filter — see `docs/NEXT_STEPS.md` item 7.
 - Generated overlays are profile-specific sidecar projects. They do not overwrite the shared template workspace projects.
 - Real external integrations can still fail if downstream connector credentials are invalid (for example Salesforce or payment gateway credentials embedded in a flow).
 - Windows native PowerShell/cmd is the supported runtime path. WSL can be useful for repo work, but it is not the primary supported way to run the bundled portal stack.

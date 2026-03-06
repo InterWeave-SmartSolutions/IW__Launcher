@@ -2008,3 +2008,46 @@ Verification performed:
 Follow-ups / known issues:
 - The `oracle_cloud` label still exists in a few scripts/templates by design for backward compatibility with older `.env` files; it is no longer treated as the primary interactive operating mode.
 - `docs/adr/001-supabase-migration.md` intentionally retains Oracle Cloud language as historical context because it is a decision record, not an operational quick-start.
+
+## 2026-03-06 (UTC)
+Agent/tool: Claude Code (claude-sonnet-4-6)
+User request: Full comprehensive audit of C:\IW_IDE (parent) and C:\IW_IDE\IW_Launcher — analyze all folders, files, scripts, docs, code, and history; update all documentation to reflect findings; coordinate next steps; commit and push.
+Actions taken:
+- Performed exhaustive recursive audit of both the parent IW_IDE directory and the full IW_Launcher project tree (5.6MB directory listing)
+- Parent directory: confirmed IW_CDs, IW_IDE_1.0 (legacy binaries), and most subdirs (PTE_8.0, PhoenixGenesisCore, SecurDigital, bin, config) are empty; documented Wine/Linux-era history in ORGANIZATION_SUMMARY.md; confirmed IWDaemon.exe previously connected successfully to iw0.interweave.biz:8443
+- IW_Launcher audit findings:
+  - Confirmed all 3 webapps running: iw-business-daemon, iwtransformationserver, iw-portal (React)
+  - Discovered `iwtransformationserver` is compiled-only with 137 JAR dependencies and native JNI (TS_JNI.dll / TS_JNI.so) — no source code
+  - Discovered `src/main/java/com/interweave/` Maven project contains: error framework (IWError*), validation framework (9 validators), `web/ErrorHandlingFilter.java` (the "missing" filter — source IS present, just needs mvn build + deploy), and HelpLinkService
+  - Discovered `src/test/java/` has test coverage for error and validation frameworks
+  - Discovered `frontends/assa/` has two complete static HTML portal designs: assa_customer_portal (9 pages) and assa_master_console (9 pages) — design references for React UI work
+  - Confirmed `data/` subdirectories (exports, forms, pages, projects) are all empty placeholders
+  - Confirmed `frontends/InterWoven` submodule is dirty in git status
+  - Confirmed `.github/workflows/` has build-and-test.yml and pr-checks.yml
+  - `database/APPLY_TO_SUPABASE.sql` (28KB, Sep 2025) exists as original Supabase application script
+- Updated CLAUDE.md: fixed ErrorHandlingFilter known issue (now documents source location + build path), added iwtransformationserver architecture note (compiled-only, native JNI, 137 JARs), added Maven Source Framework section, updated Directory Structure src/ entry
+- Created docs/NEXT_STEPS.md: prioritized 9-item roadmap in 3 tiers (Quick Wins / Medium / Long Term) with effort estimates, rationale, and exact commands for each
+- Updated docs/SYSTEM_READY.md: added ErrorHandlingFilter to quick-win items in Known Limits
+- Updated docs/README.md: added reference to docs/NEXT_STEPS.md in the navigation section
+- Updated Claude memory file with complete project architecture
+Files changed/created:
+- CLAUDE.md (ErrorHandlingFilter fix, Maven section, architecture note, directory structure)
+- docs/NEXT_STEPS.md (NEW — 9-item prioritized roadmap)
+- docs/SYSTEM_READY.md (Known Limits update)
+- docs/README.md (NEXT_STEPS.md reference)
+- docs/ai/AI_WORKLOG.md (this entry)
+Commands run:
+- ls -laR /c/IW_IDE/IW_Launcher/ (background, 5.6MB output)
+- git log --oneline -30 / git status -sb
+- Multiple Read/Grep operations across all docs, scripts, and source files
+- grep on background task output for .java, .sql, .ts, assa, src, iwtransformationserver dirs
+Verification performed:
+- Confirmed all runtime docs consistent with 2026-03-04 verified baseline
+- Confirmed ErrorHandlingFilter source path is real (src/main/java/com/interweave/web/ErrorHandlingFilter.java verified by listing)
+- Confirmed iwtransformationserver structure (15 Java packages, 137 JARs, TS_JNI.dll/.so verified)
+- Confirmed assa_customer_portal and assa_master_console HTML pages exist
+- Confirmed all 4 data/ subdirs are empty
+Follow-ups / known issues:
+- ErrorHandlingFilter still disabled pending mvn build + deploy (next quick-win task)
+- frontends/InterWoven submodule drift still present (cosmetic)
+- Phase 1B (TransactionLogger), Phase 2 Step 5 (React forms), Phase 2 Step 6 (Recharts) all still pending — see docs/NEXT_STEPS.md

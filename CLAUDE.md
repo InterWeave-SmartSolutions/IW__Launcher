@@ -37,6 +37,8 @@ Exception: the mirrored legacy manuals under `frontends/InterWoven/docs/IW_Docs/
    - User authentication and company management
    - Hosts JSP interfaces for profile/config management
    - Default port: 9090
+   - Also deploys `iwtransformationserver` — legacy transformation engine (**compiled-only, no source in repo**; native JNI via `TS_JNI.dll`/`TS_JNI.so`; 137 JAR dependencies including Salesforce SOAP, Axis, enterprise adapters; packages: adapter, bindings, connector, core, developer/wsdl, encrypt, license, lotus, salesforce, servlets, session, utilplugin, webservice)
+   - Also deploys `iw-portal` — React dashboard (`frontends/iw-portal/` build output)
 
 3. **Database** - Authentication and configuration (MySQL or Postgres)
    - Schemas: `database/postgres_schema.sql` (primary/Supabase), `database/monitoring_schema_postgres.sql` (monitoring), `mysql_schema.sql` (legacy), `schema.sql`
@@ -194,8 +196,12 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - **Phase 1B deferred**: TransactionLogger instrumentation (needs engine class decompilation), email delivery testing (needs SMTP credentials)
 
 2. **ErrorHandlingFilter Disabled**
-   - Requires compiled error framework web filter class
-   - Commented out in `web.xml`
+   - **Source IS available** at `src/main/java/com/interweave/web/ErrorHandlingFilter.java`
+   - Full error/validation framework also in `src/main/java/com/interweave/error/` and `src/main/java/com/interweave/validation/`
+   - Build: `mvn -DskipTests package` → output at `target/iw-error-framework-1.0.0.jar`
+   - Deploy: `cp -r target/classes/com/interweave/ web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/`
+   - Enable: Uncomment ErrorHandlingFilter block in `web.xml`, then restart Tomcat
+   - Full steps: `docs/development/BUILD.md` and `docs/NEXT_STEPS.md` item 1
 
 3. **Windows-Native Required for Database**
    - **Tomcat MUST run from Windows (PowerShell)**, not WSL2
@@ -281,6 +287,29 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - `src/hooks/` — useMonitoring.ts (useDashboard with 30s auto-refresh, useTransactions with pagination)
 - `src/lib/` — api.ts (fetch wrapper), classic-routes.ts, utils.ts
 - `src/types/` — TypeScript interfaces for API responses
+### Maven Source Framework (`src/`)
+
+A Maven project at the repo root (`pom.xml`) provides the error handling, validation, and web filter infrastructure. It is compiled separately from the Tomcat servlet sources.
+
+**Source packages** (`src/main/java/com/interweave/`):
+- `error/` — `IWError`, `IWErrorBuilder`, `ErrorCode`, `ErrorCategory`, `ErrorSeverity`, `ErrorLogger`, `ErrorDocumentation`
+- `validation/` — `ConnectionValidator`, `FlowConfigValidator`, `SchemaValidator`, `XPathValidator`, `XSLTValidator`, `ValidationResult`, `ValidationIssue`, `ValidationSeverity`, `ValidationService`
+- `web/` — `ErrorHandlingFilter` (disabled in `web.xml` — deploy to enable, see Known Issues #2)
+- `help/` — `HelpLinkService`
+
+**Tests** (`src/test/java/`): Unit tests for error, validation, and integration scenarios.
+
+**Build and deploy (Windows):**
+```powershell
+mvn -DskipTests package
+# Option A: copy JAR
+cp target\iw-error-framework-1.0.0.jar web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\lib\
+# Option B: copy classes
+cp -r target\classes\com\interweave web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\classes\com\interweave
+```
+
+See `docs/development/BUILD.md` for complete Maven build instructions, profiles, and IDE integration.
+
 ### Eclipse/IDE Specifics
 
 - Based on Eclipse 3.1 with custom InterWeave SDK plugin
@@ -344,14 +373,21 @@ IW_Launcher/
 │   └── tutorials/              # Training materials
 │
 ├── frontends/                  # Front-end applications
-│   ├── InterWoven/             # React SPA (concept/prototype)
-│   └── assa/                   # ASSA portal prototype
+│   ├── iw-portal/              # React dashboard (Vite + React 18 + TS + Tailwind + shadcn/ui)
+│   ├── InterWoven/             # React SPA (concept/prototype — do not use per CLAUDE.md rules)
+│   └── assa/                   # Static HTML design prototypes (design reference for iw-portal)
+│       ├── assa_customer_portal/ # 9 pages: billing, intake, library, profile, resource, search...
+│       └── assa_master_console/  # 9 pages: analytics, audit, content, integrations, users...
 │
 ├── jre/                        # Bundled Java 8 runtime
 ├── plugins/                    # Eclipse plugins
 │   ├── iw_sdk_1.0.0/           # InterWeave SDK plugin
 │   └── org.eclipse.*.jar       # Eclipse core plugins
-├── src/                        # Java source code
+├── src/                        # Maven project: error framework, validation, ErrorHandlingFilter
+│   ├── main/java/com/interweave/error/       # IWError, ErrorCode, ErrorLogger
+│   ├── main/java/com/interweave/validation/  # ConnectionValidator, SchemaValidator, etc.
+│   ├── main/java/com/interweave/web/         # ErrorHandlingFilter (deploy to enable)
+│   └── main/java/com/interweave/help/        # HelpLinkService
 │
 ├── web_portal/                 # Web server
 │   ├── tomcat/                 # Apache Tomcat 9.0.83
@@ -401,3 +437,10 @@ IW_Launcher/
 - Never commit `.env` file
 - Supabase Postgres credentials are shared across all team members
 - Admin password `%iwps%` is hardcoded in authentication system
+
+## Roadmap and Next Steps
+
+See `docs/NEXT_STEPS.md` for the current prioritized development queue:
+- **Quick wins**: Enable ErrorHandlingFilter (source ready at `src/main/`), fix submodule drift, configure monitoring email
+- **Medium term**: React profile/company forms (Phase 2 Step 5), Recharts monitoring charts (Phase 2 Step 6)
+- **Long term**: TransactionLogger instrumentation (Phase 1B), SF2AuthNet compiler module, Integration Manager React page
