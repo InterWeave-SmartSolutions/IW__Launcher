@@ -310,6 +310,15 @@
 		<servlet-name>ApiSessionServlet</servlet-name>
 		<servlet-class>com.interweave.businessDaemon.api.ApiSessionServlet</servlet-class>
 	</servlet>
+	<!-- Profile/Company API servlets (React form endpoints) -->
+	<servlet>
+		<servlet-name>ApiProfileServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiProfileServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ApiCompanyProfileServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiCompanyProfileServlet</servlet-class>
+	</servlet>
 	<!-- Monitoring API servlets -->
 	<servlet>
 		<servlet-name>DashboardApiServlet</servlet-name>
@@ -461,6 +470,15 @@
         <servlet-mapping>
         	<servlet-name>ApiSessionServlet</servlet-name>
         	<url-pattern>/api/auth/session</url-pattern>
+        </servlet-mapping>
+        <!-- Profile/Company API mappings -->
+        <servlet-mapping>
+        	<servlet-name>ApiProfileServlet</servlet-name>
+        	<url-pattern>/api/profile</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>ApiCompanyProfileServlet</servlet-name>
+        	<url-pattern>/api/company/profile</url-pattern>
         </servlet-mapping>
         <!-- Monitoring API mappings -->
         <servlet-mapping>

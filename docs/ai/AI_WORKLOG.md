@@ -2170,3 +2170,36 @@ Follow-ups / known issues:
 - git-lfs may not be on permanent Windows PATH
 - Broken submodule ref in git index (mode 160000, no .gitmodules) — harmless, junction works around it
 - Uncommitted changes: 2 script fixes, worklog, eclipse config, workspace profile
+
+## 2026-03-06 15:30 (EST)
+What I did (this response):
+- Phase 2 Step 5: Replace JSP hook pages with real React form pages (ProfilePage, CompanyPage)
+- Branch: feature/react-form-pages
+Backend:
+- Created ApiProfileServlet.java (GET/PUT/POST /api/profile) — user profile CRUD + password change
+- Created ApiCompanyProfileServlet.java (GET/PUT/POST /api/company/profile) — company profile CRUD + password change (admin-only)
+- Registered both servlets in web.xml with URL patterns
+- Compiled both servlets successfully (Windows javac with semicolon classpath)
+Frontend:
+- Created types/profile.ts — TypeScript interfaces for all profile API shapes
+- Created hooks/useProfile.ts — 6 React Query hooks (useProfile, useUpdateProfile, useChangePassword, useCompanyProfile, useUpdateCompanyProfile, useChangeCompanyPassword)
+- Created pages/ProfilePage.tsx — ASSA-inspired profile form (personal info, org card, password change, toast notifications)
+- Created pages/CompanyPage.tsx — ASSA-inspired company profile (KPI row, admin form, quick actions, company password change)
+- Updated routes.tsx to wire ProfilePage and CompanyPage (replacing ClassicRedirectPage hooks)
+- Fixed 3 unused import/variable TypeScript errors (CreditCard, Briefcase, user)
+- TypeScript: zero errors, Vite build: clean (402kB JS, 25kB CSS)
+Files changed:
+- NEW: web_portal/.../api/ApiProfileServlet.java, ApiCompanyProfileServlet.java
+- NEW: frontends/iw-portal/src/types/profile.ts, hooks/useProfile.ts, pages/ProfilePage.tsx, pages/CompanyPage.tsx
+- MOD: frontends/iw-portal/src/routes.tsx (imports + route elements)
+- MOD: web_portal/.../WEB-INF/web.xml (servlet + mapping entries)
+Verification performed:
+- npx tsc --noEmit: 0 errors
+- npm run build: success, deployed to web_portal/tomcat/webapps/iw-portal/
+- Servlet .class files present and dated today
+- web.xml URL patterns confirmed: /api/profile, /api/company/profile
+- ClassicViewBanner rendered by AppShell (wraps all routes — classic toggle available on both pages)
+Follow-ups / known issues:
+- Tomcat restart required to load new servlet classes
+- End-to-end testing needed: login → /profile → save → password change → /company → same
+- company/config and admin/* routes still use ClassicRedirectPage hooks (future migration)

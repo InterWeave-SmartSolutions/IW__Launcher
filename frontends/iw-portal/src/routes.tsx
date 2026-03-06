@@ -5,6 +5,8 @@ import { MonitoringPage } from "@/pages/MonitoringPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ClassicRedirectPage } from "@/pages/ClassicRedirectPage";
+import { ProfilePage } from "@/pages/ProfilePage";
+import { CompanyPage } from "@/pages/CompanyPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export const router = createBrowserRouter(
@@ -34,11 +36,11 @@ export const router = createBrowserRouter(
         },
         {
           path: "profile",
-          element: <ClassicRedirectPage title="User Profile" classicPath="/iw-business-daemon/EditProfile.jsp" />,
+          element: <ProfilePage />,
         },
         {
           path: "company",
-          element: <ClassicRedirectPage title="Company Profile" classicPath="/iw-business-daemon/EditCompanyProfile.jsp" />,
+          element: <CompanyPage />,
         },
         {
           path: "company/config",
