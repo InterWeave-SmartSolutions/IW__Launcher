@@ -282,12 +282,18 @@ public final class WorkspaceProfileCompiler {
         if ("CRM2QB3".equals(normalized)) {
             return "CRM2QB3";
         }
+        if ("SF2AUTH".equals(normalized) || "SF2QB".equals(normalized)) {
+            return "SF2AUTH";
+        }
         return "GENERIC";
     }
 
     private static boolean shouldEnableItem(String moduleName, String tagName, String id, ProfileValues values) {
         if ("CRM2QB3".equals(moduleName)) {
             return shouldEnableCrm2qb3Item(tagName, id, values);
+        }
+        if ("SF2AUTH".equals(moduleName)) {
+            return shouldEnableSf2authItem(tagName, id, values);
         }
         return true;
     }
@@ -332,6 +338,66 @@ public final class WorkspaceProfileCompiler {
         if (id.contains("Inv")) {
             return inventoryEnabled;
         }
+        if (id.contains("SR") || id.contains("Service")) {
+            return serviceEnabled;
+        }
+        return anyEnabled;
+    }
+
+    private static boolean shouldEnableSf2authItem(String tagName, String id, ProfileValues values) {
+        boolean accountEnabled = isSyncEnabled(values.get("SyncTypeAC"));
+        boolean salesEnabled = isSyncEnabled(values.get("SyncTypeSO"));
+        boolean inventoryEnabled = isSyncEnabled(values.get("SyncTypeInv"));
+        boolean serviceEnabled = isSyncEnabled(values.get("SyncTypeSR"));
+        boolean productEnabled = isSyncEnabled(values.get("SyncTypePrd"));
+        boolean anyEnabled = accountEnabled || salesEnabled || inventoryEnabled || serviceEnabled || productEnabled;
+
+        if ("TransactionDescription".equals(tagName)) {
+            // All SF2AUTH transaction flows require at least one sync type active
+            return anyEnabled;
+        }
+
+        if (id == null || id.length() == 0) {
+            return anyEnabled;
+        }
+
+        // Lead and Account queries → account sync
+        if (id.startsWith("SFLead") || id.startsWith("SFAcct")) {
+            return accountEnabled;
+        }
+        // Sales Order queries → sales sync
+        if (id.startsWith("SFSO")) {
+            return salesEnabled;
+        }
+        // Opportunity and payment queries → sales sync
+        if (id.startsWith("SFOpp") || id.startsWith("SF2Auth")) {
+            return salesEnabled;
+        }
+        // Transaction credit/refund queries → sales sync
+        if (id.startsWith("SFTran")) {
+            return salesEnabled;
+        }
+        // CO/RPG queries → sales sync
+        if (id.startsWith("SFCO")) {
+            return salesEnabled;
+        }
+        // Creatio queries → account or sales
+        if (id.startsWith("Creatio")) {
+            return accountEnabled || salesEnabled;
+        }
+        // Sugar queries → disabled for SF2AUTH (different CRM)
+        if (id.startsWith("Sugar")) {
+            return false;
+        }
+        // Product/Item queries
+        if (id.contains("Prod") || id.contains("Item")) {
+            return productEnabled;
+        }
+        // Inventory queries
+        if (id.contains("Inv")) {
+            return inventoryEnabled;
+        }
+        // Service queries
         if (id.contains("SR") || id.contains("Service")) {
             return serviceEnabled;
         }

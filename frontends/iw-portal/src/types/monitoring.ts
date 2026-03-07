@@ -68,3 +68,42 @@ export interface AlertRule {
   is_enabled: boolean;
   last_triggered_at: string | null;
 }
+
+/** Matches GET /api/monitoring/metrics JSON response (Chart.js shape) */
+export interface MetricsResponse {
+  success: boolean;
+  data: {
+    labels: string[];
+    datasets: MetricsDataset[];
+    summary: MetricsSummary;
+  };
+}
+
+export interface MetricsDataset {
+  label: string;
+  data: number[];
+}
+
+export interface MetricsSummary {
+  total_executions: number;
+  success_rate: number;
+  avg_duration_ms: number;
+  total_records: number;
+}
+
+/** Matches GET /api/monitoring/alerts JSON response */
+export interface AlertRulesResponse {
+  success: boolean;
+  data: {
+    alert_rules: AlertRule[];
+  };
+}
+
+/** Recharts-friendly data point (transformed from MetricsResponse) */
+export interface MetricsDataPoint {
+  date: string;
+  success: number;
+  failed: number;
+  avgDuration: number;
+  records: number;
+}

@@ -1,20 +1,60 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/pages/DashboardPage";
-import { MonitoringPage } from "@/pages/MonitoringPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { RegisterPage } from "@/pages/RegisterPage";
+import { CompanyRegisterPage } from "@/pages/CompanyRegisterPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
-import { ClassicRedirectPage } from "@/pages/ClassicRedirectPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { CompanyPage } from "@/pages/CompanyPage";
+import { CompanyConfigPage } from "@/pages/CompanyConfigPage";
+import { ConfigurationWizardPage } from "@/pages/ConfigurationWizardPage";
+import { IntegrationOverviewPage } from "@/pages/IntegrationOverviewPage";
+import { LoggingPage } from "@/pages/LoggingPage";
+import { ChangePasswordPage } from "@/pages/ChangePasswordPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Loader2 } from "lucide-react";
+
+/* Lazy-load monitoring pages (recharts is ~380kB) */
+const MonitoringLayout = lazy(() =>
+  import("@/pages/MonitoringLayout").then((m) => ({ default: m.MonitoringLayout }))
+);
+const MonitoringPage = lazy(() =>
+  import("@/pages/MonitoringPage").then((m) => ({ default: m.MonitoringPage }))
+);
+const TransactionHistoryPage = lazy(() =>
+  import("@/pages/TransactionHistoryPage").then((m) => ({ default: m.TransactionHistoryPage }))
+);
+const AlertConfigPage = lazy(() =>
+  import("@/pages/AlertConfigPage").then((m) => ({ default: m.AlertConfigPage }))
+);
+
+function LazyFallback() {
+  return (
+    <div className="flex justify-center py-12">
+      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
 
 export const router = createBrowserRouter(
   [
+    /* ── Public routes (no auth required) ── */
     {
       path: "/login",
       element: <LoginPage />,
     },
+    {
+      path: "/register",
+      element: <RegisterPage />,
+    },
+    {
+      path: "/register/company",
+      element: <CompanyRegisterPage />,
+    },
+
+    /* ── Protected routes (auth required, inside AppShell) ── */
     {
       path: "/",
       element: (
@@ -25,18 +65,47 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <Navigate to="/dashboard" replace /> },
         { path: "dashboard", element: <DashboardPage /> },
-        { path: "monitoring", element: <MonitoringPage /> },
         {
-          path: "monitoring/transactions",
-          element: <div className="p-6 text-muted-foreground">Transaction History — coming soon. Use Classic View for now.</div>,
-        },
-        {
-          path: "monitoring/alerts",
-          element: <div className="p-6 text-muted-foreground">Alert Configuration — coming soon. Use Classic View for now.</div>,
+          path: "monitoring",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <MonitoringLayout />
+            </Suspense>
+          ),
+          children: [
+            {
+              index: true,
+              element: (
+                <Suspense fallback={<LazyFallback />}>
+                  <MonitoringPage />
+                </Suspense>
+              ),
+            },
+            {
+              path: "transactions",
+              element: (
+                <Suspense fallback={<LazyFallback />}>
+                  <TransactionHistoryPage />
+                </Suspense>
+              ),
+            },
+            {
+              path: "alerts",
+              element: (
+                <Suspense fallback={<LazyFallback />}>
+                  <AlertConfigPage />
+                </Suspense>
+              ),
+            },
+          ],
         },
         {
           path: "profile",
           element: <ProfilePage />,
+        },
+        {
+          path: "profile/password",
+          element: <ChangePasswordPage />,
         },
         {
           path: "company",
@@ -44,15 +113,19 @@ export const router = createBrowserRouter(
         },
         {
           path: "company/config",
-          element: <ClassicRedirectPage title="Company Configuration" classicPath="/iw-business-daemon/CompanyConfiguration.jsp" />,
+          element: <CompanyConfigPage />,
+        },
+        {
+          path: "company/config/wizard",
+          element: <ConfigurationWizardPage />,
         },
         {
           path: "admin/configurator",
-          element: <ClassicRedirectPage title="Business Daemon Configurator" classicPath="/iw-business-daemon/BDConfigurator.jsp" />,
+          element: <IntegrationOverviewPage />,
         },
         {
           path: "admin/logging",
-          element: <ClassicRedirectPage title="System Logging" classicPath="/iw-business-daemon/Logging.jsp" />,
+          element: <LoggingPage />,
         },
         { path: "*", element: <NotFoundPage /> },
       ],

@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 interface Props {
   title: string;
@@ -7,6 +8,7 @@ interface Props {
 
 /** Hook page — links to the classic JSP page while the React version is being built */
 export function ClassicRedirectPage({ title, classicPath }: Props) {
+  useDocumentTitle(title);
   return (
     <div className="space-y-6">
       <div>

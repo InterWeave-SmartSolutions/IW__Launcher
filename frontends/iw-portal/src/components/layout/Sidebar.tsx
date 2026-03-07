@@ -7,6 +7,7 @@ import {
   Settings,
   FileText,
   Monitor,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,7 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/profile", label: "My Profile", icon: User, description: "Account settings", group: "account" },
   { to: "/company", label: "Company", icon: Building2, description: "Organization settings", group: "account" },
   { to: "/company/config", label: "Configuration", icon: Settings, description: "Company setup", group: "config" },
-  { to: "/admin/configurator", label: "BD Configurator", icon: Monitor, description: "Daemon settings", group: "admin" },
+  { to: "/admin/configurator", label: "Integrations", icon: Monitor, description: "Flows & daemon", group: "admin" },
   { to: "/admin/logging", label: "Logging", icon: FileText, description: "System logs", group: "admin" },
 ];
 
@@ -36,18 +37,33 @@ const GROUP_LABELS: Record<string, string> = {
   admin: "Administration",
 };
 
-export function Sidebar() {
+interface SidebarProps {
+  mobile?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ mobile, onClose }: SidebarProps) {
   const groups = [...new Set(NAV_ITEMS.map((i) => i.group))];
 
-  return (
-    <aside className="glass-sidebar sticky top-0 h-screen flex flex-col max-md:hidden">
+  const nav = (
+    <>
       {/* Brand */}
-      <div className="flex items-center gap-3 px-4 pt-5 pb-3">
-        <div className="w-9 h-9 rounded-[14px] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-lg shadow-[hsl(var(--primary)/0.25)]" />
-        <div>
-          <h1 className="text-sm font-semibold tracking-tight">InterWeave</h1>
-          <p className="text-xs text-muted-foreground">Integration Platform</p>
+      <div className="flex items-center justify-between px-4 pt-5 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[14px] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-lg shadow-[hsl(var(--primary)/0.25)]" />
+          <div>
+            <h1 className="text-sm font-semibold tracking-tight">InterWeave</h1>
+            <p className="text-xs text-muted-foreground">Integration Platform</p>
+          </div>
         </div>
+        {mobile && (
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Context pills (ASSA pattern) */}
@@ -69,6 +85,7 @@ export function Sidebar() {
                 <NavLink
                   key={item.to}
                   to={item.to}
+                  onClick={onClose}
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-[14px] border border-transparent transition-colors",
@@ -93,6 +110,30 @@ export function Sidebar() {
       <div className="px-4 py-3 text-xs text-muted-foreground border-t border-[hsl(var(--sidebar-border))]">
         InterWeave IDE • IW Portal v0.1
       </div>
-    </aside>
+    </>
+  );
+
+  // Desktop sidebar
+  if (!mobile) {
+    return (
+      <aside className="glass-sidebar sticky top-0 h-screen flex flex-col max-md:hidden">
+        {nav}
+      </aside>
+    );
+  }
+
+  // Mobile overlay
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        onClick={onClose}
+      />
+      {/* Drawer */}
+      <aside className="fixed inset-y-0 left-0 w-[280px] glass-sidebar flex flex-col z-50 md:hidden shadow-2xl">
+        {nav}
+      </aside>
+    </>
   );
 }

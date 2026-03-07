@@ -1,6 +1,6 @@
 param(
     [string]$Profile = "Tester1:amagown@interweave.biz",
-    [string]$ExpectationPath = "C:\IW_IDE\IW_Launcher\tests\compiler-regression\Tester1.CRM2QB3.expected.properties"
+    [string]$ExpectationPath = "C:\IW_Launcher\tests\compiler-regression\Tester1.CRM2QB3.expected.properties"
 )
 
 function Unescape-JavaProperty([string]$Value) {
@@ -51,7 +51,7 @@ if ([int]$response.StatusCode -ne 200) {
 }
 
 $safeProfile = ($Profile -replace '[^A-Za-z0-9._-]+', '_')
-$generatedRoot = "C:\IW_IDE\IW_Launcher\workspace\GeneratedProfiles\$safeProfile"
+$generatedRoot = "C:\IW_Launcher\workspace\GeneratedProfiles\$safeProfile"
 $engineConfigPath = Join-Path $generatedRoot "configuration\im\config.xml"
 $profilePropertiesPath = Join-Path $generatedRoot "configuration\profile\profile.properties"
 $selectionPropertiesPath = Join-Path $generatedRoot "configuration\profile\compiler-selection.properties"

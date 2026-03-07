@@ -7,7 +7,6 @@ import {
   Save,
   KeyRound,
   Loader2,
-  CheckCircle,
   AlertTriangle,
   Eye,
   EyeOff,
@@ -15,55 +14,21 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useToast } from "@/providers/ToastProvider";
 import {
   useCompanyProfile,
   useUpdateCompanyProfile,
   useChangeCompanyPassword,
 } from "@/hooks/useProfile";
-
-function StatusBadge({ label, variant }: { label: string; variant: "ok" | "warn" | "bad" | "info" }) {
-  const colors = {
-    ok: "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]",
-    warn: "bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))]",
-    bad: "bg-[hsl(var(--destructive)/0.15)] text-[hsl(var(--destructive))]",
-    info: "bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))]",
-  };
-  const dots = {
-    ok: "bg-[hsl(var(--success))]",
-    warn: "bg-[hsl(var(--warning))]",
-    bad: "bg-[hsl(var(--destructive))]",
-    info: "bg-[hsl(var(--primary))]",
-  };
-  return (
-    <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1.5", colors[variant])}>
-      <span className={cn("w-1.5 h-1.5 rounded-full", dots[variant])} />
-      {label}
-    </span>
-  );
-}
-
-function Toast({ message, type, onDismiss }: { message: string; type: "success" | "error"; onDismiss: () => void }) {
-  useEffect(() => {
-    const timer = setTimeout(onDismiss, 4000);
-    return () => clearTimeout(timer);
-  }, [onDismiss]);
-
-  return (
-    <div className={cn(
-      "fixed top-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-in slide-in-from-top-2",
-      type === "success"
-        ? "bg-[hsl(var(--success)/0.12)] border-[hsl(var(--success)/0.3)] text-[hsl(var(--success))]"
-        : "bg-[hsl(var(--destructive)/0.12)] border-[hsl(var(--destructive)/0.3)] text-[hsl(var(--destructive))]"
-    )}>
-      {type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-      {message}
-    </div>
-  );
-}
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export function CompanyPage() {
+  useDocumentTitle("Company");
   const { user } = useAuth();
   const { data, isLoading, error: fetchError } = useCompanyProfile();
   const updateCompany = useUpdateCompanyProfile();
@@ -79,7 +44,7 @@ export function CompanyPage() {
   const [showPasswords, setShowPasswords] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const { showToast } = useToast();
 
   const company = data?.company;
   const userCount = data?.userCount ?? 0;
@@ -97,27 +62,27 @@ export function CompanyPage() {
     e.preventDefault();
     try {
       await updateCompany.mutateAsync({ firstName, lastName });
-      setToast({ message: "Company profile updated successfully", type: "success" });
+      showToast("Company profile updated successfully", "success");
     } catch (err) {
-      setToast({ message: err instanceof Error ? err.message : "Update failed", type: "error" });
+      showToast(err instanceof Error ? err.message : "Update failed", "error");
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setToast({ message: "New passwords do not match", type: "error" });
+      showToast("New passwords do not match", "error");
       return;
     }
     try {
       await changePassword.mutateAsync({ oldPassword, newPassword, confirmPassword });
-      setToast({ message: "Company password changed successfully", type: "success" });
+      showToast("Company password changed successfully", "success");
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setShowPasswordForm(false);
     } catch (err) {
-      setToast({ message: err instanceof Error ? err.message : "Password change failed", type: "error" });
+      showToast(err instanceof Error ? err.message : "Password change failed", "error");
     }
   };
 
@@ -145,8 +110,6 @@ export function CompanyPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-semibold">Company Profile</h1>
@@ -168,8 +131,14 @@ export function CompanyPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <StatusBadge label={company?.isActive ? "Active" : "Inactive"} variant={company?.isActive ? "ok" : "bad"} />
-            <StatusBadge label={company?.solutionType || "—"} variant="info" />
+            <Badge variant={company?.isActive ? "success" : "destructive"}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              {company?.isActive ? "Active" : "Inactive"}
+            </Badge>
+            <Badge variant="default">
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              {company?.solutionType || "—"}
+            </Badge>
           </div>
         </div>
 
@@ -210,40 +179,38 @@ export function CompanyPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">First Name</label>
-                <input
-                  type="text"
+                <Label htmlFor="adminFirstName">First Name</Label>
+                <Input
+                  id="adminFirstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   maxLength={45}
                   required
                   disabled={!isAdmin}
-                  className="w-full px-3 py-2 rounded-lg bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.4)] transition disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Name</label>
-                <input
-                  type="text"
+                <Label htmlFor="adminLastName">Last Name</Label>
+                <Input
+                  id="adminLastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   maxLength={45}
                   required
                   disabled={!isAdmin}
-                  className="w-full px-3 py-2 rounded-lg bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.4)] transition disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Admin Email</label>
+              <Label>Admin Email</Label>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] text-sm text-muted-foreground">
                 {company?.admin?.email || "—"}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Company Name</label>
+              <Label>Company Name</Label>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] text-sm text-muted-foreground">
                 <Building2 className="w-4 h-4 shrink-0" />
                 {company?.companyName || "—"}
@@ -253,18 +220,10 @@ export function CompanyPage() {
 
             {isAdmin && (
               <div className="flex justify-end pt-2">
-                <button
-                  type="submit"
-                  disabled={updateCompany.isPending}
-                  className={cn(
-                    "inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition",
-                    "bg-[hsl(var(--primary))] text-white hover:bg-[hsl(var(--primary)/0.85)]",
-                    "disabled:opacity-50 disabled:cursor-not-allowed"
-                  )}
-                >
+                <Button type="submit" disabled={updateCompany.isPending}>
                   {updateCompany.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Changes
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -312,13 +271,14 @@ export function CompanyPage() {
               </div>
 
               {!showPasswordForm ? (
-                <button
+                <Button
+                  variant="outline"
+                  className="w-full"
                   onClick={() => setShowPasswordForm(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition w-full justify-center"
                 >
                   <KeyRound className="w-4 h-4" />
                   Change Company Password
-                </button>
+                </Button>
               ) : (
                 <form onSubmit={handleChangePassword} className="space-y-3">
                   {[
@@ -327,20 +287,20 @@ export function CompanyPage() {
                     { label: "Confirm Password", value: confirmPassword, set: setConfirmPassword },
                   ].map(({ label, value, set }) => (
                     <div key={label} className="space-y-1">
-                      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{label}</label>
+                      <Label>{label}</Label>
                       <div className="relative">
-                        <input
+                        <Input
                           type={showPasswords ? "text" : "password"}
                           value={value}
                           onChange={(e) => set(e.target.value)}
                           required
                           minLength={4}
-                          className="w-full px-3 py-2 pr-9 rounded-lg bg-[hsl(var(--muted))] border border-[hsl(var(--border))] text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.4)] transition"
+                          className="pr-9"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPasswords(!showPasswords)}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                           {showPasswords ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
@@ -348,25 +308,17 @@ export function CompanyPage() {
                     </div>
                   ))}
                   <div className="flex gap-2 pt-1">
-                    <button
-                      type="submit"
-                      disabled={changePassword.isPending}
-                      className={cn(
-                        "flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition",
-                        "bg-[hsl(var(--primary))] text-white hover:bg-[hsl(var(--primary)/0.85)]",
-                        "disabled:opacity-50"
-                      )}
-                    >
+                    <Button type="submit" disabled={changePassword.isPending} className="flex-1">
                       {changePassword.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
                       Update
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="outline"
                       onClick={() => { setShowPasswordForm(false); setOldPassword(""); setNewPassword(""); setConfirmPassword(""); }}
-                      className="px-4 py-2 rounded-lg text-sm border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}

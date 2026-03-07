@@ -310,6 +310,15 @@
 		<servlet-name>ApiSessionServlet</servlet-name>
 		<servlet-class>com.interweave.businessDaemon.api.ApiSessionServlet</servlet-class>
 	</servlet>
+	<!-- Registration API servlets (React registration endpoints) -->
+	<servlet>
+		<servlet-name>ApiRegistrationServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiRegistrationServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ApiCompanyRegistrationServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiCompanyRegistrationServlet</servlet-class>
+	</servlet>
 	<!-- Profile/Company API servlets (React form endpoints) -->
 	<servlet>
 		<servlet-name>ApiProfileServlet</servlet-name>
@@ -318,6 +327,20 @@
 	<servlet>
 		<servlet-name>ApiCompanyProfileServlet</servlet-name>
 		<servlet-class>com.interweave.businessDaemon.api.ApiCompanyProfileServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>ApiChangePasswordServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiChangePasswordServlet</servlet-class>
+	</servlet>
+	<!-- Configuration API servlet (React wizard endpoints) -->
+	<servlet>
+		<servlet-name>ApiConfigurationServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiConfigurationServlet</servlet-class>
+	</servlet>
+	<!-- Flow Management API servlet (React Integration Manager) -->
+	<servlet>
+		<servlet-name>ApiFlowManagementServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiFlowManagementServlet</servlet-class>
 	</servlet>
 	<!-- Monitoring API servlets -->
 	<servlet>
@@ -471,6 +494,10 @@
         	<servlet-name>ApiSessionServlet</servlet-name>
         	<url-pattern>/api/auth/session</url-pattern>
         </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>ApiChangePasswordServlet</servlet-name>
+        	<url-pattern>/api/auth/change-password</url-pattern>
+        </servlet-mapping>
         <!-- Profile/Company API mappings -->
         <servlet-mapping>
         	<servlet-name>ApiProfileServlet</servlet-name>
@@ -479,6 +506,29 @@
         <servlet-mapping>
         	<servlet-name>ApiCompanyProfileServlet</servlet-name>
         	<url-pattern>/api/company/profile</url-pattern>
+        </servlet-mapping>
+        <!-- Registration API mappings -->
+        <servlet-mapping>
+        	<servlet-name>ApiRegistrationServlet</servlet-name>
+        	<url-pattern>/api/register</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>ApiCompanyRegistrationServlet</servlet-name>
+        	<url-pattern>/api/register/company</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>ApiCompanyRegistrationServlet</servlet-name>
+        	<url-pattern>/api/register/solution-types</url-pattern>
+        </servlet-mapping>
+        <!-- Configuration API mappings -->
+        <servlet-mapping>
+        	<servlet-name>ApiConfigurationServlet</servlet-name>
+        	<url-pattern>/api/config/*</url-pattern>
+        </servlet-mapping>
+        <!-- Flow Management API mappings -->
+        <servlet-mapping>
+        	<servlet-name>ApiFlowManagementServlet</servlet-name>
+        	<url-pattern>/api/flows/*</url-pattern>
         </servlet-mapping>
         <!-- Monitoring API mappings -->
         <servlet-mapping>
