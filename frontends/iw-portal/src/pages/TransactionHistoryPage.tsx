@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Loader2,
   ChevronLeft,
@@ -8,6 +9,7 @@ import {
   Clock,
   AlertTriangle,
   Search,
+  Info,
 } from "lucide-react";
 import { useTransactions } from "@/hooks/useMonitoring";
 import type { Transaction } from "@/types/monitoring";
@@ -28,23 +30,27 @@ const STATUS_CONFIG: Record<
 
 export function TransactionHistoryPage() {
   useDocumentTitle("Transaction History");
+  const [searchParams] = useSearchParams();
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState(searchParams.get("flow") ?? "");
+  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") ?? "");
   const { data: txRes, isLoading } = useTransactions(page, PAGE_SIZE);
 
   const transactions = txRes?.data?.transactions ?? [];
   const pagination = txRes?.data?.pagination;
   const totalPages = pagination?.total_pages ?? 1;
 
-  // Client-side filter by flow name
-  const filtered = filter
-    ? transactions.filter((tx) => tx.flow_name.toLowerCase().includes(filter.toLowerCase()))
-    : transactions;
+  // Client-side filter by flow name and status
+  const filtered = transactions.filter((tx) => {
+    if (filter && !tx.flow_name.toLowerCase().includes(filter.toLowerCase())) return false;
+    if (statusFilter && tx.status !== statusFilter) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-4">
       {/* Filter bar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
@@ -55,6 +61,17 @@ export function TransactionHistoryPage() {
             className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-foreground rounded-[14px] pl-9 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.5)] transition-shadow"
           />
         </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-foreground rounded-[14px] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.5)] transition-shadow"
+        >
+          <option value="">All statuses</option>
+          <option value="success">Success</option>
+          <option value="failed">Failed</option>
+          <option value="running">Running</option>
+          <option value="timeout">Timeout</option>
+        </select>
         <span className="text-xs text-muted-foreground">
           {pagination?.total_count ?? 0} total transactions
         </span>
@@ -66,8 +83,19 @@ export function TransactionHistoryPage() {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="glass-panel rounded-[var(--radius)] p-8 text-center">
-          <p className="text-sm text-muted-foreground">No transactions found.</p>
+        <div className="glass-panel rounded-[var(--radius)] p-8 text-center space-y-3">
+          <Info className="w-8 h-8 text-muted-foreground mx-auto" />
+          <p className="text-sm text-muted-foreground">
+            {filter
+              ? `No transactions found for "${filter}".`
+              : "No transaction history recorded yet."}
+          </p>
+          {!filter && (pagination?.total_count ?? 0) === 0 && (
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Transaction logging activates once the engine processes integration flows.
+              Start a flow from the Integrations page and run it to see execution history here.
+            </p>
+          )}
         </div>
       ) : (
         <div className="glass-panel rounded-[var(--radius)] overflow-hidden">

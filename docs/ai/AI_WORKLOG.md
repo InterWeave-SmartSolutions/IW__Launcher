@@ -2891,3 +2891,550 @@ Files created (1):
 Commands run:
 - javac -source 1.8 -target 1.8 (WorkspaceProfileCompiler recompilation — 0 errors, 4 warnings)
 - npm run build (success: 2552 modules, 478kB main, 11.4s)
+
+---
+
+## 2026-03-08 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Showcase uploaded production logs in the React portal — build a log viewer with heatmap and drill-down views.
+
+Actions taken:
+1. Backend: Created `ApiLogViewerServlet.java` with 3 JSON endpoints:
+   - `GET /api/logs/files` — lists all log files with metadata (type counts, date range)
+   - `GET /api/logs/summary` — per-day error counts for calendar heatmap (scans all files, counts SEVERE/ERROR/WARN/EXCEPTION)
+   - `GET /api/logs/content?date=YYYY-MM-DD&type=catalina` — full file content with per-line level classification
+   - Resolves log directory relative to webapp path (`logs/logs/`)
+   - Input sanitization: regex validation on date (`\d{4}-\d{2}-\d{2}`) and type (`[a-zA-Z][a-zA-Z0-9_-]*`) to prevent path traversal
+
+2. Registered servlet in `web.xml` at `/api/logs/*`
+
+3. Frontend hooks: Created `useLogs.ts` with React Query hooks:
+   - `useLogFiles()`, `useLogSummary()` (60s stale), `useLogContent(date, type)` (Infinity stale)
+   - TypeScript interfaces: `LogFileSummary`, `DaySummary`, `LogLine`, `LogContent`
+
+4. Rewrote `LoggingPage.tsx` (previously a static info page) with two-view architecture:
+   - **Heatmap view**: Calendar grid with 5-level error density coloring, month prev/next navigation, log type tabs (catalina/commons-daemon), "Top Error Days" ranked list (top 10)
+   - **Detail view**: Full log content table with line numbers, error/warn icons, color-coded lines (red=error, amber=warn), search filter, level filter (All/Warn+/Errors), scrollable 600px container
+
+5. Fixed 5 TypeScript strict-mode errors:
+   - `useLogs.ts`: changed `api()` import to `apiFetch<T>()` (matching actual export from `@/lib/api`)
+   - `LoggingPage.tsx`: nullable array index access (`monthKeys[idx]` → `?? null`), `formatMonth` split result, first-day guard check
+
+Files created (2):
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiLogViewerServlet.java`
+- `frontends/iw-portal/src/hooks/useLogs.ts`
+
+Files modified (2):
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml` (servlet registration)
+- `frontends/iw-portal/src/pages/LoggingPage.tsx` (full rewrite)
+
+Commands run:
+- javac (ApiLogViewerServlet — 0 errors, 4 warnings)
+- npx tsc --noEmit (0 errors after fixes)
+- npm run build (success: 2553 modules, 485kB main, 5.74s)
+
+Verification performed:
+- TypeScript strict mode passes with zero errors
+- Production build succeeds with all chunks generated
+- Route confirmed wired at `/admin/logging` with sidebar and command palette entries
+
+Follow-ups / known issues:
+- Tomcat restart required to activate ApiLogViewerServlet
+- Browser visual testing not yet performed
+- Log files at `logs/logs/` contain 1,776 files (4 types, Nov 2024 – Oct 2025); admin and host-manager types are all empty
+
+---
+
+## 2026-03-08 (continued session)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Comprehensive audit and redesign of LoggingPage filters, organization, and detailed information. Fix severity filters showing identical results, improve data presentation.
+
+Actions taken:
+1. **Full data audit** — Analyzed all 1,776 log files: 4 types (admin=478 empty, catalina=478 non-empty, commons-daemon=478 non-empty, host-manager=342 empty), date range Nov 2024–Mar 2026, ZERO warn-only days across entire dataset
+2. **Dynamic log type discovery** — Replaced hardcoded `LOG_TYPES` with auto-discovered types from `useLogFiles()` API, filtered to non-empty types only (shows catalina + commons-daemon, hides empty admin + host-manager)
+3. **Fixed severity filters** — Replaced confusing 4-filter system (All/All Issues/Errors/Warnings where Issues=Errors=47, Warnings=0) with 3 always-distinct filters: All (478), Issues (47), Clean (431) — each with count badges
+4. **Unified table "Status" column** — Merged separate "Severe" and "Warnings" columns (Warnings was always "—") into single "Status" column showing smart badges (red error badge + amber warn badge + green "clean" text)
+5. **Added prev/next day navigation** — Detail view now has chevron buttons to navigate to previous/next log day without returning to list
+6. **Enriched metadata panel** — Added date range display (Calendar icon + first–last date), file count display (HardDrive icon + total files / non-empty), and comprehensive stats row (days, issues, clean, total lines, errors, warnings)
+7. **Enhanced heatmap tooltips** — Contribution strip tooltips now show line count + error/warn breakdown instead of just "X issues"
+8. **Detail view filter badges** — Line-level filters (All/Warn+/Errors) now show line counts, matching the list view pattern
+9. **Detail view "clean" badge** — Shows green "clean" badge when log has zero errors/warnings
+
+Files modified (1):
+- `frontends/iw-portal/src/pages/LoggingPage.tsx` (comprehensive rewrite)
+
+Commands run:
+- npx tsc --noEmit (0 errors)
+- npx vite build (success: 2553 modules, 494kB main, 5.68s)
+
+Verification performed:
+- TypeScript strict mode passes with zero errors
+- Production build succeeds
+- All 3 severity filters produce distinct results by definition (all=total, issues=errors>0, clean=errors===0)
+- Dynamic type discovery correctly filters to non-empty types from useLogFiles() data
+
+Follow-ups / known issues:
+- Zero warnings in the entire log corpus is a data characteristic (Tomcat catalina logs are all SEVERE/ERROR level). The "Warnings" filter was correctly removed as misleading.
+- Prev/next navigation uses rangeFilteredDays scope — navigates within the selected time range
+
+## 2026-03-08 (continued session)
+### Log Viewer Insights — Enhanced Listing + Structured Log Analysis
+Phase: IW Portal — LoggingPage enhancement (round 3)
+User request: Add two more columns to listing view, present individual log data (catalina + commons-daemon) in a more impactful/informative way, keep original raw view available.
+
+Actions taken:
+1. **Backend enhancement (ApiLogViewerServlet.java)** — Extended `/api/logs/summary` to return 3 new per-type fields: `fileSize` (long), `topError` (normalized error pattern string), `topErrorCount` (int). Added `extractErrorPattern()` method with regex-based exception class extraction and path normalization.
+2. **Frontend types (useLogs.ts)** — Extended `DaySummary.types` record to include `fileSize?`, `topError?`, `topErrorCount?` optional fields matching backend additions.
+3. **Two new listing columns** — "Error %" (client-computed error rate: `(errors/lines)*100`, shown as percentage) and "Top Issue" (extracted error pattern from backend with occurrence count badge). Top Issue column hidden on mobile via responsive grid.
+4. **Sort enhancement** — Sort now cycles through 3 modes: date (default) → error count → error rate → date.
+5. **Detail view redesign with Tabs** — Replaced single log view with `<Tabs>` component: "Insights" (default) + "Raw Log" tabs using shadcn/ui Tabs.
+6. **Catalina Insights tab** — Four stat cards (Total Lines, Errors, Error Rate, File Size) + Error Patterns panel (deduplicated+normalized patterns sorted by frequency with count badges) + Error Incidents panel (chronological, expandable to show full stack traces with syntax-highlighted lines).
+7. **Commons-daemon Insights tab** — Four stat cards + Service Lifecycle timeline showing start/stop/restart events with formatted timestamps, startup durations (ms), and lifecycle icons (Play/Square/RotateCw).
+8. **Client-side parsers** — `parseIncidents()` groups consecutive error+stack-trace lines into incidents; `normalizeErrorKey()` extracts exception class names and strips timestamps/paths; `extractPatterns()` deduplicates incidents into frequency-sorted patterns; `parseServiceEvents()` identifies service lifecycle events from commons-daemon format.
+9. **InsightCard component** — Reusable stat card with icon, label, value, and optional destructive variant coloring.
+10. **Expandable incidents** — `expandedIncidents` state as `Set<number>`, toggle reveals full multi-line stack traces per incident.
+11. **Removed unused `Clock` import** — Fixed TS6133 error caught by `tsc --noEmit`.
+
+Files modified (3):
+- `web_portal/.../api/ApiLogViewerServlet.java` (backend: +fileSize, +topError, +topErrorCount, +extractErrorPattern())
+- `frontends/iw-portal/src/hooks/useLogs.ts` (types: +fileSize?, +topError?, +topErrorCount?)
+- `frontends/iw-portal/src/pages/LoggingPage.tsx` (comprehensive rewrite: insights tabs, parsers, new columns)
+
+Commands run:
+- javac ApiLogViewerServlet.java (0 errors, class=12,879 bytes)
+- npx tsc --noEmit (0 errors after Clock import fix)
+- npx vite build (success: 2553 modules, 504kB main, 5.48s)
+
+Verification performed:
+- TypeScript strict mode passes with zero errors
+- Production build succeeds
+- Backend compiled and class deployed (Tomcat restart needed to activate)
+- Main chunk grew ~19kB (485→504kB) due to incident/pattern parsers; lazy-loading LoggingPage is an option if it grows further
+
+Follow-ups / known issues:
+- Tomcat restart needed to activate enhanced ApiLogViewerServlet (fileSize, topError, topErrorCount fields)
+- Main chunk now 504kB (just over Vite's 500kB warning). Consider React.lazy() for LoggingPage if it grows further.
+- Browser testing not yet performed — insights tabs, expandable incidents, service timeline need visual verification
+
+---
+
+## Session: 2026-03-08 — Configuration System Overhaul
+
+**What**: Expanded ConfigurationWizardPage from 4 to 5 steps, fixed save-redirect, added execution settings, enhanced CompanyConfigPage with real config data.
+
+**Why**: User requested comprehensive configuration system review: functional wizard with execution settings, save-and-redirect back to config menu, solution type descriptions, and actual data display on the config overview page.
+
+### Changes
+
+#### ConfigurationWizardPage.tsx (rewritten, ~740 lines)
+
+1. **Save redirect fixed** — After successful save, wizard now calls `navigate("/company/config")` instead of staying on the review page. Toast persists across navigation via ToastProvider.
+2. **5-step wizard** (was 4):
+   - Step 1: Solution Type (with descriptions for all 10 types)
+   - Step 2: Object Mapping (unchanged)
+   - Step 3: Credentials (unchanged)
+   - Step 4: Execution Settings (NEW)
+   - Step 5: Review & Save (enhanced with execution summary)
+3. **Execution Settings step** — 13 fields from classic CompanyCredentials.jsp:
+   - Environment: SandBoxUsed (Yes/No), Env2Con (Prd/Tst/Prd1/Tst1/Dev/Addtnl/Ddctd)
+   - System: QBVersion (USA/UK/CAN/AUS/NZ/SEA, conditional on QB), QBLocation (HOST/HOSTU/HOUSE/ONLINE/STANDARD/DEFAULT), TimeZone
+   - Error Handling: StopSchedTr (None/Con/EveryErr), LongTimeOut (Yes/No), ConFailState (Yes/No)
+   - Schedule & Notifications: SleepStart, SleepEnd, EmlNtf (8 modes), UseAdmEml, CCEmail, BCCEmail (conditional)
+4. **Solution type descriptions** — Each of the 10 cards now has a one-line description explaining the integration.
+5. **Step validation** — Cannot advance past Step 1 without selecting a solution type. Warning shown when no type selected.
+6. **Execution settings stored in XML** — All settings merge into `syncMappings` on save, so they serialize as `<Env2Con>Tst</Env2Con>` etc. inside `<SF2QBConfiguration>`. No backend changes needed — the XML builder already handles arbitrary key-value pairs.
+7. **Initialization** — Server-returned syncMappings are split into SyncType* entries (for Object Mapping) and execution entries (for Execution Settings) using the `EXEC_KEYS` set.
+8. **Review step enhanced** — Now shows 4 summary cards (Solution Type, Active Mappings, Credentials, Environment) plus an execution settings summary table.
+9. **Renamed** `_credFormType` → `CredFormType` (cleaner export name).
+
+#### CompanyConfigPage.tsx (enhanced, ~280 lines)
+
+1. **Actual configuration data** — Steps now show real data instead of just boolean completion:
+   - Solution Type: shows CRM ↔ FS names
+   - Credentials: shows credential types and usernames
+   - Object Mapping: shows "X active mapping(s) of Y available"
+2. **Clickable steps** — Steps with `wizardStep` property link to `/company/config/wizard` (admin only). Non-wizard steps (Company Registration, Security & Licensing) remain static with step numbers.
+3. **Detail badges** — Each completed step shows a badge with summary data (e.g. "SF2QB1", "2 credential(s)", "5/15 configured").
+4. **Execution settings summary** — New card below steps shows Environment, Sleep Window, and Email Notification settings when configuration exists.
+5. **Updated CTA text** — Mentions execution settings in the wizard launch description.
+
+### Architecture insight
+
+All execution settings (SandBoxUsed, Env2Con, QBVersion, etc.) are stored as flat XML elements alongside SyncType* entries inside `<SF2QBConfiguration>`. The backend `ApiConfigurationServlet.handlePutWizard()` serializes the entire `syncMappings` JSON object into XML tags, and `parseXmlToJsonFields()` reads them all back. This means the React wizard produces configuration XML identical to what the classic JSP wizard creates — full compatibility with the transformation engine.
+
+### Files changed
+
+- `frontends/iw-portal/src/pages/ConfigurationWizardPage.tsx` (rewritten: 620→~740 lines)
+- `frontends/iw-portal/src/pages/CompanyConfigPage.tsx` (enhanced: 237→~280 lines)
+
+Commands run:
+- npx tsc --noEmit (0 errors)
+- npm run build (success: 2553 modules, 520kB main chunk, 5.96s)
+
+Verification performed:
+- TypeScript strict mode passes with zero errors
+- Production build succeeds
+- No backend changes required (execution settings ride existing XML serialization path)
+- Main chunk grew ~16kB (504→520kB) due to execution settings step and review enhancements
+
+Follow-ups / known issues:
+- Main chunk now 530kB (over Vite's 500kB warning). ConfigurationWizardPage is a good candidate for React.lazy() code-splitting since it's admin-only.
+- Browser testing needed for: execution settings form, save-redirect flow, CompanyConfigPage data display
+- Classic JSP CompanyCredentials.jsp has additional fields not yet in React wizard: DdctdSrvr0/1 (dedicated server IPs), MulCur (multi-currency), DecCharCur, StDtTmInt (start date), TranRecReq (advanced security), OldSDKUsed, HPNEmail. These are niche; add on demand.
+
+---
+
+## Session: 2026-03-08 (cont.) — Configuration Phase A+B+C Implementation
+
+**What**: Major rewrite of ConfigurationWizardPage with all Phase A (bug fixes), Phase B (UI improvements), and Phase C (backend) improvements. Backend servlet updated with JSON parser fix, profiles endpoint, credential test endpoint.
+
+**Why**: User requested full implementation of all 3 improvement phases with deployment-readiness for other users pulling the repo.
+
+### Changes
+
+#### ApiConfigurationServlet.java (backend — 3 additions + 1 fix)
+
+1. **JSON parser fix** — Replaced naive `split(",")` with `parseJsonObjectEntries()` method that walks character-by-character, correctly handling commas inside quoted values (e.g. comma-separated email addresses in CCEmail/BCCEmail).
+2. **`GET /api/config/profiles` endpoint** — Returns all saved configuration profiles for the company with profile name, solution type, and last updated timestamp.
+3. **`POST /api/config/credentials/test` endpoint** — Tests connectivity to an endpoint URL using `HttpURLConnection` with 10s timeout. Returns `reachable`, `statusCode`, `responseTimeMs`, and a descriptive `message`.
+4. **`doPost` method** — Routes POST requests to the credential test handler.
+5. **`JsonEntryHandler` inner interface** — Functional interface used by the parser, compatible with Java 8 lambdas.
+
+#### ConfigurationWizardPage.tsx (rewritten ~820 lines, all phases)
+
+**Phase A (Bug fixes)**:
+1. **BCCEmail in EXEC_DEFAULTS** — Added `BCCEmail: ""` so it routes to execSettings on initialization (was silently lost on roundtrip).
+2. **handleSave dead code fixed** — Simplified merge loop to single `if (v !== "") allMappings[k] = v`.
+3. **Render-phase side effects replaced** — Initialization moved from conditional `if` block to `useEffect` (React strict-mode safe).
+
+**Phase B (Frontend improvements)**:
+4. **Progressive disclosure** — Core mappings always visible, extended mappings collapsed with "Show Extended Mappings (N)" toggle. Extended grouped by category (Customer Records, Transactions, Financial Objects) using `CATEGORY_LABELS`.
+5. **Bulk actions** — "Enable Core", "Recommended", "Disable All" buttons on Object Mapping step.
+6. **Smart defaults** — When selecting a solution type for the first time (empty syncValues), `RECOMMENDED_DEFAULTS[type]` is auto-applied.
+7. **Mapping dependency warnings** — Advisory banners when dependent mappings are enabled without prerequisites (e.g. SyncTypeSO without SyncTypeAC).
+8. **Help tooltips** — 3 confusing execution settings (Base Environment, Extended Timeout, Time Zone Shift) now have `<Tooltip>` with contextual help text.
+9. **Config diff on Review** — `initialSnapshot` ref captures server state on load. Review step shows a diff table of all changed fields with previous/new values.
+10. **Draft persistence** — `sessionStorage` auto-saves wizard state on every meaningful change. Passwords excluded for PCI compliance. Restored on page revisit (e.g. accidental navigation away).
+11. **JSON export** — "Export JSON" button on Review step downloads full configuration for backup/migration.
+12. **Mobile-responsive mapping layout** — Added card-based layout for `sm:hidden` breakpoint alongside desktop table.
+13. **Test Connection button** — In StepCredentials, tests source endpoint reachability via POST to `/api/config/credentials/test`. Shows result banner with Wifi/WifiOff icon.
+14. **TimeZone input** — Changed to `type="number"` with `min=-12 max=14` validation.
+
+#### Shared utilities
+15. **`src/lib/config-labels.ts`** — Extracted `envLabel`, `stopLabel`, `emailLabel` from both wizard and config pages. `CompanyConfigPage.tsx` updated to import from shared module (removed duplicate functions).
+
+#### types/configuration.ts + hooks/useConfiguration.ts (from earlier in session)
+- `MAPPING_DEPENDENCIES`, `RECOMMENDED_DEFAULTS`, `CATEGORY_LABELS` constants
+- `buildSyncMappings` regex fix (`/[1BNPTGPC]$/` — was missing `C` suffix)
+- `useTestCredential()` hook, `useProfiles()` hook, new types
+
+### Files changed
+
+- `web_portal/.../api/ApiConfigurationServlet.java` (enhanced: 592→~720 lines)
+- `web_portal/.../api/ApiConfigurationServlet.class` (recompiled)
+- `web_portal/.../api/ApiConfigurationServlet$JsonEntryHandler.class` (new inner class)
+- `frontends/iw-portal/src/pages/ConfigurationWizardPage.tsx` (rewritten: ~740→~820 lines)
+- `frontends/iw-portal/src/pages/CompanyConfigPage.tsx` (import refactor)
+- `frontends/iw-portal/src/lib/config-labels.ts` (new shared module)
+- `frontends/iw-portal/src/hooks/useConfiguration.ts` (enhanced, earlier)
+- `frontends/iw-portal/src/types/configuration.ts` (enhanced, earlier)
+
+Commands run:
+- javac (ApiConfigurationServlet — 0 errors, 4 warnings)
+- npx tsc --noEmit (0 errors)
+- npm run build (success: 2554 modules, 530kB main chunk, 5.82s)
+
+### Deployment readiness
+
+For another user pulling this repo:
+- `.class` files are committed — Tomcat serves them directly, no compilation needed
+- React build output is gitignored — users run `cd frontends/iw-portal && npm install && npm run build`
+- web.xml already has wildcard mapping `/api/config/*` — handles all new sub-paths
+- No database migration needed — `company_configurations` table is auto-created by servlet `init()`
+- No new dependencies added (React or Java)
+
+---
+
+## Session: 2026-03-08 (b) — Code-Split + README Updates
+
+**Operator:** Claude Code (Opus 4.6)
+**Branch:** main
+
+### What changed
+
+1. **Code-split ConfigurationWizardPage** (`routes.tsx`)
+   - Converted static import → `React.lazy()` with `<Suspense>` wrapper
+   - Main chunk dropped from 530kB → 495.5kB (under Vite's 500kB warning)
+   - Wizard is now a separate 34.5kB chunk loaded only when admins navigate to `/company/config/wizard`
+
+2. **Top-level README.md** — Added "React Portal (iw-portal)" section explaining build step, dev server, session sharing
+
+3. **web_portal/README.md** — Added React Portal URL to access table, "React Portal" build section, updated directory tree to show both webapps
+
+### Files modified
+- `frontends/iw-portal/src/routes.tsx` (lazy import + Suspense)
+- `README.md` (new section)
+- `web_portal/README.md` (URL + build note + directory tree)
+
+### Commands run
+- npx tsc --noEmit (0 errors)
+- npm run build (success: 2554 modules, 495.5kB main chunk, 5.96s)
+
+---
+
+## 2026-03-08 (Claude Opus 4.6)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Create FlowStateIndicator and FlowTable React components for BD Configurator page decomposition.
+
+### Actions taken
+1. Created `FlowStateIndicator.tsx` — four-state animated dot indicator (running+executing, running, executing, stopped) matching classic JSP color coding
+2. Created `FlowTable.tsx` — full-featured engine flow table with:
+   - Four-state color-coded rows via `engineFlowRowStyle`
+   - FlowStateIndicator in State column
+   - Log level badge, mode badge, interval with edit pencil
+   - Success/Failure counts as Links to filtered transaction history
+   - Flow ID links to classic FlowProperties.jsp
+   - Bulk selection (Select All + per-row checkboxes)
+   - Floating bulk action bar (Start/Stop Selected)
+   - Tooltip explanations on all column headers
+   - State legend strip below header
+3. Fixed 2 strict-mode TS errors (`flows[i]` possibly undefined) with optional chaining + type-guard filter
+
+### Files created
+- `frontends/iw-portal/src/components/integrations/FlowStateIndicator.tsx`
+- `frontends/iw-portal/src/components/integrations/FlowTable.tsx`
+
+### Commands run
+- npx tsc --noEmit (0 errors after fix)
+
+---
+
+## Session: 2026-03-08 — BD Configurator (Integrations) Overhaul: Assembly & Code-Split
+
+### What changed and why
+Completed the BD Configurator overhaul by assembling all 8 extracted components into the rewritten IntegrationOverviewPage orchestrator, code-splitting it for bundle optimization, and adding URL search param support to TransactionHistoryPage.
+
+The previous session created 6 sub-components + utility files. This session:
+1. Created 2 remaining components (EngineControlsTab, KpiRow)
+2. Rewrote IntegrationOverviewPage from 922 lines → 220 lines (lean orchestrator)
+3. Code-split the page via React.lazy() — main chunk dropped from 517kB → 471kB
+4. Added URL search param filters to TransactionHistoryPage
+
+### Changes in detail
+
+#### New components created
+
+1. **`EngineControlsTab.tsx`** (~210 lines) — Extracted from IntegrationOverviewPage lines 458-653, enhanced with:
+   - Auto-refresh Switch toggle (mirrors classic JSP checkbox, controls TanStack Query `refetchInterval`)
+   - Bulk start/stop handlers (iterates selected flow indices sequentially via ConfigContext)
+   - `profileName` prop passed to FlowTable for classic FlowProperties.jsp links
+   - `onBulkStart`/`onBulkStop` wired to new FlowTable bulk selection feature
+   - Query flow "GO" button (conditional on `httpGetQuery` field)
+   - Enhanced empty state with step-by-step engine initialization instructions
+   - Admin permission gating with warning badge
+
+2. **`KpiRow.tsx`** (~85 lines) — Sparkline-ready KPI card grid:
+   - 4 cards: Active Flows, Running Now, 24h Success Rate, 24h Failures
+   - Optional `runningHistory`/`successHistory` arrays for sparkline rendering
+   - Uses existing `Sparkline.tsx` component (64x20px SVG, auto-hidden when <2 data points)
+   - Dynamic color for Failures card (red when >0, muted when 0)
+
+#### Rewritten files
+
+3. **`IntegrationOverviewPage.tsx`** (922 → 220 lines) — Pure composition orchestrator:
+   - Imports: KpiRow, FlowDependencyMap, EngineControlsTab, CredentialInventory, OnboardingOverlay
+   - Hub-and-spoke: one-shot `useEngineFlows(false)` for dependency map data, parsed via `parseFlowSystems()`
+   - Help "?" button in header toggles OnboardingOverlay
+   - Flow cards now wrapped in `<Link>` to `/monitoring/transactions?flow=X` for click-through
+   - Removed all inline component definitions (FlowTable, EditScheduleDialog, EngineControlsTab)
+   - Removed BD Configurator CTA card (redundant — now replaced by full Engine Controls tab)
+
+4. **`TransactionHistoryPage.tsx`** — URL search param support:
+   - Added `useSearchParams()` to read `?flow=X&status=Y` from URL
+   - Pre-populates flow name filter and new status dropdown on mount
+   - Added `<select>` status filter dropdown (All/Success/Failed/Running/Timeout)
+   - Client-side filter applies both flow name AND status simultaneously
+
+#### Build optimization
+
+5. **`routes.tsx`** — Code-split IntegrationOverviewPage:
+   - `React.lazy()` + `Suspense` wrapper on `/admin/configurator` route
+   - IntegrationOverviewPage chunk: 45.09kB (separate from main)
+   - Main chunk: 471.60kB (under 500kB Vite warning threshold)
+
+#### TypeScript fixes
+- Removed unused `Square` import from EngineControlsTab
+- Fixed `current` possibly undefined in OnboardingOverlay (added non-null assertion)
+
+### Component architecture (final)
+```
+IntegrationOverviewPage (220 lines, orchestrator)
+├── KpiRow (sparkline-ready KPI cards)
+├── FlowDependencyMap (hub-and-spoke SVG)
+├── Tabs
+│   ├── Flows tab (inline — derived flow cards from transaction history)
+│   ├── Engine Controls tab
+│   │   └── EngineControlsTab
+│   │       ├── FlowTable (bulk select, 4-state colors, tooltips)
+│   │       │   └── FlowStateIndicator (animated CSS dots)
+│   │       └── EditScheduleDialog (interval/shift/counter with tooltips)
+│   └── Credentials tab
+│       └── CredentialInventory (ASSA table, test connectivity, localStorage)
+└── OnboardingOverlay (5-step tour, localStorage persistence)
+```
+
+### Bundle output (2563 modules)
+- Main: 471.60kB (gzip: 138.95kB)
+- IntegrationOverviewPage: 45.09kB (lazy)
+- ConfigurationWizardPage: 34.38kB (lazy)
+- MonitoringPage: 377.47kB (lazy, recharts)
+- TransactionHistoryPage: 5.47kB (lazy)
+- AlertConfigPage: 3.99kB (lazy)
+
+### Files created
+- `frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx`
+- `frontends/iw-portal/src/components/integrations/KpiRow.tsx`
+
+### Files modified
+- `frontends/iw-portal/src/pages/IntegrationOverviewPage.tsx` (922 → 220 lines)
+- `frontends/iw-portal/src/pages/TransactionHistoryPage.tsx` (URL param filters + status dropdown)
+- `frontends/iw-portal/src/routes.tsx` (code-split IntegrationOverviewPage)
+- `frontends/iw-portal/src/components/integrations/OnboardingOverlay.tsx` (TS fix)
+- `frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx` (unused import fix)
+
+### Commands run
+- npx tsc --noEmit (0 errors)
+- npm run build (2563 modules, 471kB main chunk, 0 warnings)
+
+---
+
+## 2026-03-08 (cont.) — React Flow Properties Dialog + Bug Fixes
+Agent/tool: Claude Code (Opus 4.6)
+User request: Fix EditScheduleDialog React Error #301 crash, fix Save All resetting Start button states, fix FlowProperties.jsp 500 NPE for query flows, build React-native flow property editor replacing JSP links
+
+### Actions taken
+
+#### Bug fix: EditScheduleDialog React Error #301
+- Root cause: `useState` misused as a mutable ref with render-phase side effects — mutating the tuple and calling setState during render violates React 19 rules
+- Fix: replaced with proper `useEffect` that syncs form state when `flow?.flowId` changes
+- Changed from `intervalDisplay`/`shiftDisplay` (formatted strings) to raw `interval`/`shift` (numbers) for numeric inputs
+
+#### Bug fix: Save All resetting Start/Stop button states
+- Root cause: `useSubmitFlows` mutation called `qc.invalidateQueries({ queryKey: ["engine-flows"] })` on success, triggering an immediate refetch that raced against the engine's save cycle — the refetch returned stale `running: false` states
+- Fix: removed query invalidation from `useSubmitFlows`; the existing 10-second auto-refresh poll picks up changes naturally without the race condition
+
+#### New feature: Flow Properties API endpoint
+- Extended `ApiFlowManagementServlet` with `GET /api/flows/properties?flowId=X&isFlow=1|0`
+- Returns: flow description, running state, variable parameters (name/value/type), and admin-only Transformation Server URLs
+- Uses `ConfigContext.getVariableParameters()` and `HostedTransactionBase` for data
+- Added `httpGetQuery` to query flow JSON response via `qc.getHTTPGetQuery(profileName)`
+- Compiled and deployed to WEB-INF/classes
+
+#### New feature: React FlowPropertiesDialog
+- Created `FlowPropertiesDialog.tsx` — modal dialog fetching properties from new API endpoint
+- Features: password field toggle (eye icon), read-only mode when flow is running, TS URL display for admins, empty state for no-parameter flows
+- Saves via POST to compiled `FlowProperiesServlet` (form-encoded, reuses existing save logic)
+- Added `useFlowProperties` (GET) and `useSaveFlowProperties` (POST) hooks
+- Added `FlowProperty` and `FlowPropertiesResponse` TypeScript types
+
+#### UI wiring: replaced all JSP links with React dialog
+- FlowTable: Flow ID click now opens FlowPropertiesDialog instead of navigating to FlowProperties.jsp
+- FlowTable: dropdown "Edit Properties" uses React dialog instead of JSP link
+- EngineControlsTab: query flow names and dropdown "Edit Properties" use React dialog
+- Removed unused `profileName` prop from FlowTable (was only used by deleted `flowPropertiesUrl` helper)
+- Removed unused `ExternalLink` import from FlowTable
+
+### Files created
+- `frontends/iw-portal/src/components/integrations/FlowPropertiesDialog.tsx` (~170 lines)
+
+### Files modified
+- `frontends/iw-portal/src/components/integrations/EditScheduleDialog.tsx` (useState hack → useEffect)
+- `frontends/iw-portal/src/components/integrations/FlowTable.tsx` (JSP links → React dialog callbacks, removed profileName prop)
+- `frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx` (added FlowPropertiesDialog, query flow React links)
+- `frontends/iw-portal/src/hooks/useFlows.ts` (added useFlowProperties, useSaveFlowProperties, removed submitFlows invalidation)
+- `frontends/iw-portal/src/types/flows.ts` (added FlowProperty, FlowPropertiesResponse interfaces)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiFlowManagementServlet.java` (added properties endpoint, httpGetQuery for queries)
+
+### Commands run
+- javac (ApiFlowManagementServlet — compiled successfully, warnings only)
+- npx tsc --noEmit (0 errors)
+- npm run build (2568 modules, 471kB main chunk, 72kB integration chunk, 113kB radix-ui shared chunk)
+
+### Additional fixes (code review pass)
+
+#### Security: FlowProperties.jsp XSS + NPE hardening
+- Fixed NPE: `tf.equals("1")` → `"1".equals(tf)` (null-safe when IsFlow param missing)
+- Fixed XSS: `flowId` now HTML-escaped (replace `&<>"` entities) before reflection into HTML output
+- Added null guard for `tc == null` — shows friendly error message instead of 500 NPE
+
+#### Save verification: useSaveFlowProperties
+- Post-save verify now actually compares property values (not just checks response exists)
+- If backend silently rejects save (e.g. flow running), user gets explicit error: `Property "X" was not saved`
+
+#### FlowPropertiesDialog: useEffect stability
+- Removed `flowData?.properties` from useEffect deps (array ref changes on every TanStack Query refetch)
+- Now keyed only on `flowData?.flowId` — prevents form reset on window refocus
+
+#### TransactionHistoryPage: improved empty state
+- Added Info icon + contextual message explaining why no data exists
+- When coming from flow page with `?flow=X`: shows "No transactions found for X"
+- When globally empty: explains transaction logging activates once engine processes flows
+
+### Files additionally modified
+- `web_portal/tomcat/webapps/iw-business-daemon/FlowProperties.jsp` (XSS + NPE fix + null guard)
+- `frontends/iw-portal/src/pages/TransactionHistoryPage.tsx` (improved empty state)
+- `frontends/iw-portal/src/hooks/useFlows.ts` (save verification with value comparison)
+- `frontends/iw-portal/src/components/integrations/FlowPropertiesDialog.tsx` (useEffect dep fix)
+
+### Final build
+- npx tsc --noEmit (0 errors)
+- npm run build (2568 modules, 471.68kB main, 72.79kB integration, 113.16kB radix-ui, 5.91kB txn history)
+
+### Follow-ups / known issues
+- TS URL fields in FlowPropertiesDialog are currently read-only (display only); full admin editing would require extending save endpoint with `U1:`, `U2:` etc. field names matching JSP form
+- File upload properties (`type: "upload"`) are filtered out of the React dialog since `fetch()` form-POST can't handle multipart uploads to the compiled servlet
+- TransactionLogger Phase 1B not yet instrumented — transaction_executions table is empty by design until engine integration is completed
+- Pre-existing XSS vectors in FlowProperties.jsp hidden form fields (`brand`, `solutions`, `whoAmI`, `env2Con`) remain unfixed (low priority — page is admin-only, behind auth)
+
+## 2026-03-08 (Session 3 — Bug fixes + dashboard sparklines)
+
+### What changed
+1. **Bug fix: Dropdown menus see-through on flow tables** — `DropdownMenuContent` used `bg-background` which was visually indistinguishable from the semi-transparent `glass-panel` behind it (`hsl(var(--card) / 0.76)` + `backdrop-filter: blur(10px)`). Changed to `bg-[hsl(var(--card))]` (fully opaque), added `shadow-xl` and `[backdrop-filter:none]` to prevent inherited blur effects.
+
+2. **Bug fix: Flow click crash ("Cannot read properties of undefined reading 'length'")** — `FlowPropertiesDialog` accessed `flowData.properties.length` and `flowData.properties.filter()` without optional chaining. When API returned `data` without a `properties` array (e.g., uninitialized flow), `.length` threw on `undefined`. Fixed with `?.` guards and `?? []` fallbacks at 3 call sites (lines 103, 109, 174).
+
+3. **Dashboard KPI sparklines** — Added `deriveSuccessRateSparkline()` (per-bucket success %) and `deriveDurationSparkline()` (per-bucket avg ms) helpers. Wired into Success Rate and Avg Duration KPI cards. "Running Now" left without sparkline (point-in-time metric, no historical data to derive from).
+
+4. **P1 Error toast for API failures** — Already implemented in prior session via `MutationCache.onError` in `QueryProvider.tsx` (handles 401, 500+, network errors globally).
+
+### Files modified
+- `frontends/iw-portal/src/components/ui/dropdown-menu.tsx` (opaque bg + shadow + no backdrop-filter)
+- `frontends/iw-portal/src/components/integrations/FlowPropertiesDialog.tsx` (?.  guards on properties)
+- `frontends/iw-portal/src/pages/DashboardPage.tsx` (2 new sparkline derivation functions + wiring)
+
+### Build
+- npx tsc --noEmit (0 errors)
+- npm run build (472.35kB main, 72.84kB integration, 377.47kB monitoring — all under limits)
+
+## 2026-03-08 (Session 3b — Documentation sync + transformation server discovery)
+
+### What changed
+
+1. **Discovered transformation server is skeleton-only** — `iwtransformationserver/WEB-INF/lib/` contains only 6 native files (TS_JNI.dll, TS_JNI.so, jacob.dll, libjniwrap.so, jniwrap.lic). The 137 Java class JARs (Salesforce SOAP, Axis, enterprise adapters) are NOT included. `/transform` endpoint returns 404. Query flow "GO" buttons and scheduled execution cannot work without vendor JARs.
+
+2. **Added debug logging to ApiFlowManagementServlet** — `getVariableParameters` silent catch block now logs the exception and includes `debugError` field in JSON response for diagnostics.
+
+3. **Comprehensive documentation sync** — Updated 7 documentation files to reflect all changes from sessions 1-3:
+
+### Files modified
+- `CLAUDE.md` — Updated iwtransformationserver description (skeleton-only, 404 on /transform), added Known Issue #3 (transformation server skeleton), updated IW Portal hooks list (useFlows), updated ApiFlowManagementServlet endpoint documentation, added `src/components/integrations/` directory listing
+- `docs/NEXT_STEPS.md` — Added flow properties dialog, sparklines, error toast to completed items. Updated Future table with status column. Added "Known Infrastructure Limitation: Transformation Server" section with full explanation.
+- `docs/development/UI_CROSS_REFERENCE.md` — Updated Gap 3 (Integration Manager) to COMPLETED with full feature list. Updated Gap 4 (Flow Properties) to COMPLETED with implementation details. Added "Infrastructure Limitation: Transformation Server" section. Marked sparklines DONE in ASSA additions. Updated sync trigger table (flow properties now DONE). Marked P1-D and Phase 2 items as completed.
+- `frontends/iw-portal/README.md` — Added useFlows hooks section. Added Flow Properties, Dashboard Sparklines, Global Error Toast features. Added Known Limitations section (transformation server, file upload, TransactionLogger).
+- `docs/SYSTEM_READY.md` — Updated iwtransformationserver known limit (skeleton-only, JARs missing). Added 404 note to GO/Runs links.
+- `web_portal/.../ApiFlowManagementServlet.java` — Added debug error logging + response field for getVariableParameters failures.
+- `C:\Users\amago\.claude\projects\C--IW-Launcher\memory\MEMORY.md` — Synced operational issues, build sizes, roadmap priorities.
+
+### Verification
+- All documentation is consistent across CLAUDE.md, NEXT_STEPS.md, UI_CROSS_REFERENCE.md, SYSTEM_READY.md, iw-portal/README.md, and MEMORY.md
+- Transformation server limitation is documented in 5 locations to prevent future confusion

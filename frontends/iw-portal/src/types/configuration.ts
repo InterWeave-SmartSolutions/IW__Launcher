@@ -1,6 +1,9 @@
 /** Sync direction options for object mappings */
 export type SyncDirection = "None" | "SF2QB" | "QB2SF" | "SFQB";
 
+/** Category groupings for object mappings */
+export type MappingCategory = "customer" | "transaction" | "financial";
+
 /** A single sync mapping entry (e.g. "CRM Account to QB Customer") */
 export interface SyncMapping {
   key: string;
@@ -9,6 +12,8 @@ export interface SyncMapping {
   destLabel: string;
   value: SyncDirection;
   supportsBidirectional: boolean;
+  tier: "core" | "extended";
+  category: MappingCategory;
 }
 
 /** Response from GET /api/config/wizard */
@@ -27,6 +32,7 @@ export interface WizardConfigResponse {
 export interface WizardConfigSaveRequest {
   solutionType: string;
   syncMappings: Record<string, string>;
+  profileName?: string;
 }
 
 /** A single company credential entry */
@@ -70,6 +76,41 @@ export interface CredentialSaveRequest {
   apiSecret?: string;
   endpointUrl?: string;
   extraConfig?: string;
+}
+
+/** Request body for POST /api/config/credentials/test */
+export interface CredentialTestRequest {
+  credentialType: string;
+  endpointUrl: string;
+  username?: string;
+  password?: string;
+  apiKey?: string;
+}
+
+/** Response from POST /api/config/credentials/test */
+export interface CredentialTestResponse {
+  success: boolean;
+  reachable: boolean;
+  statusCode?: number;
+  responseTimeMs?: number;
+  message: string;
+  error?: string;
+}
+
+/** A saved configuration profile */
+export interface ConfigProfile {
+  profileName: string;
+  solutionType: string;
+  updatedAt: string;
+}
+
+/** Response from GET /api/config/profiles */
+export interface ProfilesResponse {
+  success: boolean;
+  data?: {
+    profiles: ConfigProfile[];
+  };
+  error?: string;
 }
 
 /** CRM system names mapped from solution type codes */
@@ -119,6 +160,45 @@ export function deriveSolutionMeta(solutionType: string): SolutionMeta {
   return { crmName, crmCustomerLabel, crmTransactionLabel, fsName, fsCustomerLabel };
 }
 
+/**
+ * Mapping dependency rules — advisory warnings when a dependent mapping
+ * is enabled but its prerequisite is not. Keys are the dependent mapping,
+ * values are the prerequisite mappings that should also be enabled.
+ */
+export const MAPPING_DEPENDENCIES: Record<string, string[]> = {
+  SyncTypeSO:    ["SyncTypeAC"],
+  SyncTypeInv:   ["SyncTypeAC"],
+  SyncTypeSR:    ["SyncTypeAC"],
+  SyncTypeEst:   ["SyncTypeAC"],
+  SyncTypePO:    ["SyncTypeVAC"],
+  SyncTypeBill:  ["SyncTypeVAC"],
+  SyncTypeBP:    ["SyncTypeBill"],
+};
+
+/**
+ * Recommended default sync directions for each solution type.
+ * Applied only on first-time setup (empty syncValues).
+ */
+export const RECOMMENDED_DEFAULTS: Record<string, Record<string, SyncDirection>> = {
+  SF2QB:  { SyncTypeAC: "SF2QB", SyncTypeSO: "SF2QB", SyncTypeInv: "SF2QB", SyncTypePrd: "SF2QB" },
+  SF2QB1: { SyncTypeAC: "SF2QB", SyncTypeSO: "SF2QB", SyncTypeInv: "SF2QB", SyncTypePrd: "SF2QB", SyncTypeVAC: "SF2QB" },
+  SF2QBB: { SyncTypeAC: "SFQB",  SyncTypeSO: "SFQB",  SyncTypeInv: "SFQB",  SyncTypePrd: "SFQB" },
+  SF2NS:  { SyncTypeAC: "SF2QB", SyncTypeSO: "SF2QB", SyncTypeInv: "SF2QB", SyncTypePrd: "SF2QB" },
+  SF2PT:  { SyncTypeAC: "SF2QB", SyncTypeSO: "SF2QB", SyncTypeInv: "SF2QB" },
+  SF2GP:  { SyncTypeAC: "SF2QB", SyncTypeSO: "SF2QB", SyncTypeInv: "SF2QB" },
+  CRM2QB: { SyncTypeAC: "SF2QB", SyncTypeSO: "SF2QB", SyncTypeInv: "SF2QB" },
+  QB:     { SyncTypeAC: "SF2QB", SyncTypePrd: "SF2QB" },
+  SF:     { SyncTypeAC: "SF2QB" },
+  GENERIC: {},
+};
+
+/** Category display labels */
+export const CATEGORY_LABELS: Record<MappingCategory, string> = {
+  customer: "Customer Records",
+  transaction: "Transactions",
+  financial: "Financial Objects",
+};
+
 /** Build the list of available sync mappings based on solution type */
 export function buildSyncMappings(
   solutionType: string,
@@ -127,10 +207,20 @@ export function buildSyncMappings(
   const meta = deriveSolutionMeta(solutionType);
   const { crmName, crmCustomerLabel, crmTransactionLabel, fsName, fsCustomerLabel } = meta;
 
+  // Fixed regex: suffix C was missing from extended conditions in the original
   const hasBidi = /[12BNPTGPC]$/.test(solutionType);
+  const hasExtended1 = /[1BNPTGPC]$/.test(solutionType);
+  const hasExtended2 = /[BNPTGP]$/.test(solutionType);
   const mappings: SyncMapping[] = [];
 
-  const add = (key: string, sourceLabel: string, destLabel: string, bidi = hasBidi) => {
+  const add = (
+    key: string,
+    sourceLabel: string,
+    destLabel: string,
+    category: MappingCategory,
+    tier: "core" | "extended",
+    bidi = hasBidi
+  ) => {
     mappings.push({
       key,
       label: `${sourceLabel} to ${destLabel}`,
@@ -138,40 +228,44 @@ export function buildSyncMappings(
       destLabel,
       value: (existing[key] as SyncDirection) || "None",
       supportsBidirectional: bidi,
+      tier,
+      category,
     });
   };
 
-  // Core mappings (always available for most solution types)
-  add("SyncTypeAC", `${crmName} ${crmCustomerLabel}`, `${fsName} ${fsCustomerLabel}`);
-  add("SyncTypeSO", `${crmName} ${crmTransactionLabel}`, `${fsName} Sales Order`);
-  add("SyncTypeInv", `${crmName} ${crmTransactionLabel}`, `${fsName} Invoice`);
-  add("SyncTypeSR", `${crmName} ${crmTransactionLabel}`, `${fsName} Sales Receipt`);
-  add("SyncTypePrd", `${crmName} Product`, `${fsName} Item`);
+  // ─── Core mappings (always available) ───
+  add("SyncTypeAC", `${crmName} ${crmCustomerLabel}`, `${fsName} ${fsCustomerLabel}`, "customer", "core");
+  add("SyncTypeSO", `${crmName} ${crmTransactionLabel}`, `${fsName} Sales Order`, "transaction", "core");
+  add("SyncTypeInv", `${crmName} ${crmTransactionLabel}`, `${fsName} Invoice`, "transaction", "core");
+  add("SyncTypeSR", `${crmName} ${crmTransactionLabel}`, `${fsName} Sales Receipt`, "transaction", "core");
+  add("SyncTypePrd", `${crmName} Product`, `${fsName} Item`, "customer", "core");
 
-  // Extended mappings based on solution type
+  // ─── Extended: bi-directional tier ───
   if (hasBidi) {
-    add("SyncTypeEst", `${crmName} ${crmTransactionLabel}`, `${fsName} Estimate`);
-    add("SyncTypeBill", `${crmName} Object`, `${fsName} Bill`);
-    add("SyncTypeCheck", `${crmName} ${crmTransactionLabel}`, `${fsName} Check`);
-    add("SyncTypeCM", `${crmName} ${crmTransactionLabel}`, `${fsName} Credit Memo`);
+    add("SyncTypeEst", `${crmName} ${crmTransactionLabel}`, `${fsName} Estimate`, "transaction", "extended");
+    add("SyncTypeBill", `${crmName} Object`, `${fsName} Bill`, "transaction", "extended");
+    add("SyncTypeCheck", `${crmName} ${crmTransactionLabel}`, `${fsName} Check`, "transaction", "extended");
+    add("SyncTypeCM", `${crmName} ${crmTransactionLabel}`, `${fsName} Credit Memo`, "transaction", "extended");
   }
 
-  if (/[1BNPTGP]$/.test(solutionType)) {
-    add("SyncTypeVAC", `${crmName} Account/Contact/Object`, `${fsName} Vendor`);
-    add("SyncTypeOJ", `${crmName} ${crmTransactionLabel}`, `${fsName} Job`);
-    add("SyncTypePO", `${crmName} ${crmTransactionLabel}`, `${fsName} Purchase Order`);
-    add("SyncTypeVC", `${crmName} Object`, `${fsName} Vendor Credit`, false);
-    add("SyncTypeDep", `${crmName} Object`, `${fsName} Deposit`, false);
-    add("SyncTypePR", `${crmName} Object`, `${fsName} Payment Received`, false);
-    add("SyncTypeBP", `${crmName} Object`, `${fsName} Bill Payment`, false);
-    add("SyncTypeCCC", `${crmName} Object`, `${fsName} Credit Card Charge`);
+  // ─── Extended: level 1 ───
+  if (hasExtended1) {
+    add("SyncTypeVAC", `${crmName} Account/Contact/Object`, `${fsName} Vendor`, "customer", "extended");
+    add("SyncTypeOJ", `${crmName} ${crmTransactionLabel}`, `${fsName} Job`, "transaction", "extended");
+    add("SyncTypePO", `${crmName} ${crmTransactionLabel}`, `${fsName} Purchase Order`, "transaction", "extended");
+    add("SyncTypeVC", `${crmName} Object`, `${fsName} Vendor Credit`, "financial", "extended", false);
+    add("SyncTypeDep", `${crmName} Object`, `${fsName} Deposit`, "financial", "extended", false);
+    add("SyncTypePR", `${crmName} Object`, `${fsName} Payment Received`, "financial", "extended", false);
+    add("SyncTypeBP", `${crmName} Object`, `${fsName} Bill Payment`, "financial", "extended", false);
+    add("SyncTypeCCC", `${crmName} Object`, `${fsName} Credit Card Charge`, "financial", "extended");
   }
 
-  if (/[BNPTGP]$/.test(solutionType)) {
-    add("SyncTypeCOA", `${crmName} Object`, `${fsName} Account (COA)`);
-    add("SyncTypeJE", `${crmName} Object`, `${fsName} Journal Entry`);
-    add("SyncTypeTT", `${crmName} Object`, `${fsName} Time Tracking`);
-    add("SyncTypeSC", `${crmName} Object`, `${fsName} Statement Charges`);
+  // ─── Extended: level 2 (financial objects) ───
+  if (hasExtended2) {
+    add("SyncTypeCOA", `${crmName} Object`, `${fsName} Account (COA)`, "financial", "extended");
+    add("SyncTypeJE", `${crmName} Object`, `${fsName} Journal Entry`, "financial", "extended");
+    add("SyncTypeTT", `${crmName} Object`, `${fsName} Time Tracking`, "financial", "extended");
+    add("SyncTypeSC", `${crmName} Object`, `${fsName} Statement Charges`, "financial", "extended");
   }
 
   return mappings;

@@ -61,15 +61,26 @@ if(env2Con==null){
 env2Con="COM";
 }
 String flowId = request.getParameter("CurrentFlowId");
+if(flowId != null) flowId = flowId.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\"","&quot;");
 String profileId = request.getParameter("CurrentProfile");
 String tf = request.getParameter("IsFlow");
 String adm = request.getParameter("IsAdmin");
 String fromMnt = request.getParameter("FromMonitor");
 boolean isAdmin = (adm!=null)&& (adm.equalsIgnoreCase("true"));
-boolean isFlow = tf.equals("1"); 
+boolean isFlow = "1".equals(tf);
 boolean uploads = false;
-HostedTransactionBase tc = isFlow?ConfigContext.getTransactionContxtById(flowId):ConfigContext.getQueryContxtById(flowId); 
+HostedTransactionBase tc = isFlow?ConfigContext.getTransactionContxtById(flowId):ConfigContext.getQueryContxtById(flowId);
+if(tc == null){
 %>
+<table border="0" cellpadding="5" class="table" width="100%">
+	<tr>
+		<td class="tablelabels"><%= (isFlow?"Transaction Flow: ":"Query: ") + flowId%></td>
+	</tr>
+	<tr>
+		<td class="tablesmall" style="color:red">Flow context not loaded. Initialize the engine via BDConfigurator first, or use the <a href="/iw-portal/#/integrations">modern portal</a>.</td>
+	</tr>
+</table>
+<%} else {%>
 <table border="0" cellpadding="5" class="table" width="100%">
 	<tr>
 		<td class="tablelabels"><%= (isFlow?"Transaction Flow: ":"Query: ") + flowId%></td>
@@ -252,6 +263,6 @@ nm = nm.substring(7);
 		</p>
 	</form><%}%>
 </p>
-	
+<%}%>
 </body>
 </html>

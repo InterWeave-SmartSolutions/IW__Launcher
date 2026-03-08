@@ -22,7 +22,8 @@ Once started, access the portal at:
 
 | Page | URL |
 |------|-----|
-| **Login** | http://localhost:9090/iw-business-daemon/IWLogin.jsp |
+| **React Portal** | http://localhost:9090/iw-portal/ |
+| **Login (classic)** | http://localhost:9090/iw-business-daemon/IWLogin.jsp |
 | Edit Profile | http://localhost:9090/iw-business-daemon/EditProfile.jsp |
 | Edit Company | http://localhost:9090/iw-business-daemon/EditCompanyProfile.jsp |
 | Company Config | http://localhost:9090/iw-business-daemon/CompanyConfiguration.jsp |
@@ -48,6 +49,16 @@ Default port is **9090**. To change it:
 3. Change `9090` to your desired port
 4. Restart the server
 
+## React Portal (iw-portal)
+
+The modern React dashboard is deployed to `tomcat/webapps/iw-portal/`. This directory is **gitignored** — you must build it after cloning:
+
+```bash
+cd frontends/iw-portal && npm install && npm run build
+```
+
+Both the React portal and classic JSP pages share the same Tomcat session cookie, so users can switch between them freely.
+
 ## Directory Structure
 
 ```
@@ -62,7 +73,8 @@ web_portal/
     ├── conf/               # Configuration (server.xml, etc.)
     ├── logs/               # Server logs
     ├── webapps/            # Deployed applications
-    │   └── iw-business-daemon.war
+    │   ├── iw-business-daemon/ # Classic JSP portal + API servlets
+    │   └── iw-portal/          # React portal (gitignored, build output)
     └── ...
 ```
 

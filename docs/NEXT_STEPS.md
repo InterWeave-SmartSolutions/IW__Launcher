@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-07
+**Last Updated:** 2026-03-08 (Session 3)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -25,16 +25,22 @@ These items from the original roadmap are now DONE:
 
 **Additional completed work (not in original roadmap):**
 - 10 shadcn/ui components (Button, Input, Label, Badge, Separator, Select, Tabs, Dialog, Switch, Tooltip)
-- Configuration Wizard (4-step React page + ApiConfigurationServlet backend)
+- Configuration Wizard (5-step React page + ApiConfigurationServlet backend with profiles/test endpoints)
+- Configuration system overhaul: progressive disclosure, bulk actions, smart defaults, dependency warnings, config diff, draft persistence, JSON export, test connection, help tooltips
 - Registration pages (user + company, React + API servlets)
 - Change Password page + ApiChangePasswordServlet
-- Flow Management API (ApiFlowManagementServlet — start/stop/schedule flows)
+- Flow Management API (ApiFlowManagementServlet — start/stop/schedule/properties flows)
+- Flow Properties Dialog (React modal for viewing/editing variable parameters, password toggle, read-only when running)
+- Log Viewer API (ApiLogViewerServlet — log file listing, content retrieval, search)
 - Toast notification system, ErrorBoundary, functional search/command palette
+- Global error toast for mutations (MutationCache.onError handles 401, 500+, network errors)
+- Dashboard KPI sparklines (transaction count, success rate, avg duration — derived from transaction history)
 - Mobile navigation (hamburger drawer)
 - Dynamic document titles on all pages
 - Login page redesign + "already signed in" state (banner bug fix)
-- 55 TypeScript source files, 10 API servlet .class files
-- All 11 React pages use shadcn/ui consistently
+- Shared config label utilities (config-labels.ts)
+- 58 TypeScript source files, 12 API servlet .class files
+- All 12 React pages use shadcn/ui consistently
 
 ---
 
@@ -128,24 +134,44 @@ Completed: SF2AUTH compiler module added to WorkspaceProfileCompiler, regression
 
 ---
 
-### 8. Deep Configuration Wizard
+### ~~8. Deep Configuration Wizard~~ — DONE (2026-03-08)
 
-**[PRIORITY: LOW]** **[Effort: ~8-12 hrs]**
+5-step wizard with full Phase A/B/C improvements: BCCEmail roundtrip fix, progressive disclosure (core/extended tiers), category grouping, bulk actions (Enable Core/Recommended/Disable All), smart defaults per solution type, mapping dependency warnings, help tooltips, config diff on Review, draft persistence (sessionStorage), JSON export, mobile-responsive card layout, test connection button, shared config-labels module. Backend: fixed JSON parser (handles commas in values), added `GET /api/config/profiles` and `POST /api/config/credentials/test` endpoints.
 
-The current React wizard has 4 steps (solution type, object mapping, credentials, review). The classic JSP wizard has 6 pages with 80-120 field-level mappings. Expanding the React wizard to cover field-level detail would provide full classic parity.
+---
 
-**Affected files:** `ConfigurationWizardPage.tsx`, `types/configuration.ts`, potentially `ApiConfigurationServlet.java`
+### 9. Code-Split Configuration Wizard
+
+**[PRIORITY: LOW]** **[Effort: ~15 min]**
+
+Main chunk is 530kB (over Vite's 500kB warning). ConfigurationWizardPage is admin-only and a good candidate for `React.lazy()` code-splitting.
+
+**Affected files:** `App.tsx` (add lazy import), `ConfigurationWizardPage.tsx` (no changes needed)
 
 ---
 
 ## Future / Nice-to-Have
 
-| Item | Description | Effort |
-|---|---|---|
-| ViewLog React page | Log file viewer with search/filter | 2-3 hrs |
-| MoreCustomMappings page | Custom field mapping editor | 4-6 hrs |
-| ASSA enhancements | Sparklines, MFA, notifications, audit log | 8-16 hrs |
-| InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs |
+| Item | Description | Effort | Status |
+|---|---|---|---|
+| ViewLog React page | Log file viewer with search/filter | 2-3 hrs | DONE (LoggingPage.tsx) |
+| MoreCustomMappings page | Custom field mapping editor | 4-6 hrs | LOW (compiled-only backend `CustomMappings` servlet) |
+| ~~Sparklines~~ | Dashboard KPI sparkline charts | ~1 hr | DONE (3 of 4 KPIs) |
+| ~~Error toast~~ | Global error toast for API failures | ~30 min | DONE (MutationCache.onError) |
+| MFA / Forgot password | Auth enhancements | 4-8 hrs | — |
+| Notifications inbox | New `/notifications` route | 4-6 hrs | — |
+| Audit log | Admin section | 6-8 hrs | — |
+| InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs | — |
+
+### Known Infrastructure Limitation: Transformation Server
+
+The `iwtransformationserver` webapp is deployed as a **skeleton** — it has `web.xml` and native JNI libraries (`TS_JNI.dll`) but the 137 Java class JARs from the InterWeave vendor are **NOT included** in this repo. This means:
+
+- **Query flow "GO" buttons** generate correct HTTP GET URLs (`/iwtransformationserver/transform?...`) but get **404** because `com.interweave.servlets.IWTransform` cannot be loaded
+- **Scheduled flow execution** via `/scheduledtransform` also returns 404
+- **Flow properties** (variable parameters, credentials) can still be viewed and edited in React — only actual flow *execution* requires the vendor JARs
+- **TransactionLoggingFilter** is registered in `web.xml` but has no traffic to intercept until vendor JARs are deployed
+- **To fix**: Obtain the full transformation server JAR package from the InterWeave vendor and deploy to `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/`
 
 ---
 

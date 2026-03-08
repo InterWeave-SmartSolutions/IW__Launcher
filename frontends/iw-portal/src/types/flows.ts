@@ -19,6 +19,16 @@ export interface EngineFlow {
   logLevel: number;
 }
 
+/** Query flow (subset of EngineFlow with optional HTTP GET URL) */
+export interface QueryFlow {
+  index: number;
+  flowId: string;
+  type: "query";
+  interval: number;
+  counter: number;
+  httpGetQuery?: string;
+}
+
 /** Response from GET /api/flows */
 export interface FlowsResponse {
   success: boolean;
@@ -29,13 +39,7 @@ export interface FlowsResponse {
     profileName: string;
     scheduledFlows: EngineFlow[];
     utilityFlows: EngineFlow[];
-    queryFlows: Array<{
-      index: number;
-      flowId: string;
-      type: "query";
-      interval: number;
-      counter: number;
-    }>;
+    queryFlows: QueryFlow[];
   };
   error?: string;
 }
@@ -52,5 +56,27 @@ export interface FlowActionResponse {
 export interface FlowScheduleResponse {
   success: boolean;
   data?: EngineFlow;
+  error?: string;
+}
+
+/** A single variable property of a flow */
+export interface FlowProperty {
+  name: string;
+  value: string;
+  type: "text" | "password" | "upload";
+}
+
+/** Response from GET /api/flows/properties */
+export interface FlowPropertiesResponse {
+  success: boolean;
+  data?: {
+    flowId: string;
+    isFlow: boolean;
+    description: string;
+    running: boolean;
+    profileName: string;
+    properties: FlowProperty[];
+    tsUrls?: Record<string, string>;
+  };
   error?: string;
 }

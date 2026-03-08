@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.servlet.ServletException;
@@ -18,6 +19,7 @@ import com.interweave.businessDaemon.TransactionContext;
 import com.interweave.businessDaemon.TransactionThread;
 import com.interweave.businessDaemon.QueryContext;
 import com.interweave.businessDaemon.TransactionBase;
+import com.interweave.businessDaemon.HostedTransactionBase;
 
 /**
  * ApiFlowManagementServlet - JSON API for integration flow management.
@@ -56,6 +58,13 @@ public class ApiFlowManagementServlet extends HttpServlet {
         if (profileName == null || profileName.isEmpty()) {
             response.setStatus(400);
             response.getWriter().write("{\"success\":false,\"error\":\"No profile context. Login via classic portal to initialize flows.\"}");
+            return;
+        }
+
+        String pathInfo = request.getPathInfo();
+        if ("/properties".equals(pathInfo)) {
+            Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+            handleGetProperties(request, response, profileName, isAdmin != null && isAdmin);
             return;
         }
 
@@ -123,6 +132,12 @@ public class ApiFlowManagementServlet extends HttpServlet {
                     out.write(",\"interval\":" + tb.getTransactionInterval());
                     out.write(",\"counter\":" + tb.getTransactionCounter());
                 }
+                try {
+                    String httpGetQuery = qc.getHTTPGetQuery(profileName);
+                    if (httpGetQuery != null && !httpGetQuery.isEmpty()) {
+                        out.write(",\"httpGetQuery\":\"" + escapeJson(httpGetQuery) + "\"");
+                    }
+                } catch (Exception e) { /* method may not exist in some builds */ }
                 out.write("}");
             }
             out.write("]");
@@ -225,6 +240,110 @@ public class ApiFlowManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         setCorsHeaders(response);
         response.setStatus(200);
+    }
+
+    // ── Properties endpoint ────────────────────────────────
+
+    private void handleGetProperties(HttpServletRequest request, HttpServletResponse response,
+                                     String profileName, boolean isAdmin) throws IOException {
+        String flowId = request.getParameter("flowId");
+        String isFlowStr = request.getParameter("isFlow"); // "1" for transaction, "0" for query
+        if (flowId == null || flowId.isEmpty()) {
+            response.setStatus(400);
+            response.getWriter().write("{\"success\":false,\"error\":\"flowId parameter required\"}");
+            return;
+        }
+        if (isFlowStr == null) isFlowStr = "1";
+        boolean isFlow = "1".equals(isFlowStr);
+
+        try {
+            // Get description from the flow context
+            String description = "";
+            try {
+                HostedTransactionBase tc = isFlow
+                        ? ConfigContext.getTransactionContxtById(flowId)
+                        : ConfigContext.getQueryContxtById(flowId);
+                if (tc != null) {
+                    description = tc.getDescription();
+                    if (description == null) description = "";
+                }
+            } catch (Exception e) { /* context may not be loaded */ }
+
+            // Get variable parameters
+            Properties params = new Properties();
+            boolean running = false;
+            String debugError = null;
+            try {
+                running = ConfigContext.getVariableParameters(flowId, profileName, isFlowStr, isAdmin, params);
+            } catch (Exception e) {
+                debugError = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log("getVariableParameters failed for flowId=" + flowId + " profile=" + profileName + " isFlow=" + isFlowStr, e);
+            }
+
+            PrintWriter out = response.getWriter();
+            out.write("{\"success\":true,\"data\":{");
+            out.write("\"flowId\":\"" + escapeJson(flowId) + "\"");
+            out.write(",\"isFlow\":" + isFlow);
+            out.write(",\"description\":\"" + escapeJson(description) + "\"");
+            out.write(",\"running\":" + running);
+            out.write(",\"profileName\":\"" + escapeJson(profileName) + "\"");
+            if (debugError != null) {
+                out.write(",\"debugError\":\"" + escapeJson(debugError) + "\"");
+            }
+
+            // Variable parameters
+            out.write(",\"properties\":[");
+            if (params != null) {
+                boolean first = true;
+                Iterator<?> keys = params.keySet().iterator();
+                while (keys.hasNext()) {
+                    String name = (String) keys.next();
+                    String value = params.getProperty(name);
+
+                    boolean isPassword = name.startsWith("__%p%__");
+                    boolean isUpload = name.startsWith("__%u%__");
+                    String displayName = (isPassword || isUpload) ? name.substring(7) : name;
+
+                    if (!first) out.write(",");
+                    first = false;
+                    out.write("{\"name\":\"" + escapeJson(displayName) + "\"");
+                    out.write(",\"value\":\"" + escapeJson(value) + "\"");
+                    out.write(",\"type\":\"" + (isPassword ? "password" : (isUpload ? "upload" : "text")) + "\"");
+                    out.write("}");
+                }
+            }
+            out.write("]");
+
+            // Admin-only: Transformation Server URLs
+            if (isAdmin && isFlow) {
+                try {
+                    HostedTransactionBase tc = ConfigContext.getTransactionContxtById(flowId);
+                    if (tc != null) {
+                        out.write(",\"tsUrls\":{");
+                        out.write("\"U1\":\"" + escapeJson(str(tc.getPrimaryTransformationServerURL())) + "\"");
+                        out.write(",\"U2\":\"" + escapeJson(str(tc.getSecondaryTransformationServerURL())) + "\"");
+                        out.write(",\"U1T\":\"" + escapeJson(str(tc.getPrimaryTransformationServerURLT())) + "\"");
+                        out.write(",\"U2T\":\"" + escapeJson(str(tc.getSecondaryTransformationServerURLT())) + "\"");
+                        out.write(",\"U11\":\"" + escapeJson(str(tc.getPrimaryTransformationServerURL1())) + "\"");
+                        out.write(",\"U21\":\"" + escapeJson(str(tc.getSecondaryTransformationServerURL1())) + "\"");
+                        out.write(",\"U1T1\":\"" + escapeJson(str(tc.getPrimaryTransformationServerURLT1())) + "\"");
+                        out.write(",\"U2T1\":\"" + escapeJson(str(tc.getSecondaryTransformationServerURLT1())) + "\"");
+                        out.write(",\"U1D\":\"" + escapeJson(str(tc.getPrimaryTransformationServerURLD())) + "\"");
+                        out.write(",\"U2D\":\"" + escapeJson(str(tc.getSecondaryTransformationServerURLD())) + "\"");
+                        out.write("}");
+                    }
+                } catch (Exception e) { /* ignore */ }
+            }
+
+            out.write("}}");
+        } catch (Exception e) {
+            response.setStatus(500);
+            response.getWriter().write("{\"success\":false,\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
+        }
+    }
+
+    private static String str(String s) {
+        return s != null ? s : "";
     }
 
     // ── Helpers ─────────────────────────────────────────────

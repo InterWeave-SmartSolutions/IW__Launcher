@@ -9,8 +9,14 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { CompanyPage } from "@/pages/CompanyPage";
 import { CompanyConfigPage } from "@/pages/CompanyConfigPage";
-import { ConfigurationWizardPage } from "@/pages/ConfigurationWizardPage";
-import { IntegrationOverviewPage } from "@/pages/IntegrationOverviewPage";
+/* Lazy-load config wizard (admin-only, ~80kB) */
+const ConfigurationWizardPage = lazy(() =>
+  import("@/pages/ConfigurationWizardPage").then((m) => ({ default: m.ConfigurationWizardPage }))
+);
+/* Lazy-load integrations page (engine controls + credentials + dep map) */
+const IntegrationOverviewPage = lazy(() =>
+  import("@/pages/IntegrationOverviewPage").then((m) => ({ default: m.IntegrationOverviewPage }))
+);
 import { LoggingPage } from "@/pages/LoggingPage";
 import { ChangePasswordPage } from "@/pages/ChangePasswordPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -117,11 +123,19 @@ export const router = createBrowserRouter(
         },
         {
           path: "company/config/wizard",
-          element: <ConfigurationWizardPage />,
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <ConfigurationWizardPage />
+            </Suspense>
+          ),
         },
         {
           path: "admin/configurator",
-          element: <IntegrationOverviewPage />,
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <IntegrationOverviewPage />
+            </Suspense>
+          ),
         },
         {
           path: "admin/logging",

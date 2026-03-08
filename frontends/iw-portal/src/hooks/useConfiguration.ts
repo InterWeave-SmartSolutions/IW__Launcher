@@ -5,6 +5,9 @@ import type {
   WizardConfigSaveRequest,
   CredentialsResponse,
   CredentialSaveRequest,
+  CredentialTestRequest,
+  CredentialTestResponse,
+  ProfilesResponse,
 } from "@/types/configuration";
 import type { ApiMessageResponse } from "@/types/profile";
 
@@ -48,5 +51,22 @@ export function useSaveCredential() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config", "credentials"] });
     },
+  });
+}
+
+export function useTestCredential() {
+  return useMutation({
+    mutationFn: (data: CredentialTestRequest) =>
+      apiFetch<CredentialTestResponse>("/api/config/credentials/test", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+  });
+}
+
+export function useProfiles() {
+  return useQuery({
+    queryKey: ["config", "profiles"],
+    queryFn: () => apiFetch<ProfilesResponse>("/api/config/profiles"),
   });
 }

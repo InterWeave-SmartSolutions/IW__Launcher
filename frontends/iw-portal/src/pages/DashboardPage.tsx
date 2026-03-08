@@ -48,6 +48,39 @@ function deriveSparkline(transactions: Transaction[], buckets = 8): number[] {
   return counts;
 }
 
+/** Derive per-bucket success rate (0–100) for sparkline */
+function deriveSuccessRateSparkline(transactions: Transaction[], buckets = 8): number[] {
+  if (transactions.length === 0) return [];
+  const now = Date.now();
+  const bucketMs = (24 * 3600_000) / buckets;
+  const ok = new Array<number>(buckets).fill(0);
+  const total = new Array<number>(buckets).fill(0);
+  for (const tx of transactions) {
+    const age = now - new Date(tx.started_at).getTime();
+    const idx = buckets - 1 - Math.min(Math.floor(age / bucketMs), buckets - 1);
+    total[idx] = (total[idx] ?? 0) + 1;
+    if (tx.status === "success") ok[idx] = (ok[idx] ?? 0) + 1;
+  }
+  return total.map((t, i) => (t > 0 ? ((ok[i] ?? 0) / t) * 100 : 0));
+}
+
+/** Derive per-bucket average duration (ms) for sparkline */
+function deriveDurationSparkline(transactions: Transaction[], buckets = 8): number[] {
+  if (transactions.length === 0) return [];
+  const now = Date.now();
+  const bucketMs = (24 * 3600_000) / buckets;
+  const sums = new Array<number>(buckets).fill(0);
+  const counts = new Array<number>(buckets).fill(0);
+  for (const tx of transactions) {
+    if (tx.duration_ms == null) continue;
+    const age = now - new Date(tx.started_at).getTime();
+    const idx = buckets - 1 - Math.min(Math.floor(age / bucketMs), buckets - 1);
+    sums[idx] = (sums[idx] ?? 0) + tx.duration_ms;
+    counts[idx] = (counts[idx] ?? 0) + 1;
+  }
+  return counts.map((c, i) => (c > 0 ? (sums[i] ?? 0) / c : 0));
+}
+
 function statusBadge(status: string) {
   const variant = status === "success" ? "success"
     : status === "failed" ? "destructive"
@@ -69,6 +102,8 @@ export function DashboardPage() {
   const transactions = txRes?.data?.transactions ?? [];
   const firstName = user?.userName?.split(" ")[0] ?? "there";
   const spark = deriveSparkline(transactions);
+  const sparkRate = deriveSuccessRateSparkline(transactions);
+  const sparkDuration = deriveDurationSparkline(transactions);
 
   const kpis = [
     {
@@ -86,7 +121,7 @@ export function DashboardPage() {
       sub: `7d: ${fmtRate(summary?.success_rate_7d)}`,
       icon: CheckCircle,
       color: "text-[hsl(var(--success))]",
-      sparkData: [] as number[],
+      sparkData: sparkRate,
       sparkColor: "hsl(var(--success))",
     },
     {
@@ -104,7 +139,7 @@ export function DashboardPage() {
       sub: recent ? `Last hour: ${recent.total} txns` : "—",
       icon: Clock,
       color: "text-muted-foreground",
-      sparkData: [] as number[],
+      sparkData: sparkDuration,
       sparkColor: "hsl(var(--muted-foreground))",
     },
   ];

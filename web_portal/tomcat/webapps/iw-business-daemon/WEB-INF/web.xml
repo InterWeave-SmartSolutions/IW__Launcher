@@ -551,6 +551,17 @@
         	<servlet-name>AlertConfigApiServlet</servlet-name>
         	<url-pattern>/api/monitoring/webhooks/*</url-pattern>
         </servlet-mapping>
+
+        <!-- Log Viewer API -->
+        <servlet>
+        	<servlet-name>ApiLogViewerServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiLogViewerServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiLogViewerServlet</servlet-name>
+        	<url-pattern>/api/logs/*</url-pattern>
+        </servlet-mapping>
+
 	<session-config>
 		<session-timeout>30</session-timeout>
 	</session-config>

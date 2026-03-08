@@ -88,6 +88,62 @@ Webhook endpoint configuration.
 
 Full list: `WEB-INF/src/com/interweave/monitoring/api/API_ENDPOINTS.md`
 
+### Configuration API (JSON)
+
+**GET /api/config/wizard**
+Load current wizard configuration (solution type + parsed XML sync mappings + execution settings).
+
+**PUT /api/config/wizard**
+Save wizard configuration. Body: `{"solutionType":"SF2QB1","syncMappings":{"SyncTypeAC":"SF2QB",...}}`. Serializes to `<SF2QBConfiguration>` XML and upserts in `company_configurations` table.
+
+**GET /api/config/credentials**
+Load company credentials (from `company_credentials` table) and profile credentials (from `profiles` table).
+
+**PUT /api/config/credentials**
+Save/update a credential. Body: `{"credentialType":"salesforce","username":"...","password":"...","endpointUrl":"..."}`. Upserts by `(company_id, credential_type)`.
+
+**GET /api/config/profiles**
+List all saved configuration profiles for the company.
+
+**POST /api/config/credentials/test**
+Test connectivity to an endpoint URL. Body: `{"credentialType":"salesforce","endpointUrl":"https://..."}`. Returns `{"reachable":true,"statusCode":200,"responseTimeMs":145,"message":"..."}`.
+
+### User Management API (JSON)
+
+**GET/PUT /api/profile**
+Read/update user profile (first name, last name, title).
+
+**GET/PUT /api/company/profile**
+Read/update company profile (admin only).
+
+**POST /api/register**
+User self-registration.
+
+**POST /api/register/company**
+Company + admin user registration.
+
+**POST /api/auth/change-password**
+Change password (current + new password validation).
+
+### Flow Management API (JSON)
+
+**GET /api/flows**
+List all transaction flows and queries with status.
+
+**POST /api/flows/{id}/start**
+Start a flow.
+
+**POST /api/flows/{id}/stop**
+Stop a flow.
+
+### Log Viewer API (JSON)
+
+**GET /api/logs**
+List available log files with metadata (size, last modified).
+
+**GET /api/logs/{filename}**
+Get log file content with optional search/filter parameters.
+
 ## Error Responses
 
 ### JSP Pages

@@ -116,7 +116,9 @@ export function MonitoringPage() {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: 8,
                     fontSize: 12,
+                    color: "hsl(var(--foreground))",
                   }}
+                  cursor={{ fill: "hsl(var(--muted) / 0.15)" }}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Area
@@ -157,7 +159,9 @@ export function MonitoringPage() {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: 8,
                     fontSize: 12,
+                    color: "hsl(var(--foreground))",
                   }}
+                  cursor={{ fill: "hsl(var(--muted) / 0.15)" }}
                 />
                 <Bar dataKey="avgDuration" name="Avg Duration" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -182,7 +186,9 @@ export function MonitoringPage() {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: 8,
                     fontSize: 12,
+                    color: "hsl(var(--foreground))",
                   }}
+                  cursor={{ fill: "hsl(var(--muted) / 0.15)" }}
                 />
                 <Area
                   type="monotone"

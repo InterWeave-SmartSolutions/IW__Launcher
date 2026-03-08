@@ -1,6 +1,6 @@
 # UI Cross-Reference: Classic JSP → React iw-portal Migration Map
 
-> Generated 2026-03-06 by comprehensive analysis of all 5 UI surfaces + backend + IDE sync.
+> Generated 2026-03-06, updated 2026-03-08.
 > Source: 7 parallel deep-dive agents analyzing 31 JSPs, 26 React files, 20 ASSA pages, 47 InterWoven components, 30 Java servlets, full IDE sync bridge, and platform training docs.
 
 ---
@@ -22,7 +22,7 @@
 
 ## 1. Classic → React Coverage Matrix
 
-> Updated 2026-03-07 — reflects all work on `feature/react-form-pages` branch.
+> Updated 2026-03-08 — reflects all work on `feature/react-form-pages` branch + config overhaul on `main`.
 
 | # | Classic JSP Page | URL | React Route | Status | Notes |
 |---|---|---|---|---|---|
@@ -34,12 +34,12 @@
 | 6 | Registration.jsp | `/Registration.jsp` | `/register` (RegisterPage) | **DONE** ✓ | shadcn/ui, ApiRegistrationServlet |
 | 7 | CompanyRegistration.jsp | `/CompanyRegistration.jsp` | `/register/company` (CompanyRegisterPage) | **DONE** ✓ | Radix Select, ApiCompanyRegistrationServlet |
 | 8 | CompanyConfiguration.jsp | `/CompanyConfiguration.jsp` | `/company/config` (CompanyConfigPage) | **DONE** ✓ | 5-step checklist, progress bar, dynamic completion |
-| 9-13 | ConfigurationDetail*.jsp (5 pages) | (servlet forward) | `/company/config/wizard` (ConfigurationWizardPage) | **DONE** ✓ | 4-step wizard replaces 5 JSP steps |
-| 14 | CompanyCredentials.jsp | (servlet forward) | `/company/config/wizard` (step 3) | **DONE** ✓ | Credentials in wizard step 3 |
+| 9-13 | ConfigurationDetail*.jsp (5 pages) | (servlet forward) | `/company/config/wizard` (ConfigurationWizardPage) | **DONE** ✓ | 5-step wizard: solution type, object mapping (progressive disclosure), credentials (test connection), execution settings, review (config diff + JSON export) |
+| 14 | CompanyCredentials.jsp | (servlet forward) | `/company/config/wizard` (steps 3-4) | **DONE** ✓ | Credentials in step 3, execution settings (environment, scheduling, notifications) in step 4 |
 | 15 | BDConfigurator.jsp | `/BDConfigurator.jsp` | `/admin/configurator` (IntegrationOverviewPage) | **DONE** ✓ | 3 tabs: Flows, Credentials, Engine Controls |
 | 16 | BDConfiguratorA.jsp | `/BDConfiguratorA.jsp` | `/admin/configurator` (Engine Controls tab) | **DONE** ✓ | Start/stop, schedule editing via Dialog |
 | 17 | BDConfiguratorB.jsp | `/BDConfiguratorB.jsp` | -- | LOW | Advanced config (rarely used) |
-| 18 | FlowProperties.jsp | `/FlowProperties.jsp` | `/admin/configurator` (EditScheduleDialog) | **DONE** ✓ | Dialog with interval/shift/counter editing |
+| 18 | FlowProperties.jsp | `/FlowProperties.jsp` | `/admin/configurator` (FlowPropertiesDialog) | **DONE** ✓ | React dialog: variable parameters (text/password/upload), read-only when running, post-save verification, admin TS URLs. Schedule editing via EditScheduleDialog. |
 | 19 | monitoring/Dashboard.jsp | `/monitoring/Dashboard.jsp` | `/monitoring` (MonitoringPage) | **DONE** ✓ | Recharts: area, bar, area + 4 KPI cards |
 | 20 | monitoring/AlertConfig.jsp | `/monitoring/AlertConfig.jsp` | `/monitoring/alerts` (AlertConfigPage) | **DONE** ✓ | Switch toggle, Tooltip, severity badges |
 | 21 | monitoring/TransactionDetail.jsp | `/monitoring/TransactionDetail.jsp` | `/monitoring/transactions` (TransactionHistoryPage) | **DONE** ✓ | Paginated, filterable, status icons |
@@ -136,34 +136,37 @@ BDConfigurator.jsp → "Monitoring Dashboard" link
 
 ## 3. What the React UI Currently Implements
 
-### Fully Functional (5 routes)
+### Fully Functional (12+ routes)
 | Route | What It Does | API Endpoints |
 |---|---|---|
-| `/login` | Email/password login form | `POST /api/auth/login` |
+| `/login` | Email/password login form (redesigned, shadcn/ui) | `POST /api/auth/login` |
+| `/register` | User self-registration | `POST /api/register` |
+| `/register/company` | Company + admin registration | `POST /api/register/company` |
 | `/dashboard` | KPI cards (4), recent transactions table (10 rows), quick action links | `GET /api/monitoring/dashboard`, `GET /api/monitoring/transactions` |
-| `/profile` | Personal info form (firstName, lastName, title) + password change | `GET/PUT/POST /api/profile` |
-| `/company` | Company admin form + company password change (admin-gated) | `GET/PUT/POST /api/company/profile` |
+| `/monitoring` | Recharts area/bar charts, KPI cards, tab navigation | `GET /api/monitoring/dashboard`, `/metrics` |
+| `/monitoring/transactions` | Paginated, filterable transaction history table | `GET /api/monitoring/transactions` |
+| `/monitoring/alerts` | Alert rules CRUD with switch toggles | `GET/POST/PUT/DELETE /api/monitoring/alerts/*` |
+| `/profile` | Personal info form + password section | `GET/PUT /api/profile` |
+| `/profile/password` | Dedicated password change page | `POST /api/auth/change-password` |
+| `/company` | Company admin form + KPI bar + security panel | `GET/PUT /api/company/profile` |
+| `/company/config` | 5-step progress checklist, execution settings summary | `GET /api/config/wizard`, `/credentials` |
+| `/company/config/wizard` | 5-step wizard: solution type → mappings → credentials → execution → review | `GET/PUT /api/config/wizard`, `/credentials`, `/profiles`, `/credentials/test` |
+| `/admin/configurator` | 3 tabs: flows, credentials, engine controls | `GET/POST /api/flows/*` |
+| `/admin/logging` | Log file targets, system status bar | `GET /api/logs/*` |
 | `/*` | 404 Not Found page | -- |
 
-### Partially Functional (1 route)
-| Route | What Works | What's Missing |
-|---|---|---|
-| `/monitoring` | 3 summary stat cards, tab bar | No charts (recharts installed but unused), no transaction table, no filtering, sub-routes are stubs |
-
-### Classic Redirects (3 routes)
+### Classic Redirects (1 route)
 | Route | Redirects To |
 |---|---|
-| `/company/config` | `CompanyConfiguration.jsp` |
-| `/admin/configurator` | `BDConfigurator.jsp` |
-| `/admin/logging` | `Logging.jsp` |
+| `/admin/logging` (detailed log view) | `Logging.jsp` (for log file content viewing) |
 
-### Cosmetic/Non-Functional Elements
-- **Topbar search**: Input renders but no handler, no search logic
-- **Sidebar "Environment: Local Dev"**: Hardcoded, not dynamic
-- **"Always classic" preference**: `CLASSIC_MODE_KEY` in localStorage — no UI to set it
-- **Unused dependencies**: `recharts`, `react-hook-form`, `zod`, `@hookform/resolvers` all installed but not used
-- **Unused types**: `AlertRule` defined but no page uses it
-- **Unused utilities**: `formatDate`, `formatNumber` in utils.ts
+### UX Features
+- **Functional search palette**: "/" shortcut, 10+ indexed pages
+- **Mobile navigation**: Hamburger menu with slide-out drawer
+- **Dynamic document titles**: Via useDocumentTitle hook on all pages
+- **Toast notifications**: Shared ToastProvider system
+- **Alert badge**: Notification indicator in topbar
+- **Classic View banner**: "Switch to Classic" on all routes via AppShell
 
 ---
 
@@ -176,35 +179,29 @@ BDConfigurator.jsp → "Monitoring Dashboard" link
 **Backend needed**: New `ApiRegistrationServlet` and `ApiCompanyRegistrationServlet` (JSON endpoints)
 **Key complexity**: CompanyRegistration has 50+ SolutionType options filtered by PortalSolutions
 
-### Gap 2: Company Configuration Wizard (P1)
+### Gap 2: Company Configuration Wizard (P1) — ✅ COMPLETED
 **Classic**: 6-page wizard (CompanyConfiguration → Detail → DetailT → DetailT1 → DetailT2 → Credentials)
-**React**: Nothing. `/company/config` redirects to JSP.
-**Impact**: The CORE business workflow — configuring what syncs, how, and with what credentials — is completely absent from React.
-**Backend needed**: New `ApiCompanyConfigurationServlet` (multi-step wizard state management, JSON)
-**Key complexity**:
-- 20+ sync-type dropdowns on step 1, conditional on SolutionType
-- 80-120 field-level mapping options on steps 2-5, conditional on sync types
-- CRM + FS credential collection on final step
-- Must trigger `WorkspaceProfileCompiler.compileProfile()` on save
-- Must write to `company_configurations` table
-- XML accumulation across multiple form submissions
+**React**: 5-step wizard at `/company/config/wizard` (Solution Type → Object Mapping → Credentials → Execution Settings → Review & Save)
+**Backend**: `ApiConfigurationServlet` handles GET/PUT `/api/config/wizard`, credentials, profiles, and credential test endpoints
+**Features**: Progressive disclosure (core/extended tiers), category grouping, bulk actions, smart defaults per solution type, mapping dependency warnings, help tooltips, config diff, draft persistence, JSON export, test connection, mobile-responsive layout
 
-### Gap 3: Integration Manager / BDConfigurator (P1)
+### Gap 3: Integration Manager / BDConfigurator (P1) — ✅ COMPLETED
 **Classic**: `BDConfigurator.jsp` — shows all transaction flows + queries, START/STOP controls, scheduling
-**React**: Nothing. `/admin/configurator` redirects to JSP.
-**Impact**: Users cannot start/stop integration flows or configure scheduling through the React UI.
-**Backend needed**: New `ApiIntegrationManagerServlet` (JSON wrapper around ConfigContext + ProductDemoServlet logic)
-**Key complexity**:
-- `ProductDemoServlet` is compiled-only (no source) — must reverse-engineer or wrap
-- ConfigContext is a JVM singleton with per-flow state
-- Per-flow fields: start/stop toggle, scheduled/single mode, interval, shift, query start time, transaction counter
-- Admin variant adds: log level, kill flag, DB config
+**React**: `IntegrationOverviewPage` at `/admin/configurator` with 3 tabs: Flows Overview, Credentials, Engine Controls
+**Backend**: `ApiFlowManagementServlet` — `GET /api/flows` (listing), `POST /api/flows/start|stop|submit`, `PUT /api/flows/schedule`, `GET /api/flows/properties`
+**Features**: Flow tables (scheduled + utility + query), dropdown menus (start/stop/schedule/properties), Save All button, schedule editing via EditScheduleDialog
 
-### Gap 4: Flow Properties Editor (P1)
+### Gap 4: Flow Properties Editor (P1) — ✅ COMPLETED
 **Classic**: `FlowProperties.jsp` — editable key/value pairs per flow, admin TS URL config
-**React**: Nothing
-**Backend needed**: New `ApiFlowPropertiesServlet` (JSON read/write wrapper for flow parameters)
-**Key complexity**: `FlowProperiesServlet` is compiled-only — must wrap or replace
+**React**: `FlowPropertiesDialog` — modal with variable parameters (text/password/upload types), password visibility toggle, read-only lock when running, admin TS URL display
+**Backend**: `GET /api/flows/properties` endpoint in `ApiFlowManagementServlet`, save via form POST to compiled `FlowProperiesServlet` (legacy typo preserved), post-save verification compares actual vs expected values
+**Key limitation**: The compiled `FlowProperiesServlet` handles the actual save. The React dialog reads via the new JSON API and writes via form-encoded POST to the legacy servlet. File upload properties (`type: "upload"`) are filtered out of the React dialog since `fetch()` form-POST can't handle multipart uploads.
+
+### Infrastructure Limitation: Transformation Server (Skeleton-Only)
+**Impact**: Query flow "GO" buttons generate correct HTTP GET URLs but get **404** because `iwtransformationserver` is deployed without its Java class JARs (only native libs present in `WEB-INF/lib/`). The 137 vendor JARs (Salesforce SOAP, Axis, enterprise adapters) are NOT included in this repo.
+**What works**: Flow properties viewing/editing, schedule configuration, Start/Stop commands — all operate through `ConfigContext` in the `iw-business-daemon` JVM.
+**What doesn't work**: Actual flow *execution* (transform/scheduledtransform endpoints return 404).
+**To fix**: Obtain the full transformation server JAR package from the InterWeave vendor.
 
 ### Gap 5: Monitoring Completion (P1) — ✅ COMPLETED
 **Classic**: Dashboard.jsp has Chart.js charts + filterable/paginated transaction table + transaction detail + alert config
@@ -258,9 +255,9 @@ The new React UI must maintain the same IDE sync behavior as the classic JSPs. T
 |---|---|---|
 | Login (React) | `bindHostedProfile()` + compile | DONE (ApiLoginServlet) |
 | Login (JSP) | Same | DONE (LocalLoginServlet) |
-| Wizard "Save and Finish" | DB upsert + compile | MISSING (no React wizard) |
-| Start/Stop flow | ProductDemoServlet call | MISSING (no React IM) |
-| Edit flow properties | FlowProperiesServlet call | MISSING (no React props page) |
+| Wizard "Save and Finish" | DB upsert + XML serialization | DONE (ApiConfigurationServlet) |
+| Start/Stop flow | ApiFlowManagementServlet | DONE (IntegrationOverviewPage) |
+| Edit flow properties | FlowPropertiesDialog → FlowProperiesServlet POST | DONE (read via JSON API, save via legacy form POST, post-save verify) |
 | Tomcat startup | exportAll + compileAll | DONE (START.bat) |
 
 ---
@@ -273,7 +270,7 @@ Features from the ASSA prototypes that should enhance (not replace) the classic 
 
 | ASSA Feature | Applies To | Priority |
 |---|---|---|
-| Sparkline trend charts on KPI cards | Dashboard | Medium |
+| ~~Sparkline trend charts on KPI cards~~ | Dashboard | ~~Medium~~ **DONE** (3 of 4 KPIs: Transactions, Success Rate, Avg Duration) |
 | Live-filterable operational queue table | Dashboard / Monitoring | Medium |
 | MFA code field on login | LoginPage redesign | Low (auth dependent) |
 | "Forgot password" link on login | LoginPage redesign | Medium |
@@ -361,18 +358,20 @@ Features from the InterWoven prototype ranked by relevance to the integration pl
 - New: `ApiCompanyConfigurationServlet.java` (stateful wizard, JSON)
 - Must call `WorkspaceProfileCompiler.compileProfile()` on save
 
-**P1-D — Integration Manager** (operational control)
-- New: `IntegrationManagerPage.tsx` (flow list, START/STOP, scheduling)
-- New: `FlowPropertiesPanel.tsx` (sidebar or modal for per-flow config)
-- New: `ApiIntegrationManagerServlet.java` (JSON wrapper for ConfigContext + flow control)
-- New: `ApiFlowPropertiesServlet.java` (JSON read/write for flow params)
+**P1-D — Integration Manager** (operational control) — ✅ COMPLETED
+- `IntegrationOverviewPage.tsx` (3 tabs: Flows, Credentials, Engine Controls)
+- `FlowPropertiesDialog.tsx` (modal for per-flow variable parameter editing)
+- `EditScheduleDialog.tsx` (schedule interval/shift/counter editing)
+- `FlowTable.tsx` (reusable table for scheduled/utility/query flows)
+- `EngineControlsTab.tsx` (start/stop, Save All, submit)
+- `ApiFlowManagementServlet.java` — `GET /api/flows`, `GET /api/flows/properties`, `POST start/stop/submit`, `PUT schedule`
 
 ### Phase 2: Enhanced Experience (ASSA + InterWoven additions)
 
-- Recharts sparklines on dashboard KPI cards
+- ~~Recharts sparklines on dashboard KPI cards~~ — **DONE** (3 of 4: Transactions, Success Rate, Avg Duration)
+- ~~Error handling with toast system~~ — **DONE** (ToastProvider + MutationCache.onError for 401/500+/network)
+- ~~Topbar search functionality~~ — **DONE** (Command palette with "/" shortcut)
 - Notification inbox
-- Better error handling with toast system (replace ErrorMessage.jsp pattern)
-- Topbar search functionality
 - Dynamic environment indicator (replace hardcoded "Local Dev")
 - "Always classic" preference toggle in settings
 

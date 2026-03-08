@@ -97,6 +97,8 @@ public class ApiConfigurationServlet extends HttpServlet {
             handleGetWizard(response, companyId);
         } else if (pathInfo.startsWith("/credentials")) {
             handleGetCredentials(response, companyId);
+        } else if (pathInfo.startsWith("/profiles")) {
+            handleGetProfiles(response, companyId);
         } else {
             sendJson(response, 404, "{\"success\":false,\"error\":\"Unknown endpoint\"}");
         }
@@ -272,31 +274,14 @@ public class ApiConfigurationServlet extends HttpServlet {
         // The body format is: {"solutionType":"SF2QB1","syncMappings":{"SyncTypeAC":"SF2QB",...}}
         String mappingsStr = extractJsonObject(body, "syncMappings");
         if (mappingsStr != null) {
-            // Parse simple key-value JSON object
-            String[] entries = mappingsStr.split(",");
-            for (String entry : entries) {
-                entry = entry.trim();
-                if (entry.startsWith("{")) entry = entry.substring(1);
-                if (entry.endsWith("}")) entry = entry.substring(0, entry.length() - 1);
-                entry = entry.trim();
-                if (entry.isEmpty()) continue;
-
-                int colonIdx = entry.indexOf(':');
-                if (colonIdx < 0) continue;
-
-                String key = entry.substring(0, colonIdx).trim();
-                String val = entry.substring(colonIdx + 1).trim();
-
-                // Remove quotes
-                if (key.startsWith("\"") && key.endsWith("\"")) key = key.substring(1, key.length() - 1);
-                if (val.startsWith("\"") && val.endsWith("\"")) val = val.substring(1, val.length() - 1);
-
+            // Parse JSON object respecting quoted strings (handles commas inside values)
+            parseJsonObjectEntries(mappingsStr, (key, val) -> {
                 if (!key.isEmpty()) {
                     xml.append("<").append(key).append(">")
                        .append(xmlEscape(val))
                        .append("</").append(key).append(">");
                 }
-            }
+            });
         }
         xml.append("</SF2QBConfiguration>");
 
@@ -420,6 +405,106 @@ public class ApiConfigurationServlet extends HttpServlet {
         }
     }
 
+    private void handleGetProfiles(HttpServletResponse response, int companyId) throws IOException {
+        try (Connection conn = dataSource.getConnection()) {
+            StringBuilder profiles = new StringBuilder("[");
+            boolean first = true;
+
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT profile_name, solution_type, updated_at " +
+                    "FROM company_configurations WHERE company_id = ? ORDER BY updated_at DESC")) {
+                stmt.setInt(1, companyId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        if (!first) profiles.append(",");
+                        first = false;
+                        profiles.append("{");
+                        profiles.append("\"profileName\":\"").append(escapeJson(rs.getString("profile_name"))).append("\",");
+                        profiles.append("\"solutionType\":\"").append(escapeJson(rs.getString("solution_type"))).append("\",");
+                        profiles.append("\"updatedAt\":\"").append(escapeJson(rs.getString("updated_at"))).append("\"");
+                        profiles.append("}");
+                    }
+                }
+            }
+            profiles.append("]");
+
+            sendJson(response, 200, "{\"success\":true,\"data\":{\"profiles\":" + profiles.toString() + "}}");
+        } catch (SQLException e) {
+            log("Database error loading profiles", e);
+            sendJson(response, 500, "{\"success\":false,\"error\":\"Database error\"}");
+        }
+    }
+
+    // ─── POST ────────────────────────────────────────────────────────────
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        setCorsHeaders(response);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        HttpSession session = request.getSession(false);
+        if (session == null || !Boolean.TRUE.equals(session.getAttribute("authenticated"))) {
+            sendJson(response, 401, "{\"success\":false,\"error\":\"Not authenticated\"}");
+            return;
+        }
+
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null) pathInfo = "/";
+
+        if (pathInfo.startsWith("/credentials/test")) {
+            String body = readRequestBody(request);
+            handleTestCredential(response, body);
+        } else {
+            sendJson(response, 404, "{\"success\":false,\"error\":\"Unknown endpoint\"}");
+        }
+    }
+
+    private void handleTestCredential(HttpServletResponse response, String body) throws IOException {
+        String credentialType = extractJsonString(body, "credentialType");
+        String endpointUrl = extractJsonString(body, "endpointUrl");
+
+        if (endpointUrl == null || endpointUrl.trim().isEmpty()) {
+            sendJson(response, 400, "{\"success\":false,\"error\":\"endpointUrl is required\"}");
+            return;
+        }
+
+        long startTime = System.currentTimeMillis();
+        boolean reachable = false;
+        int statusCode = 0;
+        String message = "";
+
+        try {
+            java.net.URL url = new java.net.URL(endpointUrl.trim());
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            conn.setInstanceFollowRedirects(true);
+            statusCode = conn.getResponseCode();
+            reachable = (statusCode >= 200 && statusCode < 500);
+            message = reachable ? "Endpoint reachable (HTTP " + statusCode + ")"
+                                : "Endpoint returned HTTP " + statusCode;
+            conn.disconnect();
+        } catch (java.net.MalformedURLException e) {
+            message = "Invalid URL format";
+        } catch (java.net.SocketTimeoutException e) {
+            message = "Connection timed out after 10 seconds";
+        } catch (java.io.IOException e) {
+            message = "Connection failed: " + e.getMessage();
+        }
+
+        long elapsed = System.currentTimeMillis() - startTime;
+
+        String json = "{\"success\":true," +
+                "\"reachable\":" + reachable + "," +
+                "\"statusCode\":" + statusCode + "," +
+                "\"responseTimeMs\":" + elapsed + "," +
+                "\"message\":\"" + escapeJson(message) + "\"}";
+        sendJson(response, 200, json);
+    }
+
     // ─── OPTIONS (CORS) ─────────────────────────────────────────────────
 
     @Override
@@ -534,6 +619,74 @@ public class ApiConfigurationServlet extends HttpServlet {
     }
 
     // ─── Common Helpers ─────────────────────────────────────────────────
+
+    /** Functional interface for JSON key-value pair processing. */
+    private interface JsonEntryHandler {
+        void handle(String key, String value);
+    }
+
+    /**
+     * Parse a JSON object string into key-value pairs, correctly handling
+     * commas inside quoted values (e.g. email lists like "a@b.com,c@d.com").
+     */
+    private void parseJsonObjectEntries(String json, JsonEntryHandler handler) {
+        if (json == null || json.isEmpty()) return;
+        int len = json.length();
+        int pos = 0;
+        // Skip opening brace
+        while (pos < len && json.charAt(pos) != '{') pos++;
+        if (pos < len) pos++;
+
+        while (pos < len) {
+            // Skip whitespace
+            while (pos < len && Character.isWhitespace(json.charAt(pos))) pos++;
+            if (pos >= len || json.charAt(pos) == '}') break;
+
+            // Parse key (must be quoted string)
+            if (json.charAt(pos) != '"') { pos++; continue; }
+            pos++; // skip opening quote
+            int keyStart = pos;
+            while (pos < len && json.charAt(pos) != '"') {
+                if (json.charAt(pos) == '\\') pos++;
+                pos++;
+            }
+            String key = json.substring(keyStart, pos);
+            if (pos < len) pos++; // skip closing quote
+
+            // Skip colon
+            while (pos < len && json.charAt(pos) != ':') pos++;
+            if (pos < len) pos++;
+
+            // Skip whitespace
+            while (pos < len && Character.isWhitespace(json.charAt(pos))) pos++;
+
+            // Parse value (quoted string)
+            String val = "";
+            if (pos < len && json.charAt(pos) == '"') {
+                pos++; // skip opening quote
+                int valStart = pos;
+                while (pos < len && json.charAt(pos) != '"') {
+                    if (json.charAt(pos) == '\\') pos++;
+                    pos++;
+                }
+                val = json.substring(valStart, pos);
+                // Unescape basic sequences
+                val = val.replace("\\\"", "\"").replace("\\\\", "\\");
+                if (pos < len) pos++; // skip closing quote
+            } else if (pos < len) {
+                // Non-string value (number, boolean, null)
+                int valStart = pos;
+                while (pos < len && json.charAt(pos) != ',' && json.charAt(pos) != '}') pos++;
+                val = json.substring(valStart, pos).trim();
+            }
+
+            handler.handle(key, val);
+
+            // Skip comma
+            while (pos < len && json.charAt(pos) != ',' && json.charAt(pos) != '}') pos++;
+            if (pos < len && json.charAt(pos) == ',') pos++;
+        }
+    }
 
     private String readRequestBody(HttpServletRequest request) throws IOException {
         StringBuilder sb = new StringBuilder();

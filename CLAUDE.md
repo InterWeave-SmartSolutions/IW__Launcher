@@ -37,7 +37,7 @@ Exception: the mirrored legacy manuals under `frontends/InterWoven/docs/IW_Docs/
    - User authentication and company management
    - Hosts JSP interfaces for profile/config management
    - Default port: 9090
-   - Also deploys `iwtransformationserver` — legacy transformation engine (**compiled-only, no source in repo**; native JNI via `TS_JNI.dll`/`TS_JNI.so`; 137 JAR dependencies including Salesforce SOAP, Axis, enterprise adapters; packages: adapter, bindings, connector, core, developer/wsdl, encrypt, license, lotus, salesforce, servlets, session, utilplugin, webservice)
+   - Also deploys `iwtransformationserver` — legacy transformation engine (**skeleton only**: `web.xml` + native JNI libs (`TS_JNI.dll`/`TS_JNI.so`) are present, but **Java class JARs are missing** — the 137 JAR dependencies (Salesforce SOAP, Axis, enterprise adapters) are NOT included in this repo. The `/transform` servlet returns 404 because `com.interweave.servlets.IWTransform` cannot be loaded. Query flow "GO" buttons and scheduled flow execution require these vendor JARs to function.)
    - Also deploys `iw-portal` — React dashboard (`frontends/iw-portal/` build output)
 
 3. **Database** - Authentication and configuration (MySQL or Postgres)
@@ -203,7 +203,15 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - Enable: Uncomment ErrorHandlingFilter block in `web.xml`, then restart Tomcat
    - Full steps: `docs/development/BUILD.md` and `docs/NEXT_STEPS.md` item 1
 
-3. **Windows-Native Required for Database**
+3. **Transformation Server is Skeleton-Only**
+   - `iwtransformationserver` webapp has `web.xml` + native JNI libs (`TS_JNI.dll`, `TS_JNI.so`, `jacob.dll`) but **NO Java class JARs**
+   - `WEB-INF/lib/` contains only 6 native files — the 137 vendor JARs (Salesforce SOAP, Axis, enterprise adapters) are **not included** in this repo
+   - The `/transform` servlet (`com.interweave.servlets.IWTransform`) returns **404** because the class cannot be loaded
+   - **Impact**: Query flow "GO" buttons generate correct HTTP GET URLs but get 404. Scheduled flow execution via `/scheduledtransform` also fails. The `TransactionLoggingFilter` is registered in web.xml but has no traffic to intercept.
+   - **To fix**: Obtain the full transformation server JAR package from InterWeave vendor and deploy to `WEB-INF/lib/`
+   - All flow properties (variable parameters, credentials) can still be viewed and edited via the React portal — only actual flow *execution* requires the vendor JARs
+
+4. **Windows-Native Required for Database**
    - **Tomcat MUST run from Windows (PowerShell)**, not WSL2
    - Supabase direct host (`db.*.supabase.co:5432`) is **blocked/unreachable** (connect timeout) — do NOT use
    - Supabase pooler (`aws-0-us-west-2.pooler.supabase.com:6543`) is the **only working endpoint** (verified 2026-02-26)
@@ -262,7 +270,7 @@ javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_por
 
 New React-based portal at `frontends/iw-portal/` — replaces JSP pages incrementally.
 
-- **Stack**: Vite + React 18 + TypeScript (strict) + Tailwind CSS + shadcn/ui + TanStack Query + React Router v7 + Recharts
+- **Stack**: Vite 7 + React 19 + TypeScript (strict) + Tailwind CSS 4 + shadcn/ui + TanStack Query v5 + React Router v7 + Recharts 3
 - **Theme**: ASSA dark palette (default) + light mode, toggle in topbar, persisted to localStorage
 - **Classic View**: Every React route maps to its JSP equivalent. "Switch to Classic" banner on every page. Users can set "always classic" preference.
 - **Hook Page Pattern**: Pages not yet rebuilt in React redirect to the corresponding JSP page. Both apps share Tomcat session cookies (same origin).
@@ -271,12 +279,17 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - **TypeScript**: strict mode, zero errors required before commit
 
 **Route → Classic JSP mapping**:
+- `/login` → `IWLogin.jsp`
+- `/register` → `Registration.jsp`
+- `/register/company` → `CompanyRegistration.jsp`
 - `/dashboard` → `IWLogin.jsp` (post-login landing)
-- `/monitoring` → `monitoring/Dashboard.jsp`
+- `/monitoring` → `monitoring/Dashboard.jsp` (charts + transactions + alerts)
 - `/profile` → `EditProfile.jsp`
+- `/profile/password` → `ChangePassword.jsp`
 - `/company` → `EditCompanyProfile.jsp`
-- `/company/config` → `CompanyConfiguration.jsp`
-- `/admin/configurator` → `BDConfigurator.jsp`
+- `/company/config` → `CompanyConfiguration.jsp` (progress checklist)
+- `/company/config/wizard` → config wizard (5-step: solution type, mappings, credentials, execution settings, review)
+- `/admin/configurator` → `BDConfigurator.jsp` (flows, credentials, engine controls)
 - `/admin/logging` → `Logging.jsp`
 
 **Key directories**:
@@ -284,9 +297,29 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - `src/components/` — ProtectedRoute (auth gate), layout/ (AppShell, Sidebar, Topbar, ClassicViewBanner)
 - `src/pages/` — route pages
 - `src/providers/` — ThemeProvider, QueryProvider, AuthProvider (session check + login/logout)
-- `src/hooks/` — useMonitoring.ts (useDashboard with 30s auto-refresh, useTransactions with pagination)
-- `src/lib/` — api.ts (fetch wrapper), classic-routes.ts, utils.ts
-- `src/types/` — TypeScript interfaces for API responses
+- `src/hooks/` — useMonitoring.ts (useDashboard with 30s auto-refresh, useTransactions with pagination), useConfiguration.ts (wizard/credentials/profiles/test), useFlows.ts (flow listing, start/stop, schedule, properties read/write with post-save verification)
+- `src/lib/` — api.ts (fetch wrapper with ApiError class), classic-routes.ts, config-labels.ts (shared label formatters), utils.ts
+- `src/types/` — TypeScript interfaces for API responses (monitoring.ts, flows.ts, config.ts)
+- `src/components/integrations/` — FlowTable, EngineControlsTab, FlowPropertiesDialog, EditScheduleDialog
+
+**API Servlets (JSON, `com.interweave.businessDaemon.api`):**
+- **ApiLoginServlet** — `POST /api/auth/login`
+- **ApiSessionServlet** — `GET /api/auth/session`
+- **ApiProfileServlet** — `GET/PUT /api/profile`
+- **ApiCompanyProfileServlet** — `GET/PUT /api/company/profile`
+- **ApiRegistrationServlet** — `POST /api/register`
+- **ApiCompanyRegistrationServlet** — `POST /api/register/company`
+- **ApiChangePasswordServlet** — `POST /api/auth/change-password`
+- **ApiConfigurationServlet** — `GET/PUT /api/config/wizard`, `GET/PUT /api/config/credentials`, `GET /api/config/profiles`, `POST /api/config/credentials/test`
+- **ApiFlowManagementServlet** — `GET /api/flows` (flow listing), `GET /api/flows/properties` (flow variable parameters), `POST /api/flows/start|stop|submit`, `PUT /api/flows/schedule`
+- **ApiLogViewerServlet** — `GET /api/logs/*`
+
+**Compile command (API servlets)**:
+```bash
+javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar;web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes;web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*;web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/*.java
+```
+Note: On Windows, use `;` as classpath separator (not `:`).
+
 ### Maven Source Framework (`src/`)
 
 A Maven project at the repo root (`pom.xml`) provides the error handling, validation, and web filter infrastructure. It is compiled separately from the Tomcat servlet sources.
@@ -373,7 +406,7 @@ IW_Launcher/
 │   └── tutorials/              # Training materials
 │
 ├── frontends/                  # Front-end applications
-│   ├── iw-portal/              # React dashboard (Vite + React 18 + TS + Tailwind + shadcn/ui)
+│   ├── iw-portal/              # React dashboard (Vite 7 + React 19 + TS + Tailwind 4 + shadcn/ui)
 │   ├── InterWoven/             # React SPA (concept/prototype — do not use per CLAUDE.md rules)
 │   └── assa/                   # Static HTML design prototypes (design reference for iw-portal)
 │       ├── assa_customer_portal/ # 9 pages: billing, intake, library, profile, resource, search...
@@ -441,6 +474,6 @@ IW_Launcher/
 ## Roadmap and Next Steps
 
 See `docs/NEXT_STEPS.md` for the current prioritized development queue:
-- **Quick wins**: Enable ErrorHandlingFilter (source ready at `src/main/`), fix submodule drift, configure monitoring email
-- **Medium term**: React profile/company forms (Phase 2 Step 5), Recharts monitoring charts (Phase 2 Step 6)
-- **Long term**: TransactionLogger instrumentation (Phase 1B), SF2AuthNet compiler module, Integration Manager React page
+- **Blocked**: Enable ErrorHandlingFilter (needs Maven install), configure monitoring email (needs SMTP credentials)
+- **Medium term**: Code-split ConfigurationWizardPage (React.lazy), sparklines on dashboard KPIs, ViewLog React page
+- **Future**: InterWoven features (AI mapping, visual workflow, OAuth broker), MFA, audit log

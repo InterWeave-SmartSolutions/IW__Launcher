@@ -162,6 +162,26 @@ If you need Maven to **skip compiling tests** as well, use:
 mvn -Dmaven.test.skip=true package
 ```
 
+## React Portal (iw-portal)
+
+The modern React UI is at `frontends/iw-portal/`. Its build output (`web_portal/tomcat/webapps/iw-portal/`) is **gitignored**, so after cloning you must build it:
+
+```bash
+cd frontends/iw-portal
+npm install
+npm run build
+```
+
+This outputs static files to Tomcat's `webapps/iw-portal/`, served at `http://localhost:9090/iw-portal/`. For development with hot-reload:
+
+```bash
+npm run dev   # Vite dev server on :5173, proxies API to Tomcat :9090
+```
+
+Both React and classic JSP pages share the same Tomcat session — users can switch freely between them.
+
+---
+
 ## For Technical Users
 
 Advanced scripts are in the `scripts/` folder:
