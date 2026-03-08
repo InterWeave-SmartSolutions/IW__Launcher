@@ -22,7 +22,6 @@
 	</listener>
 
 	<!-- Error Handling Filter - catches uncaught exceptions -->
-	<!-- TEMPORARILY DISABLED - requires compiled error framework classes
 	<filter>
 		<filter-name>ErrorHandlingFilter</filter-name>
 		<filter-class>com.interweave.web.ErrorHandlingFilter</filter-class>
@@ -35,7 +34,6 @@
 		<filter-name>ErrorHandlingFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	-->
 
 	<servlet>
 		<servlet-name>IWBusinessDaemon</servlet-name>
@@ -560,6 +558,46 @@
         <servlet-mapping>
         	<servlet-name>ApiLogViewerServlet</servlet-name>
         	<url-pattern>/api/logs/*</url-pattern>
+        </servlet-mapping>
+
+        <!-- Password Reset API -->
+        <servlet>
+        	<servlet-name>ApiPasswordResetServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiPasswordResetServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiPasswordResetServlet</servlet-name>
+        	<url-pattern>/api/auth/password-reset</url-pattern>
+        </servlet-mapping>
+
+        <!-- MFA API -->
+        <servlet>
+        	<servlet-name>ApiMfaServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiMfaServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiMfaServlet</servlet-name>
+        	<url-pattern>/api/auth/mfa/*</url-pattern>
+        </servlet-mapping>
+
+        <!-- Notifications API -->
+        <servlet>
+        	<servlet-name>ApiNotificationsServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiNotificationsServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiNotificationsServlet</servlet-name>
+        	<url-pattern>/api/notifications/*</url-pattern>
+        </servlet-mapping>
+
+        <!-- Audit Log API -->
+        <servlet>
+        	<servlet-name>ApiAuditLogServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiAuditLogServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiAuditLogServlet</servlet-name>
+        	<url-pattern>/api/admin/audit/*</url-pattern>
         </servlet-mapping>
 
 	<session-config>

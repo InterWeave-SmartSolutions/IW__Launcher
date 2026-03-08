@@ -122,6 +122,11 @@ web_portal/tomcat/webapps/iw-business-daemon/db_test.jsp
 
 # Override *password* ignore for ChangePassword feature files (these are CODE, not secrets)
 !**/LocalChangePasswordServlet.*
+!**/ChangePasswordPage.*
+!**/ForgotPasswordPage.*
+!**/ApiPasswordResetServlet.*
+!**/ApiChangePasswordServlet.*
+!**/mfa_password_reset_schema_postgres.sql
 !**/LocalChangeCompanyPasswordServlet.*
 !**/ChangePassword.jsp
 !**/ChangeCompanyPassword.jsp

@@ -12,6 +12,11 @@ export const CLASSIC_ROUTES: Record<string, string> = {
   "/company/password": "/iw-business-daemon/ChangeCompanyPassword.jsp",
   "/admin/configurator": "/iw-business-daemon/BDConfigurator.jsp",
   "/admin/logging": "/iw-business-daemon/Logging.jsp",
+  "/admin/audit": "/iw-business-daemon/IWLogin.jsp",
+  "/notifications": "/iw-business-daemon/IWLogin.jsp",
+  "/profile/security": "/iw-business-daemon/EditProfile.jsp",
+  "/forgot-password": "/iw-business-daemon/ChangePassword.jsp",
+  "/mfa/verify": "/iw-business-daemon/IWLogin.jsp",
   "/registration": "/iw-business-daemon/Registration.jsp",
   "/company/registration": "/iw-business-daemon/CompanyRegistration.jsp",
 };

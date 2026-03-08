@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Shield,
@@ -49,7 +49,7 @@ const PLATFORMS = ["Salesforce", "QuickBooks", "Creatio", "NetSuite", "Dynamics"
 
 export function LoginPage() {
   useDocumentTitle("Sign In");
-  const { login, isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { login, isAuthenticated, isLoading: authLoading, user, mfaRequired } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,6 +57,20 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
+
+  // Redirect to MFA verification if required
+  useEffect(() => {
+    if (mfaRequired) {
+      navigate("/mfa/verify", { replace: true });
+    }
+  }, [mfaRequired, navigate]);
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   if (authLoading) {
     return (
@@ -76,7 +90,8 @@ export function LoginPage() {
     setError("");
     try {
       await login({ email: email.trim(), password });
-      navigate("/dashboard", { replace: true });
+      // Check if MFA is required (AuthProvider sets mfaRequired flag)
+      // We need to check via the auth context after login returns
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Login failed. Please try again."
@@ -231,12 +246,12 @@ export function LoginPage() {
                   <Label htmlFor="login-password">
                     Password
                   </Label>
-                  <a
-                    href="/iw-business-daemon/ChangePassword.jsp"
+                  <Link
+                    to="/forgot-password"
                     className="text-[11px] text-[hsl(var(--primary))] hover:underline"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="relative">
                   <Input

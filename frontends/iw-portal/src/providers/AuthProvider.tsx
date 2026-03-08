@@ -7,6 +7,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  mfaRequired: boolean;
   login: (creds: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   // Check session on mount
   useEffect(() => {
@@ -40,10 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (creds: LoginRequest) => {
     setError(null);
+    setMfaRequired(false);
     const res = await apiFetch<LoginResponse>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(creds),
     });
+    if (res.success && res.mfaRequired) {
+      setMfaRequired(true);
+      return;
+    }
     if (res.success && res.user) {
       setUser(res.user);
     } else {
@@ -70,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: user !== null,
         isLoading,
         error,
+        mfaRequired,
         login,
         logout,
       }}

@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-08 (Session 3)
+**Last Updated:** 2026-03-08 (Session 4)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -41,6 +41,12 @@ These items from the original roadmap are now DONE:
 - Shared config label utilities (config-labels.ts)
 - 58 TypeScript source files, 12 API servlet .class files
 - All 12 React pages use shadcn/ui consistently
+- ErrorHandlingFilter compiled and enabled (bypassed Maven with direct javac)
+- MFA / Forgot Password: TOTP-based MFA (Google Authenticator), password reset tokens, 3 React pages, 2 API servlets
+- Notifications Inbox: system/alert/flow/security notification types, bell badge, read/unread, React page + API servlet
+- Audit Log: login/config/flow event tracking, admin-only filterable table, AuditService wired into ApiLoginServlet
+- 3 database schemas (mfa, notifications, audit_log) with RLS
+- Code-split all new pages via React.lazy() — main chunk under 500kB
 
 ---
 
@@ -49,10 +55,9 @@ These items from the original roadmap are now DONE:
 1. [Immediate (Ready Now)](#immediate-ready-now)
    - [1. Merge feature/react-form-pages to main](#1-merge-featurereact-form-pages-to-main) — only remaining immediate item
 2. [Blocked on External Actions](#blocked-on-external-actions)
-   - [5. Enable ErrorHandlingFilter](#5-enable-errorhandlingfilter) — blocked on Maven
    - [6. Configure Email/Webhook Monitoring](#6-configure-emailwebhook-monitoring) — blocked on SMTP creds
 3. [Medium Term](#medium-term)
-   - [8. Deep Configuration Wizard](#8-deep-configuration-wizard) — LOW priority, 8-12 hrs
+   - [Database Migrations](#database-migrations) — run 3 new schema files on Supabase
 4. [Future / Nice-to-Have](#future--nice-to-have)
 
 ---
@@ -94,20 +99,9 @@ git push origin main
 
 ## Blocked on External Actions
 
-### 5. Enable ErrorHandlingFilter
+### ~~5. Enable ErrorHandlingFilter~~ — DONE (2026-03-08)
 
-**[PRIORITY: LOW]** **[Effort: ~30 min once Maven is installed]**
-
-**Blocker:** Maven 3.6+ must be installed. Not currently available on this machine.
-
-The filter source is ready at `src/main/java/com/interweave/web/ErrorHandlingFilter.java`. Once Maven is installed:
-```bash
-mvn -DskipTests package
-cp target/iw-error-framework-1.0.0.jar web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/
-# Uncomment ErrorHandlingFilter in web.xml, restart Tomcat
-```
-
-**Note:** All servlets/JSPs have fallback error handling. This is an enhancement, not a blocker.
+Compiled error framework + filter directly with `javac -source 1.8 -target 1.8` (bypassed Maven). 10 class files deployed to `WEB-INF/classes/com/interweave/error/` and `WEB-INF/classes/com/interweave/web/`. Filter enabled in `web.xml`. Provides structured JSON error responses for API requests and user-friendly error pages for browser requests.
 
 ---
 
@@ -131,6 +125,23 @@ cp web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties.te
 ### 7. ~~SF2AuthNet Workflow Deepening~~ — DONE (2026-03-07)
 
 Completed: SF2AUTH compiler module added to WorkspaceProfileCompiler, regression corpus file created, verify_profile_compiler.ps1 path fixed.
+
+---
+
+### 10. Database Migrations (3 new schemas)
+
+**[PRIORITY: HIGH]** **[Effort: ~5 min via Supabase SQL editor]**
+
+Three new database schemas need to be applied to the Supabase instance:
+
+```bash
+# Run in order via Supabase SQL Editor or psql:
+database/mfa_password_reset_schema_postgres.sql   # password_reset_tokens + user_mfa_settings
+database/notifications_schema_postgres.sql         # notifications table
+database/audit_log_schema_postgres.sql             # audit_log table
+```
+
+Until these migrations are run, the MFA, notifications, and audit log features will return 500 errors from the API servlets (table does not exist). All other portal functionality remains unaffected.
 
 ---
 
@@ -158,9 +169,9 @@ Main chunk is 530kB (over Vite's 500kB warning). ConfigurationWizardPage is admi
 | MoreCustomMappings page | Custom field mapping editor | 4-6 hrs | LOW (compiled-only backend `CustomMappings` servlet) |
 | ~~Sparklines~~ | Dashboard KPI sparkline charts | ~1 hr | DONE (3 of 4 KPIs) |
 | ~~Error toast~~ | Global error toast for API failures | ~30 min | DONE (MutationCache.onError) |
-| MFA / Forgot password | Auth enhancements | 4-8 hrs | — |
-| Notifications inbox | New `/notifications` route | 4-6 hrs | — |
-| Audit log | Admin section | 6-8 hrs | — |
+| ~~MFA / Forgot password~~ | TOTP MFA + password reset tokens | 4-8 hrs | DONE (3 pages, 2 servlets, DB schema) |
+| ~~Notifications inbox~~ | Notification system with bell badge | 4-6 hrs | DONE (page, servlet, NotificationService, DB schema) |
+| ~~Audit log~~ | Admin audit trail with filters | 6-8 hrs | DONE (page, servlet, AuditService, DB schema) |
 | InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs | — |
 
 ### Known Infrastructure Limitation: Transformation Server

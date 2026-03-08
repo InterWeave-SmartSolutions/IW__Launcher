@@ -4,6 +4,7 @@ import { Search, Sun, Moon, Monitor, LogOut, User, Menu, Bell } from "lucide-rea
 import { useTheme } from "@/providers/ThemeProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useAlertRules } from "@/hooks/useMonitoring";
+import { useUnreadCount } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 
 interface SearchItem {
@@ -23,8 +24,11 @@ const SEARCH_ITEMS: SearchItem[] = [
   { label: "Company", description: "Organization settings", path: "/company", group: "Account" },
   { label: "Company Config", description: "Configuration status & setup progress", path: "/company/config", group: "Configuration" },
   { label: "Config Wizard", description: "Object mapping, credentials & sync setup", path: "/company/config/wizard", group: "Configuration" },
+  { label: "Notifications", description: "Alerts, updates & messages", path: "/notifications", group: "Platform" },
+  { label: "Security Settings", description: "MFA & password security", path: "/profile/security", group: "Account" },
   { label: "Integrations", description: "Integration flows & business daemon", path: "/admin/configurator", group: "Administration" },
   { label: "System Logging", description: "Server & application logs", path: "/admin/logging", group: "Administration" },
+  { label: "Audit Log", description: "User activity & event history", path: "/admin/audit", group: "Administration" },
 ];
 
 interface TopbarProps {
@@ -178,7 +182,10 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
         </div>
       )}
 
-      {/* Alerts notification badge */}
+      {/* Notifications badge */}
+      <NotificationBadge />
+
+      {/* Alerts badge */}
       <AlertBadge />
 
       {/* Theme toggle */}
@@ -209,6 +216,31 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
         <span>Logout</span>
       </button>
     </div>
+  );
+}
+
+function NotificationBadge() {
+  const { data } = useUnreadCount();
+  const count = data?.unreadCount ?? 0;
+
+  return (
+    <Link
+      to="/notifications"
+      className={cn(
+        "relative p-1.5 rounded-full border transition-colors cursor-pointer",
+        count > 0
+          ? "border-[hsl(var(--primary)/0.4)] bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.15)]"
+          : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] text-muted-foreground hover:text-foreground"
+      )}
+      title={`${count} unread notifications`}
+    >
+      <Bell className="w-3.5 h-3.5" />
+      {count > 0 && (
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--primary))] text-white text-[9px] font-bold grid place-items-center">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </Link>
   );
 }
 

@@ -3438,3 +3438,77 @@ User request: Fix EditScheduleDialog React Error #301 crash, fix Save All resett
 ### Verification
 - All documentation is consistent across CLAUDE.md, NEXT_STEPS.md, UI_CROSS_REFERENCE.md, SYSTEM_READY.md, iw-portal/README.md, and MEMORY.md
 - Transformation server limitation is documented in 5 locations to prevent future confusion
+
+## 2026-03-08 (Session 4 — ErrorHandlingFilter, MFA, Notifications, Audit Log)
+
+### What changed
+
+1. **ErrorHandlingFilter compiled and enabled** — Bypassed the Maven blocker by compiling the entire `com.interweave.error.*` dependency chain (7 classes: ErrorCategory, ErrorCode, ErrorDocumentation, ErrorLogger, ErrorSeverity, IWError, IWErrorBuilder) plus `ErrorHandlingFilter` directly with `javac -source 1.8 -target 1.8`. Deployed 10 class files to `WEB-INF/classes/`. Enabled the filter in `web.xml`. Provides structured JSON error responses for API requests and user-friendly error pages for browser requests.
+
+2. **MFA / Forgot Password (3 pages + 2 servlets + TOTP)** — Full TOTP-based MFA implementation compatible with Google Authenticator. TOTP uses `javax.crypto.Mac` with `HmacSHA1`, 30-second time step, 6-digit codes, inline Base32 encode/decode (no external dependencies). Backend: `ApiMfaServlet` (status/setup/verify/validate/disable paths, backup codes) and `ApiPasswordResetServlet` (request/validate/reset actions, SecureRandom token generation). Frontend: `MfaSetupPage` (setup flow, QR data display, backup codes, disable), `MfaVerifyPage` (6-digit code input, backup code fallback), `ForgotPasswordPage` (two-step form: email → token+password). AuthProvider modified to handle `mfaRequired` state — after password verification, if MFA enabled, backend returns `{mfaRequired:true}`, frontend redirects to `/mfa/verify`. Database schema: `mfa_password_reset_schema_postgres.sql` (password_reset_tokens + user_mfa_settings tables with RLS).
+
+3. **Notifications Inbox (page + servlet + bell badge)** — `ApiNotificationsServlet` with path dispatch (list/count/read/read-all/delete), pagination. `NotificationService` static utility class for fire-and-forget notification creation from any servlet. React: `NotificationsPage` with filter tabs (all/system/alert/flow/security), notification list with type-colored icons, mark read/unread, pagination. `NotificationBadge` component in Topbar with bell icon and unread count badge (30s auto-refresh via `useUnreadCount`). Database schema: `notifications_schema_postgres.sql` (notifications table with type constraint, indexes, RLS).
+
+4. **Audit Log (admin page + servlet + AuditService wired into login)** — `ApiAuditLogServlet` (admin-only, path dispatch: list/stats/users, dynamic WHERE clause builder, pagination). `AuditService` static utility class with `record()` method — gets its own DB Connection (independent of caller's transaction), catches ALL exceptions internally so audit logging never breaks the calling operation. React: `AuditLogPage` with stats cards, filter bar (date range, user, action type, search), results table with color-coded action badges. Wired `AuditService.record()` into `ApiLoginServlet` for login success/failure events. Database schema: `audit_log_schema_postgres.sql` (audit_log table with 19 action types, indexes, RLS).
+
+5. **Code-split all new pages** — All new feature pages lazy-loaded via `React.lazy()` (MfaSetupPage, NotificationsPage, AuditLogPage, ForgotPasswordPage already eagerly loaded as public route, MfaVerifyPage eagerly loaded as semi-public route). Main chunk at 487.50 kB (under Vite's 500kB warning threshold).
+
+6. **Shared file updates** — Updated routes.tsx (5 new routes), Sidebar.tsx (3 new nav items: Notifications, Security, Audit Log), Topbar.tsx (NotificationBadge + 3 search items), AuthProvider.tsx (mfaRequired state), LoginPage.tsx (MFA redirect + forgot password link), classic-routes.ts (5 new entries), auth.ts (mfaRequired field), web.xml (4 new servlets + ErrorHandlingFilter enabled).
+
+### New files created
+- `database/mfa_password_reset_schema_postgres.sql` — password_reset_tokens + user_mfa_settings tables
+- `database/notifications_schema_postgres.sql` — notifications table
+- `database/audit_log_schema_postgres.sql` — audit_log table
+- `web_portal/.../api/ApiPasswordResetServlet.java` — password reset token flow
+- `web_portal/.../api/ApiMfaServlet.java` — TOTP MFA with inline Base32
+- `web_portal/.../api/ApiNotificationsServlet.java` — notifications CRUD
+- `web_portal/.../api/NotificationService.java` — static notification utility
+- `web_portal/.../api/AuditService.java` — static audit logging utility
+- `web_portal/.../api/ApiAuditLogServlet.java` — admin audit log viewer
+- `frontends/iw-portal/src/pages/ForgotPasswordPage.tsx` — two-step password reset
+- `frontends/iw-portal/src/pages/MfaSetupPage.tsx` — MFA setup/disable flow
+- `frontends/iw-portal/src/pages/MfaVerifyPage.tsx` — MFA code verification
+- `frontends/iw-portal/src/pages/NotificationsPage.tsx` — notification inbox
+- `frontends/iw-portal/src/pages/AuditLogPage.tsx` — admin audit trail
+- `frontends/iw-portal/src/hooks/useMfa.ts` — MFA + password reset mutations
+- `frontends/iw-portal/src/hooks/useNotifications.ts` — notifications queries + mutations
+- `frontends/iw-portal/src/hooks/useAuditLog.ts` — audit log queries
+- `frontends/iw-portal/src/types/mfa.ts` — MFA/password reset interfaces
+- `frontends/iw-portal/src/types/notifications.ts` — notification interfaces
+- `frontends/iw-portal/src/types/audit.ts` — audit log interfaces
+
+### Files modified
+- `web_portal/.../WEB-INF/web.xml` — enabled ErrorHandlingFilter, added 4 new servlet definitions + mappings
+- `web_portal/.../api/ApiLoginServlet.java` — added 3 AuditService.record() calls (login success/failure)
+- `frontends/iw-portal/src/routes.tsx` — 5 new routes (2 public, 3 protected with Suspense)
+- `frontends/iw-portal/src/components/layout/Sidebar.tsx` — 3 new nav items
+- `frontends/iw-portal/src/components/layout/Topbar.tsx` — NotificationBadge component + 3 search items
+- `frontends/iw-portal/src/providers/AuthProvider.tsx` — mfaRequired state + login flow branch
+- `frontends/iw-portal/src/pages/LoginPage.tsx` — MFA redirect + forgot password link
+- `frontends/iw-portal/src/lib/classic-routes.ts` — 5 new route mappings
+- `frontends/iw-portal/src/types/auth.ts` — mfaRequired field on LoginResponse
+- `docs/NEXT_STEPS.md` — updated completed items, marked Session 4 features done
+
+### Compiled class files (new)
+- `WEB-INF/classes/com/interweave/web/ErrorHandlingFilter.class`
+- `WEB-INF/classes/com/interweave/error/` — 9 class files (ErrorCategory, ErrorCode, ErrorDocumentation, ErrorDocumentation$DocumentationEntry, ErrorLogger, ErrorLogger$1, ErrorSeverity, IWError, IWErrorBuilder)
+- `WEB-INF/classes/com/interweave/businessDaemon/api/` — ApiMfaServlet, ApiPasswordResetServlet, ApiNotificationsServlet, NotificationService, AuditService, ApiAuditLogServlet (6 new)
+- `WEB-INF/classes/com/interweave/businessDaemon/api/ApiLoginServlet.class` — recompiled with AuditService integration
+
+### Commands run
+- javac -source 1.8 -target 1.8 (error framework: 7 classes + ErrorHandlingFilter)
+- javac -source 1.8 -target 1.8 (6 new API servlets + services)
+- javac -source 1.8 -target 1.8 (ApiLoginServlet recompile with AuditService)
+- npx tsc --noEmit (0 errors)
+- npm run build (487.50kB main chunk, under 500kB threshold)
+
+### Techniques used
+- **Parallel agents**: 3 background agents (MFA, Notifications, Audit) ran simultaneously, each creating only their own new files. Shared file modifications handled in main conversation to avoid conflicts.
+- **Maven bypass**: Compiled error framework directly with javac instead of waiting for Maven installation. Only external dependency was javax.servlet.* (in servlet-api.jar).
+- **TOTP without external JARs**: Used javax.crypto.Mac (built into JDK) with inline Base32 encode/decode.
+
+### Follow-ups / known issues
+- 3 database schemas must be run on Supabase before MFA, notifications, and audit features are operational (tables don't exist yet → 500 errors)
+- Email/webhook monitoring still blocked on SMTP credentials (password reset logs tokens to stdout as dev workaround)
+- AuditService only wired into ApiLoginServlet — remaining servlets (Profile, Company, Config, Registration, ChangePassword) still need audit integration
+- Password reset tokens are logged to stdout (dev mode) since email delivery requires SMTP configuration

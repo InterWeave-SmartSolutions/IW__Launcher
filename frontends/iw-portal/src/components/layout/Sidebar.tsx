@@ -7,6 +7,9 @@ import {
   Settings,
   FileText,
   Monitor,
+  Bell,
+  Shield,
+  ClipboardList,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -23,11 +26,14 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Overview & status", group: "main" },
   { to: "/monitoring", label: "Monitoring", icon: Activity, description: "Transactions & metrics", group: "main" },
+  { to: "/notifications", label: "Notifications", icon: Bell, description: "Alerts & updates", group: "main" },
   { to: "/profile", label: "My Profile", icon: User, description: "Account settings", group: "account" },
+  { to: "/profile/security", label: "Security", icon: Shield, description: "MFA & password", group: "account" },
   { to: "/company", label: "Company", icon: Building2, description: "Organization settings", group: "account" },
   { to: "/company/config", label: "Configuration", icon: Settings, description: "Company setup", group: "config" },
   { to: "/admin/configurator", label: "Integrations", icon: Monitor, description: "Flows & daemon", group: "admin" },
   { to: "/admin/logging", label: "Logging", icon: FileText, description: "System logs", group: "admin" },
+  { to: "/admin/audit", label: "Audit Log", icon: ClipboardList, description: "Activity history", group: "admin" },
 ];
 
 const GROUP_LABELS: Record<string, string> = {

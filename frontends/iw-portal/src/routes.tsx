@@ -19,8 +19,21 @@ const IntegrationOverviewPage = lazy(() =>
 );
 import { LoggingPage } from "@/pages/LoggingPage";
 import { ChangePasswordPage } from "@/pages/ChangePasswordPage";
+import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
+import { MfaVerifyPage } from "@/pages/MfaVerifyPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Loader2 } from "lucide-react";
+
+/* Lazy-load new feature pages */
+const MfaSetupPage = lazy(() =>
+  import("@/pages/MfaSetupPage").then((m) => ({ default: m.MfaSetupPage }))
+);
+const NotificationsPage = lazy(() =>
+  import("@/pages/NotificationsPage").then((m) => ({ default: m.NotificationsPage }))
+);
+const AuditLogPage = lazy(() =>
+  import("@/pages/AuditLogPage").then((m) => ({ default: m.AuditLogPage }))
+);
 
 /* Lazy-load monitoring pages (recharts is ~380kB) */
 const MonitoringLayout = lazy(() =>
@@ -58,6 +71,14 @@ export const router = createBrowserRouter(
     {
       path: "/register/company",
       element: <CompanyRegisterPage />,
+    },
+    {
+      path: "/forgot-password",
+      element: <ForgotPasswordPage />,
+    },
+    {
+      path: "/mfa/verify",
+      element: <MfaVerifyPage />,
     },
 
     /* ── Protected routes (auth required, inside AppShell) ── */
@@ -138,8 +159,32 @@ export const router = createBrowserRouter(
           ),
         },
         {
+          path: "notifications",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <NotificationsPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: "profile/security",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <MfaSetupPage />
+            </Suspense>
+          ),
+        },
+        {
           path: "admin/logging",
           element: <LoggingPage />,
+        },
+        {
+          path: "admin/audit",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <AuditLogPage />
+            </Suspense>
+          ),
         },
         { path: "*", element: <NotFoundPage /> },
       ],

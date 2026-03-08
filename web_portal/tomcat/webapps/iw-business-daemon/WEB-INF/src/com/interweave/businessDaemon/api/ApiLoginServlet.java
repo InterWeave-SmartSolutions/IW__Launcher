@@ -99,6 +99,9 @@ public class ApiLoginServlet extends HttpServlet {
 
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (!rs.next()) {
+                        AuditService.record(dataSource, null, null, email,
+                            "login_failed", "Invalid email or password",
+                            "user", null, request, null);
                         sendJson(response, HttpServletResponse.SC_UNAUTHORIZED,
                             "{\"success\":false,\"error\":\"Invalid email or password\"}");
                         return;
@@ -110,6 +113,9 @@ public class ApiLoginServlet extends HttpServlet {
 
                     // Verify password (SHA-256 or plain text for testing)
                     if (!verifyPassword(password, storedHash)) {
+                        AuditService.record(dataSource, rs.getInt("id"), rs.getInt("company_id"), email,
+                            "login_failed", "Invalid password",
+                            "user", String.valueOf(rs.getInt("id")), request, null);
                         sendJson(response, HttpServletResponse.SC_UNAUTHORIZED,
                             "{\"success\":false,\"error\":\"Invalid email or password\"}");
                         return;
@@ -175,6 +181,11 @@ public class ApiLoginServlet extends HttpServlet {
                             log("API login succeeded but workspace compiler failed for " + profileName, ioe);
                         }
                     }
+
+                    // Record successful login audit event
+                    AuditService.record(dataSource, userId, companyId, userEmail,
+                        "login", "User logged in successfully via API",
+                        "user", String.valueOf(userId), request, null);
 
                     log("API login successful: " + userEmail + " (Company: " + companyName + ")");
 

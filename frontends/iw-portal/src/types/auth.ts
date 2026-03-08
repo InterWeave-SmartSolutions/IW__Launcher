@@ -15,6 +15,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   success: boolean;
   user?: User;
+  mfaRequired?: boolean;
   error?: string;
 }
 
