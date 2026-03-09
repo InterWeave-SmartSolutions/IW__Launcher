@@ -36,7 +36,9 @@ workspace/*/.classpath
 configuration/.log
 configuration/org.eclipse.core.runtime/.manager/
 configuration/org.eclipse.osgi/.manager/
+configuration/org.eclipse.osgi/bundles/
 configuration/org.eclipse.update/
+admstore.ast
 
 # ===== JRE Temporary Files =====
 jre.partial.*
