@@ -1,13 +1,13 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-08 (Session 4)
+**Last Updated:** 2026-03-08 (Session 5)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
 
 ---
 
-## Completed Items (as of 2026-03-07)
+## Completed Items (as of 2026-03-08)
 
 These items from the original roadmap are now DONE:
 
@@ -47,63 +47,26 @@ These items from the original roadmap are now DONE:
 - Audit Log: login/config/flow event tracking, admin-only filterable table, AuditService wired into ApiLoginServlet
 - 3 database schemas (mfa, notifications, audit_log) with RLS
 - Code-split all new pages via React.lazy() — main chunk under 500kB
+- Config Wizard expansion: schema-driven object detail panels (~80 properties matching original JSP UI), categorized review sections with human-readable labels
 
 ---
 
 ## Table of Contents
 
 1. [Immediate (Ready Now)](#immediate-ready-now)
-   - [1. Merge feature/react-form-pages to main](#1-merge-featurereact-form-pages-to-main) — only remaining immediate item
+   - [Database Migrations](#10-database-migrations-3-new-schemas) — run 3 new schema files on Supabase
+   - [Audit Integration](#11-wire-auditservice-into-remaining-servlets) — AuditService in remaining servlets
 2. [Blocked on External Actions](#blocked-on-external-actions)
    - [6. Configure Email/Webhook Monitoring](#6-configure-emailwebhook-monitoring) — blocked on SMTP creds
-3. [Medium Term](#medium-term)
-   - [Database Migrations](#database-migrations) — run 3 new schema files on Supabase
-4. [Future / Nice-to-Have](#future--nice-to-have)
+3. [Future / Nice-to-Have](#future--nice-to-have)
 
 ---
 
 ## Immediate (Ready Now)
 
-### 1. Merge feature/react-form-pages to main
-
-**[PRIORITY: CRITICAL]** **[Effort: ~15 min]**
-
-The `feature/react-form-pages` branch contains 20+ commits of React portal work: 55 source files, 10 API servlets, full shadcn/ui library, monitoring charts, configuration wizard, engine controls, registration pages, and more. This should be merged to establish a clean checkpoint.
-
-**Steps:**
-```bash
-git checkout main
-git merge feature/react-form-pages
-git push origin main
-```
-
----
-
-### ~~2. TransactionLogger Instrumentation~~ — DONE (2026-03-07)
-
-`TransactionLoggingFilter.java` implemented in `iwtransformationserver/WEB-INF/`, registered in `web.xml`, compiled. Intercepts `/transform`, `/scheduledtransform`, `/iwxml`. Requires Tomcat restart to activate.
-
----
-
-### ~~3. E2E Tests for New API Endpoints~~ — DONE (2026-03-07)
-
-`web_portal/test_api.sh` — 7 phases, ~25 test cases covering all 12+ new API endpoints.
-
----
-
-### ~~4. LoggingPage React Replacement~~ — DONE (2026-03-07)
-
-`LoggingPage.tsx` already exists and is routed at `/admin/logging`. Shows log file list, system status bar, and links to classic Logging.jsp.
-
 ---
 
 ## Blocked on External Actions
-
-### ~~5. Enable ErrorHandlingFilter~~ — DONE (2026-03-08)
-
-Compiled error framework + filter directly with `javac -source 1.8 -target 1.8` (bypassed Maven). 10 class files deployed to `WEB-INF/classes/com/interweave/error/` and `WEB-INF/classes/com/interweave/web/`. Filter enabled in `web.xml`. Provides structured JSON error responses for API requests and user-friendly error pages for browser requests.
-
----
 
 ### 6. Configure Email/Webhook Monitoring
 
@@ -117,14 +80,6 @@ cp web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties.te
 # Fill in SMTP host, port, username, password
 # Restart Tomcat
 ```
-
----
-
-## Medium Term
-
-### 7. ~~SF2AuthNet Workflow Deepening~~ — DONE (2026-03-07)
-
-Completed: SF2AUTH compiler module added to WorkspaceProfileCompiler, regression corpus file created, verify_profile_compiler.ps1 path fixed.
 
 ---
 
@@ -145,19 +100,24 @@ Until these migrations are run, the MFA, notifications, and audit log features w
 
 ---
 
-### ~~8. Deep Configuration Wizard~~ — DONE (2026-03-08)
+### 11. Wire AuditService into Remaining Servlets
 
-5-step wizard with full Phase A/B/C improvements: BCCEmail roundtrip fix, progressive disclosure (core/extended tiers), category grouping, bulk actions (Enable Core/Recommended/Disable All), smart defaults per solution type, mapping dependency warnings, help tooltips, config diff on Review, draft persistence (sessionStorage), JSON export, mobile-responsive card layout, test connection button, shared config-labels module. Backend: fixed JSON parser (handles commas in values), added `GET /api/config/profiles` and `POST /api/config/credentials/test` endpoints.
+**[PRIORITY: MEDIUM]** **[Effort: ~1 hr]**
+
+AuditService is currently only wired into `ApiLoginServlet`. These servlets still need audit event calls:
+- `ApiProfileServlet` (profile update events)
+- `ApiCompanyProfileServlet` (company update events)
+- `ApiConfigurationServlet` (config change events)
+- `ApiRegistrationServlet` / `ApiCompanyRegistrationServlet` (registration events)
+- `ApiChangePasswordServlet` (password change events)
 
 ---
 
-### 9. Code-Split Configuration Wizard
+### 12. Expand Detail Schemas (Invoice, Product, Vendor)
 
-**[PRIORITY: LOW]** **[Effort: ~15 min]**
+**[PRIORITY: LOW]** **[Effort: ~1 hr]**
 
-Main chunk is 530kB (over Vite's 500kB warning). ConfigurationWizardPage is admin-only and a good candidate for `React.lazy()` code-splitting.
-
-**Affected files:** `App.tsx` (add lazy import), `ConfigurationWizardPage.tsx` (no changes needed)
+The Invoice, Product, and Vendor schemas in `object-detail-schema.ts` are minimal stubs. They can be expanded with additional fields from `DetailT1.jsp` and `DetailT2.jsp` to match full original JSP coverage.
 
 ---
 
