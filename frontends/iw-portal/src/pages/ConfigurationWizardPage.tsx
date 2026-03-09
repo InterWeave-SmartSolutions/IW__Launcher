@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, Fragment } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -26,9 +26,25 @@ import {
   Wifi,
   WifiOff,
   Info,
+  SlidersHorizontal,
+  CheckCircle2,
+  XCircle,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { envLabel, stopLabel, emailLabel } from "@/lib/config-labels";
+import {
+  OBJECT_DETAIL_SCHEMAS,
+  resolveTemplate,
+  countConfiguredDetails,
+  CONFIG_KEY_LABELS,
+  categorizeKey,
+  REVIEW_CATEGORY_LABELS,
+  syncDirectionLabel,
+  type ObjectDetailSchema,
+  type DetailField,
+  type ReviewCategory,
+} from "@/lib/object-detail-schema";
 import { useAuth } from "@/providers/AuthProvider";
 import { useToast } from "@/providers/ToastProvider";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -52,7 +68,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { SyncDirection, SyncMapping, MappingCategory } from "@/types/configuration";
+import type { SyncDirection, SyncMapping, MappingCategory, SolutionMeta } from "@/types/configuration";
 
 // ─── Constants ────────────────────────────────────────────────────────
 
@@ -84,22 +100,11 @@ const STEPS = [
   { label: "Review & Save", icon: Save },
 ];
 
-// Execution settings keys stored in XML alongside SyncType* fields
 const EXEC_DEFAULTS: Record<string, string> = {
-  SandBoxUsed: "No",
-  Env2Con: "Tst",
-  QBVersion: "USA",
-  QBLocation: "DEFAULT",
-  StopSchedTr: "None",
-  SleepStart: "",
-  SleepEnd: "",
-  TimeZone: "0",
-  EmlNtf: "None",
-  UseAdmEml: "No",
-  CCEmail: "",
-  BCCEmail: "",
-  LongTimeOut: "No",
-  ConFailState: "No",
+  SandBoxUsed: "No", Env2Con: "Tst", QBVersion: "USA", QBLocation: "DEFAULT",
+  StopSchedTr: "None", SleepStart: "", SleepEnd: "", TimeZone: "0",
+  EmlNtf: "None", UseAdmEml: "No", CCEmail: "", BCCEmail: "",
+  LongTimeOut: "No", ConFailState: "No",
 };
 
 const EXEC_KEYS = new Set(Object.keys(EXEC_DEFAULTS));
@@ -131,7 +136,6 @@ export function ConfigurationWizardPage() {
   const isAdmin = user?.isAdmin === true;
   const isLoading = wizardLoading || credLoading;
 
-  // Wizard state
   const [step, setStep] = useState(0);
   const [solutionType, setSolutionType] = useState<string>("");
   const [syncValues, setSyncValues] = useState<Record<string, string>>({});
@@ -139,22 +143,14 @@ export function ConfigurationWizardPage() {
   const [initialized, setInitialized] = useState(false);
   const initialSnapshot = useRef<Record<string, string>>({});
 
-  // Credential form state
   const [credForm, setCredForm] = useState<CredFormType>({
-    sourceUsername: "",
-    sourcePassword: "",
-    sourceUrl: "",
-    sourceToken: "",
-    destUsername: "",
-    destPassword: "",
-    destCompanyFile: "",
+    sourceUsername: "", sourcePassword: "", sourceUrl: "", sourceToken: "",
+    destUsername: "", destPassword: "", destCompanyFile: "",
   });
 
-  // Initialize from server data once loaded
+  // Initialize from server data
   useEffect(() => {
     if (initialized || !wizardData?.data || !credData?.data) return;
-
-    // Try restoring draft from sessionStorage first
     const draft = loadDraft();
     if (draft) {
       setSolutionType(draft.solutionType);
@@ -166,25 +162,18 @@ export function ConfigurationWizardPage() {
       setInitialized(true);
       return;
     }
-
     const serverSolution = wizardData.data.solutionType || "QB";
     setSolutionType(serverSolution);
-
-    // Split server syncMappings into sync entries and execution entries
     const serverMappings = wizardData.data.syncMappings || {};
     const syncOnly: Record<string, string> = {};
     const execOnly: Record<string, string> = { ...EXEC_DEFAULTS };
     for (const [k, v] of Object.entries(serverMappings)) {
-      if (EXEC_KEYS.has(k)) {
-        execOnly[k] = v;
-      } else {
-        syncOnly[k] = v;
-      }
+      if (EXEC_KEYS.has(k)) execOnly[k] = v;
+      else syncOnly[k] = v;
     }
     setSyncValues(syncOnly);
     setExecSettings(execOnly);
     initialSnapshot.current = { ...syncOnly, ...execOnly };
-
     const pc = credData.data.profileCredentials;
     if (pc) {
       setCredForm({
@@ -200,7 +189,7 @@ export function ConfigurationWizardPage() {
     setInitialized(true);
   }, [initialized, wizardData, credData]);
 
-  // Save draft to sessionStorage on meaningful changes (exclude passwords)
+  // Draft persistence
   useEffect(() => {
     if (!initialized) return;
     saveDraft({ solutionType, syncValues, execSettings, credForm: {
@@ -221,7 +210,6 @@ export function ConfigurationWizardPage() {
 
   const configuredCount = Object.values(syncValues).filter((v) => v && v !== "None").length;
 
-  // Step validation
   const canAdvance = (fromStep: number): boolean => {
     if (fromStep === 0) return !!solutionType;
     return true;
@@ -237,18 +225,11 @@ export function ConfigurationWizardPage() {
 
   const handleSave = async () => {
     try {
-      // Merge sync mappings + execution settings for save
       const allMappings: Record<string, string> = { ...syncValues };
       for (const [k, v] of Object.entries(execSettings)) {
         if (v !== "") allMappings[k] = v;
       }
-
-      await saveWizard.mutateAsync({
-        solutionType,
-        syncMappings: allMappings,
-      });
-
-      // Save source credentials
+      await saveWizard.mutateAsync({ solutionType, syncMappings: allMappings });
       if (credForm.sourceUsername || credForm.sourceUrl) {
         await saveCredential.mutateAsync({
           credentialType: meta.crmName === "SF" ? "salesforce" : "crm",
@@ -259,8 +240,6 @@ export function ConfigurationWizardPage() {
           apiKey: credForm.sourceToken,
         });
       }
-
-      // Save destination credentials
       if (credForm.destUsername || credForm.destCompanyFile) {
         await saveCredential.mutateAsync({
           credentialType: meta.fsName === "QB" ? "quickbooks" : "financial",
@@ -270,7 +249,6 @@ export function ConfigurationWizardPage() {
           extraConfig: credForm.destCompanyFile,
         });
       }
-
       clearDraft();
       showToast("Configuration saved successfully", "success");
       navigate("/company/config");
@@ -380,7 +358,6 @@ export function ConfigurationWizardPage() {
               onChange={(v) => {
                 const prev = solutionType;
                 setSolutionType(v);
-                // Apply recommended defaults on first selection or type change
                 if (v !== prev) {
                   const defaults = RECOMMENDED_DEFAULTS[v];
                   if (defaults && Object.keys(syncValues).filter((k) => syncValues[k] !== "None").length === 0) {
@@ -409,11 +386,7 @@ export function ConfigurationWizardPage() {
             />
           )}
           {step === 3 && (
-            <StepExecutionSettings
-              meta={meta}
-              settings={execSettings}
-              onUpdate={updateExec}
-            />
+            <StepExecutionSettings meta={meta} settings={execSettings} onUpdate={updateExec} />
           )}
           {step === 4 && (
             <StepReview
@@ -431,14 +404,9 @@ export function ConfigurationWizardPage() {
 
         {/* Navigation */}
         <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
-            disabled={step === 0}
-          >
+          <Button variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
             <ArrowLeft className="w-4 h-4" /> Back
           </Button>
-
           {step < STEPS.length - 1 ? (
             <Button onClick={handleNext} disabled={!canAdvance(step)}>
               Next <ArrowRight className="w-4 h-4" />
@@ -449,11 +417,7 @@ export function ConfigurationWizardPage() {
               onClick={() => void handleSave()}
               disabled={saveWizard.isPending || saveCredential.isPending}
             >
-              {saveWizard.isPending ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
+              {saveWizard.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Configuration
             </Button>
           )}
@@ -493,13 +457,7 @@ function clearDraft() {
 
 // ─── Step 1: Solution Type ──────────────────────────────────────────
 
-function StepSolutionType({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
+function StepSolutionType({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="space-y-4">
       <div>
@@ -536,7 +494,7 @@ function StepSolutionType({
   );
 }
 
-// ─── Step 2: Object Mapping ─────────────────────────────────────────
+// ─── Step 2: Object Mapping (with Detail Panels) ─────────────────────
 
 function StepObjectMapping({
   solutionType,
@@ -548,23 +506,22 @@ function StepObjectMapping({
 }: {
   solutionType: string;
   mappings: SyncMapping[];
-  meta: ReturnType<typeof deriveSolutionMeta>;
+  meta: SolutionMeta;
   syncValues: Record<string, string>;
   onUpdate: (key: string, value: string) => void;
   onBulkUpdate: (values: Record<string, string>) => void;
 }) {
   const [showExtended, setShowExtended] = useState(false);
+  const [expandedObjects, setExpandedObjects] = useState<Set<string>>(new Set());
 
   const coreMappings = mappings.filter((m) => m.tier === "core");
   const extendedMappings = mappings.filter((m) => m.tier === "extended");
 
-  // Group extended by category
   const extendedByCategory = extendedMappings.reduce<Record<MappingCategory, SyncMapping[]>>(
     (acc, m) => { (acc[m.category] ??= []).push(m); return acc; },
     {} as Record<MappingCategory, SyncMapping[]>
   );
 
-  // Dependency warnings
   const warnings: string[] = [];
   for (const [dep, prereqs] of Object.entries(MAPPING_DEPENDENCIES)) {
     const depVal = syncValues[dep];
@@ -597,18 +554,25 @@ function StepObjectMapping({
     }
   };
 
+  const toggleExpanded = (key: string) => {
+    setExpandedObjects((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-semibold">Object Selection</h2>
+          <h2 className="text-lg font-semibold">Object Mapping</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure sync direction for each data object between{" "}
+            Configure sync direction and field-level properties for each data object between{" "}
             <span className="font-medium text-foreground">{meta.crmName}</span> and{" "}
             <span className="font-medium text-foreground">{meta.fsName}</span>.
           </p>
         </div>
-        {/* Bulk actions */}
         <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => handleBulkAction("enableCore")}>
             <Zap className="w-3 h-3" /> Enable Core
@@ -622,7 +586,6 @@ function StepObjectMapping({
         </div>
       </div>
 
-      {/* Dependency warnings */}
       {warnings.length > 0 && (
         <div className="space-y-1">
           {warnings.map((w, i) => (
@@ -635,7 +598,15 @@ function StepObjectMapping({
       )}
 
       {/* Core mappings */}
-      <MappingTable label="Core Mappings" mappings={coreMappings} meta={meta} syncValues={syncValues} onUpdate={onUpdate} />
+      <MappingSection
+        label="Core Mappings"
+        mappings={coreMappings}
+        meta={meta}
+        syncValues={syncValues}
+        onUpdate={onUpdate}
+        expandedObjects={expandedObjects}
+        onToggleExpanded={toggleExpanded}
+      />
 
       {/* Extended mappings toggle */}
       {extendedMappings.length > 0 && (
@@ -651,13 +622,15 @@ function StepObjectMapping({
           {showExtended && (
             <div className="space-y-4 pl-2 border-l-2 border-[hsl(var(--primary)/0.15)]">
               {(Object.entries(extendedByCategory) as [MappingCategory, SyncMapping[]][]).map(([cat, catMappings]) => (
-                <MappingTable
+                <MappingSection
                   key={cat}
                   label={CATEGORY_LABELS[cat]}
                   mappings={catMappings}
                   meta={meta}
                   syncValues={syncValues}
                   onUpdate={onUpdate}
+                  expandedObjects={expandedObjects}
+                  onToggleExpanded={toggleExpanded}
                 />
               ))}
             </div>
@@ -675,88 +648,310 @@ function StepObjectMapping({
   );
 }
 
-function MappingTable({
+/** A section of mappings with expandable detail panels per row */
+function MappingSection({
   label,
   mappings,
   meta,
   syncValues,
   onUpdate,
+  expandedObjects,
+  onToggleExpanded,
 }: {
   label: string;
   mappings: SyncMapping[];
-  meta: ReturnType<typeof deriveSolutionMeta>;
+  meta: SolutionMeta;
   syncValues: Record<string, string>;
   onUpdate: (key: string, value: string) => void;
+  expandedObjects: Set<string>;
+  onToggleExpanded: (key: string) => void;
 }) {
   return (
     <div>
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{label}</p>
       <div className="border border-[hsl(var(--border))] rounded-xl overflow-hidden">
-        {/* Desktop table */}
-        <table className="w-full text-sm max-sm:hidden">
-          <thead>
-            <tr className="bg-[hsl(var(--muted)/0.3)]">
-              <th className="text-left px-4 py-2.5 text-xs text-muted-foreground font-medium">Object Mapping</th>
-              <th className="text-left px-4 py-2.5 text-xs text-muted-foreground font-medium w-52">Sync Direction</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mappings.map((m) => (
-              <tr key={m.key} className="border-t border-[hsl(var(--border))]">
-                <td className="px-4 py-2.5">
-                  <p className="text-sm">{m.label}</p>
-                </td>
-                <td className="px-4 py-2.5">
-                  <Select value={syncValues[m.key] || m.value} onValueChange={(v) => onUpdate(m.key, v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DIRECTION_OPTIONS.filter(
-                        (d) => d.value !== "SFQB" || m.supportsBidirectional
-                      ).map((d) => (
-                        <SelectItem key={d.value} value={d.value}>
-                          {d.value === "SF2QB"
-                            ? `${meta.crmName} → ${meta.fsName}`
-                            : d.value === "QB2SF"
-                            ? `${meta.fsName} → ${meta.crmName}`
-                            : d.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </td>
+        {/* Desktop */}
+        <div className="max-sm:hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[hsl(var(--muted)/0.3)]">
+                <th className="text-left px-4 py-2.5 text-xs text-muted-foreground font-medium">Object Mapping</th>
+                <th className="text-left px-4 py-2.5 text-xs text-muted-foreground font-medium w-52">Sync Direction</th>
+                <th className="text-center px-2 py-2.5 text-xs text-muted-foreground font-medium w-28">Details</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {/* Mobile card layout */}
+            </thead>
+            <tbody>
+              {mappings.map((m) => {
+                const direction = syncValues[m.key] || m.value;
+                const isActive = direction !== "None";
+                const hasSchema = !!OBJECT_DETAIL_SCHEMAS[m.key];
+                const isExpanded = expandedObjects.has(m.key);
+                const detailCount = isActive ? countConfiguredDetails(m.key, syncValues) : 0;
+                return (
+                  <Fragment key={m.key}>
+                    <tr className={cn(
+                      "border-t border-[hsl(var(--border))]",
+                      isActive && "bg-[hsl(var(--success)/0.02)]"
+                    )}>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))]" />}
+                          <p className="text-sm">{m.label}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <Select value={direction} onValueChange={(v) => onUpdate(m.key, v)}>
+                          <SelectTrigger className={cn(isActive && "border-[hsl(var(--success)/0.4)]")}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DIRECTION_OPTIONS.filter(
+                              (d) => d.value !== "SFQB" || m.supportsBidirectional
+                            ).map((d) => (
+                              <SelectItem key={d.value} value={d.value}>
+                                {d.value === "SF2QB"
+                                  ? `${meta.crmName} → ${meta.fsName}`
+                                  : d.value === "QB2SF"
+                                  ? `${meta.fsName} → ${meta.crmName}`
+                                  : d.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="px-2 py-2.5 text-center">
+                        {isActive && hasSchema ? (
+                          <button
+                            onClick={() => onToggleExpanded(m.key)}
+                            className={cn(
+                              "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                              isExpanded
+                                ? "bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] border border-[hsl(var(--primary)/0.3)]"
+                                : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted)/0.3)] border border-transparent"
+                            )}
+                          >
+                            <SlidersHorizontal className="w-3 h-3" />
+                            {isExpanded ? "Close" : "Configure"}
+                            {detailCount > 0 && (
+                              <span className="ml-0.5 w-4 h-4 rounded-full bg-[hsl(var(--primary)/0.2)] text-[hsl(var(--primary))] grid place-items-center text-[9px] font-bold">
+                                {detailCount}
+                              </span>
+                            )}
+                          </button>
+                        ) : isActive ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : null}
+                      </td>
+                    </tr>
+                    {/* Expanded detail panel */}
+                    {isExpanded && isActive && hasSchema && (
+                      <tr>
+                        <td colSpan={3} className="p-0">
+                          <ObjectDetailPanel
+                            schema={OBJECT_DETAIL_SCHEMAS[m.key]!}
+                            meta={meta}
+                            values={syncValues}
+                            direction={direction as SyncDirection}
+                            onUpdate={onUpdate}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {/* Mobile */}
         <div className="sm:hidden divide-y divide-[hsl(var(--border))]">
-          {mappings.map((m) => (
-            <div key={m.key} className="p-3 space-y-2">
-              <p className="text-sm font-medium">{m.label}</p>
-              <Select value={syncValues[m.key] || m.value} onValueChange={(v) => onUpdate(m.key, v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DIRECTION_OPTIONS.filter(
-                    (d) => d.value !== "SFQB" || m.supportsBidirectional
-                  ).map((d) => (
-                    <SelectItem key={d.value} value={d.value}>
-                      {d.value === "SF2QB"
-                        ? `${meta.crmName} → ${meta.fsName}`
-                        : d.value === "QB2SF"
-                        ? `${meta.fsName} → ${meta.crmName}`
-                        : d.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+          {mappings.map((m) => {
+            const direction = syncValues[m.key] || m.value;
+            const isActive = direction !== "None";
+            const hasSchema = !!OBJECT_DETAIL_SCHEMAS[m.key];
+            const isExpanded = expandedObjects.has(m.key);
+            return (
+              <div key={m.key} className={cn("p-3 space-y-2", isActive && "bg-[hsl(var(--success)/0.02)]")}>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">{m.label}</p>
+                  {isActive && hasSchema && (
+                    <button
+                      onClick={() => onToggleExpanded(m.key)}
+                      className="text-xs text-[hsl(var(--primary))] font-medium cursor-pointer"
+                    >
+                      {isExpanded ? "Close" : "Configure"}
+                    </button>
+                  )}
+                </div>
+                <Select value={direction} onValueChange={(v) => onUpdate(m.key, v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIRECTION_OPTIONS.filter(
+                      (d) => d.value !== "SFQB" || m.supportsBidirectional
+                    ).map((d) => (
+                      <SelectItem key={d.value} value={d.value}>
+                        {d.value === "SF2QB"
+                          ? `${meta.crmName} → ${meta.fsName}`
+                          : d.value === "QB2SF"
+                          ? `${meta.fsName} → ${meta.crmName}`
+                          : d.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isExpanded && isActive && hasSchema && (
+                  <ObjectDetailPanel
+                    schema={OBJECT_DETAIL_SCHEMAS[m.key]!}
+                    meta={meta}
+                    values={syncValues}
+                    direction={direction as SyncDirection}
+                    onUpdate={onUpdate}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Object Detail Panel ─────────────────────────────────────────────
+
+function ObjectDetailPanel({
+  schema,
+  meta,
+  values,
+  direction,
+  onUpdate,
+}: {
+  schema: ObjectDetailSchema;
+  meta: SolutionMeta;
+  values: Record<string, string>;
+  direction: SyncDirection;
+  onUpdate: (key: string, value: string) => void;
+}) {
+  const r = (t: string) => resolveTemplate(t, meta);
+
+  const isGroupVisible = (group: typeof schema.groups[0]): boolean => {
+    if (!group.showForDirections) return true;
+    return group.showForDirections.includes(direction);
+  };
+
+  const isFieldVisible = (field: DetailField): boolean => {
+    if (field.showForDirections && !field.showForDirections.includes(direction)) return false;
+    if (field.showWhen) {
+      const depVal = values[field.showWhen.key] || "";
+      if (!field.showWhen.values.includes(depVal)) return false;
+    }
+    return true;
+  };
+
+  const visibleGroups = schema.groups.filter(isGroupVisible);
+  if (visibleGroups.length === 0) return null;
+
+  return (
+    <div className="bg-[hsl(var(--muted)/0.15)] border-t border-[hsl(var(--primary)/0.15)]">
+      <div className="px-5 py-4 space-y-5">
+        <div className="flex items-center gap-2 text-xs">
+          <Layers className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
+          <span className="font-semibold text-[hsl(var(--primary))]">
+            {r(schema.sectionLabel)}
+          </span>
+        </div>
+
+        {visibleGroups.map((group, gi) => {
+          const visibleFields = group.fields.filter(isFieldVisible);
+          if (visibleFields.length === 0) return null;
+
+          return (
+            <div key={gi} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-semibold text-muted-foreground">{r(group.label)}</p>
+                {group.helpText && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-64">
+                      <p>{r(group.helpText)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 max-sm:grid-cols-1">
+                {visibleFields.map((field) => (
+                  <DetailFieldInput
+                    key={field.key}
+                    field={field}
+                    value={values[field.key] ?? ""}
+                    meta={meta}
+                    onUpdate={onUpdate}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DetailFieldInput({
+  field,
+  value,
+  meta,
+  onUpdate,
+}: {
+  field: DetailField;
+  value: string;
+  meta: SolutionMeta;
+  onUpdate: (key: string, value: string) => void;
+}) {
+  const r = (t: string) => resolveTemplate(t, meta);
+  const effectiveValue = value || field.defaultValue;
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5">
+        <Label className="text-xs">{r(field.label)}</Label>
+        {field.helpText && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-64">
+              <p>{r(field.helpText)}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+      {field.type === "select" && field.options ? (
+        <Select value={effectiveValue} onValueChange={(v) => onUpdate(field.key, v)}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {field.options.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {r(opt.label)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Input
+          className="h-8 text-xs"
+          value={value}
+          onChange={(e) => onUpdate(field.key, e.target.value)}
+          placeholder={field.placeholder ? r(field.placeholder) : undefined}
+          maxLength={field.maxLength}
+        />
+      )}
     </div>
   );
 }
@@ -769,7 +964,7 @@ function StepCredentials({
   onChange,
   existingCreds,
 }: {
-  meta: ReturnType<typeof deriveSolutionMeta>;
+  meta: SolutionMeta;
   form: CredFormType;
   onChange: (f: CredFormType) => void;
   existingCreds: Array<{ credentialType: string; username: string; endpointUrl: string; isActive: boolean }>;
@@ -777,9 +972,7 @@ function StepCredentials({
   const testCredential = useTestCredential();
   const [testResult, setTestResult] = useState<{ type: string; reachable: boolean; message: string } | null>(null);
 
-  const update = (field: string, value: string) => {
-    onChange({ ...form, [field]: value });
-  };
+  const update = (field: string, value: string) => onChange({ ...form, [field]: value });
 
   const handleTestConnection = async (type: "source" | "dest") => {
     const url = type === "source" ? form.sourceUrl : "";
@@ -807,7 +1000,6 @@ function StepCredentials({
         </p>
       </div>
 
-      {/* Existing credentials indicator */}
       {existingCreds.length > 0 && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success)/0.05)]">
           <Badge variant="success">
@@ -818,7 +1010,6 @@ function StepCredentials({
         </div>
       )}
 
-      {/* Test result banner */}
       {testResult && (
         <div className={cn(
           "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs",
@@ -831,7 +1022,6 @@ function StepCredentials({
         </div>
       )}
 
-      {/* Source system */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-[hsl(var(--primary)/0.15)] grid place-items-center">
@@ -860,19 +1050,13 @@ function StepCredentials({
           )}
         </div>
         {form.sourceUrl && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void handleTestConnection("source")}
-            disabled={testCredential.isPending}
-          >
+          <Button variant="outline" size="sm" onClick={() => void handleTestConnection("source")} disabled={testCredential.isPending}>
             {testCredential.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wifi className="w-3 h-3" />}
             Test Connection
           </Button>
         )}
       </fieldset>
 
-      {/* Destination system */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-[hsl(var(--success)/0.15)] grid place-items-center">
@@ -908,7 +1092,7 @@ function StepExecutionSettings({
   settings,
   onUpdate,
 }: {
-  meta: ReturnType<typeof deriveSolutionMeta>;
+  meta: SolutionMeta;
   settings: Record<string, string>;
   onUpdate: (key: string, value: string) => void;
 }) {
@@ -920,11 +1104,9 @@ function StepExecutionSettings({
         <h2 className="text-lg font-semibold">Execution Settings</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Configure environment, scheduling, error handling, and notification settings.
-          These values are stored in the configuration XML and used by the transformation engine at runtime.
         </p>
       </div>
 
-      {/* Environment */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-[hsl(var(--primary)/0.15)] grid place-items-center">
@@ -946,7 +1128,7 @@ function StepExecutionSettings({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <Label>Base Environment</Label>
-              <FieldTooltip text="Determines which InterWeave server pool processes your transactions. Production A is the default; use Dedicated for high-volume customers." />
+              <FieldTooltip text="Determines which InterWeave server pool processes your transactions." />
             </div>
             <Select value={settings.Env2Con || "Tst"} onValueChange={(v) => onUpdate("Env2Con", v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -964,7 +1146,6 @@ function StepExecutionSettings({
         </div>
       </fieldset>
 
-      {/* System settings (conditional on solution type) */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-[hsl(var(--muted)/0.5)] grid place-items-center">
@@ -1008,22 +1189,14 @@ function StepExecutionSettings({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <Label>Time Zone Shift</Label>
-              <FieldTooltip text="Offset in hours from the InterWeave server timezone. Use this when your business system timestamps differ from the server clock." />
+              <FieldTooltip text="Offset in hours from the server timezone. Use when business system timestamps differ." />
             </div>
-            <Input
-              type="number"
-              min={-12}
-              max={14}
-              value={settings.TimeZone || "0"}
-              onChange={(e) => onUpdate("TimeZone", e.target.value)}
-              placeholder="0"
-            />
+            <Input type="number" min={-12} max={14} value={settings.TimeZone || "0"} onChange={(e) => onUpdate("TimeZone", e.target.value)} placeholder="0" />
           </div>
           {!isQB && <div />}
         </div>
       </fieldset>
 
-      {/* Error handling */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-[hsl(var(--destructive)/0.15)] grid place-items-center">
@@ -1046,7 +1219,7 @@ function StepExecutionSettings({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <Label>Extended Connection Timeout</Label>
-              <FieldTooltip text="Increases API connection timeout from 30s to 120s. Enable for slow or overseas endpoints." />
+              <FieldTooltip text="Increases API timeout from 30s to 120s. Enable for slow endpoints." />
             </div>
             <Select value={settings.LongTimeOut || "No"} onValueChange={(v) => onUpdate("LongTimeOut", v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -1069,7 +1242,6 @@ function StepExecutionSettings({
         </div>
       </fieldset>
 
-      {/* Schedule & Notifications */}
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-[hsl(var(--warning)/0.15)] grid place-items-center">
@@ -1080,20 +1252,12 @@ function StepExecutionSettings({
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
           <div className="space-y-1.5">
             <Label>Sleep Window Start</Label>
-            <Input
-              value={settings.SleepStart || ""}
-              onChange={(e) => onUpdate("SleepStart", e.target.value)}
-              placeholder="e.g. 22:00"
-            />
+            <Input value={settings.SleepStart || ""} onChange={(e) => onUpdate("SleepStart", e.target.value)} placeholder="e.g. 22:00" />
             <p className="text-[10px] text-muted-foreground">No integrations during sleep window</p>
           </div>
           <div className="space-y-1.5">
             <Label>Sleep Window End</Label>
-            <Input
-              value={settings.SleepEnd || ""}
-              onChange={(e) => onUpdate("SleepEnd", e.target.value)}
-              placeholder="e.g. 06:00"
-            />
+            <Input value={settings.SleepEnd || ""} onChange={(e) => onUpdate("SleepEnd", e.target.value)} placeholder="e.g. 06:00" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
@@ -1128,22 +1292,11 @@ function StepExecutionSettings({
           <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
             <div className="space-y-1.5">
               <Label>CC Email Addresses</Label>
-              <Input
-                value={settings.CCEmail || ""}
-                onChange={(e) => onUpdate("CCEmail", e.target.value)}
-                placeholder="email@example.com"
-              />
+              <Input value={settings.CCEmail || ""} onChange={(e) => onUpdate("CCEmail", e.target.value)} placeholder="email@example.com" />
             </div>
             <div className="space-y-1.5">
-              <Label>
-                <Mail className="w-3 h-3 inline mr-1" />
-                BCC Email Addresses
-              </Label>
-              <Input
-                value={settings.BCCEmail || ""}
-                onChange={(e) => onUpdate("BCCEmail", e.target.value)}
-                placeholder="email@example.com"
-              />
+              <Label><Mail className="w-3 h-3 inline mr-1" />BCC Email Addresses</Label>
+              <Input value={settings.BCCEmail || ""} onChange={(e) => onUpdate("BCCEmail", e.target.value)} placeholder="email@example.com" />
             </div>
           </div>
         )}
@@ -1165,7 +1318,7 @@ function FieldTooltip({ text }: { text: string }) {
   );
 }
 
-// ─── Step 5: Review ─────────────────────────────────────────────────
+// ─── Step 5: Review & Save (Improved) ────────────────────────────────
 
 function StepReview({
   solutionType,
@@ -1178,7 +1331,7 @@ function StepReview({
   initialSnapshot,
 }: {
   solutionType: string;
-  meta: ReturnType<typeof deriveSolutionMeta>;
+  meta: SolutionMeta;
   syncValues: Record<string, string>;
   configuredCount: number;
   mappings: SyncMapping[];
@@ -1186,23 +1339,42 @@ function StepReview({
   execSettings: Record<string, string>;
   initialSnapshot: Record<string, string>;
 }) {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["mappings"]));
   const activeMappings = mappings.filter((m) => syncValues[m.key] && syncValues[m.key] !== "None");
 
-  // Compute changed fields for config diff
-  const changes: { key: string; from: string; to: string }[] = [];
+  const toggleSection = (id: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  // Compute changes grouped by category
   const allCurrent = { ...syncValues, ...execSettings };
+  const changes: { key: string; from: string; to: string; category: ReviewCategory }[] = [];
   for (const [k, v] of Object.entries(allCurrent)) {
     const prev = initialSnapshot[k] || "";
     if (v !== prev && !(v === "None" && prev === "")) {
-      changes.push({ key: k, from: prev || "(empty)", to: v });
+      changes.push({ key: k, from: prev || "(empty)", to: v, category: categorizeKey(k) });
     }
   }
-  // Check removed keys
   for (const [k, v] of Object.entries(initialSnapshot)) {
     if (!(k in allCurrent) && v && v !== "None") {
-      changes.push({ key: k, from: v, to: "(removed)" });
+      changes.push({ key: k, from: v, to: "(removed)", category: categorizeKey(k) });
     }
   }
+
+  const changesByCategory = changes.reduce<Record<ReviewCategory, typeof changes>>((acc, c) => {
+    (acc[c.category] ??= []).push(c);
+    return acc;
+  }, {} as Record<ReviewCategory, typeof changes>);
+
+  // Count detail properties across all objects
+  const totalDetailProps = activeMappings.reduce(
+    (sum, m) => sum + countConfiguredDetails(m.key, syncValues),
+    0,
+  );
 
   const handleExport = () => {
     const data = {
@@ -1226,7 +1398,7 @@ function StepReview({
         <div>
           <h2 className="text-lg font-semibold">Review Configuration</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Review your settings before saving. You can go back to any step to make changes.
+            Review your settings before saving. Click any section to expand details.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={handleExport}>
@@ -1235,109 +1407,117 @@ function StepReview({
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4 max-md:grid-cols-2 max-sm:grid-cols-1">
-        <div className="rounded-xl border border-[hsl(var(--border))] p-4">
-          <p className="text-xs text-muted-foreground">Solution Type</p>
-          <p className="text-lg font-bold mt-1">{solutionType || "—"}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {meta.crmName} ↔ {meta.fsName}
-          </p>
-        </div>
-        <div className="rounded-xl border border-[hsl(var(--border))] p-4">
-          <p className="text-xs text-muted-foreground">Active Mappings</p>
-          <p className="text-lg font-bold mt-1">{configuredCount}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            of {mappings.length} available
-          </p>
-        </div>
-        <div className="rounded-xl border border-[hsl(var(--border))] p-4">
-          <p className="text-xs text-muted-foreground">Credentials</p>
-          <p className="text-lg font-bold mt-1">
-            {(credForm.sourceUsername ? 1 : 0) + (credForm.destUsername ? 1 : 0)} / 2
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">systems configured</p>
-        </div>
-        <div className="rounded-xl border border-[hsl(var(--border))] p-4">
-          <p className="text-xs text-muted-foreground">Environment</p>
-          <p className="text-lg font-bold mt-1">
-            {execSettings.SandBoxUsed === "Yes" ? "Sandbox" : "Production"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {envLabel(execSettings.Env2Con || "Tst")}
-          </p>
-        </div>
+      <div className="grid grid-cols-5 gap-3 max-lg:grid-cols-3 max-sm:grid-cols-2">
+        <SummaryCard
+          label="Solution"
+          value={solutionType || "—"}
+          sub={`${meta.crmName} ↔ ${meta.fsName}`}
+        />
+        <SummaryCard
+          label="Active Mappings"
+          value={`${configuredCount}`}
+          sub={`of ${mappings.length} available`}
+        />
+        <SummaryCard
+          label="Detail Properties"
+          value={`${totalDetailProps}`}
+          sub="configured"
+        />
+        <SummaryCard
+          label="Credentials"
+          value={`${(credForm.sourceUsername ? 1 : 0) + (credForm.destUsername ? 1 : 0)} / 2`}
+          sub="systems"
+        />
+        <SummaryCard
+          label="Environment"
+          value={execSettings.SandBoxUsed === "Yes" ? "Sandbox" : "Production"}
+          sub={envLabel(execSettings.Env2Con || "Tst")}
+        />
       </div>
 
-      {/* Config diff */}
-      {changes.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-            <Info className="w-4 h-4 text-[hsl(var(--primary))]" />
-            Changes from Current Configuration ({changes.length})
-          </h3>
-          <div className="border border-[hsl(var(--border))] rounded-xl overflow-hidden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-[hsl(var(--muted)/0.3)]">
-                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Field</th>
-                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Previous</th>
-                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">New</th>
-                </tr>
-              </thead>
-              <tbody>
-                {changes.slice(0, 20).map((c) => (
-                  <tr key={c.key} className="border-t border-[hsl(var(--border))]">
-                    <td className="px-3 py-1.5 font-mono">{c.key}</td>
-                    <td className="px-3 py-1.5 text-muted-foreground">{c.from}</td>
-                    <td className="px-3 py-1.5 text-[hsl(var(--success))] font-medium">{c.to}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {changes.length > 20 && (
-              <p className="text-xs text-muted-foreground px-3 py-2">
-                ...and {changes.length - 20} more changes
-              </p>
+      {/* Active mappings section */}
+      <ReviewSection
+        id="mappings"
+        title="Active Sync Mappings"
+        count={activeMappings.length}
+        icon={<Database className="w-4 h-4" />}
+        expanded={expandedSections.has("mappings")}
+        onToggle={() => toggleSection("mappings")}
+        status={activeMappings.length > 0 ? "success" : "warning"}
+      >
+        {activeMappings.length > 0 ? (
+          <div className="space-y-2">
+            {activeMappings.map((m) => {
+              const dir = syncValues[m.key];
+              const detailCount = countConfiguredDetails(m.key, syncValues);
+              return (
+                <div key={m.key} className="flex items-center justify-between px-3 py-2 rounded-lg bg-[hsl(var(--muted)/0.15)] border border-[hsl(var(--border)/0.5)]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
+                    <span className="text-sm">{m.label}</span>
+                    {detailCount > 0 && (
+                      <Badge variant="outline" className="text-[10px] h-5">
+                        {detailCount} detail{detailCount !== 1 ? "s" : ""}
+                      </Badge>
+                    )}
+                  </div>
+                  <Badge variant="success">
+                    {syncDirectionLabel(dir ?? "", meta)}
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs text-[hsl(var(--warning))]">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            No sync mappings configured. Go back to Step 2 to select at least one mapping.
+          </div>
+        )}
+      </ReviewSection>
+
+      {/* Credentials section */}
+      <ReviewSection
+        id="credentials"
+        title="System Credentials"
+        icon={<Key className="w-4 h-4" />}
+        expanded={expandedSections.has("credentials")}
+        onToggle={() => toggleSection("credentials")}
+        status={(credForm.sourceUsername || credForm.destUsername) ? "success" : "neutral"}
+      >
+        <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground">{meta.crmName} (Source)</p>
+            <ReviewRow label="Username" value={credForm.sourceUsername || "Not set"} />
+            <ReviewRow label="Password" value={credForm.sourcePassword ? "••••••••" : "Unchanged"} />
+            <ReviewRow label="Endpoint" value={credForm.sourceUrl || "Not set"} />
+            {meta.crmName === "SF" && (
+              <ReviewRow label="Security Token" value={credForm.sourceToken ? "••••••••" : "Unchanged"} />
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground">{meta.fsName} (Destination)</p>
+            <ReviewRow label="Username" value={credForm.destUsername || "Not set"} />
+            <ReviewRow label="Password" value={credForm.destPassword ? "••••••••" : "Unchanged"} />
+            {meta.fsName === "QB" && (
+              <ReviewRow label="Company File" value={credForm.destCompanyFile || "Not set"} />
             )}
           </div>
         </div>
-      )}
+      </ReviewSection>
 
-      {/* Active mappings list */}
-      {activeMappings.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold mb-2">Active Sync Mappings</h3>
-          <div className="space-y-1.5">
-            {activeMappings.map((m) => (
-              <div
-                key={m.key}
-                className="flex items-center justify-between px-3 py-2 rounded-lg border border-[hsl(var(--success)/0.2)] bg-[hsl(var(--success)/0.05)] text-sm"
-              >
-                <span>{m.label}</span>
-                <Badge variant="success">
-                  {syncValues[m.key] === "SFQB"
-                    ? "Bi-directional"
-                    : syncValues[m.key] === "SF2QB"
-                    ? `${meta.crmName} → ${meta.fsName}`
-                    : `${meta.fsName} → ${meta.crmName}`}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeMappings.length === 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.05)] text-xs text-[hsl(var(--warning))]">
-          <AlertTriangle className="w-3.5 h-3.5" />
-          No sync mappings configured. Go back to Step 2 to select at least one mapping.
-        </div>
-      )}
-
-      {/* Execution settings summary */}
-      <div>
-        <h3 className="text-sm font-semibold mb-2">Execution Settings</h3>
+      {/* Execution settings section */}
+      <ReviewSection
+        id="execution"
+        title="Execution Settings"
+        icon={<Settings2 className="w-4 h-4" />}
+        expanded={expandedSections.has("execution")}
+        onToggle={() => toggleSection("execution")}
+        status="neutral"
+      >
         <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm max-sm:grid-cols-1">
+          <ReviewRow label="Environment" value={envLabel(execSettings.Env2Con || "Tst")} />
+          <ReviewRow label="Sandbox Mode" value={execSettings.SandBoxUsed === "Yes" ? "Yes" : "No"} />
           <ReviewRow label="Stop on Error" value={stopLabel(execSettings.StopSchedTr)} />
           <ReviewRow label="Extended Timeout" value={execSettings.LongTimeOut === "Yes" ? "Yes" : "No"} />
           <ReviewRow label="Sleep Window" value={
@@ -1346,10 +1526,134 @@ function StepReview({
               : "Not set"
           } />
           <ReviewRow label="Email Notifications" value={emailLabel(execSettings.EmlNtf)} />
-          <ReviewRow label="Time Zone Shift" value={execSettings.TimeZone || "0"} />
+          <ReviewRow label="Time Zone Shift" value={`${execSettings.TimeZone || "0"} hrs`} />
           <ReviewRow label="Restore on Failure" value={execSettings.ConFailState === "Yes" ? "Yes" : "No"} />
+          {execSettings.CCEmail && <ReviewRow label="CC Email" value={execSettings.CCEmail} />}
+          {execSettings.BCCEmail && <ReviewRow label="BCC Email" value={execSettings.BCCEmail} />}
         </div>
-      </div>
+      </ReviewSection>
+
+      {/* Changes diff section */}
+      {changes.length > 0 && (
+        <ReviewSection
+          id="changes"
+          title={`Changes from Saved Configuration (${changes.length})`}
+          icon={<Info className="w-4 h-4" />}
+          expanded={expandedSections.has("changes")}
+          onToggle={() => toggleSection("changes")}
+          status="info"
+        >
+          <div className="space-y-4">
+            {(Object.entries(changesByCategory) as [ReviewCategory, typeof changes][]).map(([cat, catChanges]) => (
+              <div key={cat}>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                  {REVIEW_CATEGORY_LABELS[cat]}
+                </p>
+                <div className="border border-[hsl(var(--border))] rounded-lg overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-[hsl(var(--muted)/0.3)]">
+                        <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">Setting</th>
+                        <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">Previous</th>
+                        <th className="text-left px-3 py-1.5 font-medium text-muted-foreground">New</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {catChanges.map((c) => (
+                        <tr key={c.key} className="border-t border-[hsl(var(--border))]">
+                          <td className="px-3 py-1.5">
+                            <span className="font-medium">{CONFIG_KEY_LABELS[c.key] || c.key}</span>
+                            <span className="text-muted-foreground ml-1 text-[10px] font-mono">({c.key})</span>
+                          </td>
+                          <td className="px-3 py-1.5">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <XCircle className="w-3 h-3 text-[hsl(var(--destructive)/0.5)]" />
+                              {c.from}
+                            </span>
+                          </td>
+                          <td className="px-3 py-1.5">
+                            <span className="text-[hsl(var(--success))] font-medium flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              {c.to}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ReviewSection>
+      )}
+    </div>
+  );
+}
+
+function SummaryCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="rounded-xl border border-[hsl(var(--border))] p-3">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="text-lg font-bold mt-0.5 leading-tight">{value}</p>
+      <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>
+    </div>
+  );
+}
+
+function ReviewSection({
+  id: _id,
+  title,
+  count,
+  icon,
+  expanded,
+  onToggle,
+  status,
+  children,
+}: {
+  id: string;
+  title: string;
+  count?: number;
+  icon: React.ReactNode;
+  expanded: boolean;
+  onToggle: () => void;
+  status: "success" | "warning" | "info" | "neutral";
+  children: React.ReactNode;
+}) {
+  const borderColor = {
+    success: "border-[hsl(var(--success)/0.3)]",
+    warning: "border-[hsl(var(--warning)/0.3)]",
+    info: "border-[hsl(var(--primary)/0.3)]",
+    neutral: "border-[hsl(var(--border))]",
+  }[status];
+
+  const iconColor = {
+    success: "text-[hsl(var(--success))]",
+    warning: "text-[hsl(var(--warning))]",
+    info: "text-[hsl(var(--primary))]",
+    neutral: "text-muted-foreground",
+  }[status];
+
+  return (
+    <div className={cn("rounded-xl border", borderColor)}>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[hsl(var(--muted)/0.1)] transition-colors rounded-xl"
+      >
+        <div className="flex items-center gap-2.5">
+          <span className={iconColor}>{icon}</span>
+          <span className="text-sm font-semibold">{title}</span>
+          {count !== undefined && (
+            <Badge variant="outline" className="text-[10px] h-5">{count}</Badge>
+          )}
+        </div>
+        <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", expanded && "rotate-180")} />
+      </button>
+      {expanded && (
+        <div className="px-4 pb-4 pt-1">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -1357,8 +1661,8 @@ function StepReview({
 function ReviewRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between py-1 border-b border-[hsl(var(--border)/0.5)]">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="font-medium text-xs">{value}</span>
     </div>
   );
 }
