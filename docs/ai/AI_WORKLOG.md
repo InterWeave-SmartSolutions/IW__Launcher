@@ -3512,3 +3512,38 @@ User request: Fix EditScheduleDialog React Error #301 crash, fix Save All resett
 - Email/webhook monitoring still blocked on SMTP credentials (password reset logs tokens to stdout as dev workaround)
 - AuditService only wired into ApiLoginServlet — remaining servlets (Profile, Company, Config, Registration, ChangePassword) still need audit integration
 - Password reset tokens are logged to stdout (dev mode) since email delivery requires SMTP configuration
+
+## 2026-03-08 (Session 5 — Configuration Wizard Expansion)
+
+### What changed
+Expanded the Configuration Wizard's Step 2 (Object Mapping) and Step 5 (Review & Save) to match the full scope of the original JSP configuration UI.
+
+### Files created
+| File | Purpose |
+|---|---|
+| `frontends/iw-portal/src/lib/object-detail-schema.ts` | Declarative schema defining ~80 per-object detail properties (field bindings, actions, address handling, hierarchy config, merge settings, creation triggers, etc.) with template string labels, conditional visibility, and categorized review labels |
+
+### Files modified
+| File | Change |
+|---|---|
+| `frontends/iw-portal/src/pages/ConfigurationWizardPage.tsx` | Replaced Step 2 MappingTable with MappingSection + expandable ObjectDetailPanel per object; replaced Step 5 StepReview with collapsible ReviewSection components, categorized change diffs, summary cards |
+
+### Architecture decisions
+- **Schema-driven UI**: All 80+ object detail properties defined as data in `object-detail-schema.ts`, not hardcoded in JSX. Adding new object types or fields requires only schema additions — no UI code changes needed.
+- **Template string resolution**: Labels use `{crm}`, `{fs}`, `{crmtran}`, `{fscust}` placeholders resolved at render time via `resolveTemplate()` based on selected solution type (e.g., Salesforce→QuickBooks maps `{crm}`→"Salesforce", `{fs}`→"QuickBooks").
+- **Conditional field visibility**: Fields have `showForDirections` (only show for SF2QB/QB2SF/SFQB) and `showWhen` (dependent on another field's value) for progressive disclosure — mirrors the original JSP conditional rendering.
+- **Zero backend changes**: All detail properties store in the same flat XML alongside SyncType* values. The `ApiConfigurationServlet` already saves/loads arbitrary key-value pairs.
+
+### Techniques used
+- **JSP gap analysis**: Read 5 original detail JSP pages (CompanyConfigurationDetail.jsp, DetailP.jsp, DetailT.jsp, DetailT1.jsp, DetailT2.jsp) to catalog ~80+ per-object properties that were missing from the React wizard.
+- **Expandable accordion pattern**: Each enabled object in Step 2 gets a "Configure" button that reveals an inline detail panel below the table row.
+- **Categorized review diff**: Step 5 groups changes by category (direction, account, transaction, product, execution) with human-readable labels from `CONFIG_KEY_LABELS`.
+
+### Build verification
+- `tsc --noEmit` — zero errors
+- `npm run build` — clean, ConfigurationWizardPage chunk 65.8kB (code-split), main chunk 487.5kB (under 500kB threshold)
+
+### Follow-ups / known issues
+- Invoice, Product, and Vendor detail schemas are minimal stubs — can be expanded with additional fields from DetailT1.jsp/DetailT2.jsp
+- Mobile layout for detail panels uses stacked cards (responsive) but could benefit from further UX testing
+- Database migrations (3 schemas from Session 4) still pending on Supabase
