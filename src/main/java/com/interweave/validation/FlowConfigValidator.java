@@ -449,6 +449,20 @@ public class FlowConfigValidator {
                     .validationCategory(VALIDATION_CATEGORY)
                     .suggestion("Add 'connection' attribute or <connection> element if external system access is needed")
                     .build());
+            } else {
+                // Check for empty connection element (element present but value is empty)
+                for (int j = 0; j < connectionNodes.getLength(); j++) {
+                    String connText = connectionNodes.item(j).getTextContent();
+                    if (connText == null || connText.trim().isEmpty()) {
+                        issues.add(ValidationIssue.builder()
+                            .severity(ValidationSeverity.ERROR)
+                            .message("Transaction " + locationInfo + " has an empty <connection> element")
+                            .filePath(filePath)
+                            .validationCategory(VALIDATION_CATEGORY)
+                            .suggestion("Provide a valid connection name in the <connection> element")
+                            .build());
+                    }
+                }
             }
         }
 
@@ -585,11 +599,11 @@ public class FlowConfigValidator {
                     // Check if transformation is registered (if we have any registered)
                     if (!registeredTransformations.isEmpty() && !registeredTransformations.contains(trimmedFile)) {
                         issues.add(ValidationIssue.builder()
-                            .severity(ValidationSeverity.WARNING)
-                            .message("Transformation references unknown XSLT file '" + trimmedFile + "'")
+                            .severity(ValidationSeverity.ERROR)
+                            .message("Transformation references undefined XSLT file '" + trimmedFile + "'")
                             .filePath(filePath)
                             .validationCategory(VALIDATION_CATEGORY)
-                            .suggestion("Ensure XSLT file '" + trimmedFile + "' exists in transformers directory")
+                            .suggestion("Ensure XSLT file '" + trimmedFile + "' is registered or exists in transformers directory")
                             .build());
                     }
 

@@ -471,7 +471,7 @@ public enum ErrorCode {
      */
     @Override
     public String toString() {
-        return "[" + code + "] " + defaultMessage + " (" + severity + ")";
+        return "[" + code + "] " + defaultMessage + " (" + severity.name() + ")";
     }
 
     /**

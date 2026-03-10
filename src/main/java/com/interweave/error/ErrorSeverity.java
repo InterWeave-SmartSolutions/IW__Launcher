@@ -56,6 +56,6 @@ public enum ErrorSeverity {
      */
     @Override
     public String toString() {
-        return name();
+        return displayName;
     }
 }

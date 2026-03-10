@@ -233,6 +233,15 @@ public class XSLTValidator {
                 .validationCategory(VALIDATION_CATEGORY)
                 .suggestion(getSuggestionFromException(e))
                 .build());
+        } catch (Error e) {
+            // Catch StackOverflowError and other errors from malformed XPath in XSLT
+            issues.add(ValidationIssue.builder()
+                .severity(ValidationSeverity.ERROR)
+                .message("XSLT compilation failed due to severely malformed expression: " + e.getClass().getSimpleName())
+                .filePath(xsltFile.getPath())
+                .validationCategory(VALIDATION_CATEGORY)
+                .suggestion("Check for deeply nested or invalid XPath expressions in select/match/test attributes")
+                .build());
         }
 
         return issues;
@@ -308,6 +317,10 @@ public class XSLTValidator {
     private List<ValidationIssue> validateTemplateReferences(Document doc, String filePath) {
         List<ValidationIssue> issues = new ArrayList<>();
 
+        // Check whether the document has any imports or includes (templates may come from them)
+        boolean hasImports = doc.getElementsByTagNameNS(XSLT_NAMESPACE, "import").getLength() > 0
+            || doc.getElementsByTagNameNS(XSLT_NAMESPACE, "include").getLength() > 0;
+
         // Collect all defined template names
         Set<String> definedTemplates = new HashSet<>();
         NodeList templateNodes = doc.getElementsByTagNameNS(XSLT_NAMESPACE, "template");
@@ -334,12 +347,17 @@ public class XSLTValidator {
                     .suggestion("Add a 'name' attribute specifying which template to call")
                     .build());
             } else if (!definedTemplates.contains(calledName.trim())) {
+                // When imports/includes are present, templates may be defined externally — use WARNING
+                ValidationSeverity severity = hasImports ? ValidationSeverity.WARNING : ValidationSeverity.ERROR;
+                String suggestion = hasImports
+                    ? "Template '" + calledName + "' may be defined in an imported/included file, or check for typos"
+                    : "Define a template with name='" + calledName + "' or check for typos in template name";
                 issues.add(ValidationIssue.builder()
-                    .severity(ValidationSeverity.ERROR)
-                    .message("Template '" + calledName + "' is called but not defined")
+                    .severity(severity)
+                    .message("Template '" + calledName + "' is called but not defined in this file")
                     .filePath(filePath)
                     .validationCategory(VALIDATION_CATEGORY)
-                    .suggestion("Define a template with name='" + calledName + "' or check for typos in template name")
+                    .suggestion(suggestion)
                     .build());
             }
         }

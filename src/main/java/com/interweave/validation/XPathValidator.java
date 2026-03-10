@@ -151,7 +151,9 @@ public class XPathValidator {
 
         try {
             XPath xpath = xPathFactory.newXPath();
-            XPathExpression compiledExpr = xpath.compile(expression);
+            // Replace backslash-escaped quotes with a placeholder so the XPath API can parse the structure
+            String normalizedExpression = expression.replace("\\'", "x").replace("\\\"", "x");
+            XPathExpression compiledExpr = xpath.compile(normalizedExpression);
         } catch (XPathExpressionException e) {
             // Parse the exception message to provide helpful error information
             String errorMsg = e.getMessage();
