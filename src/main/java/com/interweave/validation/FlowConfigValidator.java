@@ -292,6 +292,16 @@ public class FlowConfigValidator {
             return issues; // Already handled in validateFlowStructure
         }
 
+        // Only enforce flow-specific required elements when the root is a recognized flow element.
+        // Non-flow XML files (e.g. <BusinessDaemonConfiguration>) are allowed to pass through
+        // without triggering "missing transactions" errors.
+        String rootName = root.getNodeName();
+        boolean isFlowRoot = rootName.equals("flow") || rootName.equals("integration")
+            || rootName.equals("transaction-flow") || rootName.equals("transactionFlow");
+        if (!isFlowRoot) {
+            return issues;
+        }
+
         // Check for required flow-level elements
         for (String requiredElement : REQUIRED_FLOW_ELEMENTS) {
             NodeList nodes = root.getElementsByTagName(requiredElement);

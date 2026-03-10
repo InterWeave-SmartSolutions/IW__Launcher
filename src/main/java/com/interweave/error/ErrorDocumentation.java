@@ -569,6 +569,52 @@ public class ErrorDocumentation {
             "5. Contact external system to increase rate limit",
             BASE_DOCS_URL + "connection-errors.jsp#CONNECTION010"
         ));
+
+        // SYSTEM ERROR documentation
+        documentationRegistry.put(ErrorCode.SYSTEM001, new DocumentationEntry(
+            "1. Check server logs for stack trace details\n" +
+            "2. Verify all required services are running\n" +
+            "3. Check for recent configuration changes\n" +
+            "4. Restart the application if transient\n" +
+            "5. Contact support with the error transaction ID",
+            BASE_DOCS_URL + "system-errors.jsp#SYSTEM001"
+        ));
+
+        documentationRegistry.put(ErrorCode.SYSTEM002, new DocumentationEntry(
+            "1. Check if the service is undergoing maintenance\n" +
+            "2. Wait briefly and retry the operation\n" +
+            "3. Verify network connectivity\n" +
+            "4. Check service health endpoints\n" +
+            "5. Review capacity and scaling settings",
+            BASE_DOCS_URL + "system-errors.jsp#SYSTEM002"
+        ));
+
+        documentationRegistry.put(ErrorCode.SYSTEM003, new DocumentationEntry(
+            "1. Verify the resource path is correct\n" +
+            "2. Ensure the resource has not been deleted or moved\n" +
+            "3. Check access permissions for the resource\n" +
+            "4. Review URL or file path for typos\n" +
+            "5. Confirm the resource exists in the expected location",
+            BASE_DOCS_URL + "system-errors.jsp#SYSTEM003"
+        ));
+
+        documentationRegistry.put(ErrorCode.SYSTEM004, new DocumentationEntry(
+            "1. Verify the HTTP method used in the request\n" +
+            "2. Check API documentation for allowed methods\n" +
+            "3. Ensure the endpoint supports the requested operation\n" +
+            "4. Review integration configuration for correct method\n" +
+            "5. Update the request to use the correct HTTP method",
+            BASE_DOCS_URL + "system-errors.jsp#SYSTEM004"
+        ));
+
+        documentationRegistry.put(ErrorCode.SYSTEM005, new DocumentationEntry(
+            "1. Increase timeout settings if operation takes long\n" +
+            "2. Check for performance bottlenecks in processing\n" +
+            "3. Verify external service response times\n" +
+            "4. Consider breaking large operations into smaller batches\n" +
+            "5. Review network latency and connection settings",
+            BASE_DOCS_URL + "system-errors.jsp#SYSTEM005"
+        ));
     }
 
     /**
