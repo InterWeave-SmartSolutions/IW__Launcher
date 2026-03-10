@@ -3,7 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-         version="3.1">
+         version="3.1"
+         metadata-complete="true">
 
 	<display-name>InterWeave Transformation Server</display-name>
 
@@ -48,7 +49,7 @@
 		<servlet-name>logging</servlet-name>
 		<display-name>logging</display-name>
 		<description>InterWeave ACS Daemon Applications</description>
-		<servlet-class>com.interweave.servlets.IWLogging</servlet-class>
+		<servlet-class>com.interweave.servlets.IWLoggingFixed</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet>

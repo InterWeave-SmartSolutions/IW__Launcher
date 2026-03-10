@@ -13,6 +13,7 @@ export const CLASSIC_ROUTES: Record<string, string> = {
   "/admin/configurator": "/iw-business-daemon/BDConfigurator.jsp",
   "/admin/logging": "/iw-business-daemon/Logging.jsp",
   "/admin/audit": "/iw-business-daemon/IWLogin.jsp",
+  "/admin/field-mapping": "/iw-business-daemon/MoreCustomMappings.jsp",
   "/notifications": "/iw-business-daemon/IWLogin.jsp",
   "/profile/security": "/iw-business-daemon/EditProfile.jsp",
   "/forgot-password": "/iw-business-daemon/ChangePassword.jsp",

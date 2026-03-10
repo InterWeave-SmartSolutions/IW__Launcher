@@ -1,4 +1,4 @@
-import { Activity, CheckCircle, AlertTriangle, Clock, TrendingUp, Zap, RefreshCw, Loader2, User, Building2, ArrowRight, Server, Wifi, WifiOff } from "lucide-react";
+import { Activity, CheckCircle, FileText, Clock, TrendingUp, Zap, RefreshCw, Loader2, User, Building2, ArrowRight, Server, Wifi, WifiOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useDashboard, useTransactions } from "@/hooks/useMonitoring";
@@ -82,6 +82,20 @@ function deriveDurationSparkline(transactions: Transaction[], buckets = 8): numb
   return counts.map((c, i) => (c > 0 ? (sums[i] ?? 0) / c : 0));
 }
 
+/** Derive per-bucket total records processed for sparkline */
+function deriveRecordsSparkline(transactions: Transaction[], buckets = 8): number[] {
+  if (transactions.length === 0) return [];
+  const now = Date.now();
+  const bucketMs = (24 * 3600_000) / buckets;
+  const sums = new Array<number>(buckets).fill(0);
+  for (const tx of transactions) {
+    const age = now - new Date(tx.started_at).getTime();
+    const idx = buckets - 1 - Math.min(Math.floor(age / bucketMs), buckets - 1);
+    sums[idx] = (sums[idx] ?? 0) + tx.records_processed;
+  }
+  return sums;
+}
+
 function statusBadge(status: string) {
   const variant = status === "success" ? "success"
     : status === "failed" ? "destructive"
@@ -106,6 +120,8 @@ export function DashboardPage() {
   const spark = deriveSparkline(transactions);
   const sparkRate = deriveSuccessRateSparkline(transactions);
   const sparkDuration = deriveDurationSparkline(transactions);
+  const sparkRecords = deriveRecordsSparkline(transactions);
+  const totalRecords24h = transactions.reduce((sum, tx) => sum + tx.records_processed, 0);
 
   const kpis = [
     {
@@ -127,12 +143,12 @@ export function DashboardPage() {
       sparkColor: "hsl(var(--success))",
     },
     {
-      label: "Running Now",
-      value: fmt(summary?.running_count),
-      sub: running.length > 0 ? `${running[0]!.flow_name}...` : "No active flows",
-      icon: AlertTriangle,
+      label: "Records (24h)",
+      value: fmt(totalRecords24h),
+      sub: running.length > 0 ? `${fmt(summary?.running_count)} running now` : "No active flows",
+      icon: FileText,
       color: "text-[hsl(var(--warning))]",
-      sparkData: [] as number[],
+      sparkData: sparkRecords,
       sparkColor: "hsl(var(--warning))",
     },
     {

@@ -37,7 +37,7 @@ Exception: the mirrored legacy manuals under `frontends/InterWoven/docs/IW_Docs/
    - User authentication and company management
    - Hosts JSP interfaces for profile/config management
    - Default port: 9090
-   - Also deploys `iwtransformationserver` — legacy transformation engine (**skeleton only**: `web.xml` + native JNI libs (`TS_JNI.dll`/`TS_JNI.so`) are present, but **Java class JARs are missing** — the 137 JAR dependencies (Salesforce SOAP, Axis, enterprise adapters) are NOT included in this repo. The `/transform` servlet returns 404 because `com.interweave.servlets.IWTransform` cannot be loaded. Query flow "GO" buttons and scheduled flow execution require these vendor JARs to function.)
+   - Also deploys `iwtransformationserver` — legacy transformation engine (**operational**: 133 vendor JARs + `iwengine.jar` with 125 engine classes. `/transform` returns real IW XML responses. Engine classes recovered from legacy Tomcat 5.5 install.)
    - Also deploys `iw-portal` — React dashboard (`frontends/iw-portal/` build output)
 
 3. **Database** - Authentication and configuration (MySQL or Postgres)
@@ -203,13 +203,14 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - Enable: Uncomment ErrorHandlingFilter block in `web.xml`, then restart Tomcat
    - Full steps: `docs/development/BUILD.md` and `docs/NEXT_STEPS.md` item 1
 
-3. **Transformation Server is Skeleton-Only**
-   - `iwtransformationserver` webapp has `web.xml` + native JNI libs (`TS_JNI.dll`, `TS_JNI.so`, `jacob.dll`) but **NO Java class JARs**
-   - `WEB-INF/lib/` contains only 6 native files — the 137 vendor JARs (Salesforce SOAP, Axis, enterprise adapters) are **not included** in this repo
-   - The `/transform` servlet (`com.interweave.servlets.IWTransform`) returns **404** because the class cannot be loaded
-   - **Impact**: Query flow "GO" buttons generate correct HTTP GET URLs but get 404. Scheduled flow execution via `/scheduledtransform` also fails. The `TransactionLoggingFilter` is registered in web.xml but has no traffic to intercept.
-   - **To fix**: Obtain the full transformation server JAR package from InterWeave vendor and deploy to `WEB-INF/lib/`
-   - All flow properties (variable parameters, credentials) can still be viewed and edited via the React portal — only actual flow *execution* requires the vendor JARs
+3. **Transformation Server — OPERATIONAL (engine recovered)**
+   - `iwtransformationserver` deploys and runs with 133 vendor JARs + `iwengine.jar` (125 engine classes, 15 packages)
+   - Engine classes recovered from legacy Tomcat 5.5 install in `InterWoven/docs/IW_Docs/IW_IDE/IW_IDE_Import/`
+   - `web.xml` has `metadata-complete="true"` (skips annotation scanning for faster deploy)
+   - `/transform`, `/index`, `/iwxml`, `/scheduledtransform`, `/gateway` all return **200** with real IW XML responses
+   - `/logging` fixed via `IWLoggingFixed` wrapper servlet — original had NPE when `applicationname`/`loglevel` params missing
+   - `interweave-jaxb-compat.jar` (in `tomcat/lib/`) provides JAXB 1.0 classes needed by the engine
+   - **Note**: Actual flow execution still requires workspace project files with valid connection credentials and XSLT mappings
 
 4. **Windows-Native Required for Database**
    - **Tomcat MUST run from Windows (PowerShell)**, not WSL2

@@ -610,6 +610,16 @@
         	<url-pattern>/api/engine/*</url-pattern>
         </servlet-mapping>
 
+        <!-- Webhook Receiver API -->
+        <servlet>
+        	<servlet-name>ApiWebhookReceiverServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiWebhookReceiverServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiWebhookReceiverServlet</servlet-name>
+        	<url-pattern>/api/webhooks/receive</url-pattern>
+        </servlet-mapping>
+
 	<session-config>
 		<session-timeout>30</session-timeout>
 	</session-config>

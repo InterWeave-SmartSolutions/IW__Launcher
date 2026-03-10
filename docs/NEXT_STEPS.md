@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-09 (Session 10 — Vercel deployed)
+**Last Updated:** 2026-03-10 (Session 12 — All "Ready Now" items completed)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -99,56 +99,48 @@ The compiled Eclipse plugin (253 classes, no source) limits automation capabilit
 
 ## Blocked on External Actions
 
-### 6. Configure Email/Webhook Monitoring
+### ~~6. Configure Email/Webhook Monitoring~~ PARTIALLY DONE
 
-**[PRIORITY: MEDIUM]** **[Effort: ~5 min once SMTP credentials are available]**
+**Webhook monitoring ENABLED (2026-03-10):**
+- `monitoring.properties` created with `webhook.enabled=true`, `email.enabled=false`
+- `ApiWebhookReceiverServlet` created — self-notification endpoint at `POST /api/webhooks/receive`
+- Webhook receiver verified: returns `{"success":true}` on POST
+- Webhook polling: 30s interval, 10 max failures before auto-disable
+- Alerting enabled globally with 15min cooldown, 50/day max
 
-**Blocker:** SMTP credentials or webhook URLs needed.
-
-```bash
-cp web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties.template \
-   web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties
-# Fill in SMTP host, port, username, password
-# Restart Tomcat
-```
-
----
-
-### 10. Database Migrations (3 new schemas)
-
-**[PRIORITY: HIGH]** **[Effort: ~5 min via Supabase SQL editor]**
-
-Three new database schemas need to be applied to the Supabase instance:
-
-```bash
-# Run in order via Supabase SQL Editor or psql:
-database/mfa_password_reset_schema_postgres.sql   # password_reset_tokens + user_mfa_settings
-database/notifications_schema_postgres.sql         # notifications table
-database/audit_log_schema_postgres.sql             # audit_log table
-```
-
-Until these migrations are run, the MFA, notifications, and audit log features will return 500 errors from the API servlets (table does not exist). All other portal functionality remains unaffected.
+**Still blocked:** SMTP email notifications require SMTP credentials.
+To enable email, edit `monitoring.properties`: set `email.enabled=true`, fill in `smtp.*` settings.
 
 ---
 
-### 11. Wire AuditService into Remaining Servlets
+### ~~10. Database Migrations (3 new schemas)~~ DONE
 
-**[PRIORITY: MEDIUM]** **[Effort: ~1 hr]**
-
-AuditService is currently only wired into `ApiLoginServlet`. These servlets still need audit event calls:
-- `ApiProfileServlet` (profile update events)
-- `ApiCompanyProfileServlet` (company update events)
-- `ApiConfigurationServlet` (config change events)
-- `ApiRegistrationServlet` / `ApiCompanyRegistrationServlet` (registration events)
-- `ApiChangePasswordServlet` (password change events)
+All three schemas verified present on Supabase (2026-03-10):
+- `password_reset_tokens` — 6 columns, RLS enabled
+- `user_mfa_settings` — 8 columns, RLS enabled
+- `notifications` — 10 columns, RLS enabled
+- `audit_log` — 12 columns, RLS enabled, 26 rows already recorded
 
 ---
 
-### 12. Expand Detail Schemas (Invoice, Product, Vendor)
+### ~~11. Wire AuditService into Remaining Servlets~~ DONE
 
-**[PRIORITY: LOW]** **[Effort: ~1 hr]**
+AuditService wired into all 6 remaining servlets (2026-03-10):
+- `ApiProfileServlet` — profile_update, password_change events
+- `ApiCompanyProfileServlet` — company_update, password_change events
+- `ApiConfigurationServlet` — config_change events
+- `ApiRegistrationServlet` / `ApiCompanyRegistrationServlet` — registration events
+- `ApiChangePasswordServlet` — password_change events
 
-The Invoice, Product, and Vendor schemas in `object-detail-schema.ts` are minimal stubs. They can be expanded with additional fields from `DetailT1.jsp` and `DetailT2.jsp` to match full original JSP coverage.
+---
+
+### ~~12. Expand Detail Schemas (Invoice, Product, Vendor)~~ DONE
+
+Detail schemas fully expanded (2026-03-10):
+- INVOICE: 14 groups, 79 fields (was 1 group / 4 fields)
+- PRODUCT: 8 groups, 72 fields (was 1 group / 6 fields)
+- VENDOR: 8 groups, 42 fields (was 2 groups / 4 fields)
+- 149 new CONFIG_KEY_LABELS entries, new "vendor" ReviewCategory
 
 ---
 
@@ -162,23 +154,19 @@ The Invoice, Product, and Vendor schemas in `object-detail-schema.ts` are minima
 | Backend tunnel | ⚠️ Ephemeral | localtunnel, port 9090, subdomain `iw-portal-demo` |
 | Tunnel password | ℹ️ Required | First visit to `loca.lt` requires entering your public IP (`135.84.57.36`) |
 
-### 15. Replace localtunnel with Cloudflare Tunnel
+### 15. Replace localtunnel with Cloudflare Tunnel — SCRIPTS READY
 **Priority: High** — localtunnel has two friction points for demos:
 1. Requires visitor to enter a "tunnel password" (your public IP) on first visit
 2. URL changes every restart, requiring `vercel.json` update + redeploy
 
-**Fix**: Cloudflare Tunnel (free, ~5 min setup)
-```bash
-# One-time setup (requires Cloudflare account)
-winget install --id Cloudflare.cloudflared
-cloudflared tunnel login
-cloudflared tunnel create iw-portal
-cloudflared tunnel route dns iw-portal iw-portal.YOUR-DOMAIN.com
-cloudflared tunnel run --url http://localhost:9090 iw-portal
-```
-After setup: update `vercel.json` destination to `https://iw-portal.YOUR-DOMAIN.com` and redeploy once — URL never changes again.
+**Scripts created (2026-03-10):**
+- `scripts/setup_cloudflare_tunnel.bat` — interactive setup (installs cloudflared, authenticates, creates tunnel)
+- `scripts/start_cloudflare_tunnel.bat` — starts tunnel (localhost:9090 → Cloudflare)
+- `scripts/stop_cloudflare_tunnel.bat` — kills tunnel process
 
-**Workaround until then**: restart tunnel with `npx localtunnel@2 --port 9090 --subdomain iw-portal-demo`, visit `https://iw-portal-demo.loca.lt` in browser, enter public IP (`135.84.57.36`) to clear the password gate.
+**To complete:** Run `scripts\setup_cloudflare_tunnel.bat` (requires Cloudflare account + domain). Then update `frontends/iw-portal/vercel.json` destination URL and redeploy.
+
+**Workaround until then**: `npx localtunnel@2 --port 9090 --subdomain iw-portal-demo`
 
 ---
 
@@ -187,13 +175,13 @@ After setup: update `vercel.json` destination to `https://iw-portal.YOUR-DOMAIN.
 | Item | Description | Effort | Status |
 |---|---|---|---|
 | ViewLog React page | Log file viewer with search/filter | 2-3 hrs | DONE (LoggingPage.tsx) |
-| MoreCustomMappings page | Custom field mapping editor | 4-6 hrs | LOW (compiled-only backend `CustomMappings` servlet) |
+| ~~MoreCustomMappings page~~ | Custom field mapping editor | 4-6 hrs | DONE (maps 2-9 in detail schema + config wizard) |
 | ~~Sparklines~~ | Dashboard KPI sparkline charts | ~1 hr | DONE (3 of 4 KPIs) |
 | ~~Error toast~~ | Global error toast for API failures | ~30 min | DONE (MutationCache.onError) |
 | ~~MFA / Forgot password~~ | TOTP MFA + password reset tokens | 4-8 hrs | DONE (3 pages, 2 servlets, DB schema) |
 | ~~Notifications inbox~~ | Notification system with bell badge | 4-6 hrs | DONE (page, servlet, NotificationService, DB schema) |
 | ~~Audit log~~ | Admin audit trail with filters | 6-8 hrs | DONE (page, servlet, AuditService, DB schema) |
-| InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs | — |
+| InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs | STARTED (FieldMappingPage prototype) |
 
 ### Transformation Server Status: OPERATIONAL (2026-03-09)
 

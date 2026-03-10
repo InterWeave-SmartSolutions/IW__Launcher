@@ -179,6 +179,19 @@ public class ApiCompanyProfileServlet extends HttpServlet {
                     session.setAttribute("solutionType", solutionType.trim());
                 }
 
+                // Audit: company profile update
+                try {
+                    Integer uid = (Integer) session.getAttribute("userId");
+                    AuditService.record(dataSource, uid, companyId, adminEmail,
+                        "company_update",
+                        "Admin updated company profile" +
+                            (solutionType != null ? " (solution type: " + solutionType.trim() + ")" : ""),
+                        "company", String.valueOf(companyId),
+                        request, null);
+                } catch (Exception auditEx) {
+                    log("Audit logging failed for company profile update", auditEx);
+                }
+
                 log("ApiCompanyProfileServlet: Company profile updated for company " + companyId);
                 sendJson(response, 200,
                     "{\"success\":true,\"message\":\"Company profile updated successfully\"}");
@@ -293,6 +306,18 @@ public class ApiCompanyProfileServlet extends HttpServlet {
             } catch (SQLException e) {
                 conn.rollback();
                 throw e;
+            }
+
+            // Audit: company password change
+            try {
+                Integer uid = (Integer) session.getAttribute("userId");
+                AuditService.record(dataSource, uid, companyId, adminEmail,
+                    "password_change",
+                    "Admin changed company password",
+                    "company", String.valueOf(companyId),
+                    request, null);
+            } catch (Exception auditEx) {
+                log("Audit logging failed for company password change", auditEx);
             }
 
             log("ApiCompanyProfileServlet: Company password changed for company " + companyId);

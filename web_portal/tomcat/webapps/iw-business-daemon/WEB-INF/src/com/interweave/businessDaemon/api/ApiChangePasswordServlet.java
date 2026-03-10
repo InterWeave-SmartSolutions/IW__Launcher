@@ -170,6 +170,19 @@ public class ApiChangePasswordServlet extends HttpServlet {
                 stmt.executeUpdate();
             }
 
+            // Audit: password change
+            try {
+                Integer uid = (Integer) session.getAttribute("userId");
+                Integer cid = (Integer) session.getAttribute("companyId");
+                AuditService.record(dataSource, uid, cid, email.trim(),
+                    "password_change",
+                    "User changed password via change-password API",
+                    "user", uid != null ? String.valueOf(uid) : null,
+                    request, null);
+            } catch (Exception auditEx) {
+                log("Audit logging failed for password change", auditEx);
+            }
+
             log("Password changed via API for user: " + email.trim());
             sendJson(response, HttpServletResponse.SC_OK,
                 "{\"success\":true,\"message\":\"Password changed successfully\"}");

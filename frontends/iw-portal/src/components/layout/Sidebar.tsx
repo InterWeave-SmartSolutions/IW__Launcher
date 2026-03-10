@@ -10,6 +10,7 @@ import {
   Bell,
   Shield,
   ClipboardList,
+  Sparkles,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -34,6 +35,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/admin/configurator", label: "Integrations", icon: Monitor, description: "Flows & daemon", group: "admin" },
   { to: "/admin/logging", label: "Logging", icon: FileText, description: "System logs", group: "admin" },
   { to: "/admin/audit", label: "Audit Log", icon: ClipboardList, description: "Activity history", group: "admin" },
+  { to: "/admin/field-mapping", label: "Field Mapping", icon: Sparkles, description: "AI mapping suggestions", group: "admin" },
 ];
 
 const GROUP_LABELS: Record<string, string> = {

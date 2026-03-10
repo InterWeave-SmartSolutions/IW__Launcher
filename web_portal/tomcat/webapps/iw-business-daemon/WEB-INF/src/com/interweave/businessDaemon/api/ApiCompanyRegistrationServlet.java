@@ -213,6 +213,19 @@ public class ApiCompanyRegistrationServlet extends HttpServlet {
 
                 conn.commit();
 
+                // Audit: company registration
+                try {
+                    AuditService.record(dataSource, null, companyId, email.trim().toLowerCase(),
+                        "company_register",
+                        "New company registered: " + companyName.trim() +
+                            " (admin: " + firstName.trim() + " " + lastName.trim() +
+                            ", solution: " + solutionType.trim() + ")",
+                        "company", String.valueOf(companyId),
+                        request, null);
+                } catch (Exception auditEx) {
+                    log("Audit logging failed for company registration", auditEx);
+                }
+
                 log("API company registered: " + companyName.trim() + " (Admin: " + email.trim() + ")");
                 sendJson(response, HttpServletResponse.SC_OK,
                     "{\"success\":true,\"message\":\"Company registered successfully\",\"companyId\":" +

@@ -251,16 +251,16 @@ public class ApiConfigurationServlet extends HttpServlet {
         String body = readRequestBody(request);
 
         if (pathInfo.startsWith("/wizard")) {
-            handlePutWizard(response, companyId, body, session);
+            handlePutWizard(request, response, companyId, body, session);
         } else if (pathInfo.startsWith("/credentials")) {
-            handlePutCredentials(response, companyId, body);
+            handlePutCredentials(request, response, companyId, body, session);
         } else {
             sendJson(response, 404, "{\"success\":false,\"error\":\"Unknown endpoint\"}");
         }
     }
 
-    private void handlePutWizard(HttpServletResponse response, int companyId, String body,
-            HttpSession session) throws IOException {
+    private void handlePutWizard(HttpServletRequest request, HttpServletResponse response,
+            int companyId, String body, HttpSession session) throws IOException {
         String solutionType = extractJsonString(body, "solutionType");
         if (solutionType == null || solutionType.trim().isEmpty()) {
             sendJson(response, 400, "{\"success\":false,\"error\":\"solutionType is required\"}");
@@ -333,6 +333,20 @@ public class ApiConfigurationServlet extends HttpServlet {
                 // Update session
                 session.setAttribute("solutionType", solutionType.trim());
 
+                // Audit: configuration wizard change
+                try {
+                    Integer uid = (Integer) session.getAttribute("userId");
+                    AuditService.record(dataSource, uid, companyId, userName,
+                        "config_change",
+                        "Configuration wizard saved (solution type: " + solutionType.trim() +
+                            ", profile: " + profileName + ")",
+                        "company_configuration", String.valueOf(companyId),
+                        request, null);
+                } catch (Exception auditEx) {
+                    // AuditService.record already swallows exceptions, but guard outer code too
+                    System.err.println("[ApiConfigurationServlet] Audit logging failed: " + auditEx.getMessage());
+                }
+
                 log("Configuration wizard saved for company " + companyId +
                     ", solution=" + solutionType + ", xml=" + xml.length() + " chars");
                 sendJson(response, 200,
@@ -347,8 +361,8 @@ public class ApiConfigurationServlet extends HttpServlet {
         }
     }
 
-    private void handlePutCredentials(HttpServletResponse response, int companyId, String body)
-            throws IOException {
+    private void handlePutCredentials(HttpServletRequest request, HttpServletResponse response,
+            int companyId, String body, HttpSession session) throws IOException {
         String credentialType = extractJsonString(body, "credentialType");
         if (credentialType == null || credentialType.trim().isEmpty()) {
             sendJson(response, 400, "{\"success\":false,\"error\":\"credentialType is required\"}");
@@ -393,6 +407,19 @@ public class ApiConfigurationServlet extends HttpServlet {
                 stmt.setString(8, endpointUrl != null ? endpointUrl.trim() : "");
                 stmt.setString(9, extraConfig != null ? extraConfig.trim() : "");
                 stmt.executeUpdate();
+            }
+
+            // Audit: credential change
+            try {
+                Integer uid = (Integer) session.getAttribute("userId");
+                String userEmail = (String) session.getAttribute("userEmail");
+                AuditService.record(dataSource, uid, companyId, userEmail,
+                    "config_change",
+                    "Credential saved (type: " + credentialType.trim() + ")",
+                    "company_credential", String.valueOf(companyId),
+                    request, null);
+            } catch (Exception auditEx) {
+                System.err.println("[ApiConfigurationServlet] Audit logging failed: " + auditEx.getMessage());
             }
 
             log("Credential saved: type=" + credentialType + " for company " + companyId);

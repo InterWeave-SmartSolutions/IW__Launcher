@@ -136,6 +136,20 @@ public class ApiProfileServlet extends HttpServlet {
                 if (rows > 0) {
                     // Update session display name
                     session.setAttribute("userName", firstName.trim() + " " + lastName.trim());
+
+                    // Audit: profile update
+                    try {
+                        Integer uid = (Integer) session.getAttribute("userId");
+                        Integer cid = (Integer) session.getAttribute("companyId");
+                        AuditService.record(dataSource, uid, cid, userEmail,
+                            "profile_update",
+                            "User updated profile (name: " + firstName.trim() + " " + lastName.trim() + ")",
+                            "user", uid != null ? String.valueOf(uid) : null,
+                            request, null);
+                    } catch (Exception auditEx) {
+                        log("Audit logging failed for profile update", auditEx);
+                    }
+
                     log("ApiProfileServlet: Profile updated for " + userEmail);
                     sendJson(response, 200,
                         "{\"success\":true,\"message\":\"Profile updated successfully\"}");
@@ -222,6 +236,19 @@ public class ApiProfileServlet extends HttpServlet {
                 stmt.setString(1, hashedNew);
                 stmt.setString(2, userEmail);
                 stmt.executeUpdate();
+            }
+
+            // Audit: password change via profile page
+            try {
+                Integer uid = (Integer) session.getAttribute("userId");
+                Integer cid = (Integer) session.getAttribute("companyId");
+                AuditService.record(dataSource, uid, cid, userEmail,
+                    "password_change",
+                    "User changed password via profile page",
+                    "user", uid != null ? String.valueOf(uid) : null,
+                    request, null);
+            } catch (Exception auditEx) {
+                log("Audit logging failed for password change", auditEx);
             }
 
             log("ApiProfileServlet: Password changed for " + userEmail);

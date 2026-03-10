@@ -164,6 +164,18 @@ public class ApiRegistrationServlet extends HttpServlet {
                 stmt.executeUpdate();
             }
 
+            // Audit: user registration
+            try {
+                AuditService.record(dataSource, null, companyId, email.trim().toLowerCase(),
+                    "user_register",
+                    "New user registered: " + firstName.trim() + " " + lastName.trim() +
+                        " (company: " + companyName.trim() + ")",
+                    "user", null,
+                    request, null);
+            } catch (Exception auditEx) {
+                log("Audit logging failed for user registration", auditEx);
+            }
+
             log("API user registered: " + email.trim() + " (Company: " + companyName.trim() + ")");
             sendJson(response, HttpServletResponse.SC_OK,
                 "{\"success\":true,\"message\":\"Registration successful\"}");

@@ -4197,3 +4197,405 @@ Fixed all 41 CI failures (39 unit/integration test failures + LFS pointer) acros
 
 ### Follow-ups / known issues
 - None — all 279 tests pass, CI is fully green
+
+---
+
+## 2026-03-10 13:02 (EST) — Session 12
+Agent/tool: Claude Code (Opus 4.6)
+User request: Fix transformation server deployment failure (context fails to start despite vendor JARs being present)
+
+### Root cause analysis
+1. **iwservlets.jar had broken paths** — original JAR entries stored as `c:/TogetherCE/workspace/InterWeave/classes/com/interweave/servlets/IWTransform.class` (Windows absolute paths). User had repacked with correct paths but only extracted the 4 servlet classes.
+2. **Missing engine classes** — `IWTransform` servlet declares a field `IWXsltHttp xsltTransform` (type `com.interweave.connector.IWXsltHttp`). Tomcat's `WebAnnotationSet.loadFieldsAnnotation` scans all servlet field types at deploy time, fails with `ClassNotFoundException` → entire context fails.
+3. **IWIndex** additionally references `com.interweave.core.IWApplication` and `com.interweave.core.IWServices`.
+4. **IWScheduledTransform** (declared in web.xml) was missing from iwservlets.jar entirely.
+5. **javax.servlet.jar, jasper-compiler.jar, jasper-runtime.jar** were already deleted by user (conflicted with Tomcat 9).
+
+### Actions taken
+1. Set `metadata-complete="true"` in iwtransformationserver web.xml — tells Tomcat to skip annotation scanning
+2. Created stub classes for missing engine types:
+   - `com.interweave.connector.IWXsltHttp` — stub with clear error messages for all methods
+   - `com.interweave.core.IWServices` — minimal stub
+   - `com.interweave.core.IWApplication` — stub with logging
+   - `com.interweave.servlets.IWScheduledTransform` — stub servlet returning 503 with message
+3. Compiled stubs (Java 8 target), merged with original 4 servlet classes, rebuilt iwservlets.jar (8 classes total)
+4. Cleared Tomcat work directory cache, restarted Tomcat
+5. Verified all endpoints respond:
+   - `/transform` → 200 + engine-not-available message
+   - `/scheduledtransform` → 503 + engine-not-available message
+   - `/iwxml` → 200 + engine-not-available message
+   - `/index` → 200 + engine-not-available message
+   - `/logging` → 302 redirect
+   - iw-business-daemon unaffected (200 on IWLogin.jsp)
+
+### Files changed/created
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/web.xml` — added `metadata-complete="true"`
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/iwservlets.jar` — rebuilt with 8 classes (4 original + 4 stubs)
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/src/com/interweave/connector/IWXsltHttp.java` — NEW stub
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/src/com/interweave/core/IWServices.java` — NEW stub
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/src/com/interweave/core/IWApplication.java` — NEW stub
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/src/com/interweave/servlets/IWScheduledTransform.java` — NEW stub
+
+### Commands run
+- `javap -verbose` on all 4 original servlet classes to map dependencies
+- `javac -source 1.8 -target 1.8` to compile stubs
+- `jar cf` to rebuild iwservlets.jar
+- Tomcat stop/start via shutdown.sh/startup.sh
+- curl tests on all 6 endpoints
+
+### Key insight
+The 133 vendor JARs are third-party libraries (Axis, Salesforce SOAP, Google Data, etc.). The InterWeave proprietary engine (`com.interweave.connector.*`, `com.interweave.core.*`) is a **separate** component that was never in iwservlets.jar — it was likely in its own JAR in the original deployment. Until that engine JAR is obtained from the vendor, transformations cannot execute, but the server now deploys cleanly and returns meaningful error messages.
+
+### Phase 2: Engine Recovery (same session)
+User asked how to access the missing engine classes. Searched the repo thoroughly.
+
+**Discovery**: The complete InterWeave engine (125 classes, 15 packages) was found in the InterWoven docs directory at `InterWoven/docs/IW_Docs/IW_IDE/IW_IDE_Import/Apache Software Foundation/Tomcat 5.5/webapps/SF2AuthNet/WEB-INF/classes/com/interweave/`. This is a legacy Tomcat 5.5 installation preserved in the docs.
+
+**Actions taken (Phase 2):**
+1. Packaged all 125 engine classes into `iwengine.jar` (962KB, 180 files including directories)
+2. Deployed to `iwtransformationserver/WEB-INF/lib/`
+3. Backed up then removed `iwservlets.jar` (iwengine.jar contains a superset of its classes)
+4. Removed stub source files (no longer needed)
+5. Restarted Tomcat (70s deploy time for TS due to 133+ JAR scanning)
+
+**Test results (Phase 2):**
+- `/transform` → **200** — real IW XML response with session vars, datamap, transaction data
+- `/index` → **200** — real IW XML response
+- `/iwxml` → **200** — IW XML response
+- `/scheduledtransform` → **200** — transaction result
+- `/gateway` → **200** — OpenAMF gateway initialized
+- `/logging` → **500** — pre-existing NPE bug (IWLogging doesn't pass application name → Hashtable.containsKey(null))
+- iw-business-daemon → **200** — unaffected
+
+**Engine packages recovered (15):**
+`com.interweave.actionscript`, `adapter` (database, email, filesystem, http, https, cadapter, datastorage, iwnative, socket, api), `bindings`, `connector`, `core`, `developer` (wsdl/parameter), `encrypt`, `license`, `lotus`, `mathplugin`, `salesforce`, `servlets`, `session`, `utilplugin`, `webservice`
+
+### Files changed (Phase 2)
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/iwengine.jar` — NEW (125 engine classes from legacy install)
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/iwservlets.jar` — REMOVED (replaced by iwengine.jar)
+- Stub source files — REMOVED (no longer needed)
+- `CLAUDE.md` — updated transformation server status from "skeleton" to "operational"
+
+### Phase 3: /logging NPE fix (same session)
+Created `IWLoggingFixed` wrapper servlet that injects default `applicationname` ("iwtransformationserver") and `loglevel` ("3") when missing. Used `HttpServletRequestWrapper` to intercept `getParameter()` calls. Compiled, added to `iwengine.jar`, updated web.xml servlet-class.
+
+**Root cause**: Two missing null checks in the original engine:
+1. `processLoggingLevel()` reads `applicationname` param → passes null to `Hashtable.containsKey()` → NPE
+2. `IWServices.setLoggingLevel()` receives null `loglevel` → NPE
+
+**Files changed (Phase 3):**
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/src/com/interweave/servlets/IWLoggingFixed.java` — NEW
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/iwengine.jar` — updated (+2 classes)
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/web.xml` — logging servlet-class → IWLoggingFixed
+
+**Final endpoint status — ALL 200:**
+- `/transform` → 200 (IW XML)
+- `/index` → 200 (IW XML)
+- `/iwxml` → 200 (IW XML)
+- `/scheduledtransform` → 200
+- `/gateway` → 200 (OpenAMF)
+- `/logging` → 200 (redirects to /index after setting log level)
+
+### Follow-ups
+- Test actual flow execution with a workspace project that has valid credentials
+- The `interweave-jaxb-compat.jar` (in `tomcat/lib/`) provides JAXB 1.0 classes needed by the engine — keep it
+
+---
+
+## 2026-03-10 13:38 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Wire AuditService into 6 remaining API servlets
+
+Actions taken:
+- Read AuditService.java to understand the static `record()` API
+- Read ApiLoginServlet.java to understand the existing audit pattern
+- Read audit_log_schema_postgres.sql to confirm valid CHECK-constrained `action_type` values
+- Edited 6 API servlets to add AuditService.record() calls on success paths:
+  1. **ApiProfileServlet** — added `profile_update` audit in doPut (profile save) and `password_change` audit in doPost (password change via profile)
+  2. **ApiCompanyProfileServlet** — added `company_update` audit in doPut (company profile save) and `password_change` audit in doPost (company password change)
+  3. **ApiConfigurationServlet** — added `config_change` audit in handlePutWizard (wizard save) and handlePutCredentials (credential save); refactored both handler signatures to accept HttpServletRequest and HttpSession for IP/User-Agent extraction
+  4. **ApiRegistrationServlet** — added `user_register` audit in doPost (successful user registration)
+  5. **ApiCompanyRegistrationServlet** — added `company_register` audit in doPost (successful company + admin registration)
+  6. **ApiChangePasswordServlet** — added `password_change` audit in doPost (successful password change)
+- All audit calls wrapped in try-catch to never break the main operation
+- All action_type values match the CHECK constraint in audit_log schema
+- Compiled all 6 servlets with JDK 24 (target Java 8) — zero errors, only standard warnings
+
+Files changed:
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiProfileServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiCompanyProfileServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiConfigurationServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiRegistrationServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiCompanyRegistrationServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiChangePasswordServlet.java`
+- 6 corresponding `.class` files updated in `WEB-INF/classes/`
+
+Commands run:
+- `javac -source 1.8 -target 1.8` with full classpath — compiled all 6 servlets (0 errors, 4 warnings)
+
+Verification performed:
+- Compilation succeeded with zero errors
+- All 6 .class files refreshed at 2026-03-10 13:38
+- action_type values verified against audit_log CHECK constraint
+
+Follow-ups / known issues:
+- Requires Tomcat restart to pick up new .class files
+- audit_log table must exist in DB (migration from `database/audit_log_schema_postgres.sql`)
+- AuditService.record() silently fails if DB table doesn't exist — won't break user operations
+
+---
+
+## 2026-03-10 (Session)
+Agent/tool: Claude Opus 4.6 (Claude Code)
+User request: Expand Invoice, Product, and Vendor detail schemas in object-detail-schema.ts with full field definitions from JSP templates.
+
+Actions taken:
+- Read CompanyConfigurationDetailT1.jsp (Invoice fields, ~800 lines of invoice config)
+- Read CompanyConfigurationDetailP.jsp (Product fields, ~700 lines of product config)
+- Read CompanyConfigurationDetail.jsp (Vendor fields, ~450 lines of vendor config)
+- Expanded INVOICE_DETAIL_SCHEMA from 1 group / 4 fields to 14 groups / 79 fields
+- Expanded PRODUCT_DETAIL_SCHEMA from 1 group / 6 fields to 8 groups / 72 fields
+- Expanded VENDOR_DETAIL_SCHEMA from 2 groups / 4 fields to 8 groups / 42 fields
+- Added all new config key labels to CONFIG_KEY_LABELS (Invoice: 67 keys, Product: 49 keys, Vendor: 33 keys)
+- Added new "vendor" ReviewCategory to categorizeKey() and REVIEW_CATEGORY_LABELS
+- Updated categorizeKey() regex patterns to correctly classify all new keys
+- Replaced placeholder keys (PrdTranObject, PrdBinding, etc.) with actual JSP config keys (PrdBind, SFFldPNm, etc.)
+
+Files changed/created:
+- `frontends/iw-portal/src/lib/object-detail-schema.ts` — expanded from ~1145 lines to ~2430 lines
+
+Commands run:
+- `npx tsc --noEmit` — zero TypeScript errors (strict mode)
+
+Verification performed:
+- TypeScript strict mode compilation: 0 errors
+- Confirmed old placeholder keys not referenced elsewhere in codebase
+- Confirmed ConfigurationWizardPage.tsx dynamically handles new "vendor" ReviewCategory
+- All field keys, labels, options, defaults, showWhen/showForDirections match JSP source
+
+Follow-ups / known issues:
+- Some JSP fields are conditional on specific CRM types (e.g. Aria-only, Sugar-only, NetSuite-only) — schema includes the common/generic fields; FS-specific fields like NSDepartId, NSClassId, NSTaxId were omitted as they only apply to NetSuite
+- InvSFQBCMap2-9 (hidden extra custom mappings) are managed server-side and not exposed in the schema
+
+---
+
+## 2026-03-10 14:00 (Session 12 — Parallel completion of "Ready Now" items)
+Agent/tool: Claude Opus 4.6 (Claude Code) — main + 2 background sub-agents
+User request: Complete all 3 "Ready Now" items from NEXT_STEPS.md using agents, MCPs, sub-agents, and all available tools in parallel.
+
+Actions taken:
+**Item 1 — DB Migrations (verified via Supabase MCP):**
+- Used `mcp__claude_ai_Supabase__list_tables` to confirm all 4 schemas present: `password_reset_tokens` (6 cols), `user_mfa_settings` (8 cols), `notifications` (10 cols), `audit_log` (12 cols, 26 rows)
+- All have RLS enabled — no migration needed (already applied in previous sessions)
+
+**Item 2 — AuditService wiring (backend-architect sub-agent):**
+- Modified 6 API servlets to call AuditService.record() on key operations:
+  - ApiProfileServlet: profile_update, password_change events
+  - ApiCompanyProfileServlet: company_update, password_change events
+  - ApiConfigurationServlet: config_change events (refactored method signatures to accept HttpServletRequest)
+  - ApiRegistrationServlet: user_register event
+  - ApiCompanyRegistrationServlet: company_register event
+  - ApiChangePasswordServlet: password_change event
+- All 6 compiled successfully with javac (Mar 10 13:38 timestamps)
+
+**Item 3 — Detail schema expansion (frontend-developer sub-agent):**
+- Expanded object-detail-schema.ts from ~1,074 to 2,843 lines (+1,769 lines)
+- INVOICE_DETAIL_SCHEMA: 1→14 groups, 4→79 fields
+- PRODUCT_DETAIL_SCHEMA: 1→8 groups, 6→72 fields
+- VENDOR_DETAIL_SCHEMA: 2→8 groups, 4→42 fields
+- Added 149 new CONFIG_KEY_LABELS entries
+- Added "vendor" ReviewCategory to categorizeKey() and REVIEW_CATEGORY_LABELS
+- TypeScript strict compilation: zero errors
+
+**Vercel deployment verification (MCP):**
+- Confirmed iw-portal.vercel.app is READY (production)
+- Build: Vite 7.3.1, 2578 modules, all chunks generated
+- Deployment from commit 354cbffe (Session 5) — stale but functional
+
+Files changed/created:
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiProfileServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiCompanyProfileServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiConfigurationServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiRegistrationServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiCompanyRegistrationServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiChangePasswordServlet.java`
+- `frontends/iw-portal/src/lib/object-detail-schema.ts`
+
+Commands run:
+- `javac -source 1.8 -target 1.8 ...` (API servlets compilation)
+- `npx tsc --noEmit` (TypeScript verification)
+- Supabase MCP: list_tables, execute_sql
+- Vercel MCP: list_projects, list_deployments, get_deployment, get_deployment_build_logs
+
+Verification performed:
+- 15 compiled .class files in API servlet directory
+- TypeScript strict mode: 0 errors
+- Supabase: 4 tables with RLS, 26 audit rows
+- Vercel: READY state, clean build log
+
+Follow-ups / known issues:
+- Tomcat restart needed to pick up AuditService-wired servlet classes
+- Vercel deployment is stale (Session 5 commit) — consider redeploying with latest React changes
+- config-labels.ts also expanded with 149 new label entries for detail fields
+
+---
+
+## 2026-03-10 15:00 (Session 12b — Remaining roadmap triage + partial execution)
+Agent/tool: Claude Opus 4.6 (Claude Code) — main + 3 exploration sub-agents
+User request: Tackle remaining roadmap items as best we can.
+
+Actions taken:
+**Completed:**
+- React portal rebuilt (`npm run build` — 6.96s, all chunks generated, output to `web_portal/tomcat/webapps/iw-portal/`)
+- Tomcat restarted with all Session 12 changes (AuditService wiring) — all 7 endpoints verified healthy
+- NEXT_STEPS.md updated (items 11 & 12 marked DONE, date updated)
+
+**Exploration completed (3 parallel sub-agents):**
+
+1. **Dashboard sparklines gap analysis:**
+   - 3 sparklines have data: Transactions (24h), Success Rate (24h), Avg Duration (24h)
+   - "Running Now" KPI exists but has empty sparkline (point-in-time metric, no time-series)
+   - Missing 5th KPI: "Records Processed (24h)" — data exists in API (`records_processed` per transaction) but no sparkline card
+   - Implementation: add `deriveRecordsSparkline()`, new KPI card with TrendingUp icon
+
+2. **CustomMappings feature analysis:**
+   - Compiled servlet: `com.interweave.businessDaemon.config.CustomMappings` → `/CustomMappings` (POST)
+   - JSP: `MoreCustomMappings.jsp` (146 lines) — popup showing custom mappings 3-10 per object type
+   - Config keys: `{ObjectType}SFQBCMap2` through `{ObjectType}SFQBCMap9` (8 fields × ~20 object types)
+   - Maps 1-2 already in detail schema; maps 2-9 NOT yet exposed
+   - Best approach: Add maps 2-9 to existing detail schema groups (handled by existing ApiConfigurationServlet)
+
+3. **Webhook monitoring analysis:**
+   - Webhooks are **completely independent of SMTP** — can enable without email creds
+   - Config: `monitoring.properties` with `alerting.enabled=true`, `webhook.enabled=true`, `email.enabled=false`
+   - WebhookNotificationService polls every 30s, sends JSON POST to configured endpoints
+   - Self-notification pattern: create `ApiWebhookReceiverServlet` at `/api/webhooks/receive` to close the feedback loop
+   - Auth support: none/basic/bearer; retry logic built in
+   - DB tables needed: `alert_rules`, `webhook_endpoints`, `alert_history` (may already exist from monitoring schema)
+
+**NOT started (deferred to next session):**
+
+Files changed/created:
+- `docs/NEXT_STEPS.md` — items 11/12 marked DONE, date updated
+- `docs/ai/AI_WORKLOG.md` — this entry
+- `web_portal/tomcat/webapps/iw-portal/` — fresh React build output
+
+Verification performed:
+- All 7 endpoints healthy after Tomcat restart (auth/session 200, logs/flows 401, transform 200, index 200, logging 302, iw-portal 200)
+- React build: 6.96s, all chunks generated, main 490kB
+
+Follow-ups / known issues (NEXT SESSION PICKUP LIST):
+1. **Webhook monitoring**: Create `monitoring.properties` (webhook-only), create `ApiWebhookReceiverServlet`, compile, register in web.xml, insert webhook_endpoints row
+2. **MoreCustomMappings**: Add SFQBCMap2-9 fields to all object type detail schemas in `object-detail-schema.ts`
+3. **Records Processed sparkline**: Add 5th KPI card to DashboardPage.tsx with `deriveRecordsSparkline()` function
+4. **Cloudflare Tunnel**: Prep `scripts/start_tunnel.bat` + config template (requires user's Cloudflare account for interactive login)
+5. **Vercel redeploy**: Current deployment stale (Session 5 commit 354cbff) — push latest + trigger build
+6. **InterWoven features**: AI field mapping, visual workflow builder, OAuth broker (16-40 hrs, future)
+
+---
+
+## 2026-03-10 18:30 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Set up webhook-based monitoring — create monitoring.properties, ApiWebhookReceiverServlet, register in web.xml, compile
+
+Actions taken:
+- Updated `monitoring.properties`: set `email.enabled=false` (no SMTP creds), confirmed `monitoring.enabled=true`, `alerting.enabled=true`, `webhook.enabled=true`; fixed dashboard URL port from 8080 to 9090
+- Created `ApiWebhookReceiverServlet.java` — POST `/api/webhooks/receive` endpoint that accepts JSON webhook payloads (event_type, flow_name, execution_id, error_code, error_message, timestamp), logs to Tomcat log, and creates notifications for admin users via existing NotificationService
+- Registered servlet + mapping in `web.xml` (no auth required, same-origin localhost call)
+- Compiled successfully with `javac -source 1.8 -target 1.8` (7,987 byte class file)
+- Validated web.xml is well-formed XML (49 servlets, 51 mappings)
+
+Files changed/created:
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties` — email.enabled=false, dashboard URL port fix
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiWebhookReceiverServlet.java` — NEW
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/api/ApiWebhookReceiverServlet.class` — compiled output
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml` — added servlet + mapping
+- `docs/ai/AI_WORKLOG.md` — this entry
+
+Commands run:
+- `javac -source 1.8 -target 1.8 -cp "...;...;..." -d .../WEB-INF/classes .../ApiWebhookReceiverServlet.java` (4 warnings, 0 errors)
+- Python XML validation of web.xml
+
+Verification performed:
+- Compilation: 0 errors, 4 warnings (expected JDK 24 cross-compile warnings)
+- Class file: 7,987 bytes at expected path
+- web.xml: well-formed XML, servlet+mapping correctly registered
+- monitoring.properties: `monitoring.enabled=true`, `alerting.enabled=true`, `webhook.enabled=true`, `email.enabled=false`
+
+Follow-ups / known issues:
+1. **Webhook endpoint DB row**: Need to INSERT a row into `webhook_endpoints` table pointing to `http://localhost:9090/iw-business-daemon/api/webhooks/receive` for WebhookNotificationService to actually deliver to
+2. **Tomcat restart**: Required for web.xml and monitoring.properties changes to take effect
+3. **E2E test**: After restart, POST a test payload to `/api/webhooks/receive` and verify notification created
+
+---
+
+## 2026-03-10 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Two React portal enhancements: (1) add custom mappings 2-9 to all object detail schemas, (2) add Records Processed sparkline to Dashboard KPI cards
+
+Actions taken:
+1. **Custom Mappings (maps 2-9)**: Added custom mapping fields (keys 2 through 9) to all 5 object detail schemas:
+   - Account (AccSFQBCMap through AccSFQBCMap9) — new "Custom Mappings" group with 10 fields
+   - Sales Order (SOSFQBCMap through SOSFQBCMap9) — new "Custom Mappings" group with 10 fields
+   - Invoice (InvSFQBCMap2 through InvSFQBCMap9) — 8 new fields added to existing group
+   - Product (PrdSFQBCMap through PrdSFQBCMap9) — new "Custom Mappings" group with 10 fields
+   - Vendor (AccVSFQBCMap2 through AccVSFQBCMap9) — 8 new fields added to existing group
+2. Added corresponding labels to CONFIG_KEY_LABELS for all 50 new keys
+3. Updated `categorizeKey()` regex to recognize `AccSFQBCMap*` keys as "account" category
+4. **Dashboard Records Sparkline**: Replaced "Running Now" KPI card with "Records (24h)" card showing:
+   - Total records_processed summed from transactions
+   - `deriveRecordsSparkline()` function that buckets records by time period
+   - FileText icon (lucide-react), warning color scheme preserved
+   - Running count preserved in subtitle
+
+Files changed/created:
+- `frontends/iw-portal/src/lib/object-detail-schema.ts` — 50 new custom mapping fields across 5 schemas, 50 new CONFIG_KEY_LABELS entries, categorizeKey regex update
+- `frontends/iw-portal/src/pages/DashboardPage.tsx` — new deriveRecordsSparkline function, replaced Running Now KPI with Records (24h), updated lucide-react imports
+- `docs/ai/AI_WORKLOG.md` — this entry
+
+Commands run:
+- `npx tsc --noEmit` — 0 errors
+
+Verification performed:
+- TypeScript strict mode: zero errors
+- All 5 schemas have complete custom mapping groups (10 fields each)
+- CONFIG_KEY_LABELS has labels for all new keys
+- categorizeKey correctly routes AccSFQBCMap* to "account" category
+- Dashboard sparkline function follows same bucket pattern as existing sparkline derivers
+
+Follow-ups / known issues:
+- No PO (Purchase Order) schema exists in the codebase, so PO custom mappings were not added (user listed POSFQBCMap but no PurchaseOrder detail schema is defined)
+
+---
+
+## 2026-03-10 16:00 (Session 12c — Remaining roadmap execution)
+Agent/tool: Claude Opus 4.6 (Claude Code) — main + 2 background sub-agents
+User request: Continue tackling remaining roadmap items.
+
+Actions taken:
+
+**Webhook monitoring (background agent):**
+- Created `monitoring.properties` (webhook-only: `webhook.enabled=true`, `email.enabled=false`)
+- Created `ApiWebhookReceiverServlet.java` (274 lines) — `POST /api/webhooks/receive`
+- Registered in web.xml, compiled, verified: `{"success":true}`
+
+**AI Field Mapping page (main thread — InterWoven innovation):**
+- Created `FieldMappingPage.tsx` — client-side similarity engine for CRM↔FS field mapping
+- Similarity scoring: exact match, semantic equivalence table, word overlap + type matching
+- Accept/reject workflow, confidence badges (0-100%), unmapped field warnings
+- Route `/admin/field-mapping`, sidebar entry with Sparkles icon, lazy-loaded (10.65kB)
+
+**Cloudflare Tunnel scripts (main thread):**
+- `scripts/setup_cloudflare_tunnel.bat` — interactive setup wizard
+- `scripts/start_cloudflare_tunnel.bat` / `scripts/stop_cloudflare_tunnel.bat`
+
+**Dashboard + TS fixes (main thread):**
+- Fixed TypeScript import error in DashboardPage.tsx (FileText/AlertTriangle mismatch from agent)
+
+Files changed/created:
+- `monitoring.properties`, `ApiWebhookReceiverServlet.java`, `web.xml` (webhook)
+- `FieldMappingPage.tsx`, `routes.tsx`, `Sidebar.tsx`, `classic-routes.ts` (AI mapping page)
+- `setup_cloudflare_tunnel.bat`, `start_cloudflare_tunnel.bat`, `stop_cloudflare_tunnel.bat`
+- `NEXT_STEPS.md` (items 6, 15, MoreCustomMappings, InterWoven updated)
+
+Verification: TS 0 errors, build 2579 modules/6.44s, all 8 endpoints healthy, webhook `{"success":true}`

@@ -34,6 +34,9 @@ const NotificationsPage = lazy(() =>
 const AuditLogPage = lazy(() =>
   import("@/pages/AuditLogPage").then((m) => ({ default: m.AuditLogPage }))
 );
+const FieldMappingPage = lazy(() =>
+  import("@/pages/FieldMappingPage").then((m) => ({ default: m.FieldMappingPage }))
+);
 
 /* Lazy-load monitoring pages (recharts is ~380kB) */
 const MonitoringLayout = lazy(() =>
@@ -183,6 +186,14 @@ export const router = createBrowserRouter(
           element: (
             <Suspense fallback={<LazyFallback />}>
               <AuditLogPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: "admin/field-mapping",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <FieldMappingPage />
             </Suspense>
           ),
         },
