@@ -4145,3 +4145,55 @@ User request: Document localtunnel password issue and update docs.
 
 ### Follow-ups / known issues
 - Cloudflare Tunnel setup still pending (item #15) — eliminates password prompt and ephemeral URLs
+
+---
+
+## 2026-03-10 16:10 (UTC)
+Agent/tool: Claude Code (Sonnet 4.6)
+User request: Fix Maven CI failures (`mvn clean verify`) — 39 test failures across 5 test classes, plus Git LFS pointer failure
+
+### What I did (this response)
+
+Fixed all 41 CI failures (39 unit/integration test failures + LFS pointer) across 4 commits on `main`.
+
+**Root causes and fixes:**
+
+| # | Class | Count | Root cause | Fix |
+|---|-------|-------|------------|-----|
+| 1 | XSLTValidatorTest | 22 | `NoClassDefFoundError: org/apache/xml/serializer/SerializerTrace` | Added `xalan:serializer:2.7.3` dependency to `pom.xml` |
+| 2 | FlowConfigValidatorTest | 11 | `getAttribute("name")` returns empty when `<name>` is a child element | Added child-element fallback in `validateTransaction()` and `detectCircularReferences()` |
+| 3 | ConnectionValidatorTest | 1 | Unsupported type only generated WARNING; test asserts `isValid()==false` AND `warningCount>0` | Added dual WARNING+ERROR for unsupported connection types |
+| 4 | XPathValidatorTest | 3 | Undefined namespace prefix was WARNING; `\'` escape caused odd quote count | Changed namespace severity to ERROR; skip `\`-preceded quotes in balance check |
+| 5 | IWErrorTest | 2 | `toString()` returned display name but log-output tests checked `contains("ERROR")` | `ErrorSeverity.toString()` stays as `displayName`; `ErrorCode.toString()`, `ErrorLogger`, and `IWError.toLogString()` now use `severity.name()` explicitly |
+| 6 | XSLTValidatorTest | 1 | `testImportWithExistingFile`: called template defined in imported file flagged as undefined (ERROR) | Use WARNING (not ERROR) for undefined template calls when `<xsl:import>` exists |
+| 7 | XSLTValidatorTest | 1 | `testInvalidXPathInSelect`: Xalan StackOverflowError on deeply malformed XPath | Catch `Error` (not just `TransformerConfigurationException`) in `validateXSLTSyntax` |
+| 8 | XPathValidatorTest | 1 | `testXPathWithSpecialCharacters`: `\'` not valid XPath 1.0; Java XPath API fails | Normalize `\'`/`\"` to placeholder before passing to `xpath.compile()` |
+| 9 | FlowConfigValidatorTest | 2 | Empty `<connection></connection>` not detected; undefined transformation was WARNING | Added ERROR for empty connection element; changed transformation severity to ERROR |
+| 10 | ErrorHandlingIntegrationTest | 2 | SYSTEM001–SYSTEM005 missing from ErrorDocumentation; `<BusinessDaemonConfiguration>` XML fails `<transactions>` check | Added SYSTEM docs; skip required-elements check for non-flow root elements |
+| 11 | LFS | 1 | `docs/legacy-pdfs/IW_IDE_User Gude v1.0.doc` stored as regular blob | `git rm --cached` + `git add` to re-track via LFS |
+
+### Files changed/created
+- `pom.xml` — added `xalan:serializer:2.7.3`
+- `src/main/java/com/interweave/error/ErrorSeverity.java` — `toString()` returns `displayName`
+- `src/main/java/com/interweave/error/ErrorCode.java` — `toString()` uses `severity.name()`
+- `src/main/java/com/interweave/error/ErrorLogger.java` — log header uses `severity.name()`
+- `src/main/java/com/interweave/error/IWError.java` — `toLogString()` uses `severity.name()`
+- `src/main/java/com/interweave/error/ErrorDocumentation.java` — added SYSTEM001–SYSTEM005 entries
+- `src/main/java/com/interweave/validation/XPathValidator.java` — namespace ERROR; escaped-quote skip; `\'` normalization before compile
+- `src/main/java/com/interweave/validation/XSLTValidator.java` — catch `Error`; WARNING for template calls when imports present
+- `src/main/java/com/interweave/validation/ConnectionValidator.java` — dual WARNING+ERROR for unsupported type
+- `src/main/java/com/interweave/validation/FlowConfigValidator.java` — child-element name/type fallback; empty-connection ERROR; transformation ERROR; non-flow root skip
+- `docs/legacy-pdfs/IW_IDE_User Gude v1.0.doc` — re-tracked via Git LFS
+
+### Commits
+- `86e5968` — LFS fix
+- `af5d7a9` — initial 39→6 test fixes
+- `5314a9b` — 6→1 test fixes
+- `87101bf` — 1→0 unit test fixes
+- `d056676` — 0 integration test fixes (final green CI)
+
+### Verification performed
+- GitHub Actions CI run `22911951916` on commit `d056676`: **BUILD SUCCESS** — Tests run: 279 (265 unit + 14 integration), Failures: 0, Errors: 0
+
+### Follow-ups / known issues
+- None — all 279 tests pass, CI is fully green
