@@ -3,6 +3,9 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
+const isVercel = !!process.env.VERCEL;
+const backendProxy = process.env.VITE_DEV_PROXY_TARGET ?? "http://localhost:9090";
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -14,13 +17,13 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/iw-business-daemon": {
-        target: "http://localhost:9090",
+        target: backendProxy,
         changeOrigin: true,
       },
     },
   },
   build: {
-    outDir: "../../web_portal/tomcat/webapps/iw-portal",
+    outDir: isVercel ? "dist" : "../../web_portal/tomcat/webapps/iw-portal",
     emptyOutDir: true,
     rollupOptions: {
       output: {
@@ -39,5 +42,5 @@ export default defineConfig({
       },
     },
   },
-  base: "/iw-portal/",
+  base: isVercel ? "/" : "/iw-portal/",
 });

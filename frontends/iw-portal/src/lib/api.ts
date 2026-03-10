@@ -1,4 +1,6 @@
-const BASE_URL = "/iw-business-daemon";
+// Allow VITE_API_BASE_URL override for Vercel / external deployments
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const BASE_URL: string = (import.meta as any).env?.VITE_API_BASE_URL || "/iw-business-daemon";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

@@ -74,9 +74,14 @@ public class ApiLogViewerServlet extends HttpServlet {
             String date = request.getParameter("date");
             String type = request.getParameter("type");
             handleContent(logsDir, date, type, response);
+        } else if ("/live".equals(pathInfo)) {
+            int lines = 200;
+            try { lines = Integer.parseInt(request.getParameter("lines")); } catch (Exception e) { /* use default */ }
+            String filter = request.getParameter("filter");
+            handleLive(logsDir, lines, filter, response);
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"success\":false,\"error\":\"Unknown endpoint. Use /files, /summary, or /content\"}");
+            response.getWriter().write("{\"success\":false,\"error\":\"Unknown endpoint. Use /files, /summary, /content, or /live\"}");
         }
     }
 
@@ -385,28 +390,97 @@ public class ApiLogViewerServlet extends HttpServlet {
     }
 
     /**
-     * Resolves the logs directory relative to the repo root.
+     * GET /api/logs/live?lines=200&filter=ERROR - Returns last N lines of catalina.out.
+     */
+    private void handleLive(File logsDir, int lines, String filter, HttpServletResponse response)
+            throws IOException {
+        // catalina.out lives in the same logs dir
+        File catalinaOut = new File(logsDir, "catalina.out");
+        if (!catalinaOut.isFile()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"success\":false,\"error\":\"catalina.out not found\"}");
+            return;
+        }
+
+        if (lines < 1) lines = 50;
+        if (lines > 5000) lines = 5000;
+
+        // Read file into a circular buffer of last N lines
+        List<String> buffer = new ArrayList<String>(lines + 1);
+        BufferedReader reader = null;
+        long totalLines = 0;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(catalinaOut), "UTF-8"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                totalLines++;
+                if (filter != null && !filter.isEmpty() && !line.toUpperCase().contains(filter.toUpperCase())) continue;
+                buffer.add(line);
+                if (buffer.size() > lines) buffer.remove(0);
+            }
+        } finally {
+            if (reader != null) try { reader.close(); } catch (IOException e) { /* ignore */ }
+        }
+
+        PrintWriter out = response.getWriter();
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"success\":true");
+        sb.append(",\"file\":\"catalina.out\"");
+        sb.append(",\"fileSize\":").append(catalinaOut.length());
+        sb.append(",\"totalLines\":").append(totalLines);
+        sb.append(",\"returnedLines\":").append(buffer.size());
+        sb.append(",\"lines\":[");
+
+        for (int i = 0; i < buffer.size(); i++) {
+            if (i > 0) sb.append(',');
+            String l = buffer.get(i);
+            String upper = l.toUpperCase();
+            String level = "info";
+            if (upper.contains("SEVERE") || upper.contains("FATAL") || (upper.contains("ERROR") && !upper.contains("NOTFOUNDERROR"))) {
+                level = "error";
+            } else if (upper.contains("WARN")) {
+                level = "warn";
+            } else if (upper.contains("IW 2.41 TS") || upper.contains("IW 2.41")) {
+                level = "ts";
+            } else if (upper.contains("EXCEPTION") || upper.startsWith("\tat ") || upper.startsWith("AT ")) {
+                level = "error";
+            }
+            sb.append("{\"num\":").append(totalLines - buffer.size() + i + 1);
+            sb.append(",\"level\":").append(jsonStr(level));
+            sb.append(",\"text\":").append(jsonStr(l));
+            sb.append('}');
+        }
+
+        sb.append("]}");
+        out.write(sb.toString());
+    }
+
+    /**
+     * Resolves the Tomcat logs directory.
      */
     private File resolveLogsDir() {
-        // Try relative to webapp context
+        // Primary: resolve from webapp real path
+        // webapps/iw-business-daemon -> webapps -> tomcat -> web_portal -> repo root
         String realPath = getServletContext().getRealPath("/");
         if (realPath != null) {
-            // webapps/iw-business-daemon/ -> up to repo root
             File webappDir = new File(realPath);
-            File repoRoot = webappDir.getParentFile().getParentFile().getParentFile().getParentFile();
-            File logsDir = new File(new File(repoRoot, "logs"), "logs");
+            // Go up: iw-business-daemon -> webapps -> tomcat -> web_portal -> repo root
+            File tomcatDir = webappDir.getParentFile().getParentFile();
+            File logsDir = new File(tomcatDir, "logs");
             if (logsDir.isDirectory()) return logsDir;
         }
 
-        // Fallback: try common paths
-        String[] candidates = {
-            "C:/IW_Launcher/logs/logs",
-            System.getProperty("user.dir") + "/logs/logs"
-        };
-        for (String path : candidates) {
-            File f = new File(path);
-            if (f.isDirectory()) return f;
+        // Fallback: catalina.home system property (Tomcat sets this)
+        String catalinaHome = System.getProperty("catalina.home");
+        if (catalinaHome != null) {
+            File logsDir = new File(catalinaHome, "logs");
+            if (logsDir.isDirectory()) return logsDir;
         }
+
+        // Last resort: known absolute path
+        File fallback = new File("C:/IW_IDE/IW_Launcher/web_portal/tomcat/logs");
+        if (fallback.isDirectory()) return fallback;
+
         return null;
     }
 

@@ -600,6 +600,16 @@
         	<url-pattern>/api/admin/audit/*</url-pattern>
         </servlet-mapping>
 
+        <!-- Engine Status API -->
+        <servlet>
+        	<servlet-name>ApiEngineStatusServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiEngineStatusServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiEngineStatusServlet</servlet-name>
+        	<url-pattern>/api/engine/*</url-pattern>
+        </servlet-mapping>
+
 	<session-config>
 		<session-timeout>30</session-timeout>
 	</session-config>

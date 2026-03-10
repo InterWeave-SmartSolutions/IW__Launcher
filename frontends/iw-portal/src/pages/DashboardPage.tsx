@@ -1,4 +1,4 @@
-import { Activity, CheckCircle, AlertTriangle, Clock, TrendingUp, Zap, RefreshCw, Loader2, User, Building2, ArrowRight } from "lucide-react";
+import { Activity, CheckCircle, AlertTriangle, Clock, TrendingUp, Zap, RefreshCw, Loader2, User, Building2, ArrowRight, Server, Wifi, WifiOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useDashboard, useTransactions } from "@/hooks/useMonitoring";
@@ -7,6 +7,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Sparkline } from "@/components/Sparkline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useEngineStatus } from "@/hooks/useEngine";
 import type { Transaction } from "@/types/monitoring";
 
 function fmt(n: number | undefined | null): string {
@@ -95,6 +96,7 @@ export function DashboardPage() {
   const { user } = useAuth();
   const { data: dashRes, isLoading, error, refetch, isFetching } = useDashboard();
   const { data: txRes } = useTransactions(1, 50);
+  const { data: engineRes, isLoading: engineLoading } = useEngineStatus();
 
   const summary = dashRes?.data?.summary;
   const running = dashRes?.data?.running_transactions ?? [];
@@ -202,6 +204,54 @@ export function DashboardPage() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Engine Status Card */}
+      <div className="glass-panel rounded-[var(--radius)] p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold flex items-center gap-2">
+            <Server className="w-4 h-4 text-[hsl(var(--primary))]" />
+            Transformation Engine
+          </h2>
+          <Link
+            to="/admin/configurator"
+            className="flex items-center gap-1 text-xs text-[hsl(var(--primary))] hover:underline font-medium"
+          >
+            Manage <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        {engineLoading ? (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            Checking engine…
+          </div>
+        ) : engineRes ? (
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              {engineRes.engineUp ? (
+                <Wifi className="w-4 h-4 text-[hsl(var(--success))]" />
+              ) : (
+                <WifiOff className="w-4 h-4 text-[hsl(var(--destructive))]" />
+              )}
+              <Badge variant={engineRes.engineUp ? "success" : "destructive"} className="text-xs">
+                {engineRes.engineUp ? "Online" : "Offline"}
+              </Badge>
+            </div>
+            {engineRes.engineUp && (
+              <>
+                <span className="text-xs text-muted-foreground">
+                  Response: <span className="text-foreground font-medium">{engineRes.responseMs}ms</span>
+                </span>
+                <span className="text-xs text-muted-foreground truncate max-w-[280px]">
+                  {engineRes.tsUrl}
+                </span>
+              </>
+            )}
+            {engineRes.error && (
+              <span className="text-xs text-[hsl(var(--destructive))]">{engineRes.error}</span>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Recent Transactions table */}

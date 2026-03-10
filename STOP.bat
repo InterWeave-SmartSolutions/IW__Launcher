@@ -28,6 +28,9 @@ if not exist "%CATALINA_HOME%\bin\shutdown.bat" (
     exit /b 1
 )
 
+echo  Stopping sync bridge...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\sync_bridge.ps1" -Stop 2>nul
+
 echo  Stopping web server...
 cd /d "%CATALINA_HOME%\bin"
 call shutdown.bat >nul 2>&1

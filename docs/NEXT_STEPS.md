@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-08 (Session 5)
+**Last Updated:** 2026-03-09 (Session 10 — Vercel deployed)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -64,6 +64,37 @@ These items from the original roadmap are now DONE:
 
 ## Immediate (Ready Now)
 
+### ~~13. Bidirectional Sync Bridge (IDE ↔ Web Portal)~~ DONE
+
+**Implemented:** `scripts/sync_bridge.ps1` — PowerShell FileSystemWatcher daemon
+
+**What it does:**
+- Watches `workspace/*/configuration/` and `workspace/*/xslt/` for IDE-initiated file changes
+- On change (debounced 2s), calls `WorkspaceProfileSyncServlet?action=importProfile` to push to DB
+- Then calls `WorkspaceProfileCompilerServlet?action=compileProfile` to regenerate overlays
+- Excludes `GeneratedProfiles/`, `IW_Runtime_Sync/`, `.metadata/` (portal-generated, not IDE)
+- Zero dependencies — uses built-in Windows PowerShell `FileSystemWatcher` (.NET)
+
+**Integration:**
+- `START.bat` launches sync bridge automatically (background, minimized)
+- `STOP.bat` kills sync bridge before shutting down Tomcat
+- Standalone: `scripts/start_sync_bridge.bat` / `scripts/stop_sync_bridge.bat`
+- Logs: `logs/sync_bridge.log`
+- PID tracking: `logs/sync_bridge.pid` (prevents duplicate instances)
+- **Live-tested 2026-03-09:** Both profiles imported + recompiled, bridge survives errors, stops cleanly
+
+### 14. Obtain iw_sdk_1.0.0 Source Code
+
+**[PRIORITY: MEDIUM]** **[Effort: N/A — requires vendor contact]**
+
+The compiled Eclipse plugin (253 classes, no source) limits automation capabilities. With source, we could add:
+- Live workspace auto-refresh when portal syncs files
+- Automatic reverse sync on IDE build/save
+- Headless CLI mode for AI-driven project manipulation
+- Native "Push to Portal" / "Pull from Portal" commands
+
+**Action:** Contact Integration Technologies, Inc. (plugin copyright holder) for source access or decompile key classes (Designer, ConfigContext, ProjectActions) for inspection.
+
 ---
 
 ## Blocked on External Actions
@@ -121,6 +152,36 @@ The Invoice, Product, and Vendor schemas in `object-detail-schema.ts` are minima
 
 ---
 
+## Public Showcase (Vercel + Tunnel)
+
+**React portal is live at https://iw-portal.vercel.app**
+
+| Component | Status | Notes |
+|---|---|---|
+| Vercel deployment | ✅ Live | `frontends/iw-portal`, auto-builds on redeploy |
+| Backend tunnel | ⚠️ Ephemeral | localtunnel, port 9090, subdomain `iw-portal-demo` |
+| Tunnel password | ℹ️ Required | First visit to `loca.lt` requires entering your public IP (`135.84.57.36`) |
+
+### 15. Replace localtunnel with Cloudflare Tunnel
+**Priority: High** — localtunnel has two friction points for demos:
+1. Requires visitor to enter a "tunnel password" (your public IP) on first visit
+2. URL changes every restart, requiring `vercel.json` update + redeploy
+
+**Fix**: Cloudflare Tunnel (free, ~5 min setup)
+```bash
+# One-time setup (requires Cloudflare account)
+winget install --id Cloudflare.cloudflared
+cloudflared tunnel login
+cloudflared tunnel create iw-portal
+cloudflared tunnel route dns iw-portal iw-portal.YOUR-DOMAIN.com
+cloudflared tunnel run --url http://localhost:9090 iw-portal
+```
+After setup: update `vercel.json` destination to `https://iw-portal.YOUR-DOMAIN.com` and redeploy once — URL never changes again.
+
+**Workaround until then**: restart tunnel with `npx localtunnel@2 --port 9090 --subdomain iw-portal-demo`, visit `https://iw-portal-demo.loca.lt` in browser, enter public IP (`135.84.57.36`) to clear the password gate.
+
+---
+
 ## Future / Nice-to-Have
 
 | Item | Description | Effort | Status |
@@ -134,15 +195,16 @@ The Invoice, Product, and Vendor schemas in `object-detail-schema.ts` are minima
 | ~~Audit log~~ | Admin audit trail with filters | 6-8 hrs | DONE (page, servlet, AuditService, DB schema) |
 | InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs | — |
 
-### Known Infrastructure Limitation: Transformation Server
+### Transformation Server Status: OPERATIONAL (2026-03-09)
 
-The `iwtransformationserver` webapp is deployed as a **skeleton** — it has `web.xml` and native JNI libraries (`TS_JNI.dll`) but the 137 Java class JARs from the InterWeave vendor are **NOT included** in this repo. This means:
+The `iwtransformationserver` webapp is **fully deployed and serving requests**. Vendor JARs were obtained from the Rackspace InterWeave test server and deployed to `WEB-INF/lib/`.
 
-- **Query flow "GO" buttons** generate correct HTTP GET URLs (`/iwtransformationserver/transform?...`) but get **404** because `com.interweave.servlets.IWTransform` cannot be loaded
-- **Scheduled flow execution** via `/scheduledtransform` also returns 404
-- **Flow properties** (variable parameters, credentials) can still be viewed and edited in React — only actual flow *execution* requires the vendor JARs
-- **TransactionLoggingFilter** is registered in `web.xml` but has no traffic to intercept until vendor JARs are deployed
-- **To fix**: Obtain the full transformation server JAR package from the InterWeave vendor and deploy to `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/`
+- **`/transform`** → HTTP 200, returns `<iwtransformationserver><iwrecordset>` XML
+- **`/index`** → HTTP 200
+- **JAXB 1.0-ea conflict resolved**: Created `jre/lib/endorsed/jaxb-1.0-ea-trimmed.jar` — a version of `jaxb-rt-1.0-ea.jar` with `org/w3c/dom/` and `org/xml/sax/` classes excluded to prevent DOM Level 1 vs Level 2 conflict with Tomcat 9
+- **`TransactionLoggingFilter` disabled** in `web.xml` (class lives in `iw-business-daemon`, not reachable here)
+
+**Remaining**: Query flow "GO" buttons generate correct URLs — actual end-to-end flow execution against live external systems (Salesforce, QuickBooks, etc.) requires valid API credentials in workspace project configurations.
 
 ---
 

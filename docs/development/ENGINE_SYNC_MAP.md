@@ -247,6 +247,80 @@ The current bridge uses runtime-profile sidecar files instead of overwriting
 That keeps wizard-saved state visible in the IDE while avoiding destructive edits
 to engine definition files that have a different XML schema.
 
+## IDE Plugin Internals (iw_sdk_1.0.0)
+
+**Confirmed via Session 10 deep dive (2026-03-09):**
+
+The iw_sdk_1.0.0 Eclipse plugin (253 compiled classes, no source available) registers these automation-relevant extension points:
+
+### Commands (callable via Eclipse workbench)
+- `iw_sdk.buildProject` — Build Project
+- `iw_sdk.compileXSLT` — Compile XSLT
+- `iw_sdk.buildIM` — Build Integration Manager config
+- `iw_sdk.buildTS` — Build Transformation Server config
+- `iw_sdk.openProject` / `iw_sdk.closeProject` — Project lifecycle
+- `iw_sdk.openFile` / `iw_sdk.openView` — File/view navigation
+- `iw_sdk.newWizard` — New entity wizard
+
+### Key Classes
+- `com.inerweave.sdk.Designer` — Main IApplication entry point
+- `com.inerweave.sdk.ConfigContext` (73KB) — Central state hub (transactionList, queryList, profileDescriptors, hosted DB settings)
+- `com.inerweave.sdk.ProjectActions` — Programmatic project operations
+- `com.inerweave.sdk.actions.BuildProjectAction` — Build trigger
+- `com.iwtransactions.*` — 9 JAXB-generated XML schema classes (transactionType, transactionFlowType, datamapType, parameterType, etc.)
+
+### What Source Code Would Enable
+If the iw_sdk_1.0.0 source were available, these capabilities become possible:
+1. **Live workspace refresh** — Add `IResourceChangeListener` to detect portal-synced file changes and trigger `IWorkspace.refreshLocal()`
+2. **Automatic reverse sync** — Hook `BuildProjectAction` post-execution to HTTP POST changes back to `WorkspaceProfileSyncServlet?action=importProfile`
+3. **Headless mode** — Write alternative `IApplication` that reuses ConfigContext, ProjectActions, and wizard classes without GUI
+4. **ConfigContext introspection** — Understand exact state management, file format expectations, and caching behavior
+5. **New commands/views** — Add "Push to Portal" / "Pull from Portal" menu items
+
+### Current Limitation
+Without source, the IDE is a black box for modification. All sync improvements must work at the filesystem, HTTP, or database layer.
+
+## Bidirectional Sync Gap Analysis (2026-03-09)
+
+### Direction 1: Web Portal → IDE (FULLY WORKING)
+
+Automatic flow on startup and login:
+1. User saves wizard → `ApiConfigurationServlet` upserts to `company_configurations` table
+2. `WorkspaceProfileSyncServlet?action=exportAll` mirrors DB → workspace sidecar files
+3. `WorkspaceProfileCompilerServlet?action=compileAll` generates engine overlay in `GeneratedProfiles/`
+4. IDE can read these files from workspace (but does not auto-refresh)
+
+Trigger points: `START.bat` (lines 135-137), `LocalLoginServlet`, `ApiLoginServlet`
+
+### Direction 2: IDE → Web Portal (MANUAL ONLY — GAP)
+
+No automatic reverse path exists. The only mechanism is:
+- `WorkspaceProfileSyncServlet?action=importProfile&CurrentProfile=...&project=...`
+- Must be called explicitly via HTTP (e.g., `scripts/sync_workspace_profiles.bat`)
+- Never triggered automatically by the IDE
+
+### Root Cause
+Schema mismatch between the two systems:
+- Portal stores: `<SF2QBConfiguration>` — flat wizard parameter values
+- IDE stores: `<BusinessDaemonConfiguration>` — complex engine XML with nested `<TransactionDescription>` and `<Query>` elements
+
+The sync bridge deliberately uses **sidecar files** (`runtime_profiles/`, `GeneratedProfiles/`) instead of overwriting engine definitions because the schemas are structurally incompatible.
+
+### Solution: Filesystem Watcher Bridge (IMPLEMENTED)
+
+`scripts/sync_bridge.ps1` — a PowerShell polling daemon that closes the IDE→Portal gap:
+
+- **Watches:** `workspace/*/configuration/{im,ts}/config.xml`, `workspace/*/configuration/runtime_profiles/*`, `workspace/*/xslt/**`
+- **Excludes:** `GeneratedProfiles/`, `IW_Runtime_Sync/`, `.metadata/` (portal-generated, not IDE)
+- **On change:** Calls `WorkspaceProfileSyncServlet?action=importProfile` then `WorkspaceProfileCompilerServlet?action=compileProfile`
+- **Debounce:** 2-second quiet period (configurable via `-DebounceSec`) prevents rapid-fire during builds
+- **Cooldown:** 3-second post-sync pause + re-snapshot prevents re-triggering on our own compile output
+- **Zero dependencies:** Uses built-in Windows PowerShell 5.1 (`Get-ChildItem` timestamp polling)
+
+**Integration:** Auto-launched by `START.bat`, auto-stopped by `STOP.bat`. Standalone: `scripts/start_sync_bridge.bat` / `scripts/stop_sync_bridge.bat`. Logs: `logs/sync_bridge.log`.
+
+**Live-tested 2026-03-09:** Both profiles imported + recompiled successfully. Bridge survives HTTP errors, detects changes within 2 seconds, stops cleanly via PID file.
+
 ## Recommended Path To Full Transactional Flow Support
 
 ### Phase 1: Keep startup deterministic

@@ -172,3 +172,5 @@ web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/monitoring.properties
 frontends/iw-portal/node_modules/
 frontends/iw-portal/dist/
 web_portal/tomcat/webapps/iw-portal/
+
+.vercel

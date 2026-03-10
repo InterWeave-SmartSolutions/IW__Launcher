@@ -7,27 +7,17 @@
 
 	<display-name>InterWeave Transformation Server</display-name>
 
-	<!-- ===== Transaction Logging Filter (monitoring) ===== -->
+	<!-- TransactionLoggingFilter disabled: class lives in iw-business-daemon, not here -->
+	<!--
 	<filter>
 		<filter-name>TransactionLoggingFilter</filter-name>
 		<filter-class>com.interweave.monitoring.TransactionLoggingFilter</filter-class>
-		<init-param>
-			<param-name>enabled</param-name>
-			<param-value>true</param-value>
-		</init-param>
+		<init-param><param-name>enabled</param-name><param-value>true</param-value></init-param>
 	</filter>
-	<filter-mapping>
-		<filter-name>TransactionLoggingFilter</filter-name>
-		<url-pattern>/transform</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>TransactionLoggingFilter</filter-name>
-		<url-pattern>/scheduledtransform</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>TransactionLoggingFilter</filter-name>
-		<url-pattern>/iwxml</url-pattern>
-	</filter-mapping>
+	<filter-mapping><filter-name>TransactionLoggingFilter</filter-name><url-pattern>/transform</url-pattern></filter-mapping>
+	<filter-mapping><filter-name>TransactionLoggingFilter</filter-name><url-pattern>/scheduledtransform</url-pattern></filter-mapping>
+	<filter-mapping><filter-name>TransactionLoggingFilter</filter-name><url-pattern>/iwxml</url-pattern></filter-mapping>
+	-->
 
 	<!-- ===== Servlets ===== -->
 	<servlet>

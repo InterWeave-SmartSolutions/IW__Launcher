@@ -1,0 +1,14 @@
+{
+  "buildCommand": "node node_modules/vite/bin/vite.js build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/iw-business-daemon/:path*",
+      "destination": "https://iw-portal-demo.loca.lt/iw-business-daemon/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
