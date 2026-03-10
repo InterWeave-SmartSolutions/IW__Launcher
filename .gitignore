@@ -63,6 +63,11 @@ out/
 !web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/**
 !web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/**
 !web_portal/tomcat/lib/mysql-connector-java-*.jar
+# Transformation server vendor JARs (copied from RDP server - required for /transform to function)
+# Without these, iwtransformationserver returns 404 on all requests
+!web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/**
+# JAXB 1.0-ea trimmed JAR (endorsed override - fixes InstantiationError on Tomcat startup)
+!jre/lib/endorsed/**
 # Override *.class and bin/ ignores for the iw_sdk Eclipse plugin (required for IDE to launch)
 !plugins/iw_sdk_1.0.0/bin/
 !plugins/iw_sdk_1.0.0/bin/**
