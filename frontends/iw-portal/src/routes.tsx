@@ -201,5 +201,5 @@ export const router = createBrowserRouter(
       ],
     },
   ],
-  { basename: "/iw-portal" }
+  { basename: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" }
 );
