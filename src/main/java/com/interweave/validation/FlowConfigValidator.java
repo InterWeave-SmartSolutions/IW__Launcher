@@ -376,7 +376,19 @@ public class FlowConfigValidator {
         List<ValidationIssue> issues = new ArrayList<>();
 
         String transactionName = transaction.getAttribute("name");
+        if (transactionName == null || transactionName.trim().isEmpty()) {
+            NodeList nameNodes = transaction.getElementsByTagName("name");
+            if (nameNodes.getLength() > 0) {
+                transactionName = nameNodes.item(0).getTextContent();
+            }
+        }
         String transactionId = transaction.getAttribute("id");
+        if (transactionId == null || transactionId.trim().isEmpty()) {
+            NodeList idNodes = transaction.getElementsByTagName("id");
+            if (idNodes.getLength() > 0) {
+                transactionId = idNodes.item(0).getTextContent();
+            }
+        }
         String locationInfo = "transaction #" + transactionIndex;
 
         if (transactionName != null && !transactionName.trim().isEmpty()) {
@@ -397,8 +409,14 @@ public class FlowConfigValidator {
                 .build());
         }
 
-        // Validate transaction type if specified
+        // Validate transaction type if specified (attribute or child element)
         String type = transaction.getAttribute("type");
+        if (type == null || type.trim().isEmpty()) {
+            NodeList typeNodes = transaction.getElementsByTagName("type");
+            if (typeNodes.getLength() > 0) {
+                type = typeNodes.item(0).getTextContent();
+            }
+        }
         if (type != null && !type.trim().isEmpty()) {
             boolean validType = false;
             for (String validTransType : VALID_TRANSACTION_TYPES) {
@@ -613,7 +631,19 @@ public class FlowConfigValidator {
                 Element transaction = (Element) node;
                 String transName = transaction.getAttribute("name");
                 if (transName == null || transName.trim().isEmpty()) {
+                    NodeList nameNodes = transaction.getElementsByTagName("name");
+                    if (nameNodes.getLength() > 0) {
+                        transName = nameNodes.item(0).getTextContent();
+                    }
+                }
+                if (transName == null || transName.trim().isEmpty()) {
                     transName = transaction.getAttribute("id");
+                }
+                if (transName == null || transName.trim().isEmpty()) {
+                    NodeList idNodes = transaction.getElementsByTagName("id");
+                    if (idNodes.getLength() > 0) {
+                        transName = idNodes.item(0).getTextContent();
+                    }
                 }
 
                 if (transName != null && !transName.trim().isEmpty()) {

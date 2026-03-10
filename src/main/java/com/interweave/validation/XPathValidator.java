@@ -269,14 +269,20 @@ public class XPathValidator {
                 .build());
         }
 
-        // Check quotes (both single and double)
+        // Check quotes (both single and double), skipping backslash-escaped ones
         int singleQuoteCount = 0;
         int doubleQuoteCount = 0;
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
             if (c == '\'') {
+                if (i > 0 && expression.charAt(i - 1) == '\\') {
+                    continue;
+                }
                 singleQuoteCount++;
             } else if (c == '"') {
+                if (i > 0 && expression.charAt(i - 1) == '\\') {
+                    continue;
+                }
                 doubleQuoteCount++;
             }
         }
@@ -326,7 +332,7 @@ public class XPathValidator {
             if (!knownNamespaces.containsKey(prefix)) {
                 int position = matcher.start();
                 issues.add(ValidationIssue.builder()
-                    .severity(ValidationSeverity.WARNING)
+                    .severity(ValidationSeverity.ERROR)
                     .message("Namespace prefix '" + prefix + "' is not defined")
                     .filePath(filePath)
                     .validationCategory(VALIDATION_CATEGORY)

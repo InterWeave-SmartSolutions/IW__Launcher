@@ -285,6 +285,13 @@ public class ConnectionValidator {
                 .validationCategory(VALIDATION_CATEGORY)
                 .suggestion("Supported types: " + String.join(", ", SUPPORTED_CONNECTION_TYPES))
                 .build());
+            issues.add(ValidationIssue.builder()
+                .severity(ValidationSeverity.ERROR)
+                .message("Connection '" + connectionName + "' cannot be validated: type '" + type + "' is not recognized")
+                .filePath(filePath)
+                .validationCategory(VALIDATION_CATEGORY)
+                .suggestion("Change type to one of: " + String.join(", ", SUPPORTED_CONNECTION_TYPES))
+                .build());
         }
 
         return issues;
