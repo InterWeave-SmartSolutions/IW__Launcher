@@ -172,7 +172,7 @@ public class ErrorLogger {
         log.append("ERROR: [").append(error.getCode()).append("]");
 
         if (error.getSeverity() != null) {
-            log.append(" [").append(error.getSeverity()).append("]");
+            log.append(" [").append(error.getSeverity().name()).append("]");
         }
 
         if (error.getCategory() != null) {

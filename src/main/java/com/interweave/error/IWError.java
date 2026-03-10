@@ -211,7 +211,7 @@ public class IWError {
 
         log.append("[").append(getCode()).append("]");
         if (errorCode != null) {
-            log.append(" [").append(errorCode.getSeverity()).append("]");
+            log.append(" [").append(errorCode.getSeverity().name()).append("]");
         }
         log.append(" ").append(message);
         log.append("\n");
