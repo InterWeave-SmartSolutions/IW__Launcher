@@ -43,7 +43,7 @@ This configuration uses Supabase Postgres as the shared team database.
 
     IsHosted="1"
     hostedDriver="org.postgresql.Driver"
-    hostedURL="jdbc:postgresql://__SUPABASE_HOST__:__SUPABASE_PORT__/__SUPABASE_DB_NAME__?sslmode=require"
+    hostedURL="jdbc:postgresql://__SUPABASE_HOST__:__SUPABASE_PORT__/__SUPABASE_DB_NAME__?sslmode=require&amp;prepareThreshold=0"
     hostedDBName="__SUPABASE_DB_NAME__"
     hostedUser="__SUPABASE_USER__"
     hostedPassword="__SUPABASE_PASSWORD__"

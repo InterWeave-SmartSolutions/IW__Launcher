@@ -12,9 +12,13 @@ import {
   FileText,
   History,
   MoreHorizontal,
+  Terminal,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEngineFlows, useStartFlow, useStopFlow, useSubmitFlows } from "@/hooks/useFlows";
+import { useLiveLogs } from "@/hooks/useLogs";
+import { useEngineStatus, useEngineTest, useEngineRecord, useSeedTransactions } from "@/hooks/useEngine";
 import { useAuth } from "@/providers/AuthProvider";
 import { useToast } from "@/providers/ToastProvider";
 import { Button } from "@/components/ui/button";
@@ -38,10 +42,16 @@ export function EngineControlsTab() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [logFilter, setLogFilter] = useState("");
   const { data: flowsRes, isLoading, error, refetch, isFetching } = useEngineFlows(autoRefresh);
   const startFlow = useStartFlow();
   const stopFlow = useStopFlow();
   const submitFlows = useSubmitFlows();
+  const { data: engineStatus } = useEngineStatus();
+  const engineTest = useEngineTest();
+  const engineRecord = useEngineRecord();
+  const seedTransactions = useSeedTransactions();
+  const { data: liveLogsRes, isFetching: logsFetching } = useLiveLogs(80, logFilter);
   const [editFlow, setEditFlow] = useState<EngineFlow | null>(null);
   const [propsTarget, setPropsTarget] = useState<{ flowId: string; isFlow: boolean } | null>(null);
 
@@ -310,6 +320,107 @@ export function EngineControlsTab() {
           Admin access required to start/stop flows or modify schedules.
         </Badge>
       )}
+
+      {/* Engine Status + Live Log Panel */}
+      <div className="glass-panel rounded-[var(--radius)] p-4 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Terminal className="w-4 h-4 text-[hsl(var(--primary))]" />
+            Live Engine Log
+            {logsFetching && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+          </h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            {engineStatus && (
+              <Badge variant={engineStatus.engineUp ? "success" : "destructive"} className="text-xs">
+                {engineStatus.engineUp ? `Engine Online · ${engineStatus.responseMs}ms` : "Engine Offline"}
+              </Badge>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => void engineTest.mutateAsync("sessionvars")}
+              disabled={engineTest.isPending}
+            >
+              {engineTest.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+              Test
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => void engineRecord.mutateAsync().then(() => showToast("Transaction recorded", "success")).catch((e: Error) => showToast(e.message, "error"))}
+              disabled={engineRecord.isPending}
+              title="Call the engine and record the result in transaction history"
+            >
+              {engineRecord.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <History className="w-3 h-3" />}
+              Record
+            </Button>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground"
+                onClick={() => void seedTransactions.mutateAsync({ count: 100, days: 7 }).then((r) => showToast(r.message, "success")).catch((e: Error) => showToast(e.message, "error"))}
+                disabled={seedTransactions.isPending}
+                title="Insert 100 synthetic transaction records spread over 7 days"
+              >
+                {seedTransactions.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                Seed Demo Data
+              </Button>
+            )}
+          </div>
+        </div>
+        {/* Filter input */}
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Filter log lines…"
+            value={logFilter}
+            onChange={(e) => setLogFilter(e.target.value)}
+            className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))] placeholder:text-muted-foreground"
+          />
+        </div>
+        {/* Log lines */}
+        <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg p-3 font-mono text-[11px] max-h-64 overflow-y-auto space-y-0.5">
+          {liveLogsRes?.lines.length ? (
+            liveLogsRes.lines.map((line) => (
+              <div
+                key={line.num}
+                className={cn(
+                  "leading-relaxed whitespace-pre-wrap break-all",
+                  line.level === "error" && "text-[hsl(var(--destructive))]",
+                  line.level === "warn" && "text-[hsl(var(--warning))]",
+                  line.level === "ts" && "text-[hsl(var(--primary))]",
+                  line.level === "info" && "text-muted-foreground",
+                )}
+              >
+                {line.text}
+              </div>
+            ))
+          ) : (
+            <p className="text-muted-foreground text-center py-4">No log lines yet. Auto-refreshes every 5s.</p>
+          )}
+        </div>
+        {liveLogsRes && (
+          <p className="text-[10px] text-muted-foreground">
+            {liveLogsRes.file} · showing last {liveLogsRes.lines.length} of {liveLogsRes.totalLines} lines
+          </p>
+        )}
+        {engineTest.data && (
+          <div className="bg-[hsl(var(--muted)/0.3)] rounded-lg p-3 space-y-1">
+            <p className="text-xs font-medium">
+              Test result — {engineTest.data.flow} · HTTP {engineTest.data.httpCode} · {engineTest.data.responseMs}ms
+            </p>
+            {engineTest.data.rawXml && (
+              <pre className="text-[10px] text-muted-foreground max-h-32 overflow-y-auto whitespace-pre-wrap break-all">
+                {engineTest.data.rawXml.slice(0, 800)}
+              </pre>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Schedule editor dialog */}
       <EditScheduleDialog

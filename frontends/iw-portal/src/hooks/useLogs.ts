@@ -28,8 +28,14 @@ export interface DaySummary {
 
 export interface LogLine {
   num: number;
-  level: "info" | "warn" | "error";
+  level: "info" | "warn" | "error" | "ts";
   text: string;
+}
+
+export interface LiveLogResponse {
+  lines: LogLine[];
+  totalLines: number;
+  file: string;
 }
 
 export interface LogContent {
@@ -66,5 +72,18 @@ export function useLogContent(date: string | null, type: string) {
     queryFn: () => apiFetch<LogContent>(`/api/logs/content?date=${date}&type=${type}`),
     enabled: !!date,
     staleTime: Infinity, // log content doesn't change
+  });
+}
+
+export function useLiveLogs(lines = 100, filter = "") {
+  return useQuery({
+    queryKey: ["logs", "live", lines, filter],
+    queryFn: () => {
+      const params = new URLSearchParams({ lines: String(lines) });
+      if (filter) params.set("filter", filter);
+      return apiFetch<LiveLogResponse>(`/api/logs/live?${params.toString()}`);
+    },
+    refetchInterval: 5_000,
+    staleTime: 0,
   });
 }

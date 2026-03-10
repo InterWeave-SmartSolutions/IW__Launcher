@@ -139,13 +139,17 @@ powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:9090/iw-busi
 echo.
 
 :open_browser
-start "" "http://localhost:9090/iw-business-daemon/IWLogin.jsp"
+start "" "http://localhost:9090/iw-portal/"
 
 REM Launch IDE
 cd /d "%IW_HOME%"
 if exist "%IW_HOME%\iw_ide.exe" (
     start "" "%IW_HOME%\iw_ide.exe"
 )
+
+REM Start bidirectional sync bridge (IDE <-> Web Portal)
+echo  Starting sync bridge...
+start "IW Sync Bridge" /min powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\sync_bridge.ps1" -Quiet
 
 echo  ==================================================================
 echo.
@@ -160,6 +164,7 @@ echo      Username: __iw_admin__
 echo      Password: %%iwps%%
 echo.
 echo  ------------------------------------------------------------------
+echo   Sync bridge: IDE changes auto-sync to portal
 echo   To stop: Run STOP.bat
 echo  ==================================================================
 echo.

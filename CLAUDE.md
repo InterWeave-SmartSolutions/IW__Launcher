@@ -350,6 +350,19 @@ See `docs/development/BUILD.md` for complete Maven build instructions, profiles,
 - Configuration: `configuration/org.eclipse.update/`
 - Startup JAR: `startup.jar`
 - INI config: `iw_ide.ini`
+- Main entry point: `com.inerweave.sdk.Designer` (IApplication)
+- Central state: `ConfigContext.class` (73KB) — holds transactionList, queryList, profileDescriptors
+- Plugin version: 2.41, IDE Build 172, IM Build 765, TS Build 712
+- **No headless mode** — GUI-only Eclipse RCP application
+- **Source code not available** — 253 compiled classes, see `docs/development/ENGINE_SYNC_MAP.md` for what source would enable
+
+### IDE ↔ Web Portal Sync (2026-03-09)
+
+**Portal → IDE:** WORKING — `WorkspaceProfileSyncServlet` exports DB → workspace files, `WorkspaceProfileCompilerServlet` generates engine overlays. Triggered on startup (START.bat) and login.
+
+**IDE → Portal:** MANUAL ONLY — `WorkspaceProfileSyncServlet?action=importProfile` exists but is never called automatically. Schema mismatch: wizard saves `<SF2QBConfiguration>` (flat), IDE uses `<BusinessDaemonConfiguration>` (complex nested XML).
+
+**Sync bridge IMPLEMENTED & TESTED** — `scripts/sync_bridge.ps1` (polling-based, PS 5.1 compatible) watches workspace for IDE changes and auto-calls importProfile + recompile. Launched automatically by START.bat, stopped by STOP.bat. Standalone: `scripts/start_sync_bridge.bat` / `scripts/stop_sync_bridge.bat`. Logs to `logs/sync_bridge.log`. Live-tested 2026-03-09. Full analysis in `docs/development/ENGINE_SYNC_MAP.md`.
 
 ### Integration Projects
 
