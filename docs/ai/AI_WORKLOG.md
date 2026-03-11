@@ -5034,3 +5034,48 @@ Commands run:
 - `node node_modules/vite/bin/vite.js build` → ✓ built in 5.58s
 Verification performed: TypeScript strict mode passes with 0 errors; Vite build succeeds
 Follow-ups / known issues: apiFetch calls will return errors until API endpoints are implemented server-side (graceful error toasts already in place)
+
+---
+
+## 2026-03-11 (continuation) — Servlet compile & commit; repo ready for fresh clone
+Agent/tool: Claude Code (Sonnet 4.6)
+User request: Ensure all changes are committed and merged to main; fix chunk-loading errors on Vercel; fix DB connection errors for external users; audit repo for fresh-clone readiness
+
+Actions taken:
+
+**Compiled and committed servlet changes (from parallel AI session):**
+- `ApiWorkspaceSyncServlet.java` — adds `.push_epoch` sidecar write after `importProfile` action: queries `updated_at` from `company_configurations` and writes it to the profile's `IW_Runtime_Sync/profiles/<name>/.push_epoch` file so `/status` correctly reports `in_sync` after IDE → portal import
+- `WorkspaceProfileSyncServlet.java` — extended with additional sync support logic
+- Compiled both with `javac -source 1.8 -target 1.8` (4 warnings, 0 errors)
+- Staged and committed `.java` sources + `.class` files
+- Pushed to `origin/main` (commit `8513185`)
+
+**Earlier in session (context-compacted portion):**
+- Fixed chunk-loading errors on Vercel: `ErrorBoundary.componentDidCatch` auto-reloads once on chunk fetch failure; added `Cache-Control: no-cache` on `index.html` and `immutable` on `/assets/*` in `vercel.json`
+- Fixed DB connection pool stale connections: `validationInterval="0"` + `minEvictableIdleTimeMillis="55000"` in `context.xml.postgres` template (so START.bat regenerates correct pool config for all users)
+- Tracked React portal build output in git (removed `web_portal/tomcat/webapps/iw-portal/` from .gitignore, committed 43 build files) so fresh clones get a working portal without `npm run build`
+- Rewrote `docs/setup/WINDOWS_QUICK_START.txt` (was incorrect about prerequisites)
+- Updated `README.md`, `docs/development/DEVELOPER_ONBOARDING.md`, `CLAUDE.md` for fresh-clone clarity
+- Created `docs/setup/FIRST_TIME_SETUP.md`
+- Fixed TypeScript TS6133 unused import errors in `SearchPage.tsx` and `WebinarsPage.tsx`
+
+Files changed/created:
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/.../ApiWorkspaceSyncServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/.../ApiWorkspaceSyncServlet.class`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/.../WorkspaceProfileSyncServlet.java`
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/.../WorkspaceProfileSyncServlet.class`
+
+Commands run:
+- `git status`, `git diff --stat`
+- `javac -source 1.8 -target 1.8 ...ApiWorkspaceSyncServlet.java ...WorkspaceProfileSyncServlet.java`
+- `git add ...`, `git commit`, `git push origin main`
+
+Verification performed:
+- javac: 0 errors (4 deprecation warnings only)
+- `git push` succeeded: `6116383..8513185 main -> main`
+- Branch confirmed up to date with origin/main
+
+Follow-ups / known issues:
+- `workspace/*/runtime_profiles/*.properties` files remain modified (machine-specific auto-generated files; not committed by design)
+- `frontends/InterWoven` submodule shows dirty (ignorable — prototype submodule)
+- Cloudflare tunnel not yet authenticated (run `scripts\setup_cloudflare_tunnel.bat` to complete)
