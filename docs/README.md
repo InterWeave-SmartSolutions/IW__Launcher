@@ -34,7 +34,7 @@ Use this file as the entry point before drilling into individual folders. It is 
 - `docs/errors/`
   Error code and troubleshooting references.
 - `docs/legacy-pdfs/`
-  Canonical historical PDF manuals and imported vendor references.
+  Canonical historical PDF manuals and imported vendor references. Includes IDE tutorials, user/developer guides, integration training, payment gateway references, and corporate overview decks. See `docs/legacy-pdfs/README.txt` for the full index.
 - `docs/security/`
   Security policy, operational security, and credential management guidance.
 - `docs/setup/`

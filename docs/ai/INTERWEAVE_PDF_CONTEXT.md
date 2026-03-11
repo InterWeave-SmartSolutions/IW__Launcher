@@ -22,8 +22,8 @@ Primary InterWeave references:
   Step-by-step IDE training material for creating and using integration projects.
 - `docs/legacy-pdfs/IW_IDE_UR.pdf`
   Legacy IDE requirements and usage expectations. There are two distinct variants in the repository; if behavior is ambiguous, also check `frontends/InterWoven/docs/IW_Docs/IW_IDE/IW_IDE_Import/IW_IDE_UR.pdf`.
-- `frontends/InterWoven/docs/IW_Docs/IW_IDE/IW_IDE_Import/IDE Quick Installation Guide _2_.pdf`
-  Historical install prerequisites and setup expectations for the legacy IDE distribution.
+- `docs/legacy-pdfs/IDE Quick Installation Guide _2_.pdf`
+  Historical install prerequisites and setup expectations for the legacy IDE distribution. (Also mirrored at `frontends/InterWoven/docs/IW_Docs/IW_IDE/IW_IDE_Import/`.)
 - `docs/legacy-pdfs/InterWeave%20HelpandTraining.pdf`
   Solutions Portal help and training manual covering registration, configuration, management, and monitoring workflows.
 - `web_portal/tomcat/webapps/docs/architecture/startup/serverStartup.pdf`
@@ -33,6 +33,33 @@ Primary InterWeave references:
 - `C:\IW_IDE\IW_CDs\IW_IDE_1.0\IWInstallation.doc` (external — not in repo)
   Original 2004 Word document describing the IW IDE 1.0 installation process. Available on this machine but not tracked in git. Useful for understanding legacy install expectations (IWDaemon.exe, IWServer.exe, IWDeveloper.exe roles).
 
+IDE technical documentation (added 2026-03-11):
+
+- `docs/legacy-pdfs/IW_IDE_Doc.md`
+  Comprehensive technical documentation markdown covering architecture, directory structure, integration patterns, supported connectors, runtime execution model, and troubleshooting. Most complete single-file reference for the platform.
+- `docs/legacy-pdfs/FlowLink_Install_Config_Upgrade_21_5.pdf`
+  FlowLink connector install, configuration, and upgrade guide (v21.5). Key reference for flow-based connector setup.
+
+Integration training and onboarding:
+
+- `docs/legacy-pdfs/A Structured Overview for the Onboarding Guide Integrating Creatio to QuickBooks with InterWeave.pdf`
+  Structured onboarding walkthrough for the Creatio → QuickBooks integration pattern.
+- `docs/legacy-pdfs/Training Course Daily Flow Management for Creatio to Sage Intacct Integration.pdf`
+  Hands-on training guide for daily flow management in a Creatio ↔ Sage Intacct integration.
+- `docs/legacy-pdfs/Partner Enablement Module InterWeave Sage Intacct Integration for Creatio.docx`
+  Partner-facing enablement guide for Sage Intacct ↔ Creatio integrations.
+- `docs/legacy-pdfs/Kuhner-Shakers-Migration-from-QuickBooks-Desktop-to-Microsoft-Business-Central-with-Salesforce-Integration-via-InterWeave-2.pdf`
+  Real-world case study: QuickBooks Desktop → Microsoft Business Central + Salesforce via InterWeave.
+
+Corporate overview:
+
+- `docs/legacy-pdfs/From-Complexity-to-Simplicity-Interweave-Smart-Solutions-for-Prospective-Customers-2.pdf`
+  Product overview and value proposition; useful for understanding platform positioning and intended use cases.
+- `docs/legacy-pdfs/IT IW Corp 4.2.pdf`
+  Corporate IT overview deck (v4.2).
+- `docs/legacy-pdfs/IT IW SF 4.2.pdf`
+  Salesforce integration IT deck (v4.2).
+
 Payment and partner integration references:
 
 - `docs/legacy-pdfs/aim_guide.pdf`
@@ -41,6 +68,8 @@ Payment and partner integration references:
   Authorize.Net CIM SOAP guide (historical).
 - `docs/legacy-pdfs/echeck.pdf`
   Authorize.Net eCheck AIM guide (historical).
+- `docs/legacy-pdfs/AuthNet_upload-guide.pdf`
+  Authorize.Net batch upload guide (historical).
 - `docs/legacy-pdfs/developerGuide.pdf`
   Virtual Merchant developer guide (historical).
 - `docs/legacy-pdfs/userGuide.pdf`
