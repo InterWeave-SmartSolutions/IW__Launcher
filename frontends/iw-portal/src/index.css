@@ -3,36 +3,36 @@
 /* ===== IW Portal Theme: ASSA-inspired dark/light ===== */
 
 :root {
-  /* Light mode (default for :root, overridden by .dark) */
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
+  /* Light mode — ASSA-inspired slate-blue tint (not harsh white) */
+  --background: 218 40% 95%;
+  --foreground: 222 47% 11%;
+  --card: 220 45% 98%;
+  --card-foreground: 222 47% 11%;
+  --popover: 220 45% 98%;
+  --popover-foreground: 222 47% 11%;
   --primary: 217 91% 60%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --primary-foreground: 220 45% 98%;
+  --secondary: 216 32% 90%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 216 32% 90%;
+  --muted-foreground: 218 20% 45%;
+  --accent: 216 32% 90%;
+  --accent-foreground: 222 47% 11%;
   --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
-  --success: 142 71% 45%;
-  --success-foreground: 210 40% 98%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 222.2 84% 4.9%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+  --destructive-foreground: 220 45% 98%;
+  --success: 142 71% 38%;
+  --success-foreground: 220 45% 98%;
+  --warning: 38 92% 45%;
+  --warning-foreground: 222 47% 11%;
+  --border: 216 28% 80%;
+  --input: 216 28% 80%;
   --ring: 217 91% 60%;
   --radius: 1.125rem;
 
-  /* Sidebar (light) */
-  --sidebar: 210 40% 98%;
-  --sidebar-foreground: 222.2 84% 4.9%;
-  --sidebar-border: 214.3 31.8% 91.4%;
+  /* Sidebar (light — slightly deeper slate) */
+  --sidebar: 218 35% 91%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-border: 216 28% 80%;
   --sidebar-accent: 217 91% 60%;
 }
 
@@ -80,13 +80,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ASSA-style radial gradient background (dark mode only) */
+/* ASSA-style radial gradient background */
 .dark body,
 .dark .app-background {
   background:
     radial-gradient(1000px 700px at 15% 10%, hsl(217 91% 60% / 0.16), transparent 55%),
     radial-gradient(800px 600px at 85% 15%, hsl(142 71% 45% / 0.12), transparent 60%),
     radial-gradient(700px 500px at 55% 90%, hsl(38 92% 50% / 0.06), transparent 60%),
+    hsl(var(--background));
+}
+
+/* Light mode: softer directional tint (blue upper-left accent) */
+body,
+.app-background {
+  background:
+    radial-gradient(900px 600px at 10% 0%, hsl(217 91% 60% / 0.07), transparent 50%),
+    radial-gradient(700px 500px at 90% 100%, hsl(142 71% 45% / 0.05), transparent 55%),
     hsl(var(--background));
 }
 

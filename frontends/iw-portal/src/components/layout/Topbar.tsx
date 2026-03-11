@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Sun, Moon, Monitor, LogOut, User, Menu, Bell, Zap, BookOpen, LayoutGrid } from "lucide-react";
+import { Search, Sun, Moon, Monitor, LogOut, User, Menu, Bell, AlertTriangle, Zap, BookOpen, LayoutGrid, Code2 } from "lucide-react";
 import { useTheme } from "@/providers/ThemeProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useDevMode } from "@/providers/DevModeProvider";
@@ -178,9 +178,9 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
         )}
       </div>
 
-      {/* Portal switcher */}
+      {/* Portal switcher + Dev toggle (grouped) */}
       <div className="hidden sm:flex items-center gap-1 p-1 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.2)]">
-        {(["operator", "associate", "master"] as Portal[])
+        {(["associate", "operator", "master"] as Portal[])
           .filter((p) => visiblePortals.includes(p))
           .map((portal) => {
             const Icon = PORTAL_ICONS[portal];
@@ -202,6 +202,21 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
               </button>
             );
           })}
+        {/* Dev Mode toggle — inline with portal switcher */}
+        <span className="w-px h-4 bg-[hsl(var(--border))] mx-0.5" />
+        <button
+          onClick={toggleDevMode}
+          title={devMode ? "Developer Mode: ON — click to disable" : "Developer Mode: OFF — click to enable"}
+          className={cn(
+            "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-all cursor-pointer",
+            devMode
+              ? "bg-[hsl(var(--warning)/0.18)] border border-[hsl(var(--warning)/0.45)] text-[hsl(var(--warning))]"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Code2 className="w-3 h-3" />
+          <span className="hidden md:inline">Dev</span>
+        </button>
       </div>
 
       {/* User pill */}
@@ -217,22 +232,6 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
 
       {/* Alerts */}
       <AlertBadge />
-
-      {/* Dev Mode toggle */}
-      <button
-        onClick={toggleDevMode}
-        title={devMode ? "Developer Mode: ON" : "Developer Mode: OFF"}
-        className={cn(
-          "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors cursor-pointer",
-          "border",
-          devMode
-            ? "border-[hsl(var(--warning)/0.5)] bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]"
-            : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] text-muted-foreground hover:text-foreground"
-        )}
-      >
-        <Zap className="w-3.5 h-3.5" />
-        <span className="hidden lg:inline">Dev</span>
-      </button>
 
       {/* Theme toggle */}
       <button
@@ -304,9 +303,9 @@ function AlertBadge() {
       )}
       title={`${activeCount} active alert rules`}
     >
-      <Bell className="w-3.5 h-3.5" />
+      <AlertTriangle className="w-3.5 h-3.5" />
       {activeCount > 0 && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--primary))] text-white text-[9px] font-bold grid place-items-center">
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--warning))] text-white text-[9px] font-bold grid place-items-center">
           {activeCount > 9 ? "9+" : activeCount}
         </span>
       )}
