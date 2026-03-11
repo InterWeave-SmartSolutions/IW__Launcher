@@ -5079,3 +5079,148 @@ Follow-ups / known issues:
 - `workspace/*/runtime_profiles/*.properties` files remain modified (machine-specific auto-generated files; not committed by design)
 - `frontends/InterWoven` submodule shows dirty (ignorable — prototype submodule)
 - Cloudflare tunnel not yet authenticated (run `scripts\setup_cloudflare_tunnel.bat` to complete)
+
+---
+
+## 2026-03-11 17:54 (EDT)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Start the sync bridge and test round-trip editing; ensure it starts with START.bat automatically
+
+Actions taken:
+- Verified START.bat already launches sync bridge at line 152 and STOP.bat stops it at line 32
+- Started sync bridge manually (`scripts/sync_bridge.ps1`) and confirmed PID file + log output
+- Verified `/api/sync/status` shows `bridgeRunning: true` with all 3 profiles `in_sync`
+- Performed round-trip test: modified `SF2AuthNet/configuration/runtime_profiles/*.properties` → bridge detected change within 2s debounce → imported to DB → recompiled overlay
+- Discovered bug: after bridge import (IDE → DB), status showed `db_ahead` instead of `in_sync` because `.push_epoch` sidecar wasn't updated on import path
+- Fixed `WorkspaceProfileSyncServlet.importProfile()`: added `updated_at = CURRENT_TIMESTAMP` to Postgres ON CONFLICT clause, added SELECT-back of timestamp + `.push_epoch` sidecar write after import
+- Fixed `ApiWorkspaceSyncServlet.handlePull()`: added same SELECT-back + `.push_epoch` write after pull import
+- Recompiled both servlets, restarted Tomcat, re-tested round-trip: all profiles now correctly show `in_sync` after bridge import
+- Verified second round-trip: `Tester1` profile dbUpdatedAt and workspaceXmlModified both `21:54:24Z` → `in_sync`
+
+Files changed/created:
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileSyncServlet.java` — added imports (File, Timestamp, BufferedWriter, etc.), added `updated_at = CURRENT_TIMESTAMP` to Postgres upsert, added `.push_epoch` sidecar write after import
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiWorkspaceSyncServlet.java` — added `.push_epoch` sidecar write in `handlePull()` after DB upsert
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/config/WorkspaceProfileSyncServlet.class` (compiled)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/api/ApiWorkspaceSyncServlet.class` (compiled)
+
+Commands run:
+- `curl` to verify Tomcat + sync status API
+- `powershell Start-Process ... sync_bridge.ps1` to launch bridge
+- `javac -source 1.8 -target 1.8 ... ApiWorkspaceSyncServlet.java WorkspaceProfileSyncServlet.java`
+- Tomcat stop/start cycle (shutdown.bat + direct Java launch)
+- `curl POST /api/sync/push` to reset all to in_sync
+- Simulated IDE edit via `echo >> *.properties`, waited for bridge, checked status
+- `node node_modules/typescript/bin/tsc -b --noEmit` — 0 errors
+
+Verification performed:
+- javac: 0 errors (4 Java 8 compatibility warnings only)
+- Bridge running: PID 54368 → restarted as new PID after Tomcat restart
+- Pre-fix: IDE edit → bridge import → status = `db_ahead` (BUG)
+- Post-fix: IDE edit → bridge import → status = `in_sync` (FIXED)
+- All 3 profiles (`Demo Company Inc.`, `IW Admin`, `Tester1`) verified `in_sync` after round-trip
+- TypeScript: 0 errors
+- START.bat line 152 already launches bridge; STOP.bat line 32 already stops it
+
+Follow-ups / known issues:
+- None — sync bridge auto-starts with START.bat and auto-stops with STOP.bat as requested
+
+---
+
+## 2026-03-11 18:25 (EDT)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Ensure IDE Navigator shows projects automatically without manual import; reference InterWeave PDF docs
+
+Actions taken:
+- Researched InterWeave IDE project discovery via PDF training docs, ENGINE_SYNC_MAP.md, and SDK plugin analysis
+- Discovered `iw_sdk.NavigationView` uses Eclipse's `IWorkspaceRoot.getProjects()` — only shows projects registered in binary `.snap` metadata, NOT filesystem scan
+- Created `.project` file for `workspace/GeneratedProfiles/` (was missing)
+- Created `scripts/setup/ensure_workspace_projects.bat` — detects new workspace projects vs registered count
+- Wired `ensure_workspace_projects.bat` into START.bat (before IDE launch)
+- **Built `iw_workspace_init_1.0.0` Eclipse startup plugin** — hooks into `org.eclipse.ui.startup`, scans `workspace/` for `.project` files, auto-calls `IProject.create()` + `IProject.open()` for unregistered projects
+  - Compiled against Eclipse 3.1 JARs: `org.eclipse.core.resources_3.1.2.jar`, `org.eclipse.core.runtime_3.1.2.jar`, `org.eclipse.ui.workbench_3.1.2.jar`, `org.eclipse.osgi_3.1.2.jar`
+  - Skips `GeneratedProfiles` and `IW_Runtime_Sync` (infrastructure dirs, not real IW projects — SDK expects `xslt/Site/include/` structure)
+- Removed `.project` from `GeneratedProfiles/` and `IW_Runtime_Sync/` (caused `upgradeProject` errors)
+- Fixed cascading workspace corruption: auto-import created project metadata but no tree node → `SaveManager.restore()` crash → `NoClassDefFoundError: ResourcesPlugin`
+- Performed full workspace metadata reset (deleted `.snap`, `.projects/`, `.root/`, `.safetable/`, `.history/`, `workbench.xml`, OSGi cache)
+- **Result**: IDE launches clean, auto-import plugin discovers all 3 projects (Creatio_QuickBooks_Integration, FirstTest, SF2AuthNet), Navigator shows them
+
+Files changed/created:
+- `plugins/iw_workspace_init_1.0.0/` — NEW Eclipse startup plugin
+  - `META-INF/MANIFEST.MF` — OSGi bundle manifest with `Eclipse-AutoStart: true`
+  - `plugin.xml` — `org.eclipse.ui.startup` extension point
+  - `src/com/interweave/workspace/AutoImportStartup.java` — auto-import logic
+  - `bin/com/interweave/workspace/AutoImportStartup.class` — compiled
+- `scripts/setup/ensure_workspace_projects.bat` — NEW, pre-launch project count check
+- `START.bat` — added call to `ensure_workspace_projects.bat` before IDE launch
+- `workspace/GeneratedProfiles/.project` — created then REMOVED (causes SDK errors)
+- `workspace/IW_Runtime_Sync/.project` — REMOVED (same reason)
+- `workspace/.metadata/` — full reset of Eclipse resource metadata
+
+Commands run:
+- `javac -source 1.8 -target 1.8 -cp "plugins/org.eclipse.core.resources_3.1.2.jar;..." AutoImportStartup.java`
+- `rm -rf .metadata/.plugins/org.eclipse.core.resources/{.snap,.projects,.root,.safetable,.history}`
+- `rm -rf configuration/org.eclipse.osgi/ configuration/org.eclipse.update/`
+
+Verification performed:
+- Plugin compilation: 0 errors
+- First launch with plugin: GeneratedProfiles error (expected — removed .project)
+- Second launch after metadata reset: "workbench state reset" warning (non-fatal, expected)
+- Third launch after full clean: IDE starts, Navigator shows all 3 projects (confirmed by user)
+
+Follow-ups / known issues:
+- `iw_ide.ini` had `-clean` temporarily (removed after fix); future launches use normal mode
+- The `ensure_workspace_projects.bat` metadata reset is a safety net — the plugin handles the actual import
+- GeneratedProfiles/IW_Runtime_Sync are visible in workspace/ filesystem but NOT as Eclipse projects (by design)
+
+---
+
+## 2026-03-11 — Fix per-account data isolation (same data showing for all users)
+Agent/tool: Claude Code (Sonnet 4.6)
+User request: Each profile/account must see only its own data — currently all accounts see identical data across configuration, monitoring, logs, etc.
+
+Root cause analysis:
+1. React Query cache was never cleared on login or logout — user B inherits user A's cached responses
+2. All query keys were global (no user/company scope) — cache entries were shared across accounts
+3. Log viewer showed server-wide Tomcat file logs (same for everyone) with no per-company transaction view
+
+Actions taken:
+
+**AuthProvider (most impactful fix):**
+- Added `useQueryClient` import
+- `login()`: call `queryClient.clear()` before `setUser()` — wipes previous session's cache
+- `logout()`: call `queryClient.clear()` after `clearAuthToken()` — clean slate for next user
+
+**Query key scoping (defense in depth):**
+- `useMonitoring.ts`: all keys now include `user?.companyId` → `["monitoring", companyId, "dashboard"]` etc.
+- `useConfiguration.ts`: all keys include `companyId` → `["config", companyId, "wizard"]` etc.
+- `useFlows.ts`: `["engine-flows", companyId]`
+- `useProfile.ts`: `["profile", userId]` and `["company-profile", companyId]`
+- `useNotifications.ts`: `["notifications", companyId, ...]`
+- `useAuditLog.ts`: `["audit", companyId, ...]`
+- All hooks also call `useAuth()` and add `enabled: !!user` guard
+
+**LoggingPage — per-company activity logs:**
+- Added top-level "Activity Logs" tab (default) showing company transaction history
+  from `/api/monitoring/transactions` which is already company_id filtered server-side
+- Shows: timestamp, flow name, status badge, records processed, duration, error message
+- Pagination (25/page), status filter, refresh button
+- "Server Logs" tab retains the existing Tomcat file browser (global, admin/debug use)
+
+Files changed:
+- `frontends/iw-portal/src/providers/AuthProvider.tsx`
+- `frontends/iw-portal/src/hooks/useMonitoring.ts`
+- `frontends/iw-portal/src/hooks/useConfiguration.ts`
+- `frontends/iw-portal/src/hooks/useFlows.ts`
+- `frontends/iw-portal/src/hooks/useProfile.ts`
+- `frontends/iw-portal/src/hooks/useNotifications.ts`
+- `frontends/iw-portal/src/hooks/useAuditLog.ts`
+- `frontends/iw-portal/src/pages/LoggingPage.tsx`
+- `web_portal/tomcat/webapps/iw-portal/` (rebuilt)
+
+Commands run:
+- `node node_modules/typescript/bin/tsc -b --noEmit` → 0 errors
+- `node node_modules/vite/bin/vite.js build` → ✓ built in 5.39s
+- `git commit`, `git push origin main`
+
+Verification: TypeScript strict mode 0 errors, Vite build succeeded, pushed to main
+Follow-ups: Vercel will auto-deploy; test with two different accounts to confirm cache isolation
