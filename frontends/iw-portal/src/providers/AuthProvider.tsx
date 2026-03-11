@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch, setAuthToken, clearAuthToken } from "@/lib/api";
 import type { User, LoginRequest, LoginResponse, SessionResponse } from "@/types/auth";
 
@@ -15,6 +16,7 @@ interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     if (res.success && res.user) {
+      // Clear any cached data from a previous session before setting new user,
+      // so different accounts never see each other's data.
+      queryClient.clear();
       // Store token for proxy deployments (Vercel) where cookies don't survive
       if (res.token) {
         setAuthToken(res.token);
@@ -67,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       throw new Error(res.error ?? "Login failed");
     }
-  }, []);
+  }, [queryClient]);
 
   const logout = useCallback(async () => {
     try {
@@ -79,8 +84,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Ignore — we clear local state regardless
     }
     clearAuthToken();
+    // Wipe all cached data so the next user starts with a clean slate
+    queryClient.clear();
     setUser(null);
-  }, []);
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider

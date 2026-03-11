@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/providers/AuthProvider";
 import type {
   ProfileResponse,
   ProfileUpdateRequest,
@@ -10,9 +11,11 @@ import type {
 } from "@/types/profile";
 
 export function useProfile() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["profile"],
+    queryKey: ["profile", user?.userId],
     queryFn: () => apiFetch<ProfileResponse>("/api/profile"),
+    enabled: !!user,
   });
 }
 
@@ -41,9 +44,11 @@ export function useChangePassword() {
 }
 
 export function useCompanyProfile() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["company-profile"],
+    queryKey: ["company-profile", user?.companyId],
     queryFn: () => apiFetch<CompanyProfileResponse>("/api/company/profile"),
+    enabled: !!user,
   });
 }
 

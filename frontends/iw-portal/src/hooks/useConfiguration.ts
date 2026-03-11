@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/providers/AuthProvider";
 import type {
   WizardConfigResponse,
   WizardConfigSaveRequest,
@@ -12,9 +13,11 @@ import type {
 import type { ApiMessageResponse } from "@/types/profile";
 
 export function useWizardConfig() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["config", "wizard"],
+    queryKey: ["config", user?.companyId, "wizard"],
     queryFn: () => apiFetch<WizardConfigResponse>("/api/config/wizard"),
+    enabled: !!user,
   });
 }
 
@@ -27,16 +30,18 @@ export function useSaveWizardConfig() {
         body: JSON.stringify(data),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["config", "wizard"] });
+      queryClient.invalidateQueries({ queryKey: ["config"] });
       queryClient.invalidateQueries({ queryKey: ["company-profile"] });
     },
   });
 }
 
 export function useCredentials() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["config", "credentials"],
+    queryKey: ["config", user?.companyId, "credentials"],
     queryFn: () => apiFetch<CredentialsResponse>("/api/config/credentials"),
+    enabled: !!user,
   });
 }
 
@@ -49,7 +54,7 @@ export function useSaveCredential() {
         body: JSON.stringify(data),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["config", "credentials"] });
+      queryClient.invalidateQueries({ queryKey: ["config"] });
     },
   });
 }
@@ -65,8 +70,10 @@ export function useTestCredential() {
 }
 
 export function useProfiles() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["config", "profiles"],
+    queryKey: ["config", user?.companyId, "profiles"],
     queryFn: () => apiFetch<ProfilesResponse>("/api/config/profiles"),
+    enabled: !!user,
   });
 }

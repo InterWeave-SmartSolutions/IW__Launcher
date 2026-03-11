@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IW Portal — Palette Preview</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  background: #07090f;
+  color: #e2e8f0;
+  padding: 40px 28px 80px;
+}
+.page-title { text-align: center; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 6px; }
+.page-sub { text-align: center; color: #64748b; font-size: 12.5px; margin-bottom: 44px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+.palette-block { display: flex; flex-direction: column; gap: 12px; }
+.palette-label { text-align: center; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #64748b; line-height: 1.6; }
+.palette-label em { color: #e2e8f0; font-style: normal; display: block; font-size: 11.5px; letter-spacing: -0.1px; margin-bottom: 3px; }
+
+.shell {
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.4);
+  display: flex; flex-direction: column;
+  height: 720px; position: relative;
+}
+.topbar {
+  height: 50px; display: flex; align-items: center;
+  padding: 0 16px; gap: 10px; flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+.search-box { flex: 1; max-width: 210px; height: 28px; border-radius: 7px; padding: 0 11px; font-size: 11.5px; display: flex; align-items: center; }
+.tabs { display: flex; gap: 3px; }
+.tab { padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 500; cursor: default; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.user-pill { font-size: 10.5px; padding: 3px 10px; border-radius: 20px; }
+.icon-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12.5px; }
+
+.body { display: flex; flex: 1; overflow: hidden; }
+
+.sidebar {
+  width: 192px; flex-shrink: 0;
+  padding: 16px 8px; display: flex; flex-direction: column; gap: 1px;
+  overflow-y: auto; position: relative; z-index: 5;
+}
+.nav-group-label { font-size: 8.5px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; padding: 14px 8px 5px; }
+.nav-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7.5px 8px 7.5px 6px;
+  border-left: 2px solid transparent;
+  font-size: 12.5px; font-weight: 500; cursor: default;
+  border-radius: 0 8px 8px 0;
+}
+.nav-icon { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; opacity: 0.65; }
+.nav-item.active .nav-icon { opacity: 1; }
+
+.main { flex: 1; padding: 22px 22px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.page-header-left h2 { font-size: 17px; font-weight: 700; letter-spacing: -0.4px; }
+.page-header-left p { font-size: 11.5px; margin-top: 3px; }
+.header-btns { display: flex; gap: 7px; }
+.btn { padding: 7px 14px; border-radius: 8px; font-size: 11.5px; font-weight: 600; cursor: default; border: none; }
+
+.badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+.badge-r { background: rgba(239,68,68,.12); color: #dc2626; }
+.badge-y { background: rgba(234,179,8,.15); color: #a16207; }
+.badge-g { background: rgba(22,163,74,.12); color: #15803d; }
+.badge-c { background: rgba(0,184,255,.12); color: #0085bb; }
+.badge-i { background: rgba(37,99,235,.10); color: #2563eb; }
+.mono { font-family: 'SF Mono', monospace; font-size: 10.5px; }
+
+
+/* ══════════════════════════════════════════════════════
+   ASSOCIATE PORTAL — unchanged from before
+   ══════════════════════════════════════════════════════ */
+.assoc .shell { background: linear-gradient(145deg, #c2d4f8 0%, #c8c0ef 50%, #bcd8ec 100%); }
+.assoc .topbar { background: rgba(255,255,255,0.74); border-bottom: 1px solid rgba(255,255,255,0.52); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.assoc .search-box { background: rgba(248,250,252,0.75); border: 1px solid rgba(226,232,240,0.60); color: #8099bb; }
+.assoc .tab { color: #64748b; }
+.assoc .tab.active { background: #2563eb; color: #fff; font-weight: 600; }
+.assoc .user-pill { background: rgba(248,250,252,0.75); border: 1px solid rgba(226,232,240,0.60); color: #475569; }
+.assoc .icon-dot { background: rgba(248,250,252,0.75); color: #94a3b8; }
+.assoc .sidebar { background: #0d1f3c; border-right: 1px solid rgba(255,255,255,0.05); }
+.assoc .nav-group-label { color: rgba(255,255,255,0.26); }
+.assoc .nav-item { color: rgba(178,205,234,0.55); }
+.assoc .nav-item.active { background: rgba(0,184,255,0.13); color: #00b8ff; border-left-color: #00b8ff; font-weight: 600; }
+.assoc .main { background: transparent; }
+.assoc .page-header-left h2 { color: #0f172a; }
+.assoc .page-header-left p { color: #475569; }
+.assoc .btn.primary { background: #2563eb; color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.35); }
+.assoc .btn.outline { background: rgba(255,255,255,0.52); border: 1px solid rgba(255,255,255,0.72); color: #1a2b45; backdrop-filter: blur(10px); }
+
+/* Associate KPI cards — individual tinted glass */
+.assoc .kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.assoc .kpi-card {
+  border-radius: 14px; padding: 18px 16px;
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.80);
+}
+.assoc .kpi-card:nth-child(1) { background: rgba(196,232,255,0.54); box-shadow: 0 6px 20px rgba(0,150,220,.10); }
+.assoc .kpi-card:nth-child(2) { background: rgba(200,255,230,0.50); box-shadow: 0 6px 20px rgba(0,180,120,.08); }
+.assoc .kpi-card:nth-child(3) { background: rgba(220,215,255,0.52); box-shadow: 0 6px 20px rgba(100,80,220,.08); }
+.assoc .kpi-label { font-size: 10.5px; font-weight: 500; color: #475569; }
+.assoc .kpi-value { font-size: 24px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-top: 4px; }
+.assoc .kpi-card:nth-child(1) .kpi-value { color: #00b8ff; }
+.assoc .kpi-card:nth-child(2) .kpi-value { color: #059669; }
+.assoc .kpi-card:nth-child(3) .kpi-value { color: #2563eb; }
+.assoc .kpi-sub { font-size: 10px; color: #64748b; margin-top: 3px; }
+.assoc .kpi-trend { font-size: 10px; font-weight: 600; margin-top: 5px; color: #15803d; }
+
+.assoc .panel { border-radius: 14px; overflow: hidden; background: rgba(255,255,255,0.56); border: 1px solid rgba(255,255,255,0.78); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 8px 28px rgba(13,31,60,.09); }
+.assoc .panel-hd { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; font-size: 12.5px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.50); color: #0f172a; }
+.assoc .panel-hd span { font-size: 11px; font-weight: 400; color: #64748b; }
+.assoc .t-head { display: grid; grid-template-columns: 56px 1fr 66px 70px; gap: 6px; padding: 8px 18px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; background: rgba(248,250,252,0.40); color: #8099bb; }
+.assoc .t-row { display: grid; grid-template-columns: 56px 1fr 66px 70px; gap: 6px; padding: 10px 18px; font-size: 11.5px; align-items: center; border-top: 1px solid rgba(226,232,240,0.38); color: #1a2b45; }
+.assoc .mono { color: #8099bb; }
+
+
+/* ══════════════════════════════════════════════════════
+   MASTER CONSOLE — GLASS SIDEBAR + RICHER LAYOUT
+   Less blocky: asymmetric KPI grid, colored card tints,
+   bigger radius, visual hierarchy, softer table
+   ══════════════════════════════════════════════════════ */
+
+/* Richer, more saturated gradient — glass cards pop more */
+.master .shell {
+  background: linear-gradient(to right,
+    #060f22 0%, #09193a 18%,
+    #8eb2f2 18%, #a8a2e0 54%, #8ec8e4 100%
+  );
+}
+
+.master .topbar { background: rgba(255,255,255,0.68); border-bottom: 1px solid rgba(255,255,255,0.45); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.master .search-box { background: rgba(248,250,252,0.70); border: 1px solid rgba(226,232,240,0.55); color: #8099bb; }
+.master .tab { color: #64748b; }
+.master .tab.active { background: #2563eb; color: #fff; font-weight: 600; }
+.master .user-pill { background: rgba(248,250,252,0.70); border: 1px solid rgba(226,232,240,0.55); color: #475569; }
+.master .icon-dot { background: rgba(248,250,252,0.70); color: #94a3b8; }
+
+/* GLASS SIDEBAR */
+.master .sidebar {
+  background: rgba(6,15,34,0.70);
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.master .nav-group-label { color: rgba(255,255,255,0.22); }
+.master .nav-item { color: rgba(178,210,240,0.48); }
+.master .nav-item.active { background: rgba(0,184,255,0.15); color: #00b8ff; border-left-color: #00b8ff; font-weight: 600; }
+.master .nav-item.active .nav-icon { opacity: 1; }
+
+.master .main { background: transparent; }
+.master .page-header-left h2 { color: #0f172a; }
+.master .page-header-left p { color: #475569; }
+.master .btn.primary { background: #2563eb; color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.38); }
+.master .btn.outline { background: rgba(255,255,255,0.50); border: 1px solid rgba(255,255,255,0.70); color: #1a2b45; backdrop-filter: blur(10px); }
+
+/* ── ASYMMETRIC KPI LAYOUT ── */
+.kpi-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 14px;
+}
+.kpi-stack { display: flex; flex-direction: column; gap: 14px; }
+
+/* Featured card — larger, cyan accent, sparkline area */
+.kpi-featured {
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+  background: rgba(180,228,255,0.52);
+  border: 1px solid rgba(255,255,255,0.82);
+  border-top: 3px solid #00b8ff;
+  backdrop-filter: blur(26px); -webkit-backdrop-filter: blur(26px);
+  box-shadow: 0 10px 32px rgba(0,140,220,.12), 0 2px 8px rgba(0,0,0,.04);
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; gap: 4px;
+}
+/* Ghost large number decoration */
+.kpi-featured::after {
+  content: "1,284";
+  position: absolute; right: 14px; bottom: -4px;
+  font-size: 68px; font-weight: 900;
+  color: rgba(0,184,255,0.07);
+  letter-spacing: -3px; line-height: 1;
+  pointer-events: none;
+}
+.kpi-featured .kpi-label { font-size: 10.5px; font-weight: 500; color: #475569; }
+.kpi-featured .kpi-value { font-size: 36px; font-weight: 900; letter-spacing: -1.5px; color: #00b8ff; line-height: 1.1; margin-top: 4px; }
+.kpi-featured .kpi-sub { font-size: 10px; color: #64748b; margin-top: 2px; }
+.kpi-featured .kpi-trend { font-size: 11px; font-weight: 600; color: #059669; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+
+/* Mini sparkline bars inside featured card */
+.sparkline {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 28px; margin-top: 12px;
+}
+.spark-bar {
+  flex: 1; background: rgba(0,184,255,0.25); border-radius: 3px 3px 0 0;
+  min-height: 4px;
+}
+.spark-bar.hi { background: rgba(0,184,255,0.65); }
+
+/* Revenue card — green tint */
+.kpi-rev {
+  border-radius: 16px; padding: 18px 18px;
+  background: rgba(180,255,225,0.48);
+  border: 1px solid rgba(255,255,255,0.80);
+  border-top: 3px solid #00e5a0;
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 8px 24px rgba(0,160,100,.09), 0 2px 6px rgba(0,0,0,.04);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.kpi-rev .kpi-label { font-size: 10.5px; font-weight: 500; color: #475569; }
+.kpi-rev .kpi-value { font-size: 26px; font-weight: 900; letter-spacing: -1px; color: #059669; line-height: 1.1; margin-top: 3px; }
+.kpi-rev .kpi-sub { font-size: 10px; color: #64748b; }
+.kpi-rev .kpi-trend { font-size: 10.5px; font-weight: 600; color: #059669; margin-top: 4px; }
+
+/* Retention card — indigo/purple tint */
+.kpi-ret {
+  border-radius: 16px; padding: 18px 18px;
+  background: rgba(210,205,255,0.48);
+  border: 1px solid rgba(255,255,255,0.80);
+  border-top: 3px solid #2563eb;
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 8px 24px rgba(37,99,235,.09), 0 2px 6px rgba(0,0,0,.04);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.kpi-ret .kpi-label { font-size: 10.5px; font-weight: 500; color: #475569; }
+.kpi-ret .kpi-value { font-size: 26px; font-weight: 900; letter-spacing: -1px; color: #2563eb; line-height: 1.1; margin-top: 3px; }
+.kpi-ret .kpi-sub { font-size: 10px; color: #64748b; }
+/* Progress bar for retention */
+.ret-progress { margin-top: 8px; }
+.ret-bar-bg { height: 4px; background: rgba(37,99,235,0.15); border-radius: 99px; overflow: hidden; margin-top: 3px; }
+.ret-bar-fill { height: 100%; width: 94.1%; background: linear-gradient(90deg, #2563eb, #60a5fa); border-radius: 99px; }
+
+/* ── MASTER TABLE PANEL ── */
+/* Softer, less "boxy" — no hard outer border, just subtle glass + section label style */
+.m-panel {
+  border-radius: 18px; overflow: hidden;
+  background: rgba(255,255,255,0.52);
+  border: 1px solid rgba(255,255,255,0.75);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 8px 28px rgba(13,31,60,.08), 0 2px 6px rgba(0,0,0,.04);
+}
+.m-panel-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 10px;
+}
+/* Monospace section label style from owner_console_app */
+.m-panel-title {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 1.8px;
+  text-transform: uppercase; color: #8099bb;
+  font-family: 'SF Mono', monospace;
+}
+.m-panel-action { font-size: 11px; color: #00b8ff; font-weight: 500; }
+.m-t-head {
+  display: grid; grid-template-columns: 56px 1fr 68px 76px 66px;
+  gap: 6px; padding: 7px 20px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  background: rgba(248,250,252,0.35); color: #94a3b8;
+}
+.m-t-row {
+  display: grid; grid-template-columns: 56px 1fr 68px 76px 66px;
+  gap: 6px; padding: 11px 20px; font-size: 11.5px; align-items: center;
+  border-top: 1px solid rgba(226,232,240,0.32); color: #1a2b45;
+}
+.m-t-row:last-child { border-bottom: none; }
+/* Subtle alternating row tint */
+.m-t-row:nth-child(odd) { background: rgba(255,255,255,0.15); }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">N — FUSION · Refined</h1>
+<p class="page-sub">Master Console: asymmetric KPI layout · colored glass cards · softer table · glass sidebar</p>
+
+<div class="grid">
+
+  <!-- Associate Portal -->
+  <div class="palette-block assoc">
+    <div class="palette-label">
+      <em>Associate Portal</em>
+      Solid navy · Individually tinted glass cards · Cyan / Green / Indigo per metric
+    </div>
+    <div class="shell">
+      <div class="topbar">
+        <div class="search-box">Search all portals…</div>
+        <div class="tabs">
+          <div class="tab active">Associate</div>
+          <div class="tab">Integration</div>
+          <div class="tab">Master</div>
+          <div class="tab">Dev</div>
+        </div>
+        <div class="topbar-right">
+          <div class="user-pill">admin@iw.biz</div>
+          <div class="icon-dot">🔔</div>
+          <div class="icon-dot">🌙</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-group-label">Associate</div>
+          <div class="nav-item active"><span class="nav-icon">⌂</span>Home</div>
+          <div class="nav-item"><span class="nav-icon">◫</span>Resource Library</div>
+          <div class="nav-item"><span class="nav-icon">◎</span>Search</div>
+          <div class="nav-item"><span class="nav-icon">◈</span>Business Checkup</div>
+          <div class="nav-item"><span class="nav-icon">▷</span>Webinars</div>
+          <div class="nav-group-label">Account</div>
+          <div class="nav-item"><span class="nav-icon">◬</span>Notifications <span style="margin-left:auto;background:#00b8ff;color:#fff;font-size:8.5px;padding:1px 5px;border-radius:9px;font-weight:700;">2</span></div>
+          <div class="nav-item"><span class="nav-icon">◉</span>Support</div>
+          <div class="nav-item"><span class="nav-icon">◯</span>My Profile</div>
+          <div class="nav-item"><span class="nav-icon">▣</span>Billing</div>
+        </div>
+        <div class="main">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h2>Welcome back</h2>
+              <p>All-Star Center · Owner · Active subscription</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn primary">Start Checkup</button>
+              <button class="btn outline">Browse Library</button>
+            </div>
+          </div>
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-label">Resources Saved</div>
+              <div class="kpi-value">12</div>
+              <div class="kpi-sub">Across 4 categories</div>
+              <div class="kpi-trend">↑ +3 this week</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Webinars Attended</div>
+              <div class="kpi-value">8</div>
+              <div class="kpi-sub">2 upcoming registered</div>
+              <div class="kpi-trend">↑ Active</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Checkup Score</div>
+              <div class="kpi-value">74%</div>
+              <div class="kpi-sub">Q1 2026</div>
+              <div class="kpi-trend">↑ +6 pts</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd">New for Owners <span>View all →</span></div>
+            <div class="t-head"><span>Type</span><span>Title</span><span>Area</span><span>Meta</span></div>
+            <div class="t-row"><span><span class="badge badge-c">Guide</span></span><span>Recruiting Playbook v3</span><span>HR</span><span>12 min</span></div>
+            <div class="t-row"><span><span class="badge" style="background:rgba(167,139,250,.12);color:#7c3aed;">Tmpl</span></span><span>Monthly KPI Template</span><span>Finance</span><span>Template</span></div>
+            <div class="t-row"><span><span class="badge badge-g">List</span></span><span>Staff Onboarding Checklist</span><span>Ops</span><span>Checklist</span></div>
+            <div class="t-row"><span><span class="badge badge-y">Video</span></span><span>Webinar: Social Growth</span><span>Mktg</span><span>45 min</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Console — Redesigned -->
+  <div class="palette-block master">
+    <div class="palette-label">
+      <em>Master Console — Glass Sidebar</em>
+      Asymmetric KPI layout · Colored glass cards · Soft table · Richer gradient
+    </div>
+    <div class="shell">
+      <div class="topbar">
+        <div class="search-box">Search all portals…</div>
+        <div class="tabs">
+          <div class="tab">Associate</div>
+          <div class="tab">Integration</div>
+          <div class="tab active">Master</div>
+          <div class="tab">Dev</div>
+        </div>
+        <div class="topbar-right">
+          <div class="user-pill">admin@iw.biz</div>
+          <div class="icon-dot">🔔</div>
+          <div class="icon-dot">🌙</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-group-label">Master Console</div>
+          <div class="nav-item active"><span class="nav-icon">⊞</span>Dashboard</div>
+          <div class="nav-item"><span class="nav-icon">◎</span>Users &amp; Roles</div>
+          <div class="nav-item"><span class="nav-icon">◫</span>Content</div>
+          <div class="nav-item"><span class="nav-icon">▣</span>Subscriptions</div>
+          <div class="nav-item"><span class="nav-icon">◈</span>Analytics</div>
+          <div class="nav-item"><span class="nav-icon">◬</span>Audit &amp; Security</div>
+          <div class="nav-group-label">Settings</div>
+          <div class="nav-item"><span class="nav-icon">◉</span>Notifications</div>
+          <div class="nav-item"><span class="nav-icon">⚙</span>Tenant Settings</div>
+          <div class="nav-item"><span class="nav-icon">▷</span>Support Queue</div>
+        </div>
+        <div class="main">
+
+          <div class="page-header">
+            <div class="page-header-left">
+              <h2>Master Dashboard</h2>
+              <p>Program health · 47 orgs · Live data</p>
+            </div>
+            <div class="header-btns">
+              <button class="btn primary">Refresh</button>
+              <button class="btn outline">Export</button>
+            </div>
+          </div>
+
+          <!-- Asymmetric KPI layout -->
+          <div class="kpi-layout">
+            <!-- Featured large card -->
+            <div class="kpi-featured">
+              <div class="kpi-label">Active Subscribers</div>
+              <div class="kpi-value">1,284</div>
+              <div class="kpi-sub">Across 47 organizations</div>
+              <div class="kpi-trend">↑ +42 this month &nbsp;·&nbsp; +3.2%</div>
+              <!-- Mini sparkline -->
+              <div class="sparkline">
+                <div class="spark-bar" style="height:40%"></div>
+                <div class="spark-bar" style="height:55%"></div>
+                <div class="spark-bar" style="height:45%"></div>
+                <div class="spark-bar" style="height:65%"></div>
+                <div class="spark-bar" style="height:58%"></div>
+                <div class="spark-bar" style="height:72%"></div>
+                <div class="spark-bar" style="height:68%"></div>
+                <div class="spark-bar hi" style="height:80%"></div>
+                <div class="spark-bar hi" style="height:88%"></div>
+                <div class="spark-bar hi" style="height:100%"></div>
+              </div>
+            </div>
+            <!-- Stacked smaller cards -->
+            <div class="kpi-stack">
+              <div class="kpi-rev">
+                <div class="kpi-label">Monthly Revenue</div>
+                <div class="kpi-value">$47.2k</div>
+                <div class="kpi-sub">MRR · ↑ 1.8% this month</div>
+                <div class="kpi-trend">↑ On track</div>
+              </div>
+              <div class="kpi-ret">
+                <div class="kpi-label">Retention Rate</div>
+                <div class="kpi-value">94.1%</div>
+                <div class="kpi-sub">30-day rolling average</div>
+                <div class="ret-progress">
+                  <div class="ret-bar-bg"><div class="ret-bar-fill"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Softer table panel -->
+          <div class="m-panel">
+            <div class="m-panel-hd">
+              <div class="m-panel-title">Recent Tickets</div>
+              <div class="m-panel-action">View all →</div>
+            </div>
+            <div class="m-t-head"><span>ID</span><span>Subject</span><span>Category</span><span>Priority</span><span>Status</span></div>
+            <div class="m-t-row"><span class="mono">TK-041</span><span>Cannot access webinar</span><span>Access</span><span><span class="badge badge-r">High</span></span><span><span class="badge badge-c">Open</span></span></div>
+            <div class="m-t-row"><span class="mono">TK-040</span><span>Billing discrepancy</span><span>Billing</span><span><span class="badge badge-r">High</span></span><span><span class="badge badge-y">In-progress</span></span></div>
+            <div class="m-t-row"><span class="mono">TK-039</span><span>Resource search error</span><span>Content</span><span><span class="badge badge-y">Med</span></span><span><span class="badge badge-c">Open</span></span></div>
+            <div class="m-t-row"><span class="mono">TK-036</span><span>Integration sync fail</span><span>Integrations</span><span><span class="badge badge-r">High</span></span><span><span class="badge badge-g">Resolved</span></span></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

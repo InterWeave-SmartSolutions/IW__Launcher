@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/providers/AuthProvider";
 import type {
   NotificationsResponse,
   NotificationType,
@@ -12,8 +13,9 @@ export function useNotifications(
   type: NotificationType | "all" = "all",
   unreadOnly = false
 ) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["notifications", page, pageSize, type, unreadOnly],
+    queryKey: ["notifications", user?.companyId, page, pageSize, type, unreadOnly],
     queryFn: () => {
       const params = new URLSearchParams({
         page: String(page),
@@ -25,15 +27,18 @@ export function useNotifications(
         `/api/notifications?${params.toString()}`
       );
     },
+    enabled: !!user,
     staleTime: 10_000,
   });
 }
 
 export function useUnreadCount() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["notifications", "unreadCount"],
+    queryKey: ["notifications", user?.companyId, "unreadCount"],
     queryFn: () =>
       apiFetch<UnreadCountResponse>("/api/notifications/count"),
+    enabled: !!user,
     refetchInterval: 30_000,
     staleTime: 10_000,
   });

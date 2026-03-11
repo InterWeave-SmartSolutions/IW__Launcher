@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/providers/AuthProvider";
 import type {
   AuditLogResponse,
   AuditStatsResponse,
@@ -35,30 +36,36 @@ export function useAuditLog(
   pageSize: number,
   filters: AuditFilters
 ) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["audit", "entries", page, pageSize, filters],
+    queryKey: ["audit", user?.companyId, "entries", page, pageSize, filters],
     queryFn: () =>
       apiFetch<AuditLogResponse>(
         `/api/admin/audit?${buildQueryString(page, pageSize, filters)}`
       ),
+    enabled: !!user,
     staleTime: 10_000,
   });
 }
 
 export function useAuditStats() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["audit", "stats"],
+    queryKey: ["audit", user?.companyId, "stats"],
     queryFn: () =>
       apiFetch<AuditStatsResponse>("/api/admin/audit/stats"),
+    enabled: !!user,
     staleTime: 60_000,
   });
 }
 
 export function useAuditUsers() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["audit", "users"],
+    queryKey: ["audit", user?.companyId, "users"],
     queryFn: () =>
       apiFetch<AuditUsersResponse>("/api/admin/audit/users"),
+    enabled: !!user,
     staleTime: 300_000,
   });
 }

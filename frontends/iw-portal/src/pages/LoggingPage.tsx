@@ -21,10 +21,15 @@ import {
   Play,
   Square,
   RotateCw,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ListOrdered,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useLogFiles, useLogSummary, useLogContent, type DaySummary, type LogLine } from "@/hooks/useLogs";
+import { useTransactions } from "@/hooks/useMonitoring";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -333,6 +338,123 @@ function formatTime(fullTime: string): string {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
+/* ─── Per-company Activity Logs component ─── */
+
+function ActivityLogsTab() {
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const pageSize = 25;
+
+  const { data, isLoading, isFetching, refetch } = useTransactions(page, pageSize);
+
+  const transactions = data?.data?.transactions ?? [];
+  const totalCount = data?.data?.pagination?.total_count ?? 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  function statusBadge(status: string) {
+    const s = status?.toLowerCase() ?? "";
+    if (s === "success" || s === "completed")
+      return <span className="inline-flex items-center gap-1 text-xs text-emerald-400"><CheckCircle2 className="w-3 h-3" />Success</span>;
+    if (s === "error" || s === "failed")
+      return <span className="inline-flex items-center gap-1 text-xs text-red-400"><XCircle className="w-3 h-3" />Failed</span>;
+    if (s === "running" || s === "in_progress")
+      return <span className="inline-flex items-center gap-1 text-xs text-blue-400"><Clock className="w-3 h-3" />Running</span>;
+    return <span className="text-xs text-muted-foreground">{status ?? "—"}</span>;
+  }
+
+  const filtered = statusFilter === "all"
+    ? transactions
+    : transactions.filter((t) => (t.status ?? "").toLowerCase().startsWith(statusFilter));
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <ListOrdered className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium">
+            {totalCount > 0 ? `${totalCount} transaction${totalCount === 1 ? "" : "s"}` : "No transactions"}
+          </span>
+          <span className="text-xs text-muted-foreground">for your company</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            className="text-xs bg-[hsl(var(--input))] border border-[hsl(var(--border))] rounded px-2 py-1 text-foreground"
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          >
+            <option value="all">All statuses</option>
+            <option value="success">Success</option>
+            <option value="error">Failed</option>
+            <option value="running">Running</option>
+          </select>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw className={cn("w-3.5 h-3.5", isFetching && "animate-spin")} />
+          </Button>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
+          <Loader2 className="w-4 h-4 animate-spin" /><span className="text-sm">Loading…</span>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground text-sm">
+          No transaction logs found for your account.
+        </div>
+      ) : (
+        <div className="rounded-lg border border-[hsl(var(--border))] overflow-hidden">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Time</th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Flow</th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Status</th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground hidden md:table-cell">Records</th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground hidden lg:table-cell">Duration</th>
+                <th className="px-3 py-2 text-left font-medium text-muted-foreground hidden lg:table-cell">Error</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((tx, i) => {
+                const ts = tx.started_at ? new Date(tx.started_at).toLocaleString() : "—";
+                const dur = tx.duration_ms != null ? `${(tx.duration_ms / 1000).toFixed(1)}s` : "—";
+                return (
+                  <tr key={tx.execution_id ?? i}
+                    className={cn("border-b border-[hsl(var(--border)/0.5)] hover:bg-[hsl(var(--muted)/0.2)]",
+                      i % 2 === 0 ? "" : "bg-[hsl(var(--muted)/0.05)]")}>
+                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{ts}</td>
+                    <td className="px-3 py-2 font-medium max-w-[180px] truncate">{tx.flow_name ?? "—"}</td>
+                    <td className="px-3 py-2">{statusBadge(tx.status)}</td>
+                    <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{tx.records_processed ?? "—"}</td>
+                    <td className="px-3 py-2 text-muted-foreground hidden lg:table-cell">{dur}</td>
+                    <td className="px-3 py-2 text-red-400/80 hidden lg:table-cell max-w-[200px] truncate">
+                      {tx.error_message ?? ""}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>Page {page} of {totalPages}</span>
+          <div className="flex gap-1">
+            <Button variant="outline" size="sm" className="h-7 px-2" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+              <ChevronLeft className="w-3 h-3" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-7 px-2" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+              <ChevronRight className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LoggingPage() {
   useDocumentTitle("System Logging");
 
@@ -603,6 +725,25 @@ export function LoggingPage() {
             </Button>
           </div>
         </div>
+
+        {/* ── Top-level tab: Activity Logs (per-company) vs Server Logs (admin) ── */}
+        <Tabs defaultValue="activity" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="activity" className="flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5" />
+              Activity Logs
+            </TabsTrigger>
+            <TabsTrigger value="server" className="flex items-center gap-1.5">
+              <Server className="w-3.5 h-3.5" />
+              Server Logs
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="activity">
+            <ActivityLogsTab />
+          </TabsContent>
+
+          <TabsContent value="server">
 
         {/* ━━━━━━━━━━ LIST VIEW ━━━━━━━━━━ */}
         {view === "list" && (
@@ -1158,6 +1299,10 @@ export function LoggingPage() {
             )}
           </>
         )}
+
+          </TabsContent>
+        </Tabs>
+
       </div>
     </TooltipProvider>
   );

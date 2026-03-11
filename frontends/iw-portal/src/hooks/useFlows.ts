@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/providers/AuthProvider";
 import type { FlowsResponse, FlowActionResponse, FlowScheduleResponse, FlowPropertiesResponse } from "@/types/flows";
 
 export function useEngineFlows(autoRefresh = true) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["engine-flows"],
+    queryKey: ["engine-flows", user?.companyId],
     queryFn: () => apiFetch<FlowsResponse>("/api/flows"),
+    enabled: !!user,
     refetchInterval: autoRefresh ? 10_000 : false,
   });
 }
@@ -45,6 +48,7 @@ export function useUpdateFlowSchedule() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["engine-flows"] }),
   });
 }
+
 
 export function useFlowProperties(flowId: string | null, isFlow: boolean) {
   return useQuery({
