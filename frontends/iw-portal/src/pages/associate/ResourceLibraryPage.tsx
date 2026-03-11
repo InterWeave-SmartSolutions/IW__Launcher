@@ -4,6 +4,8 @@ import { StatusBadge, inferStatus } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET /api/associate/resources?area=&type=&role=&q=
 const ALL_RESOURCES = [
@@ -22,10 +24,13 @@ const TYPES  = ["All Types",  "Guide", "Template", "Checklist", "Video"];
 const ROLES  = ["All Roles",  "Owner", "Staff", "All"];
 
 export function ResourceLibraryPage() {
+  const { showToast } = useToast();
   const [q, setQ] = useState("");
   const [area, setArea] = useState("All Areas");
   const [type, setType] = useState("All Types");
   const [role, setRole] = useState("All Roles");
+  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
+  const [savingId, setSavingId] = useState<number | null>(null);
 
   const results = ALL_RESOURCES.filter((r) => {
     const matchQ    = !q.trim() || r.title.toLowerCase().includes(q.toLowerCase()) || r.area.toLowerCase().includes(q.toLowerCase());
@@ -34,6 +39,24 @@ export function ResourceLibraryPage() {
     const matchRole = role === "All Roles" || r.role === role || r.role === "All";
     return matchQ && matchArea && matchType && matchRole;
   });
+
+  const handleSave = async (r: { id: number }) => {
+    setSavingId(r.id);
+    try {
+      await apiFetch("/api/associate/resources/save", { method: "POST", body: JSON.stringify({ resourceId: r.id }) });
+      setSavedIds((prev) => new Set([...prev, r.id]));
+      showToast("Resource saved to your library", "success");
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Save failed", "error");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const handleOpen = (title: string) => {
+    showToast("Opening resource…", "success");
+    void title;
+  };
 
   return (
     <div className="space-y-5">
@@ -91,8 +114,15 @@ export function ResourceLibraryPage() {
                 <StatusBadge status="neutral" label={r.role} />
               </div>
               <div className="flex gap-2 mt-auto">
-                <Button size="sm" className="flex-1">Open</Button>
-                <Button size="sm" variant="outline">Save</Button>
+                <Button size="sm" className="flex-1" onClick={() => handleOpen(r.title)}>Open</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleSave(r)}
+                  disabled={savingId === r.id || savedIds.has(r.id)}
+                >
+                  {savedIds.has(r.id) ? "Saved" : "Save"}
+                </Button>
               </div>
             </section>
           ))}

@@ -1,5 +1,9 @@
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { StatusBadge, inferStatus } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET /api/master/subscriptions (Stripe integration)
 const PLANS = [
@@ -22,6 +26,24 @@ const ENTITLEMENT_STATES = [
 ];
 
 export function SubscriptionsPage() {
+  const { showToast } = useToast();
+  const [retrying, setRetrying] = useState<number | null>(null);
+
+  const handleRetry = async (e: { subscription: string; customer: string }, index: number) => {
+    setRetrying(index);
+    try {
+      await apiFetch("/api/master/subscriptions/retry", {
+        method: "POST",
+        body: JSON.stringify({ subscription: e.subscription }),
+      });
+      showToast("Payment retry queued for " + e.customer, "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Retry failed", "error");
+    } finally {
+      setRetrying(null);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -67,7 +89,15 @@ export function SubscriptionsPage() {
                 <span className="text-xs text-muted-foreground">{e.attempt}</span>
                 <span className="text-xs text-muted-foreground">{e.retry}</span>
                 <StatusBadge status={inferStatus(e.status)} label={e.status} />
-                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">Retry</Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => handleRetry(e, i)}
+                  disabled={retrying === i}
+                >
+                  {retrying === i ? <Loader2 className="w-3 h-3 animate-spin" /> : "Retry"}
+                </Button>
               </div>
             ))}
           </div>

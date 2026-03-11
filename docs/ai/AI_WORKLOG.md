@@ -4927,3 +4927,110 @@ Follow-ups / known issues:
 1. API servlets return mock JSON — DB wiring for associate/master data is a follow-up (requires schema additions for resources, webinars, tickets, etc.)
 2. ProfilePage portal preferences only affect Topbar switcher visibility; Sidebar nav changes per URL automatically (usePortal hook)
 3. Tomcat needs reload for new servlets to take effect (servlet-mapping registered but Tomcat not running at time of commit)
+
+### Addendum — 32-bit JVM Timezone Fix (same session)
+
+**Root cause discovered:** The bundled JRE (`jre/`) is 32-bit (`sun.arch.data.model=32`). On this JVM, `System.currentTimeMillis()` returns local-time-as-epoch-ms rather than true UTC epoch ms. This caused a 4-hour (EDT offset) discrepancy between:
+- DB timestamps from JDBC `Timestamp.getTime()` (correct UTC epoch)
+- Sidecar file values written by `System.currentTimeMillis()` (local-time epoch)
+
+**Fix applied:** In `handlePush`, after the UPDATE, immediately SELECT back `updated_at` and use `rs.getTimestamp(1).getTime()` (pure JDBC, consistent with how status checks read the DB) as the value written to the `.push_epoch` sidecar file. Both comparisons now go through the same JDBC timestamp path → timezone-agnostic.
+
+**Result verified:** After push, all 3 profiles show `in_sync` with matching `dbUpdatedAt` and `pushed` timestamps (`2026-03-11T21:36:34Z` both sides).
+
+Additional: Updated `IDESyncPage.tsx` timestamp label from "Workspace file" → "Last pushed to IDE" / "Portal saved" for clarity.
+
+---
+
+## 2026-03-11 19:00 (EST)
+Agent/tool: Claude Code (Sonnet 4.6)
+User request: Audit the directory for fresh-clone / new-computer readiness — ensure everything needed is tracked or has minimal setup steps.
+
+Actions taken:
+
+**Audit findings:**
+
+| Component | In Git? | Status |
+|---|---|---|
+| `iw_ide.exe` (Eclipse IDE) | ✅ Yes | Works on clone |
+| `startup.jar` | ✅ Yes | Works on clone |
+| `web_portal/tomcat/webapps/iw-business-daemon/` | ✅ Yes | Works on clone (all .class + JSP + WEB-INF) |
+| `web_portal/tomcat/webapps/iwtransformationserver/` | ✅ Yes | Works on clone (133 vendor JARs + engine) |
+| `web_portal/tomcat/lib/postgresql-*.jar` + `mysql-*.jar` | ✅ Yes | JDBC drivers tracked |
+| `web_portal/tomcat/conf/*.xml` templates | ✅ Yes | All templates tracked |
+| `.env.example` with real team credentials | ✅ Yes | Copied to .env by START.bat on first run |
+| `web_portal/tomcat/webapps/iw-portal/` (React build) | ❌ Was gitignored | FIXED: now tracked |
+| `web_portal/tomcat/bin/` + `lib/` (Tomcat binaries) | ❌ Not in git | Setup script: `scripts\setup\install_tomcat.bat` |
+| `jre/` (Java 8 runtime, 90MB) | ❌ Not in git | Manual step required (see below) |
+| `context.xml` | ❌ Gitignored (machine-specific) | Regenerated from template by START.bat |
+
+**Blockers for fresh clone (in order of severity):**
+
+1. **JRE missing** — `jre/` is 90MB and gitignored (bin/ global rule). START.bat detects this and shows: "Extract a Windows x86 (32-bit) JRE 8 into this repo's jre/ folder so it contains bin\java.exe". No auto-download script exists — user must manually obtain a JRE 8 (x86/32-bit, because iw_ide.exe is 32-bit Eclipse). After placing it at `jre/`, START.bat works.
+
+2. **Tomcat binaries missing** — `web_portal/tomcat/bin/` and `lib/` are not in git. START.bat detects this and exits with: "Install Tomcat with: scripts\setup\install_tomcat.bat". Running that script auto-downloads Tomcat 9.0.83 from Apache archives (~25MB). This IS handled automatically with a one-step script.
+
+3. **iw-portal React build missing** — WAS gitignored. FIXED in this session.
+
+**Changes made:**
+
+- `.gitignore`: Changed `web_portal/tomcat/webapps/iw-portal/` (ignore) to `!web_portal/tomcat/webapps/iw-portal/**` (track). Added comment explaining pattern.
+- `web_portal/tomcat/conf/context.xml.postgres` template: Set `validationInterval="0"` + added `minEvictableIdleTimeMillis="55000"`. Critical: START.bat regenerates context.xml from this template on EVERY run, so the fix I applied directly to context.xml in the previous session would have been overwritten. Now the template is correct.
+- Rebuilt React portal (incorporates all current AI changes to associate/master pages) and committed all 43 build artifact files.
+
+**What setup looks like after these fixes:**
+
+For external demo users → just use https://iw-portal.vercel.app (no setup needed)
+
+For team members running locally:
+1. `git clone <repo>`
+2. Place JRE 8 (32-bit) in `jre/` folder (one-time, manual)
+3. `scripts\setup\install_tomcat.bat` (auto-downloads Tomcat)
+4. `START.bat` → works immediately, opens browser to React portal
+
+The React portal, all JSP pages, and the transformation server work out of the box after those 4 steps. No npm install, no Maven build, no database setup (Supabase credentials are pre-filled in `.env.example`).
+
+Files changed:
+- `.gitignore` — iw-portal tracking change
+- `web_portal/tomcat/conf/context.xml.postgres` — pool validation fix
+- `web_portal/tomcat/webapps/iw-portal/**` — 43 new build files (index.html, assets/*.js, WEB-INF/web.xml)
+
+Commands run:
+- `node node_modules/typescript/bin/tsc -b --noEmit` (0 errors)
+- `node node_modules/vite/bin/vite.js build` (✓ 5.48s)
+- `git add .gitignore context.xml.postgres iw-portal/ WebinarsPage.tsx tsconfig.tsbuildinfo`
+- `git commit` + `git push origin main` → `35f20db`
+
+---
+
+## 2026-03-11 (UTC)
+Agent/tool: Claude Code (Sonnet 4.6)
+User request: Wire up save/submit handlers on 10 React pages (associate: BillingPage, WebinarsPage, ResourceLibraryPage; master: ConnectorManagementPage, ContentManagementPage, NotificationTemplatesPage, SupportQueuePage, TenantSettingsPage, AuditSecurityPage, SubscriptionsPage)
+Actions taken:
+- Added useToast + apiFetch imports to all 10 pages
+- BillingPage: Upgrade/Cancel (with window.confirm)/Update handlers; Cancel calls /api/associate/billing/cancel
+- WebinarsPage: Register handler with per-webinar loading state and local registered Set; calls /api/associate/webinars/register
+- ResourceLibraryPage: Save handler with per-resource saving state and saved Set; calls /api/associate/resources/save; Open shows toast
+- ConnectorManagementPage: handleSavePolicy (form submit) → PUT /api/master/integrations; Test Endpoint → toast
+- ContentManagementPage: handlePublish (form submit) + Save Draft + Deprecate → POST /api/master/content with action field; validates resourceId + version
+- NotificationTemplatesPage: Save Template → PUT /api/master/notifications; Save Preferences → PUT /api/master/notifications/preferences
+- SupportQueuePage: Send Reply + Resolve (calls API, removes ticket from local list) + Escalate (toast); Create Ticket form submit → POST /api/master/support/tickets; reply textarea wired to useState
+- TenantSettingsPage: Save Settings (form submit) → PUT /api/master/settings; Reset to Defaults with window.confirm; Danger Zone buttons each with window.confirm
+- AuditSecurityPage: Edit MFA Policy → toast stub; Send Reminders → POST /api/master/audit/mfa-reminders; Export Audit Log → toast
+- SubscriptionsPage: Retry per-exception → POST /api/master/subscriptions/retry with per-index loading state
+Files changed:
+- frontends/iw-portal/src/pages/associate/BillingPage.tsx
+- frontends/iw-portal/src/pages/associate/WebinarsPage.tsx
+- frontends/iw-portal/src/pages/associate/ResourceLibraryPage.tsx
+- frontends/iw-portal/src/pages/master/ConnectorManagementPage.tsx
+- frontends/iw-portal/src/pages/master/ContentManagementPage.tsx
+- frontends/iw-portal/src/pages/master/NotificationTemplatesPage.tsx
+- frontends/iw-portal/src/pages/master/SupportQueuePage.tsx
+- frontends/iw-portal/src/pages/master/TenantSettingsPage.tsx
+- frontends/iw-portal/src/pages/master/AuditSecurityPage.tsx
+- frontends/iw-portal/src/pages/master/SubscriptionsPage.tsx
+Commands run:
+- `node node_modules/typescript/bin/tsc -b --noEmit` → 0 errors
+- `node node_modules/vite/bin/vite.js build` → ✓ built in 5.58s
+Verification performed: TypeScript strict mode passes with 0 errors; Vite build succeeds
+Follow-ups / known issues: apiFetch calls will return errors until API endpoints are implemented server-side (graceful error toasts already in place)

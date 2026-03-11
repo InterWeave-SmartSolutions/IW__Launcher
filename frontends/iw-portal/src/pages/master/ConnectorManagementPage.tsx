@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { StatusBadge, inferStatus } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET /api/master/integrations, PUT /api/master/integrations/policy
 const CONNECTORS = [
@@ -16,9 +19,28 @@ const FLOWS   = ["Portal → CRM (Account/Contact)", "Payments → Portal (Subsc
 const VAL_MODES = ["Strict (reject on missing required fields)", "Lenient (default values)"];
 
 export function ConnectorManagementPage() {
+  const { showToast } = useToast();
   const [flow, setFlow] = useState(FLOWS[0]!);
   const [mode, setMode] = useState(VAL_MODES[0]!);
   const [required, setRequired] = useState("email, companyId, subscriptionStatus");
+  const [saving, setSaving] = useState(false);
+
+  const handleSavePolicy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await apiFetch("/api/master/integrations", { method: "PUT", body: JSON.stringify({ flow, mode, required }) });
+      showToast("Mapping policy saved", "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Save failed", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestEndpoint = () => {
+    showToast("Endpoint test queued", "success");
+  };
 
   return (
     <div className="space-y-5">
@@ -29,7 +51,7 @@ export function ConnectorManagementPage() {
         </div>
         <div className="flex gap-2">
           <Button size="sm">+ Add Connector</Button>
-          <Button size="sm" variant="outline">Test Endpoint</Button>
+          <Button size="sm" variant="outline" onClick={handleTestEndpoint}>Test Endpoint</Button>
         </div>
       </div>
 
@@ -56,31 +78,36 @@ export function ConnectorManagementPage() {
       {/* Mapping policy */}
       <section className="glass-panel rounded-[var(--radius)] p-4 max-w-2xl">
         <h2 className="text-sm font-semibold mb-3">Mapping / Validation Policy</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label>Flow</Label>
-            <select value={flow} onChange={(e) => setFlow(e.target.value)}
-              className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none">
-              {FLOWS.map((f) => <option key={f}>{f}</option>)}
-            </select>
+        <form onSubmit={handleSavePolicy}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Flow</Label>
+              <select value={flow} onChange={(e) => setFlow(e.target.value)}
+                className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none">
+                {FLOWS.map((f) => <option key={f}>{f}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Validation Mode</Label>
+              <select value={mode} onChange={(e) => setMode(e.target.value)}
+                className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none">
+                {VAL_MODES.map((m) => <option key={m}>{m}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Required Fields (comma-separated)</Label>
+              <textarea value={required} onChange={(e) => setRequired(e.target.value)} rows={2}
+                className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none resize-none" />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label>Validation Mode</Label>
-            <select value={mode} onChange={(e) => setMode(e.target.value)}
-              className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none">
-              {VAL_MODES.map((m) => <option key={m}>{m}</option>)}
-            </select>
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" type="submit" disabled={saving}>
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+              Save Policy
+            </Button>
+            <Button size="sm" variant="outline" type="button">View Runbook</Button>
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label>Required Fields (comma-separated)</Label>
-            <textarea value={required} onChange={(e) => setRequired(e.target.value)} rows={2}
-              className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none resize-none" />
-          </div>
-        </div>
-        <div className="flex gap-2 mt-3">
-          <Button size="sm">Save Policy</Button>
-          <Button size="sm" variant="outline">View Runbook</Button>
-        </div>
+        </form>
       </section>
     </div>
   );

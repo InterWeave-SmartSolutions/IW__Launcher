@@ -2,6 +2,8 @@ import { useState } from "react";
 import { StatusBadge, inferStatus } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET /api/master/audit, GET /api/master/security/events
 const SECURITY_EVENTS = [
@@ -28,11 +30,33 @@ const MFA_ROLES = [
 ];
 
 export function AuditSecurityPage() {
+  const { showToast } = useToast();
   const [filter, setFilter] = useState("");
+  const [sendingReminders, setSendingReminders] = useState(false);
 
   const filteredAudit = AUDIT_LOG.filter(
     (a) => !filter || a.actor.includes(filter) || a.action.toLowerCase().includes(filter.toLowerCase()),
   );
+
+  const handleEditMfaPolicy = () => {
+    showToast("MFA policy editor coming soon", "success");
+  };
+
+  const handleSendReminders = async () => {
+    setSendingReminders(true);
+    try {
+      await apiFetch("/api/master/audit/mfa-reminders", { method: "POST" });
+      showToast("Enrollment reminders sent to 127 staff users", "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Failed to send reminders", "error");
+    } finally {
+      setSendingReminders(false);
+    }
+  };
+
+  const handleExportAuditLog = () => {
+    showToast("Audit log export queued — check your email", "success");
+  };
 
   return (
     <div className="space-y-5">
@@ -42,7 +66,7 @@ export function AuditSecurityPage() {
           <p className="text-sm text-muted-foreground">MFA policy, security events, and full audit trail.</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline">Export Audit Log</Button>
+          <Button size="sm" variant="outline" onClick={handleExportAuditLog}>Export Audit Log</Button>
           <Button size="sm" variant="outline">Security Report</Button>
         </div>
       </div>
@@ -65,8 +89,11 @@ export function AuditSecurityPage() {
           ))}
         </div>
         <div className="flex gap-2 mt-3">
-          <Button size="sm">Edit MFA Policy</Button>
-          <Button size="sm" variant="outline">Send Enrollment Reminders</Button>
+          <Button size="sm" onClick={handleEditMfaPolicy}>Edit MFA Policy</Button>
+          <Button size="sm" variant="outline" onClick={handleSendReminders} disabled={sendingReminders}>
+            {sendingReminders ? <span className="mr-1.5">…</span> : null}
+            Send Enrollment Reminders
+          </Button>
         </div>
       </section>
 

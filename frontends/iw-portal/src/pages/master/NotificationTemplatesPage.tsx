@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET/PUT /api/master/notifications/templates, GET/PUT /api/master/notifications/preferences
 const TEMPLATES = [
@@ -25,10 +28,37 @@ const PREFS = [
 const CHANNELS = ["Email", "Slack", "In-app"];
 
 export function NotificationTemplatesPage() {
+  const { showToast } = useToast();
   const [selected, setSelected] = useState<string | null>(null);
   const [channel, setChannel] = useState(CHANNELS[0]!);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
 
   const template = TEMPLATES.find((t) => t.id === selected);
+
+  const handleSaveTemplate = async () => {
+    setSavingTemplate(true);
+    try {
+      await apiFetch("/api/master/notifications", { method: "PUT", body: JSON.stringify({ id: selected, channel }) });
+      showToast("Template saved", "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Save failed", "error");
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleSavePreferences = async () => {
+    setSavingPrefs(true);
+    try {
+      await apiFetch("/api/master/notifications/preferences", { method: "PUT", body: JSON.stringify({ prefs: PREFS }) });
+      showToast("Preferences saved", "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Save failed", "error");
+    } finally {
+      setSavingPrefs(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -100,7 +130,10 @@ export function NotificationTemplatesPage() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button size="sm">Save Template</Button>
+                <Button size="sm" onClick={handleSaveTemplate} disabled={savingTemplate}>
+                  {savingTemplate ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                  Save Template
+                </Button>
                 <Button size="sm" variant="outline">Preview</Button>
               </div>
             </div>
@@ -129,7 +162,10 @@ export function NotificationTemplatesPage() {
           ))}
         </div>
         <div className="flex gap-2 mt-3">
-          <Button size="sm">Save Preferences</Button>
+          <Button size="sm" onClick={handleSavePreferences} disabled={savingPrefs}>
+            {savingPrefs ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+            Save Preferences
+          </Button>
         </div>
       </section>
     </div>

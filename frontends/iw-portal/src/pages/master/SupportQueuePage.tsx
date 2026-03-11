@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { StatusBadge, inferStatus } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET /api/master/support/tickets, POST /api/master/support/tickets/:id/reply
-const TICKETS = [
+const INITIAL_TICKETS = [
   { id: "TK-041", subject: "Cannot access webinar replay",  org: "Sunrise Fitness",  category: "Access",   priority: "High",   age: "2h",  status: "Open"       },
   { id: "TK-040", subject: "Billing discrepancy March",     org: "Peaks Wellness",   category: "Billing",  priority: "High",   age: "5h",  status: "In-progress" },
   { id: "TK-039", subject: "Resource search not returning", org: "Momentum Fit",     category: "Content",  priority: "Medium", age: "1d",  status: "Open"        },
@@ -17,16 +20,72 @@ const CATEGORIES = ["Access", "Billing", "Content", "Users", "Platform", "Integr
 const PRIORITIES  = ["Low", "Medium", "High", "Critical"];
 
 export function SupportQueuePage() {
+  const { showToast } = useToast();
+  const [tickets, setTickets] = useState(INITIAL_TICKETS);
   const [selected, setSelected] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [replying, setReplying] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ category: CATEGORIES[0]!, priority: PRIORITIES[1]!, message: "" });
   const set = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const ticket = TICKETS.find((t) => t.id === selected);
+  const ticket = tickets.find((t) => t.id === selected);
 
   const priorityStatus = (p: string) =>
     p === "Critical" || p === "High" ? "bad" : p === "Medium" ? "warn" : "neutral";
+
+  const handleSendReply = async () => {
+    setReplying(true);
+    try {
+      await apiFetch("/api/master/support/tickets/reply", {
+        method: "POST",
+        body: JSON.stringify({ ticketId: selected, message: replyText }),
+      });
+      showToast("Reply sent", "success");
+      setReplyText("");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Reply failed", "error");
+    } finally {
+      setReplying(false);
+    }
+  };
+
+  const handleEscalate = () => {
+    showToast("Ticket escalated", "success");
+  };
+
+  const handleResolve = async () => {
+    setReplying(true);
+    try {
+      await apiFetch("/api/master/support/tickets/resolve", {
+        method: "POST",
+        body: JSON.stringify({ ticketId: selected }),
+      });
+      showToast("Ticket resolved", "success");
+      setTickets((prev) => prev.filter((t) => t.id !== selected));
+      setSelected(null);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Resolve failed", "error");
+    } finally {
+      setReplying(false);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    try {
+      await apiFetch("/api/master/support/tickets", { method: "POST", body: JSON.stringify(form) });
+      showToast("Ticket TK-042 created", "success");
+      setForm({ category: CATEGORIES[0]!, priority: PRIORITIES[1]!, message: "" });
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Create failed", "error");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -49,7 +108,7 @@ export function SupportQueuePage() {
             <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-2 px-4 py-2 text-xs text-muted-foreground bg-[hsl(var(--muted)/0.3)]">
               <span>ID</span><span>Subject / Org</span><span>Cat.</span><span>Pri.</span><span>Age</span><span>Status</span>
             </div>
-            {TICKETS.map((t) => (
+            {tickets.map((t) => (
               <div
                 key={t.id}
                 onClick={() => setSelected(t.id === selected ? null : t.id)}
@@ -87,14 +146,19 @@ export function SupportQueuePage() {
                 <Label>Reply</Label>
                 <textarea
                   rows={4}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Type your reply…"
                   className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none resize-none"
                 />
               </div>
               <div className="flex gap-2">
-                <Button size="sm">Send Reply</Button>
-                <Button size="sm" variant="outline">Escalate</Button>
-                <Button size="sm" variant="outline">Resolve</Button>
+                <Button size="sm" onClick={handleSendReply} disabled={replying}>
+                  {replying ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                  Send Reply
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleEscalate} disabled={replying}>Escalate</Button>
+                <Button size="sm" variant="outline" onClick={handleResolve} disabled={replying}>Resolve</Button>
               </div>
             </section>
           ) : (
@@ -106,7 +170,7 @@ export function SupportQueuePage() {
           {/* Intake form */}
           <section className="glass-panel rounded-[var(--radius)] p-4">
             <h2 className="text-sm font-semibold mb-3">Create Ticket (on behalf of org)</h2>
-            <div className="space-y-3">
+            <form onSubmit={handleCreate} className="space-y-3">
               <div className="space-y-1.5">
                 <Label>Category</Label>
                 <select value={form.category} onChange={set("category")}
@@ -127,8 +191,11 @@ export function SupportQueuePage() {
                   placeholder="Describe the issue…"
                   className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none resize-none" />
               </div>
-              <Button size="sm">Create Ticket</Button>
-            </div>
+              <Button size="sm" type="submit" disabled={creating}>
+                {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                Create Ticket
+              </Button>
+            </form>
           </section>
         </div>
       </div>

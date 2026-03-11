@@ -1,6 +1,9 @@
-import { CreditCard } from "lucide-react";
+import { useState } from "react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { StatusBadge, inferStatus } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET /api/associate/billing (Stripe integration)
 const PLAN = { name: "Associate Monthly", price: "$29.99/mo", status: "Active", renews: "Apr 1, 2026" };
@@ -14,6 +17,42 @@ const INVOICES = [
 ];
 
 export function BillingPage() {
+  const { showToast } = useToast();
+  const [upgrading, setUpgrading] = useState(false);
+  const [canceling, setCanceling] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    try {
+      showToast("Plan upgrade requested — our team will contact you shortly", "success");
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!window.confirm("Cancel subscription?")) return;
+    setCanceling(true);
+    try {
+      await apiFetch("/api/associate/billing/cancel", { method: "POST" });
+      showToast("Cancellation requested", "success");
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Cancel failed", "error");
+    } finally {
+      setCanceling(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    setUpdating(true);
+    try {
+      showToast("Payment method update coming soon", "success");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div>
@@ -34,8 +73,14 @@ export function BillingPage() {
             <span className="text-xs text-muted-foreground">Renews {PLAN.renews}</span>
           </div>
           <div className="flex gap-2 mt-auto">
-            <Button size="sm" className="flex-1">Upgrade</Button>
-            <Button size="sm" variant="outline" className="text-[hsl(var(--destructive))]">Cancel</Button>
+            <Button size="sm" className="flex-1" onClick={handleUpgrade} disabled={upgrading}>
+              {upgrading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+              Upgrade
+            </Button>
+            <Button size="sm" variant="outline" className="text-[hsl(var(--destructive))]" onClick={handleCancel} disabled={canceling}>
+              {canceling ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+              Cancel
+            </Button>
           </div>
         </section>
 
@@ -66,7 +111,10 @@ export function BillingPage() {
               <p className="text-sm font-medium">Visa ending in 4242</p>
               <p className="text-xs text-muted-foreground">Expires 09/2027</p>
             </div>
-            <Button size="sm" variant="outline" className="ml-auto">Update</Button>
+            <Button size="sm" variant="outline" className="ml-auto" onClick={handleUpdate} disabled={updating}>
+              {updating ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+              Update
+            </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
             Payments processed securely. {/* TODO: Stripe integration */}

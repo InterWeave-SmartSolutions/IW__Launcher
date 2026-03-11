@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { StatusBadge, inferStatus } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/providers/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 // TODO: wire to GET/POST /api/master/content
 const RESOURCES = [
@@ -14,11 +17,42 @@ const RESOURCES = [
 ];
 
 const RELEASE_MODES = ["Immediate", "Scheduled"];
+const EMPTY_FORM = { resourceId: "", version: "", mode: RELEASE_MODES[0]!, date: "", notes: "" };
 
 export function ContentManagementPage() {
-  const [form, setForm] = useState({ resourceId: "", version: "", mode: RELEASE_MODES[0]!, date: "", notes: "" });
+  const { showToast } = useToast();
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const submitContent = async (action: "publish" | "draft" | "deprecate") => {
+    if (action !== "deprecate" && (!form.resourceId || !form.version)) {
+      showToast("Resource ID and version are required", "error");
+      return;
+    }
+    setSaving(true);
+    try {
+      await apiFetch("/api/master/content", { method: "POST", body: JSON.stringify({ ...form, action }) });
+      if (action === "publish") {
+        showToast("Resource published", "success");
+        setForm(EMPTY_FORM);
+      } else if (action === "draft") {
+        showToast("Draft saved", "success");
+      } else {
+        showToast("Resource deprecated", "success");
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Operation failed", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePublish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitContent("publish");
+  };
 
   return (
     <div className="space-y-5">
@@ -58,40 +92,49 @@ export function ContentManagementPage() {
       {/* Publish workflow */}
       <section className="glass-panel rounded-[var(--radius)] p-4 max-w-2xl">
         <h2 className="text-sm font-semibold mb-3">Publish / Version Workflow</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label>Resource ID</Label>
-            <Input value={form.resourceId} onChange={set("resourceId")} placeholder="R-101" />
-          </div>
-          <div className="space-y-1.5">
-            <Label>New Version</Label>
-            <Input value={form.version} onChange={set("version")} placeholder="3.1" />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Release Mode</Label>
-            <select value={form.mode} onChange={set("mode")}
-              className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none">
-              {RELEASE_MODES.map((m) => <option key={m}>{m}</option>)}
-            </select>
-          </div>
-          {form.mode === "Scheduled" && (
+        <form onSubmit={handlePublish}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Release Date</Label>
-              <Input value={form.date} onChange={set("date")} type="date" />
+              <Label>Resource ID</Label>
+              <Input value={form.resourceId} onChange={set("resourceId")} placeholder="R-101" />
             </div>
-          )}
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label>Release Notes</Label>
-            <textarea value={form.notes} onChange={set("notes")} rows={3}
-              placeholder="What changed in this version…"
-              className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none resize-vertical" />
+            <div className="space-y-1.5">
+              <Label>New Version</Label>
+              <Input value={form.version} onChange={set("version")} placeholder="3.1" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Release Mode</Label>
+              <select value={form.mode} onChange={set("mode")}
+                className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none">
+                {RELEASE_MODES.map((m) => <option key={m}>{m}</option>)}
+              </select>
+            </div>
+            {form.mode === "Scheduled" && (
+              <div className="space-y-1.5">
+                <Label>Release Date</Label>
+                <Input value={form.date} onChange={set("date")} type="date" />
+              </div>
+            )}
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Release Notes</Label>
+              <textarea value={form.notes} onChange={set("notes")} rows={3}
+                placeholder="What changed in this version…"
+                className="w-full bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-sm rounded-[var(--radius)] px-3 py-2 text-foreground outline-none resize-vertical" />
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2 mt-3">
-          <Button size="sm">Publish</Button>
-          <Button size="sm" variant="outline">Save Draft</Button>
-          <Button size="sm" variant="outline" className="text-[hsl(var(--destructive))]">Deprecate</Button>
-        </div>
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" type="submit" disabled={saving}>
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+              Publish
+            </Button>
+            <Button size="sm" variant="outline" type="button" disabled={saving} onClick={() => submitContent("draft")}>
+              Save Draft
+            </Button>
+            <Button size="sm" variant="outline" type="button" className="text-[hsl(var(--destructive))]" disabled={saving} onClick={() => submitContent("deprecate")}>
+              Deprecate
+            </Button>
+          </div>
+        </form>
       </section>
     </div>
   );
