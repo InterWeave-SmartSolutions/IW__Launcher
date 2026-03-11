@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/iw-business-daemon/:path*",
-      "destination": "https://iw-portal-demo.loca.lt/iw-business-daemon/:path*"
+      "destination": "https://genetics-paso-enable-mechanical.trycloudflare.com/iw-business-daemon/:path*"
     },
     {
       "source": "/(.*)",
