@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IW Master Console — Settings</title>
+<link rel="stylesheet" href="../assets/css/styles.css"></head>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+  	<img src="../assets/images/iw_icon.png" alt="IW Portal Logo">
+</div>
+        <div>
+          <h1>IW Associate Program</h1>
+          <div class="sub">Master Console</div>
+        </div>
+      </div>
+      <div class="pill">Environment: <b>Staging</b> • Build: <span class="muted">2026-02-06</span></div>
+      
+      <div class="nav">
+        <a href="/iw_master_console/index.html">🏠 <span>Dashboard</span></a>
+        <a href="users.html">👤 <span>Users & Roles</span></a>
+        <a href="content.html">📚 <span>Content Library</span></a>
+        <a href="subscriptions.html">💳 <span>Subscriptions</span></a>
+        <a href="integrations.html">🔌 <span>Integrations</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="analytics.html">📈 <span>Analytics</span></a>
+        <a href="audit.html">🧾 <span>Audit & Security</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="settings.html">⚙️ <span>Settings</span></a>
+      </div>
+    
+      <footer>
+        <div>InterWeave SmartSolutions • Internal Console</div>
+        <div class="muted">Role-aware UX • Audit-first design</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search users, content, subscriptions, integrations…" />
+        </div>
+        <div class="pill">Tenant: <b>IW</b></div>
+        <div class="pill">Admin: <b>Program Ops</b></div>
+      </div>
+
+      
+<div class="flex between">
+  <div>
+    <h1 style="margin:0;font-size:22px">Settings</h1>
+    <div class="muted">Tenant configuration: branding, domains, release policies, and retention.</div>
+  </div>
+  <div class="flex">
+    <button class="btn primary">Save Changes</button>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Tenant</h2>
+  <hr class="sep"/>
+  <div class="form">
+    <div class="field"><label>Tenant Name</label><input value="IW Associate Program" /></div>
+    <div class="field"><label>Primary Domain</label><input value="associates.interweave.biz" /></div>
+    <div class="field"><label>Default Timezone</label><input value="America/New_York" /></div>
+    <div class="field"><label>Data Retention (Audit)</label><input value="365 days" /></div>
+    <div class="field full"><label>Notes</label><textarea>Prototype tenant settings for portal + integration hub governance.</textarea></div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Release Policy</h2>
+  <div class="muted">Controls content publication and deprecation behavior.</div>
+  <hr class="sep"/>
+  <table class="table">
+    <thead><tr><th>Policy</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td><b>Review Required</b></td><td>Partner Admin</td></tr>
+      <tr><td><b>Scheduled Release Window</b></td><td>00:00–06:00 ET</td></tr>
+      <tr><td><b>Deprecated Content Visibility</b></td><td>Hidden (direct URL blocked)</td></tr>
+      <tr><td><b>Download Protection</b></td><td>Login required, expiring links</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Prototype console HTML (static). Wire to APIs: /api/* (placeholder).</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

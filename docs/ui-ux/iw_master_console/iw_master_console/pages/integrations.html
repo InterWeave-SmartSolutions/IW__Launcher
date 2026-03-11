@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IW Master Console — Integrations</title>
+<link rel="stylesheet" href="../assets/css/styles.css"></head>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+                <div class="brand-logo">
+  	<img src="../assets/images/iw_icon.png" alt="IW Portal Logo"></div>
+        <div>
+          <h1>IW Associate Program</h1>
+          <div class="sub">Master Console</div>
+        </div>
+      </div>
+      <div class="pill">Environment: <b>Staging</b> • Build: <span class="muted">2026-02-06</span></div>
+      
+      <div class="nav">
+        <a href="/iw_master_console/index.html">🏠 <span>Dashboard</span></a>
+        <a href="users.html">👤 <span>Users & Roles</span></a>
+        <a href="content.html">📚 <span>Content Library</span></a>
+        <a href="subscriptions.html">💳 <span>Subscriptions</span></a>
+        <a href="integrations.html">🔌 <span>Integrations</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="analytics.html">📈 <span>Analytics</span></a>
+        <a href="audit.html">🧾 <span>Audit & Security</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="settings.html">⚙️ <span>Settings</span></a>
+      </div>
+    
+      <footer>
+        <div>InterWeave SmartSolutions • Internal Console</div>
+        <div class="muted">Role-aware UX • Audit-first design</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search users, content, subscriptions, integrations…" />
+        </div>
+        <div class="pill">Tenant: <b>IW</b></div>
+        <div class="pill">Admin: <b>Program Ops</b></div>
+      </div>
+
+      
+<div class="flex between">
+  <div>
+    <h1 style="margin:0;font-size:22px">Integrations</h1>
+    <div class="muted">Integration Hub connectors, mappings, retries, and observability.</div>
+  </div>
+  <div class="flex">
+    <button class="btn primary">➕ Add Connector</button>
+    <button class="btn">🧪 Test Endpoint</button>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div class="flex between">
+    <h2 style="margin:0">Connector Inventory</h2>
+    <span class="muted">Hub-and-spoke (no point-to-point).</span>
+  </div>
+  <hr class="sep"/>
+  <table class="table">
+    <thead>
+      <tr><th>Connector</th><th>System</th><th>Auth</th><th>Direction</th><th>Last Sync</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><b>CRM</b></td><td>Salesforce</td><td class="muted">OAuth 2.0</td><td>Bi-directional</td><td class="muted">2026-02-06 09:08</td><td><span class="status"><span class="dot warn"></span> Slow</span></td></tr>
+      <tr><td><b>Payments</b></td><td>Stripe</td><td class="muted">API Key + Webhooks</td><td>Inbound events</td><td class="muted">2026-02-06 09:14</td><td><span class="status"><span class="dot ok"></span> OK</span></td></tr>
+      <tr><td><b>Payments</b></td><td>Authorize.net</td><td class="muted">API Login/Txn Key</td><td>Inbound events</td><td class="muted">2026-02-05 23:02</td><td><span class="status"><span class="dot ok"></span> OK</span></td></tr>
+      <tr><td><b>Scheduling</b></td><td>Mindbody</td><td class="muted">OAuth 2.0</td><td>Optional</td><td class="muted">—</td><td><span class="status"><span class="dot warn"></span> Not configured</span></td></tr>
+      <tr><td><b>Scheduling</b></td><td>LeagueApps</td><td class="muted">API Token</td><td>Optional</td><td class="muted">—</td><td><span class="status"><span class="dot warn"></span> Not configured</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Mapping / Validation Policy</h2>
+  <div class="muted">Enforce schema validation before upsert (prevents bad data and broken workflows).</div>
+  <hr class="sep"/>
+  <div class="form">
+    <div class="field"><label>Flow</label>
+      <select>
+        <option selected>Portal → CRM (Account/Contact)</option>
+        <option>Payments → Portal (Subscription Status)</option>
+        <option>Portal → Scheduling (Registrations)</option>
+      </select>
+    </div>
+    <div class="field"><label>Validation Mode</label>
+      <select>
+        <option selected>Strict (reject on missing required fields)</option>
+        <option>Lenient (default values)</option>
+      </select>
+    </div>
+    <div class="field full"><label>Required Fields</label>
+      <textarea>Account.Name
+Contact.Email
+Subscription.Status
+Role</textarea>
+    </div>
+  </div>
+  <div class="flex" style="margin-top:10px">
+    <button class="btn primary">Save Policy</button>
+    <button class="btn">View Runbook</button>
+  </div>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Prototype console HTML (static). Wire to APIs: /api/* (placeholder).</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

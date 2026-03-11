@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IW Master Console — Notifications</title>
+<link rel="stylesheet" href="../assets/css/styles.css"></head>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+                <div class="brand-logo">
+  	<img src="../assets/images/iw_icon.png" alt="IW Portal Logo"></div>
+        <div>
+          <h1>IW Associate Program</h1>
+          <div class="sub">Master Console</div>
+        </div>
+      </div>
+      <div class="pill">Environment: <b>Staging</b> • Build: <span class="muted">2026-02-06</span></div>
+      
+      <div class="nav">
+        <a href="/iw_master_console/index.html">🏠 <span>Dashboard</span></a>
+        <a href="users.html">👤 <span>Users & Roles</span></a>
+        <a href="content.html">📚 <span>Content Library</span></a>
+        <a href="subscriptions.html">💳 <span>Subscriptions</span></a>
+        <a href="integrations.html">🔌 <span>Integrations</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="analytics.html">📈 <span>Analytics</span></a>
+        <a href="audit.html">🧾 <span>Audit & Security</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="settings.html">⚙️ <span>Settings</span></a>
+      </div>
+    
+      <footer>
+        <div>InterWeave SmartSolutions • Internal Console</div>
+        <div class="muted">Role-aware UX • Audit-first design</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search users, content, subscriptions, integrations…" />
+        </div>
+        <div class="pill">Tenant: <b>IW</b></div>
+        <div class="pill">Admin: <b>Program Ops</b></div>
+      </div>
+
+      
+<div class="flex between">
+  <div>
+    <h1 style="margin:0;font-size:22px">Notifications</h1>
+    <div class="muted">Event-driven alerts: new content, payment status, webinar reminders, support responses.</div>
+  </div>
+  <div class="flex">
+    <button class="btn primary">➕ New Template</button>
+    <button class="btn">🧪 Send Test</button>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Notification Templates</h2>
+  <div class="muted">Channel selection and role-aware routing.</div>
+  <hr class="sep"/>
+  <table class="table">
+    <thead><tr><th>Event</th><th>Audience</th><th>Channels</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><b>New Resource Published</b></td><td class="muted">Role-matched</td><td>In-portal, Email</td><td><span class="status"><span class="dot ok"></span> Enabled</span></td></tr>
+      <tr><td><b>Payment Past-due</b></td><td class="muted">Owner/Admin</td><td>Email</td><td><span class="status"><span class="dot ok"></span> Enabled</span></td></tr>
+      <tr><td><b>Webinar Reminder</b></td><td class="muted">Registered users</td><td>Email</td><td><span class="status"><span class="dot warn"></span> Draft</span></td></tr>
+      <tr><td><b>Support Reply</b></td><td class="muted">Requestor</td><td>In-portal, Email</td><td><span class="status"><span class="dot ok"></span> Enabled</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Preference Center</h2>
+  <div class="muted">Per-role defaults with user overrides (opt-in/opt-out).</div>
+  <hr class="sep"/>
+  <table class="table">
+    <thead><tr><th>Role</th><th>Default Channels</th><th>Mandatory</th></tr></thead>
+    <tbody>
+      <tr><td><b>Owner</b></td><td>Email + In-portal</td><td class="muted">Payment alerts</td></tr>
+      <tr><td><b>Coach</b></td><td>In-portal</td><td class="muted">None</td></tr>
+      <tr><td><b>Partner Admin</b></td><td>Email + In-portal</td><td class="muted">Security alerts</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Prototype console HTML (static). Wire to APIs: /api/* (placeholder).</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

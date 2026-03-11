@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IW Master Console — Analytics</title>
+<link rel="stylesheet" href="../assets/css/styles.css"></head>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+                <div class="brand-logo">
+  	<img src="../assets/images/assa_icon.png" alt="IW Portal Logo"></div>
+        <div>
+          <h1>IW Associate Program</h1>
+          <div class="sub">Master Console</div>
+        </div>
+      </div>
+      <div class="pill">Environment: <b>Staging</b> • Build: <span class="muted">2026-02-06</span></div>
+      
+      <div class="nav">
+        <a href="/iw_master_console/index.html">🏠 <span>Dashboard</span></a>
+        <a href="users.html">👤 <span>Users & Roles</span></a>
+        <a href="content.html">📚 <span>Content Library</span></a>
+        <a href="subscriptions.html">💳 <span>Subscriptions</span></a>
+        <a href="integrations.html">🔌 <span>Integrations</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="analytics.html">📈 <span>Analytics</span></a>
+        <a href="audit.html">🧾 <span>Audit & Security</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="settings.html">⚙️ <span>Settings</span></a>
+      </div>
+    
+      <footer>
+        <div>InterWeave SmartSolutions • Internal Console</div>
+        <div class="muted">Role-aware UX • Audit-first design</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search users, content, subscriptions, integrations…" />
+        </div>
+        <div class="pill">Tenant: <b>IW</b></div>
+        <div class="pill">Admin: <b>Program Ops</b></div>
+      </div>
+
+      
+<div class="flex between">
+  <div>
+    <h1 style="margin:0;font-size:22px">Analytics</h1>
+    <div class="muted">Adoption, engagement, and demand signals from search and content usage.</div>
+  </div>
+  <div class="flex">
+    <button class="btn">📤 Export CSV</button>
+    <button class="btn primary">📌 Save Report</button>
+  </div>
+</div>
+
+<div class="grid cards" style="margin-top:14px">
+  <section class="card span-6">
+    <h2>Top Content (7d)</h2>
+    <table class="table" style="margin-top:10px">
+      <thead><tr><th>Resource</th><th>Views</th><th>Saves</th><th>Completion</th></tr></thead>
+      <tbody>
+        <tr><td><b>Operations Checklist</b></td><td>2,104</td><td>411</td><td>74%</td></tr>
+        <tr><td><b>Recruiting Playbook</b></td><td>1,822</td><td>387</td><td>69%</td></tr>
+        <tr><td><b>Webinar: Social Growth</b></td><td>1,502</td><td>201</td><td>58%</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card span-6">
+    <h2>Search Demand Signals</h2>
+    <div class="muted">Use synonyms mapping to improve discovery.</div>
+    <hr class="sep"/>
+    <table class="table">
+      <thead><tr><th>Query</th><th>Count</th><th>Zero Results</th></tr></thead>
+      <tbody>
+        <tr><td><b>recruiting</b></td><td>382</td><td>0%</td></tr>
+        <tr><td><b>staffing</b></td><td>241</td><td>2%</td></tr>
+        <tr><td><b>pricing</b></td><td>198</td><td>6%</td></tr>
+        <tr><td><b>social media</b></td><td>177</td><td>1%</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card span-12">
+    <h2>Engagement Funnel</h2>
+    <div class="muted">Login → Search/Browse → Open Resource → Save → Complete → Support Request (optional)</div>
+    <hr class="sep"/>
+    <table class="table">
+      <thead><tr><th>Step</th><th>Users</th><th>Conversion</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><b>Login</b></td><td>1,284</td><td>—</td><td class="muted">Active subscribers</td></tr>
+        <tr><td><b>Search/Browse</b></td><td>1,041</td><td>81%</td><td class="muted">Discovery engaged</td></tr>
+        <tr><td><b>Open Resource</b></td><td>912</td><td>70%</td><td class="muted">Resource views</td></tr>
+        <tr><td><b>Save Resource</b></td><td>501</td><td>39%</td><td class="muted">Retention indicator</td></tr>
+        <tr><td><b>Complete</b></td><td>373</td><td>29%</td><td class="muted">Completion proxy</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Prototype console HTML (static). Wire to APIs: /api/* (placeholder).</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

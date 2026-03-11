@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IW Master Console — Subscriptions</title>
+<link rel="stylesheet" href="../assets/css/styles.css"></head>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+  	<img src="../assets/images/iw_icon.png" alt="IW Portal Logo">
+</div>
+        <div>
+          <h1>IW Associate Program</h1>
+          <div class="sub">Master Console</div>
+        </div>
+      </div>
+      <div class="pill">Environment: <b>Staging</b> • Build: <span class="muted">2026-02-06</span></div>
+      
+      <div class="nav">
+        <a href="/iw_master_console/index.html">🏠 <span>Dashboard</span></a>
+        <a href="users.html">👤 <span>Users & Roles</span></a>
+        <a href="content.html">📚 <span>Content Library</span></a>
+        <a href="subscriptions.html">💳 <span>Subscriptions</span></a>
+        <a href="integrations.html">🔌 <span>Integrations</span></a>
+        <a href="notifications.html">🔔 <span>Notifications</span></a>
+        <a href="analytics.html">📈 <span>Analytics</span></a>
+        <a href="audit.html">🧾 <span>Audit & Security</span></a>
+        <a href="support.html">🛟 <span>Support</span></a>
+        <a href="settings.html">⚙️ <span>Settings</span></a>
+      </div>
+    
+      <footer>
+        <div>InterWeave SmartSolutions • Internal Console</div>
+        <div class="muted">Role-aware UX • Audit-first design</div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          🔎 <input placeholder="Search users, content, subscriptions, integrations…" />
+        </div>
+        <div class="pill">Tenant: <b>IW</b></div>
+        <div class="pill">Admin: <b>Program Ops</b></div>
+      </div>
+
+      
+<div class="flex between">
+  <div>
+    <h1 style="margin:0;font-size:22px">Subscriptions & Payments</h1>
+    <div class="muted">Recurring billing, tokenized payments, status enforcement for portal entitlements.</div>
+  </div>
+  <div class="flex">
+    <button class="btn primary">➕ Create Plan</button>
+    <button class="btn">🧾 Export Reconciliation</button>
+  </div>
+</div>
+
+<div class="grid cards" style="margin-top:14px">
+  <section class="card span-4">
+    <h2>Plans</h2>
+    <div class="muted">Starter • Pro • Enterprise (placeholder)</div>
+    <hr class="sep"/>
+    <table class="table">
+      <thead><tr><th>Plan</th><th>Price</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><b>Associate Monthly</b></td><td>$29.99</td><td><span class="status"><span class="dot ok"></span> Active</span></td></tr>
+        <tr><td><b>Associate Annual</b></td><td>$299.00</td><td><span class="status"><span class="dot ok"></span> Active</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card span-8">
+    <div class="flex between">
+      <h2 style="margin:0">Payment Exceptions</h2>
+      <span class="muted">Auto-retry policy + grace period enforcement.</span>
+    </div>
+    <hr class="sep"/>
+    <table class="table">
+      <thead>
+        <tr><th>Subscription</th><th>Customer</th><th>Gateway</th><th>Last Attempt</th><th>Next Retry</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SUB-009182</td>
+          <td class="muted">InterWeave • West</td>
+          <td>Stripe</td>
+          <td class="muted">2026-02-06 09:14</td>
+          <td class="muted">2026-02-06 15:14</td>
+          <td><span class="status"><span class="dot warn"></span> Past-due</span></td>
+          <td><button class="btn">Retry</button></td>
+        </tr>
+        <tr>
+          <td>SUB-009011</td>
+          <td class="muted">Acme • South</td>
+          <td>Authorize.net</td>
+          <td class="muted">2026-02-05 23:02</td>
+          <td class="muted">2026-02-06 11:02</td>
+          <td><span class="status"><span class="dot warn"></span> Past-due</span></td>
+          <td><button class="btn">Retry</button></td>
+        </tr>
+        <tr>
+          <td>SUB-008772</td>
+          <td class="muted">Acme Inc. • North</td>
+          <td>Stripe</td>
+          <td class="muted">2026-02-04 10:31</td>
+          <td class="muted">—</td>
+          <td><span class="status"><span class="dot bad"></span> Canceled</span></td>
+          <td><button class="btn danger">Lock Access</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>Entitlement Enforcement</h2>
+  <div class="muted">Subscription state drives login access + content visibility.</div>
+  <hr class="sep"/>
+  <table class="table">
+    <thead><tr><th>State</th><th>Portal Access</th><th>Content</th><th>Notifications</th></tr></thead>
+    <tbody>
+      <tr><td><b>Active</b></td><td>Allowed</td><td>Allowed</td><td>Normal</td></tr>
+      <tr><td><b>Past-due (Grace)</b></td><td>Allowed</td><td>Allowed (limited)</td><td>Payment reminders</td></tr>
+      <tr><td><b>Delinquent</b></td><td>Blocked</td><td>Blocked</td><td>Final notice</td></tr>
+      <tr><td><b>Canceled</b></td><td>Blocked</td><td>Blocked</td><td>Win-back optional</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+      <footer>
+        <hr class="sep"/>
+        <div class="muted">Prototype console HTML (static). Wire to APIs: /api/* (placeholder).</div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>
