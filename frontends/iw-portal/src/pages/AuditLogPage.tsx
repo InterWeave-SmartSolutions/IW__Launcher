@@ -63,33 +63,33 @@ function getActionBadgeConfig(actionType: string): ActionBadgeConfig {
     case "login_failed":
       return {
         variant: "default",
-        className: "bg-blue-500/15 text-blue-400",
+        className: "bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))]",
       };
     case "profile_update":
     case "password_change":
     case "company_update":
       return {
         variant: "warning",
-        className: "bg-amber-500/15 text-amber-400",
+        className: "bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))]",
       };
     case "flow_start":
     case "flow_stop":
     case "flow_config_change":
       return {
         variant: "success",
-        className: "bg-emerald-500/15 text-emerald-400",
+        className: "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]",
       };
     case "config_change":
     case "admin_action":
       return {
         variant: "secondary",
-        className: "bg-purple-500/15 text-purple-400",
+        className: "bg-[hsl(var(--accent)/0.15)] text-[hsl(var(--accent-foreground))]",
       };
     case "user_register":
     case "company_register":
       return {
         variant: "outline",
-        className: "bg-teal-500/15 text-teal-400",
+        className: "bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]",
       };
     case "mfa_enable":
     case "mfa_disable":
@@ -99,7 +99,7 @@ function getActionBadgeConfig(actionType: string): ActionBadgeConfig {
     case "alert_delete":
       return {
         variant: "destructive",
-        className: "bg-red-500/15 text-red-400",
+        className: "bg-[hsl(var(--destructive)/0.15)] text-[hsl(var(--destructive))]",
       };
     default:
       return {

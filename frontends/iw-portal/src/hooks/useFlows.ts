@@ -113,6 +113,18 @@ export function useSaveFlowProperties() {
   });
 }
 
+export function useInitializeProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ success: boolean; message: string; flowCount: number; queryCount: number }>(
+        "/api/flows/initialize",
+        { method: "POST", body: "{}" }
+      ),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["engine-flows"] }),
+  });
+}
+
 export function useSubmitFlows() {
   return useMutation({
     mutationFn: () =>

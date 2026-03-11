@@ -72,6 +72,10 @@ public final class WorkspaceProfileCompiler {
         ensureDir(new File(new File(generatedRoot, "configuration"), "ts"));
         ensureDir(new File(new File(generatedRoot, "configuration"), "profile"));
         ensureDir(new File(new File(generatedRoot, "xslt"), "Site\\new\\xml"));
+        ensureDir(new File(new File(generatedRoot, "xslt"), "Site\\new\\include"));
+        ensureDir(new File(new File(generatedRoot, "xslt"), "include"));
+        ensureDir(new File(new File(new File(generatedRoot, "xslt"), "Site"), "include"));
+        ensureDir(new File(generatedRoot, "classes\\iwtransformationserver"));
 
         writeUtf8(new File(generatedRoot, ".project"), createProjectXml(safeProfile));
         writeUtf8(new File(generatedRoot, "README.md"), createReadme(profileName, solutionType, mappedProject, templateProject));
@@ -108,6 +112,31 @@ public final class WorkspaceProfileCompiler {
         copyIfPresent(templateTransactionsXml, outTransactionsXml);
         writeUtf8(outSelectionXml, buildSelectionXml(selection));
         copyIfPresent(templateTransactionsXslt, outTransactionsXslt);
+
+        // Generate dataconnections.xslt with credentials populated from wizard config
+        File outDataConnections = new File(new File(new File(generatedRoot, "xslt"), "include"), "dataconnections.xslt");
+        writeUtf8(outDataConnections, buildDataConnectionsXslt(solutionType, profileValues));
+
+        // Copy appconstants.xslt from template (session variable definitions)
+        File templateAppConstants = new File(new File(new File(new File(templateProjectRoot, "xslt"), "Site"), "include"), "appconstants.xslt");
+        File outAppConstants = new File(new File(new File(new File(generatedRoot, "xslt"), "Site"), "include"), "appconstants.xslt");
+        copyIfPresent(templateAppConstants, outAppConstants);
+
+        // Copy sitetran.xslt from template (shared site-level transactions: index, session)
+        File templateSitetran = new File(new File(new File(new File(templateProjectRoot, "xslt"), "Site"), "include"), "sitetran.xslt");
+        File outSitetran = new File(new File(new File(new File(generatedRoot, "xslt"), "Site"), "include"), "sitetran.xslt");
+        copyIfPresent(templateSitetran, outSitetran);
+
+        // Copy soltran.xslt from template (solution-specific transaction definitions)
+        File templateSoltran = new File(new File(new File(new File(new File(templateProjectRoot, "xslt"), "Site"), "new"), "include"), "soltran.xslt");
+        File outSoltran = new File(new File(new File(new File(new File(generatedRoot, "xslt"), "Site"), "new"), "include"), "soltran.xslt");
+        copyIfPresent(templateSoltran, outSoltran);
+
+        // Copy individual transformer XSLT files from template (field mapping definitions)
+        copyXsltTransformers(templateProjectRoot, generatedRoot);
+
+        // Copy compiled transformer classes from template (XSLTC-compiled bytecode)
+        copyTransformerClasses(templateProjectRoot, generatedRoot);
 
         return new CompileResult(profileName, solutionType, templateProject, mappedProject,
             relativize(repoRoot, generatedRoot), relativize(repoRoot, outIm));
@@ -277,12 +306,141 @@ public final class WorkspaceProfileCompiler {
         sb.append("</").append(tagName).append("Set>");
     }
 
+    /**
+     * Build a populated dataconnections.xslt from wizard config values.
+     * Maps wizard fields (SFIntUsr, SFPswd, QDSN0, QBIntUsr0, QBPswd0)
+     * to the XSLT connection params (iwurl, iwuser, password, msurl, msuser, mspassword)
+     * that the IDE's ConnectionView and engine runtime expect.
+     */
+    private static String buildDataConnectionsXslt(String solutionType, ProfileValues values) {
+        // Determine source URL from sandbox setting
+        boolean sandbox = "yes".equalsIgnoreCase(values.get("SandBoxUsed"));
+        String sourceUrl;
+        String normalized = trim(solutionType).toUpperCase();
+        if (normalized.startsWith("CRM2QB") || normalized.startsWith("CREATIO")) {
+            // Creatio source — use CRM endpoint URL if available
+            sourceUrl = values.has("CRMUrl") ? values.get("CRMUrl")
+                      : values.has("Env2Con") ? values.get("Env2Con")
+                      : "";
+        } else {
+            // Salesforce source
+            sourceUrl = sandbox
+                ? "https://test.salesforce.com/services/Soap/u/47.0"
+                : "https://login.salesforce.com/services/Soap/u/47.0";
+        }
+
+        String iwUser = values.has("SFIntUsr") ? values.get("SFIntUsr") : "";
+        String iwPassword = values.has("SFPswd") ? values.get("SFPswd") : "";
+        String msUrl = values.has("QDSN0") ? values.get("QDSN0") : "";
+        String msUser = values.has("QBIntUsr0") ? values.get("QBIntUsr0") : "";
+        String msPassword = values.has("QBPswd0") ? values.get("QBPswd0") : "";
+
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
+            + "\t<xsl:output omit-xml-declaration=\"yes\"/>\n"
+            + "\t<xsl:param name=\"iwdriver\"></xsl:param>\n"
+            + "\t<xsl:param name=\"iwurl\">" + xmlAttrEscape(sourceUrl) + "</xsl:param>\n"
+            + "\t<xsl:param name=\"iwuser\">" + xmlAttrEscape(iwUser) + "</xsl:param>\n"
+            + "\t<xsl:param name=\"password\">" + xmlAttrEscape(iwPassword) + "</xsl:param>\n"
+            + "\t<xsl:param name=\"msdriver\"></xsl:param>\n"
+            + "\t<xsl:param name=\"msurl\">" + xmlAttrEscape(msUrl) + "</xsl:param>\n"
+            + "\t<xsl:param name=\"msuser\">" + xmlAttrEscape(msUser) + "</xsl:param>\n"
+            + "\t<xsl:param name=\"mspassword\">" + xmlAttrEscape(msPassword) + "</xsl:param>\n"
+            + "</xsl:stylesheet>\n";
+    }
+
+    private static String xmlAttrEscape(String s) {
+        if (s == null || s.isEmpty()) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
+    /**
+     * Copy individual transformer XSLT source files from the template project's
+     * xslt/ root directory. These are the field-mapping transformers (e.g.,
+     * SyncAccounts_CRM2MG.xslt) that the engine uses to transform data between
+     * source and destination systems. Only copies .xslt files at the xslt/ root
+     * level (not subdirectories like Site/ or include/).
+     */
+    private static void copyXsltTransformers(File templateRoot, File generatedRoot) throws IOException {
+        File templateXsltDir = new File(templateRoot, "xslt");
+        if (!templateXsltDir.isDirectory()) {
+            return;
+        }
+        File outXsltDir = new File(generatedRoot, "xslt");
+        ensureDir(outXsltDir);
+        File[] xsltFiles = templateXsltDir.listFiles();
+        if (xsltFiles == null) {
+            return;
+        }
+        for (int i = 0; i < xsltFiles.length; i++) {
+            File f = xsltFiles[i];
+            if (f.isFile() && f.getName().endsWith(".xslt")) {
+                copyIfPresent(f, new File(outXsltDir, f.getName()));
+            }
+        }
+    }
+
+    /**
+     * Copy compiled transformer .class files from the template project's
+     * classes/iwtransformationserver/ directory. These are XSLTC-compiled
+     * bytecode that the engine loads at runtime for data transformation.
+     */
+    private static void copyTransformerClasses(File templateRoot, File generatedRoot) throws IOException {
+        File templateClassDir = new File(new File(templateRoot, "classes"), "iwtransformationserver");
+        if (!templateClassDir.isDirectory()) {
+            return;
+        }
+        File outClassDir = new File(new File(generatedRoot, "classes"), "iwtransformationserver");
+        ensureDir(outClassDir);
+        File[] classFiles = templateClassDir.listFiles();
+        if (classFiles == null) {
+            return;
+        }
+        for (int i = 0; i < classFiles.length; i++) {
+            File f = classFiles[i];
+            if (f.isFile() && f.getName().endsWith(".class")) {
+                copyBinaryIfPresent(f, new File(outClassDir, f.getName()));
+            }
+        }
+    }
+
+    private static void copyBinaryIfPresent(File source, File target) throws IOException {
+        if (!source.isFile()) {
+            return;
+        }
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new BufferedInputStream(new FileInputStream(source));
+            out = new BufferedOutputStream(new FileOutputStream(target));
+            byte[] buf = new byte[4096];
+            int read;
+            while ((read = in.read(buf)) >= 0) {
+                out.write(buf, 0, read);
+            }
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+
     private static String resolveCompilerModule(String solutionType) {
         String normalized = trim(solutionType).toUpperCase();
         if ("CRM2QB3".equals(normalized)) {
             return "CRM2QB3";
         }
-        if ("SF2AUTH".equals(normalized) || "SF2QB".equals(normalized)) {
+        if (normalized.startsWith("CRM2QB") || normalized.startsWith("CRM2M")) {
+            return "CRM2QB";
+        }
+        if ("SF2AUTH".equals(normalized) || normalized.startsWith("SF2QB")) {
             return "SF2AUTH";
         }
         return "GENERIC";
@@ -292,10 +450,66 @@ public final class WorkspaceProfileCompiler {
         if ("CRM2QB3".equals(moduleName)) {
             return shouldEnableCrm2qb3Item(tagName, id, values);
         }
+        if ("CRM2QB".equals(moduleName)) {
+            return shouldEnableCrmItem(tagName, id, values);
+        }
         if ("SF2AUTH".equals(moduleName)) {
             return shouldEnableSf2authItem(tagName, id, values);
         }
         return true;
+    }
+
+    /**
+     * Enable/disable logic for CRM2QB and CRM2M2 (Creatio→QuickBooks / Creatio→Magento2).
+     * These projects use CRM-prefixed transaction/query IDs.
+     */
+    private static boolean shouldEnableCrmItem(String tagName, String id, ProfileValues values) {
+        boolean accountEnabled = isSyncEnabled(values.get("SyncTypeAC"));
+        boolean salesEnabled = isSyncEnabled(values.get("SyncTypeSO"));
+        boolean inventoryEnabled = isSyncEnabled(values.get("SyncTypeInv"));
+        boolean serviceEnabled = isSyncEnabled(values.get("SyncTypeSR"));
+        boolean productEnabled = isSyncEnabled(values.get("SyncTypePrd"));
+        boolean anyEnabled = accountEnabled || salesEnabled || inventoryEnabled || serviceEnabled || productEnabled;
+
+        if (id == null || id.length() == 0) {
+            return anyEnabled;
+        }
+
+        // Main login/scheduler transactions always run if anything is enabled
+        if (id.startsWith("BPMTransactions") || id.startsWith("CRMTransactions")) {
+            return anyEnabled;
+        }
+        // Account sync
+        if (id.contains("Acct")) {
+            return accountEnabled;
+        }
+        // Order/Sales sync
+        if (id.contains("Order") || id.contains("SO")) {
+            return salesEnabled;
+        }
+        // Invoice sync
+        if (id.contains("Inv")) {
+            return inventoryEnabled || salesEnabled;
+        }
+        // Product/Item sync
+        if (id.contains("Prod") || id.contains("Item")) {
+            return productEnabled;
+        }
+        // Service Request sync
+        if (id.contains("SR") || id.contains("Service")) {
+            return serviceEnabled;
+        }
+        // Magento reverse sync (M2→CRM)
+        if (id.startsWith("M2")) {
+            if (id.contains("Order")) return salesEnabled;
+            if (id.contains("Inv")) return inventoryEnabled;
+            return anyEnabled;
+        }
+        // Payment queries (Creatio2AuthNet, Creatio2Strp)
+        if (id.startsWith("Creatio2")) {
+            return salesEnabled;
+        }
+        return anyEnabled;
     }
 
     private static boolean shouldEnableCrm2qb3Item(String tagName, String id, ProfileValues values) {

@@ -37,9 +37,12 @@ export interface FlowsResponse {
     heartbeatInterval: number;
     isHosted: boolean;
     profileName: string;
+    solutionType?: string;
     scheduledFlows: EngineFlow[];
     utilityFlows: EngineFlow[];
     queryFlows: QueryFlow[];
+    /** Flow IDs from the company's workspace im/config.xml (even if not loaded in engine) */
+    configuredFlowIds?: string[];
   };
   error?: string;
 }

@@ -272,19 +272,19 @@ export function CredentialInventory({ credentials, profileCredentials, isLoading
       </div>
 
       {/* Inventory Table */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border border-[hsl(var(--border))] rounded-lg overflow-hidden bg-[hsl(var(--card))] shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Connector</th>
-              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">System</th>
-              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Auth</th>
-              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Status</th>
-              <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Actions</th>
+            <tr className="border-b border-[hsl(var(--border))] bg-muted/80">
+              <th className="text-left px-4 py-2.5 font-semibold text-foreground/70">Connector</th>
+              <th className="text-left px-4 py-2.5 font-semibold text-foreground/70">System</th>
+              <th className="text-left px-4 py-2.5 font-semibold text-foreground/70">Auth</th>
+              <th className="text-left px-4 py-2.5 font-semibold text-foreground/70">Status</th>
+              <th className="text-right px-4 py-2.5 font-semibold text-foreground/70">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {credentials.map((cred) => {
+            {credentials.map((cred, idx) => {
               const result = testResults[cred.credentialType] ?? null;
               const isTesting = testingId === cred.credentialType;
 
@@ -292,8 +292,8 @@ export function CredentialInventory({ credentials, profileCredentials, isLoading
                 <tr
                   key={cred.id}
                   className={cn(
-                    "border-b last:border-b-0 transition-colors",
-                    isTesting && "bg-muted/30"
+                    "border-b border-[hsl(var(--border))] last:border-b-0 transition-colors",
+                    isTesting ? "bg-muted/30" : idx % 2 === 1 && "bg-muted/40"
                   )}
                 >
                   {/* Connector */}
@@ -400,12 +400,12 @@ export function CredentialInventory({ credentials, profileCredentials, isLoading
             <Key className="w-4 h-4 text-muted-foreground" />
             <h3 className="text-sm font-medium">Profile Credentials</h3>
           </div>
-          <div className="border rounded-lg overflow-hidden">
+          <div className="border border-[hsl(var(--border))] rounded-lg overflow-hidden bg-[hsl(var(--card))] shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">System</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Username</th>
+                <tr className="border-b border-[hsl(var(--border))] bg-muted/80">
+                  <th className="text-left px-4 py-2.5 font-semibold text-foreground/70">System</th>
+                  <th className="text-left px-4 py-2.5 font-semibold text-foreground/70">Username</th>
                 </tr>
               </thead>
               <tbody>

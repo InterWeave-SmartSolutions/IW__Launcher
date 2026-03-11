@@ -1,4 +1,367 @@
-<iwmappings></iwmappings>
+<?xml version="1.0" encoding="UTF-8"?>
+<iwmappings>
+	<!-- ============================================================ -->
+	<!-- Site transactions (shared infrastructure)                     -->
+	<!-- ============================================================ -->
+	<transaction name="index" type="sequential">
+		<transform>sessionid</transform>
+	</transaction>
+	<transaction name="session" type="chain">
+		<transform/>
+		<classname>com.interweave.adapter.IWGetSession</classname>
+		<datamap name="sessionvars">
+			<driver/>
+			<url/>
+			<user/>
+			<password/>
+			<access type="procedure">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
 
+	<!-- ============================================================ -->
+	<!-- Creatio Login / Session Initialization                        -->
+	<!-- ============================================================ -->
+	<transaction name="CRMLogin" type="sequential">
+		<transform>CRMLogin</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="login">
+			<driver/>
+			<url>/ServiceModel/AuthService.svc/Login</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre>{"UserName":"?iwuser?","UserPassword":"?password?"}</statementpre>
+				<statementpost/>
+			</access>
+		</datamap>
+		<nexttransaction name="BPMTransactions2Auth:CRMAcctSync2QB;CRMOrderSync2QB:CRMOrderSync2QB;CRMInvSync2QB:CRMInvSync2QB;CRMProdSync2QB:CRMProdSync2QB;CRMSRSync2QB:CRMSRSync2QB;" type="Unconditional"/>
+	</transaction>
 
+	<!-- ============================================================ -->
+	<!-- Creatio -> QuickBooks: Account/Customer Sync                   -->
+	<!-- ============================================================ -->
+	<transaction name="CRMAcctSync2QB" type="sequential">
+		<transform>CRMAcctSync2QB</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_accounts">
+			<driver/>
+			<url>/0/odata/Account?$select=Id,Name,Phone,Email,Address,City,Region,Zip,Country&amp;$filter=ModifiedOn gt @lastSyncDate</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_customers">
+			<driver/>
+			<url>/v3/company/@companyId/customer</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
 
+	<!-- ============================================================ -->
+	<!-- Creatio -> QuickBooks: Sales Order / Sales Receipt Sync        -->
+	<!-- ============================================================ -->
+	<transaction name="CRMOrderSync2QB" type="sequential">
+		<transform>CRMOrderSync2QB</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_orders">
+			<driver/>
+			<url>/0/odata/Order?$select=Id,Number,Account,Amount,PaymentStatus,DeliveryStatus&amp;$filter=ModifiedOn gt @lastSyncDate</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_salesreceipts">
+			<driver/>
+			<url>/v3/company/@companyId/salesreceipt</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- ============================================================ -->
+	<!-- Creatio -> QuickBooks: Invoice Sync                            -->
+	<!-- ============================================================ -->
+	<transaction name="CRMInvSync2QB" type="sequential">
+		<transform>CRMInvSync2QB</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_invoices">
+			<driver/>
+			<url>/0/odata/Invoice?$select=Id,Number,Account,Amount,PaymentStatus&amp;$filter=ModifiedOn gt @lastSyncDate</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_invoices">
+			<driver/>
+			<url>/v3/company/@companyId/invoice</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- ============================================================ -->
+	<!-- Creatio -> QuickBooks: Product/Item Sync                       -->
+	<!-- ============================================================ -->
+	<transaction name="CRMProdSync2QB" type="sequential">
+		<transform>CRMProdSync2QB</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_products">
+			<driver/>
+			<url>/0/odata/Product?$select=Id,Name,Code,Price,Unit,IsArchive&amp;$filter=ModifiedOn gt @lastSyncDate</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_items">
+			<driver/>
+			<url>/v3/company/@companyId/item</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- ============================================================ -->
+	<!-- Creatio -> QuickBooks: Service Request / Credit Memo Sync      -->
+	<!-- ============================================================ -->
+	<transaction name="CRMSRSync2QB" type="sequential">
+		<transform>CRMSRSync2QB</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_servicerequests">
+			<driver/>
+			<url>/0/odata/Case?$select=Id,Number,Account,Subject,Status,Priority&amp;$filter=ModifiedOn gt @lastSyncDate</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_creditmemos">
+			<driver/>
+			<url>/v3/company/@companyId/creditmemo</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- ============================================================ -->
+	<!-- Deferred Response Sync (payment gateway callbacks)            -->
+	<!-- ============================================================ -->
+	<transaction name="CRMDRSSync" type="sequential">
+		<transform>CRMDRSSync</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="deferred_response">
+			<driver/>
+			<url>/0/odata/IWDeferredResponse?$filter=Status eq 'Pending'</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- ============================================================ -->
+	<!-- Query flows (on-demand, payment + lookup)                     -->
+	<!-- ============================================================ -->
+
+	<!-- Query: Creatio to Authorize.Net payment processing -->
+	<transaction name="Creatio2AuthNetQ" type="sequential">
+		<transform>Creatio2AuthNetQ</transform>
+		<classname>com.interweave.adapter.http.IWHttpBaseAdaptor</classname>
+		<datamap name="authnet_payment">
+			<driver/>
+			<url>https://api.authorize.net/xml/v1/request.api</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- Query: Creatio to Stripe payment processing -->
+	<transaction name="Creatio2StrpQ" type="sequential">
+		<transform>Creatio2StrpQ</transform>
+		<classname>com.interweave.adapter.http.IWHttpBaseAdaptor</classname>
+		<datamap name="stripe_payment">
+			<driver/>
+			<url>https://api.stripe.com/v1/charges</url>
+			<user/>
+			<password/>
+			<access type="post">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- Query: Creatio Account to QuickBooks Customer lookup -->
+	<transaction name="CRMAcct2QBQ" type="sequential">
+		<transform>CRMAcct2QBQ</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_account">
+			<driver/>
+			<url>/0/odata/Account(@accountId)?$select=Id,Name,Phone,Email,Address,City,Region,Zip,Country</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_customer">
+			<driver/>
+			<url>/v3/company/@companyId/query?query=select * from Customer where DisplayName='@customerName'</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- Query: Creatio Sales Order to QuickBooks lookup -->
+	<transaction name="CRMOrder2QBQ" type="sequential">
+		<transform>CRMOrder2QBQ</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_order">
+			<driver/>
+			<url>/0/odata/Order(@orderId)?$select=Id,Number,Account,Amount,PaymentStatus</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_salesreceipt">
+			<driver/>
+			<url>/v3/company/@companyId/query?query=select * from SalesReceipt where DocNumber='@orderNumber'</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- Query: Creatio Invoice to QuickBooks lookup -->
+	<transaction name="CRMInv2QBQ" type="sequential">
+		<transform>CRMInv2QBQ</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_invoice">
+			<driver/>
+			<url>/0/odata/Invoice(@invoiceId)?$select=Id,Number,Account,Amount,PaymentStatus</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_invoice">
+			<driver/>
+			<url>/v3/company/@companyId/query?query=select * from Invoice where DocNumber='@invoiceNumber'</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- Query: Creatio Product to QuickBooks Item lookup -->
+	<transaction name="CRMProd2QBQ" type="sequential">
+		<transform>CRMProd2QBQ</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_product">
+			<driver/>
+			<url>/0/odata/Product(@productId)?$select=Id,Name,Code,Price,Unit</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_item">
+			<driver/>
+			<url>/v3/company/@companyId/query?query=select * from Item where Name='@productName'</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+	<!-- Query: Creatio Service Request to QuickBooks lookup -->
+	<transaction name="CRMSRSync2QBQ" type="sequential">
+		<transform>CRMSRSync2QBQ</transform>
+		<classname>com.interweave.adapter.rest.IWRestJson</classname>
+		<datamap name="creatio_servicerequest">
+			<driver/>
+			<url>/0/odata/Case(@caseId)?$select=Id,Number,Account,Subject,Status,Priority</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+		<datamap name="qb_creditmemo">
+			<driver/>
+			<url>/v3/company/@companyId/query?query=select * from CreditMemo where DocNumber='@caseNumber'</url>
+			<user/>
+			<password/>
+			<access type="get">
+				<statementpre/>
+				<statementpost/>
+			</access>
+		</datamap>
+	</transaction>
+
+</iwmappings>

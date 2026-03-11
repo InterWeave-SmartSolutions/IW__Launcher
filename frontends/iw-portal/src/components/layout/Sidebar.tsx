@@ -1,9 +1,9 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Activity, User, Building2, Settings, FileText, Monitor,
-  Bell, Shield, ClipboardList, Sparkles, X, Home, BookOpen, Search,
+  Bell, Shield, ClipboardList, X, Home, BookOpen, Search,
   Video, ClipboardCheck, HelpCircle, CreditCard, Users, BarChart2,
-  Plug, Lock, SlidersHorizontal, ArrowLeftRight, type LucideIcon,
+  Plug, Lock, SlidersHorizontal, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePortal, PORTAL_SUBTITLES, type Portal } from "@/hooks/usePortal";
@@ -28,8 +28,6 @@ const OPERATOR_NAV: NavItem[] = [
   { to: "/admin/configurator",   label: "Integrations",   icon: Monitor,         description: "Flows & daemon",               group: "admin"   },
   { to: "/admin/logging",        label: "Logging",        icon: FileText,        description: "System logs",                  group: "admin"   },
   { to: "/admin/audit",          label: "Audit Log",      icon: ClipboardList,   description: "Activity history",             group: "admin"   },
-  { to: "/admin/field-mapping",  label: "Field Mapping",  icon: Sparkles,        description: "AI mapping suggestions",       group: "admin"   },
-  { to: "/admin/sync",           label: "IDE Sync",       icon: ArrowLeftRight,  description: "Portal ↔ IDE workspace sync",  group: "admin"   },
 ];
 
 const OPERATOR_GROUPS: Record<string, string> = {
@@ -92,16 +90,16 @@ export function Sidebar({ mobile, onClose }: SidebarProps) {
       {/* Brand */}
       <div className="flex items-center justify-between px-4 pt-5 pb-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[14px] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-lg shadow-[hsl(var(--primary)/0.25)]" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00e5a0] to-[#00b8ff] shadow-lg shadow-[#00b8ff40]" />
           <div>
-            <h1 className="text-sm font-semibold tracking-tight">InterWeave</h1>
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <h1 className="text-sm font-semibold tracking-tight text-white">InterWeave</h1>
+            <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.6)]">{subtitle}</p>
           </div>
         </div>
         {mobile && (
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+            className="p-1.5 rounded-lg text-[hsl(var(--sidebar-foreground)/0.75)] hover:text-white cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -110,10 +108,10 @@ export function Sidebar({ mobile, onClose }: SidebarProps) {
 
       {/* Context pill */}
       <div className="px-4 pb-3 flex flex-col gap-1.5">
-        <div className="text-xs text-muted-foreground px-2.5 py-1.5 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
-          {portal === "operator" && <>Environment: <b className="text-foreground">Local Dev</b></>}
-          {portal === "associate" && <>Portal: <b className="text-foreground">Associate</b></>}
-          {portal === "master" && <>Console: <b className="text-foreground">Program Admin</b></>}
+        <div className="text-xs text-[hsl(var(--sidebar-foreground)/0.65)] px-2.5 py-1.5 rounded-full border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-foreground)/0.06)]">
+          {portal === "operator" && <>Environment: <b className="text-[hsl(var(--sidebar-foreground))]">Local Dev</b></>}
+          {portal === "associate" && <>Portal: <b className="text-[hsl(var(--sidebar-foreground))]">Associate</b></>}
+          {portal === "master" && <>Console: <b className="text-[hsl(var(--sidebar-foreground))]">Program Admin</b></>}
         </div>
       </div>
 
@@ -121,7 +119,7 @@ export function Sidebar({ mobile, onClose }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
         {navGroups.map((group) => (
           <div key={group} className="mb-4">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-3 mb-1.5">
+            <p className="text-[11px] font-medium text-[hsl(var(--sidebar-foreground)/0.6)] uppercase tracking-wider px-3 mb-1.5">
               {groups[group]}
             </p>
             <div className="flex flex-col gap-1">
@@ -132,16 +130,16 @@ export function Sidebar({ mobile, onClose }: SidebarProps) {
                   onClick={onClose}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-[14px] border border-transparent transition-colors",
-                      "text-muted-foreground hover:bg-[hsl(var(--accent)/0.5)] hover:text-foreground",
-                      isActive && "bg-[hsl(var(--primary)/0.14)] border-[hsl(var(--primary)/0.30)] text-foreground"
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg border-l-2 transition-colors",
+                      "text-[hsl(var(--sidebar-foreground)/0.85)] border-l-transparent hover:bg-[hsl(var(--sidebar-accent)/0.08)] hover:text-[hsl(var(--sidebar-foreground))]",
+                      isActive && "bg-[hsl(var(--sidebar-accent)/0.12)] border-l-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-accent))] font-semibold"
                     )
                   }
                 >
                   <item.icon className="w-4 h-4 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{item.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+                    <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.6)] truncate">{item.description}</p>
                   </div>
                 </NavLink>
               ))}
@@ -151,7 +149,7 @@ export function Sidebar({ mobile, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 text-xs text-muted-foreground border-t border-[hsl(var(--sidebar-border))]">
+      <div className="px-4 py-3 text-xs text-[hsl(var(--sidebar-foreground)/0.55)] border-t border-[hsl(var(--sidebar-border))]">
         InterWeave IDE • IW Portal v0.1
       </div>
     </>

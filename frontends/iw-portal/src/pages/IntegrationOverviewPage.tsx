@@ -8,12 +8,14 @@ import {
   Loader2,
   Workflow,
   ArrowRight,
+  ArrowLeftRight,
   Key,
   Server,
   HelpCircle,
   CheckCircle,
   XCircle,
   RefreshCw,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboard, useTransactions } from "@/hooks/useMonitoring";
@@ -30,6 +32,7 @@ import { FlowDependencyMap } from "@/components/integrations/FlowDependencyMap";
 import { EngineControlsTab } from "@/components/integrations/EngineControlsTab";
 import { CredentialInventory } from "@/components/integrations/CredentialInventory";
 import { OnboardingOverlay } from "@/components/integrations/OnboardingOverlay";
+import { WorkspaceSyncPanel } from "@/pages/IDESyncPage";
 
 function statusIcon(status: string) {
   switch (status) {
@@ -54,6 +57,7 @@ export function IntegrationOverviewPage() {
   const { data: flowsRes } = useEngineFlows(false); // one-shot for dependency map
 
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [flowSearch, setFlowSearch] = useState("");
 
   const isLoading = dashLoading || txLoading;
   const summary = dashRes?.data?.summary;
@@ -142,6 +146,10 @@ export function IntegrationOverviewPage() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="sync">
+            <ArrowLeftRight className="w-3.5 h-3.5" />
+            Workspace Sync
+          </TabsTrigger>
         </TabsList>
 
         {/* ── Flows Tab ── */}
@@ -172,8 +180,22 @@ export function IntegrationOverviewPage() {
 
           {/* Flow list (derived from transaction history) */}
           <div className="glass-panel rounded-[var(--radius)] p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold">Integration Flows</h2>
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold">Integration Flows</h2>
+                {flows.length > 5 && (
+                  <div className="relative ml-2">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Filter flows…"
+                      value={flowSearch}
+                      onChange={(e) => setFlowSearch(e.target.value)}
+                      className="pl-7 pr-3 py-1 text-xs rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))] placeholder:text-muted-foreground w-44"
+                    />
+                  </div>
+                )}
+              </div>
               <Button variant="link" size="sm" asChild>
                 <Link to="/monitoring/transactions">
                   Transaction History <ArrowRight className="w-3 h-3" />
@@ -195,7 +217,7 @@ export function IntegrationOverviewPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                {flows.map((flow) => {
+                {flows.filter((f) => !flowSearch || f.name.toLowerCase().includes(flowSearch.toLowerCase())).map((flow) => {
                   const rate =
                     flow.totalRuns > 0
                       ? Math.round((flow.successCount / flow.totalRuns) * 100)
@@ -205,7 +227,7 @@ export function IntegrationOverviewPage() {
                       key={flow.name}
                       to={`/monitoring/transactions?flow=${encodeURIComponent(flow.name)}`}
                       className={cn(
-                        "rounded-xl border p-4 flex items-center gap-4 transition-colors hover:bg-muted/30",
+                        "rounded-xl border bg-[hsl(var(--card))] shadow-sm p-4 flex items-center gap-4 transition-colors hover:bg-muted/30",
                         statusColor(flow.lastStatus)
                       )}
                     >
@@ -264,6 +286,11 @@ export function IntegrationOverviewPage() {
             profileCredentials={profileCreds}
             isLoading={credLoading}
           />
+        </TabsContent>
+
+        {/* ── Workspace Sync Tab ── */}
+        <TabsContent value="sync">
+          <WorkspaceSyncPanel />
         </TabsContent>
       </Tabs>
 

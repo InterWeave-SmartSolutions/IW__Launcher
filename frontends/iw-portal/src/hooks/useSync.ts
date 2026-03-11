@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type {
@@ -6,12 +7,47 @@ import type {
   SyncActionResponse,
 } from "@/types/sync";
 
+/**
+ * Poll sync status and auto-invalidate config/flow queries when IDE
+ * pushes changes (i.e. a profile transitions to "in_sync" from another state,
+ * meaning the sync bridge just imported an IDE change into the DB).
+ */
 export function useSyncStatus(autoRefresh = true) {
-  return useQuery({
+  const qc = useQueryClient();
+  const prevStatuses = useRef<Record<string, string>>({});
+
+  const query = useQuery({
     queryKey: ["sync-status"],
     queryFn: () => apiFetch<SyncStatusResponse>("/api/sync/status"),
-    refetchInterval: autoRefresh ? 15_000 : false,
+    refetchInterval: autoRefresh ? 10_000 : false,
   });
+
+  useEffect(() => {
+    if (!query.data?.data?.profiles) return;
+
+    const profiles = query.data.data.profiles;
+    const prev = prevStatuses.current;
+    let changed = false;
+
+    for (const p of profiles) {
+      const oldStatus = prev[p.profileName];
+      // Detect when sync bridge imported IDE changes (workspace_ahead → in_sync)
+      // or when portal pushed to IDE (db_ahead → in_sync)
+      if (oldStatus && oldStatus !== p.syncStatus && p.syncStatus === "in_sync") {
+        changed = true;
+      }
+      prev[p.profileName] = p.syncStatus;
+    }
+
+    if (changed) {
+      // IDE just synced — refresh config and flow data
+      qc.invalidateQueries({ queryKey: ["config"] });
+      qc.invalidateQueries({ queryKey: ["engine-flows"] });
+      qc.invalidateQueries({ queryKey: ["company-profile"] });
+    }
+  }, [query.data, qc]);
+
+  return query;
 }
 
 export function useSyncLog(lines = 60) {

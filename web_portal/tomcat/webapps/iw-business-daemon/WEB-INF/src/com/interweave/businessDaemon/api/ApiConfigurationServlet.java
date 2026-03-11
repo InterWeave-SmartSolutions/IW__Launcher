@@ -16,6 +16,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ApiConfigurationServlet - JSON API for company configuration management.
@@ -268,6 +274,9 @@ public class ApiConfigurationServlet extends HttpServlet {
         }
 
         // Build configuration XML from syncMappings JSON object
+        // Validate mapping keys against solution type (server-side enforcement)
+        Set<String> allowedKeys = allowedKeysForSolutionType(solutionType.trim());
+        List<String> strippedKeys = new ArrayList<>();
         StringBuilder xml = new StringBuilder("<SF2QBConfiguration>");
 
         // Extract all sync fields from the body
@@ -276,14 +285,23 @@ public class ApiConfigurationServlet extends HttpServlet {
         if (mappingsStr != null) {
             // Parse JSON object respecting quoted strings (handles commas inside values)
             parseJsonObjectEntries(mappingsStr, (key, val) -> {
-                if (!key.isEmpty()) {
-                    xml.append("<").append(key).append(">")
-                       .append(xmlEscape(val))
-                       .append("</").append(key).append(">");
+                if (key.isEmpty()) return;
+                // If it's a SyncType key, enforce solution type filtering
+                if (isSyncMappingKey(key) && !allowedKeys.contains(key)) {
+                    strippedKeys.add(key);
+                    return; // Skip disallowed mapping
                 }
+                xml.append("<").append(key).append(">")
+                   .append(xmlEscape(val))
+                   .append("</").append(key).append(">");
             });
         }
         xml.append("</SF2QBConfiguration>");
+
+        if (!strippedKeys.isEmpty()) {
+            log("Stripped " + strippedKeys.size() + " disallowed mapping keys for solution type " +
+                solutionType + ": " + strippedKeys);
+        }
 
         // Build profile name from session
         String userName = (String) session.getAttribute("userEmail");
@@ -597,6 +615,55 @@ public class ApiConfigurationServlet extends HttpServlet {
                 .replace("&gt;", ">")
                 .replace("&quot;", "\"")
                 .replace("&apos;", "'");
+    }
+
+    // ─── Solution Type → Allowed Mapping Keys ─────────────────────────
+
+    /** Core sync mapping keys — always allowed for any solution type. */
+    private static final Set<String> CORE_KEYS = new HashSet<>(Arrays.asList(
+        "SyncTypeAC", "SyncTypeSO", "SyncTypeInv", "SyncTypeSR", "SyncTypePrd"
+    ));
+
+    /** Extended keys unlocked by bi-directional suffix (1,2,B,N,P,T,G,C). */
+    private static final Set<String> BIDI_KEYS = new HashSet<>(Arrays.asList(
+        "SyncTypeEst", "SyncTypeBill", "SyncTypeCheck", "SyncTypeCM"
+    ));
+
+    /** Extended level 1 keys (suffix 1,B,N,P,T,G,C). */
+    private static final Set<String> EXT1_KEYS = new HashSet<>(Arrays.asList(
+        "SyncTypeVAC", "SyncTypeOJ", "SyncTypePO", "SyncTypeVC",
+        "SyncTypeDep", "SyncTypePR", "SyncTypeBP", "SyncTypeCCC"
+    ));
+
+    /** Extended level 2 keys (suffix B,N,P,T,G). */
+    private static final Set<String> EXT2_KEYS = new HashSet<>(Arrays.asList(
+        "SyncTypeCOA", "SyncTypeJE", "SyncTypeTT", "SyncTypeSC"
+    ));
+
+    /** Known non-sync config keys that are always allowed (detail fields, credentials, etc.). */
+    private static boolean isSyncMappingKey(String key) {
+        return key.startsWith("SyncType");
+    }
+
+    /**
+     * Build the set of allowed sync mapping keys for a given solution type.
+     * Mirrors the suffix-based logic in configuration.ts buildSyncMappings().
+     */
+    private static Set<String> allowedKeysForSolutionType(String solutionType) {
+        Set<String> allowed = new HashSet<>(CORE_KEYS);
+
+        if (solutionType == null || solutionType.isEmpty()) return allowed;
+
+        char lastChar = solutionType.charAt(solutionType.length() - 1);
+        boolean hasBidi = "12BNPTGPC".indexOf(lastChar) >= 0;
+        boolean hasExt1 = "1BNPTGPC".indexOf(lastChar) >= 0;
+        boolean hasExt2 = "BNPTG".indexOf(lastChar) >= 0;
+
+        if (hasBidi) allowed.addAll(BIDI_KEYS);
+        if (hasExt1) allowed.addAll(EXT1_KEYS);
+        if (hasExt2) allowed.addAll(EXT2_KEYS);
+
+        return allowed;
     }
 
     private String xmlEscape(String s) {

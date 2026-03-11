@@ -28,7 +28,7 @@ const PERIOD_OPTIONS: { value: Period; label: string; granularity: Granularity }
 export function MonitoringPage() {
   useDocumentTitle("Monitoring");
   const { data: dashRes, isLoading: dashLoading } = useDashboard();
-  const [period, setPeriod] = useState<Period>("7d");
+  const [period, setPeriod] = useState<Period>("30d");
   const granularity = PERIOD_OPTIONS.find((p) => p.value === period)!.granularity;
   const { data: metrics, isLoading: metricsLoading } = useMetrics(granularity, period);
 
@@ -49,24 +49,28 @@ export function MonitoringPage() {
             label="24h Transactions"
             value={summary?.total_count_24h ?? 0}
             detail={`${summary?.completed_count_24h ?? 0} success · ${summary?.failed_count_24h ?? 0} failed`}
+            accent="border-t-[3px] border-t-[hsl(var(--accent))]"
           />
           <SummaryCard
             icon={TrendingUp}
             label="7d Success Rate"
             value={`${(summary?.success_rate_7d ?? 0).toFixed(1)}%`}
             detail={`${summary?.total_count_7d ?? 0} total transactions`}
+            accent="border-t-[3px] border-t-[hsl(var(--success))]"
           />
           <SummaryCard
             icon={Timer}
             label="Avg Duration (24h)"
             value={formatDuration(summary?.avg_duration_ms_24h ?? 0)}
             detail="Average execution time"
+            accent="border-t-[3px] border-t-[hsl(var(--primary))]"
           />
           <SummaryCard
             icon={Database}
             label="Last Hour"
             value={recent?.total ?? 0}
             detail={`${recent?.success ?? 0} success · ${recent?.failed ?? 0} failed`}
+            accent="border-t-[3px] border-t-[hsl(var(--warning))]"
           />
         </div>
       )}
@@ -237,14 +241,16 @@ function SummaryCard({
   label,
   value,
   detail,
+  accent,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
   detail: string;
+  accent?: string;
 }) {
   return (
-    <div className="glass-panel rounded-[var(--radius)] p-4">
+    <div className={`glass-panel rounded-[var(--radius)] p-4 ${accent ?? ""}`}>
       <div className="flex items-center gap-2 mb-2">
         <Icon className="w-4 h-4 text-[hsl(var(--primary))]" />
         <p className="text-xs text-muted-foreground">{label}</p>

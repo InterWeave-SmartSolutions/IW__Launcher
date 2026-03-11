@@ -68,6 +68,23 @@ Projects are stored in `workspace/` and contain:
 - XSLT transformers
 - Integration flows (transaction flows, utility flows, queries)
 
+**Engine Flow Lifecycle:**
+```
+WEB-INF/config.xml (all flow definitions) → ConfigContext at Tomcat startup
+  → bindHostedProfile() at login (or POST /api/flows/initialize)
+  → Creates TransactionThread per profile per flow
+  → POST /api/flows/start|stop to run/halt individual flows
+```
+
+**Per-company flow isolation:** `ApiFlowManagementServlet` reads `solutionType` from session, maps it to a workspace project via `config/workspace-profile-map.properties`, parses that project's `im/config.xml` for allowed flow IDs, and filters ConfigContext output. Each user only sees their company's flows.
+
+**Adding a new integration project requires:**
+1. Create workspace project with `im/config.xml` (TransactionDescription + Query elements)
+2. Add flows to `WEB-INF/config.xml` (engine won't load flows not defined here)
+3. Add `SOLUTION_TYPE=ProjectName` mapping to `config/workspace-profile-map.properties`
+4. Add company record in DB with matching `solution_type`
+5. Restart Tomcat (config.xml is loaded once at startup)
+
 ## Running the Application
 
 ### Start Everything (First Time)
@@ -289,6 +306,52 @@ javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_por
 
 **Test credentials**: `demo@sample.com` / `demo123` (user), `admin@sample.com` / `admin123` (admin)
 
+### XSLT Transformer Build Pipeline
+
+Each workspace project contains XSLT transformer files that define field mappings between source and destination systems. These are compiled to Java bytecode using Apache XSLTC.
+
+**Transformer file structure** (per workspace project):
+```
+workspace/<Project>/
+├── xslt/
+│   ├── SyncAccounts_CRM2MG.xslt     ← individual transformer source
+│   ├── GetMagentoOrder.xslt          ← query transformer source
+│   ├── include/dataconnections.xslt  ← connection credentials (XSLT params)
+│   └── Site/
+│       ├── include/
+│       │   ├── sitetran.xslt         ← shared site transactions (index, session)
+│       │   └── appconstants.xslt     ← session variables
+│       └── new/
+│           ├── transactions.xslt     ← master stylesheet (imports all above)
+│           ├── include/soltran.xslt  ← solution-specific flow definitions
+│           └── xml/transactions.xml  ← static build output (populates IDE views)
+└── classes/iwtransformationserver/
+    ├── SyncAccounts_CRM2MG.class     ← compiled transformer bytecode
+    └── GetMagentoOrder.class
+```
+
+**Compile command (XSLT → .class)**:
+```bash
+java -cp "web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/xsltc.jar;web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/xalan.jar;web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/serializer.jar" org.apache.xalan.xsltc.cmdline.Compile -o <TransformName> -d workspace/<Project>/classes/iwtransformationserver workspace/<Project>/xslt/<TransformName>.xslt
+```
+
+**Compile all transformers for a project**:
+```bash
+for xslt in workspace/<Project>/xslt/*.xslt; do
+  name=$(basename "$xslt" .xslt)
+  java -cp "web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/xsltc.jar;web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/xalan.jar;web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/serializer.jar" org.apache.xalan.xsltc.cmdline.Compile -o "$name" -d workspace/<Project>/classes/iwtransformationserver "$xslt"
+done
+```
+
+**Current transformer inventory**:
+| Project | XSLT Sources | Compiled Classes | Adapter Types |
+|---------|-------------|-----------------|---------------|
+| SF2AuthNet | 142 | 472 | SOAP, HTTP, SQL |
+| Creatio_Magento2_Integration | 11 | 11 | REST/JSON |
+| Creatio_QuickBooks_Integration | _(soltran.xslt defined, individual transformers pending)_ | — | REST/JSON, HTTP |
+
+**WorkspaceProfileCompiler** now copies transformer files (`.xslt` sources + `.class` bytecode) from template projects into `GeneratedProfiles/` during profile compilation, ensuring generated profiles are self-contained.
+
 ### IW Portal (Modern React UI)
 
 New React-based portal at `frontends/iw-portal/` — replaces JSP pages incrementally.
@@ -304,19 +367,28 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
   - `npm` / `tsc` / `vite` are not on PATH — use `node node_modules/...` paths instead
 - **TypeScript**: strict mode, zero errors required before commit (`node node_modules/typescript/bin/tsc -b --noEmit`)
 
-**Route → Classic JSP mapping**:
+**Route → Classic JSP mapping** (22 operator routes + 9 associate + 10 master):
 - `/login` → `IWLogin.jsp`
 - `/register` → `Registration.jsp`
 - `/register/company` → `CompanyRegistration.jsp`
+- `/forgot-password` → password reset flow (React-only)
+- `/mfa/verify` → TOTP verification (React-only)
 - `/dashboard` → `IWLogin.jsp` (post-login landing)
 - `/monitoring` → `monitoring/Dashboard.jsp` (charts + transactions + alerts)
+- `/monitoring/transactions` → transaction history with filtering/pagination
+- `/monitoring/alerts` → alert configuration
 - `/profile` → `EditProfile.jsp`
 - `/profile/password` → `ChangePassword.jsp`
+- `/profile/security` → MFA setup (React-only)
 - `/company` → `EditCompanyProfile.jsp`
 - `/company/config` → `CompanyConfiguration.jsp` (progress checklist)
 - `/company/config/wizard` → config wizard (5-step: solution type, mappings, credentials, execution settings, review)
-- `/admin/configurator` → `BDConfigurator.jsp` (flows, credentials, engine controls)
+- `/admin/configurator` → `BDConfigurator.jsp` (flows, credentials, engine controls with toggleable live log panel)
 - `/admin/logging` → `Logging.jsp`
+- `/admin/audit` → audit log (React-only)
+- `/notifications` → notification inbox (React-only)
+- `/associate/*` → Associate Portal pages (home, resources, webinars, intake, support, billing, search)
+- `/master/*` → Master Console pages (dashboard, users, content, subscriptions, integrations, analytics, audit, notifications, support, settings)
 
 **Key directories**:
 - `src/components/layout/` — AppShell, Sidebar, Topbar, ClassicViewBanner
@@ -326,7 +398,7 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - `src/hooks/` — useMonitoring.ts (useDashboard with 30s auto-refresh, useTransactions with pagination), useConfiguration.ts (wizard/credentials/profiles/test), useFlows.ts (flow listing, start/stop, schedule, properties read/write with post-save verification)
 - `src/lib/` — api.ts (fetch wrapper with ApiError class), classic-routes.ts, config-labels.ts (shared label formatters), utils.ts
 - `src/types/` — TypeScript interfaces for API responses (monitoring.ts, flows.ts, config.ts)
-- `src/components/integrations/` — FlowTable, EngineControlsTab, FlowPropertiesDialog, EditScheduleDialog
+- `src/components/integrations/` — FlowTable, EngineControlsTab (with toggleable LiveLogPanel — bottom/side/collapsed modes), FlowPropertiesDialog, EditScheduleDialog
 
 **API Servlets (JSON, `com.interweave.businessDaemon.api`):**
 - **ApiLoginServlet** — `POST /api/auth/login`
@@ -337,7 +409,7 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - **ApiCompanyRegistrationServlet** — `POST /api/register/company`
 - **ApiChangePasswordServlet** — `POST /api/auth/change-password`
 - **ApiConfigurationServlet** — `GET/PUT /api/config/wizard`, `GET/PUT /api/config/credentials`, `GET /api/config/profiles`, `POST /api/config/credentials/test`
-- **ApiFlowManagementServlet** — `GET /api/flows` (flow listing), `GET /api/flows/properties` (flow variable parameters), `POST /api/flows/start|stop|submit`, `PUT /api/flows/schedule`
+- **ApiFlowManagementServlet** — `GET /api/flows` (flow listing, filtered by company solution type), `GET /api/flows/properties` (flow variable parameters), `POST /api/flows/start|stop|submit|initialize`, `PUT /api/flows/schedule`
 - **ApiLogViewerServlet** — `GET /api/logs/*`
 
 **Compile command (API servlets)**:
@@ -392,9 +464,10 @@ See `docs/development/BUILD.md` for complete Maven build instructions, profiles,
 
 ### Integration Projects
 
-Example workspace projects:
-- `Creatio_QuickBooks_Integration` - Creatio to QuickBooks flows
-- Sample projects copy older versions (not latest)
+Workspace projects with full transformer pipelines:
+- `SF2AuthNet` - Salesforce to Authorize.Net/payment gateways (142 XSLT transformers, 472 compiled classes)
+- `Creatio_Magento2_Integration` - Bidirectional Creatio ↔ Magento 2 (11 XSLT transformers, 11 compiled classes)
+- `Creatio_QuickBooks_Integration` - Creatio to QuickBooks (soltran.xslt defined, individual transformers pending)
 
 Common integration patterns documented in `docs/tutorials/`:
 - `InterWeave-IDE-Training-1.md` - IDE basics
@@ -451,6 +524,15 @@ IW_Launcher/
 │       ├── assa_customer_portal/ # 9 pages: billing, intake, library, profile, resource, search...
 │       └── assa_master_console/  # 9 pages: analytics, audit, content, integrations, users...
 │
+├── docs/ui-ux/                 # UI/UX strategy + prototype HTML
+│   ├── iw_associate_portal/    # Associate Portal prototype (9 pages, ASSA tokens, 2026-02-09)
+│   ├── iw_master_console/      # Master Console prototype (10 pages, ASSA tokens, 2026-02-06)
+│   ├── PORTAL_ARCHITECTURE.md  # Three-portal system architecture + phased adoption plan
+│   ├── UI_UX_DESIGN_APPROACH.md # Primary design playbook
+│   ├── UI_UX_ANALYSIS.md       # Deep-dive gap analysis
+│   ├── COMPETITIVE_LANDSCAPE_EXPANDED.md # 50+ platform research
+│   └── IMPLEMENTATION_PLAN.md  # Backend-aware rollout plan
+│
 ├── jre/                        # Bundled Java 8 runtime
 ├── plugins/                    # Eclipse plugins
 │   ├── iw_sdk_1.0.0/           # InterWeave SDK plugin
@@ -474,8 +556,11 @@ IW_Launcher/
 │
 ├── workspace/                  # IDE workspace
 │   ├── .metadata/              # Eclipse metadata
-│   ├── Creatio_QuickBooks_Integration/
-│   └── FirstTest/
+│   ├── SF2AuthNet/             # Salesforce-AuthNet (142 XSLTs, 472 classes)
+│   ├── Creatio_QuickBooks_Integration/  # CRM→QB (7 flows + 7 queries)
+│   ├── Creatio_Magento2_Integration/    # CRM↔Magento (11 XSLTs, 11 classes)
+│   ├── GeneratedProfiles/      # Compiler output (per-profile overlays)
+│   └── IW_Runtime_Sync/        # Wizard config mirror (auto-generated)
 │
 └── configuration/              # Eclipse configuration
     └── org.eclipse.update/     # Update manager config

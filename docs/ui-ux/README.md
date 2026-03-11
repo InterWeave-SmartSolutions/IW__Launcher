@@ -14,6 +14,20 @@ This directory contains the UI/UX strategy, competitive analysis, and implementa
 | `UI_UX_ANALYSIS.md` | Deep-dive analysis: brand integration, ASSA/InterWoven references, initial competitive landscape (7 iPaaS), 15-gap analysis across 3 priority tiers, user flow analysis, feature prioritization matrix, design system recommendations, accessibility checklist, 3-horizon roadmap. | Background research |
 | `COMPETITIVE_LANDSCAPE_EXPANDED.md` | Expanded research across 50+ platforms in 10 market categories. Detailed profiles of 23 platforms. Market-wide UI/UX patterns by adoption tier. Prioritized pattern adoption list. | Background research |
 | `IMPLEMENTATION_PLAN.md` | Backend-aware phased rollout: architecture data flow map, session sharing rules, API contract inventory (28 endpoints), 5-phase plan, risk/rollback matrix, testing protocol. | Execution reference |
+| **`PORTAL_ARCHITECTURE.md`** | Three-portal system architecture: iw-portal (live, 22 pages), Associate Portal (prototype, 9 pages), Master Console (prototype, 10 pages). Design token comparison, phased adoption plan (Phases A-D). | **Architecture reference for multi-portal work** |
+
+## Static HTML Prototypes (New)
+
+Two new prototype directories provide the target UI for future portal surfaces. Both use the same ASSA design tokens as `iw-portal`.
+
+| Directory | Portal | Pages | Build Date | Key Patterns |
+|-----------|--------|-------|------------|--------------|
+| `iw_associate_portal/` | Associate Portal (customer-facing) | 9 | 2026-02-09 | Hero section, tile cards, intake wizard, resource library, billing |
+| `iw_master_console/` | Master Console (program admin) | 10 | 2026-02-06 | 4-col KPI grid, SVG sparklines (`data-spark`), operational queue, analytics funnel |
+
+**Serve locally:** `cd iw_associate_portal/iw_associate_portal && python -m http.server 8080`
+
+**Design token alignment:** Both prototypes share `--bg:#071021`, `--brand:#3b82f6`, `--brand2:#22c55e`, glassmorphism sidebar, 12-col grid. The iw-portal implements the same palette via Tailwind 4 CSS variables. See `PORTAL_ARCHITECTURE.md` for the full token comparison table.
 
 ## Related Documents
 

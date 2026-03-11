@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: IW Workspace Auto-Import
+Bundle-SymbolicName: iw_workspace_init; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: InterWeave
+Bundle-ClassPath: bin/
+Require-Bundle: org.eclipse.core.resources,
+ org.eclipse.core.runtime,
+ org.eclipse.ui
+Eclipse-AutoStart: true
+Eclipse-LazyStart: false

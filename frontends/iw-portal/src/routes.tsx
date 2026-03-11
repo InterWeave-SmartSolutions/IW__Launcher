@@ -89,12 +89,8 @@ const NotificationsPage = lazy(() =>
 const AuditLogPage = lazy(() =>
   import("@/pages/AuditLogPage").then((m) => ({ default: m.AuditLogPage }))
 );
-const FieldMappingPage = lazy(() =>
-  import("@/pages/FieldMappingPage").then((m) => ({ default: m.FieldMappingPage }))
-);
-const IDESyncPage = lazy(() =>
-  import("@/pages/IDESyncPage").then((m) => ({ default: m.IDESyncPage }))
-);
+/* FieldMappingPage → now embedded in ConfigurationWizardPage step */
+/* IDESyncPage → now embedded as tab in IntegrationOverviewPage */
 
 /* Lazy-load monitoring pages (recharts is ~380kB) */
 const MonitoringLayout = lazy(() =>
@@ -247,22 +243,9 @@ export const router = createBrowserRouter(
             </Suspense>
           ),
         },
-        {
-          path: "admin/field-mapping",
-          element: (
-            <Suspense fallback={<LazyFallback />}>
-              <FieldMappingPage />
-            </Suspense>
-          ),
-        },
-        {
-          path: "admin/sync",
-          element: (
-            <Suspense fallback={<LazyFallback />}>
-              <IDESyncPage />
-            </Suspense>
-          ),
-        },
+        /* Old standalone routes → redirect to new homes */
+        { path: "admin/field-mapping", element: <Navigate to="/company/config/wizard" replace /> },
+        { path: "admin/sync", element: <Navigate to="/admin/configurator" replace /> },
 
         /* ── Associate portal routes ── */
         {

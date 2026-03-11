@@ -45,7 +45,7 @@ const FEATURES = [
   },
 ];
 
-const PLATFORMS = ["Salesforce", "QuickBooks", "Creatio", "NetSuite", "Dynamics", "Authorize.Net"];
+const PLATFORMS = ["Salesforce", "QuickBooks", "Creatio", "NetSuite", "Magento 2", "Dynamics", "Authorize.Net"];
 
 export function LoginPage() {
   useDocumentTitle("Sign In");
@@ -320,24 +320,36 @@ export function LoginPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => fillDemo("admin@sample.com", "admin123")}
-                    className="w-full justify-start text-xs"
+                    className="w-full justify-start text-xs h-auto py-1.5"
                   >
-                    <span className="font-medium">Admin</span>
-                    <span className="text-muted-foreground">
-                      {" "}— admin@sample.com / admin123
-                    </span>
+                    <div className="text-left">
+                      <div><span className="font-medium">Sarah Chen</span> <span className="text-muted-foreground">— Pinnacle Integrations</span></div>
+                      <div className="text-muted-foreground">SF2NS · Salesforce → NetSuite · admin</div>
+                    </div>
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => fillDemo("demo@sample.com", "demo123")}
-                    className="w-full justify-start text-xs"
+                    className="w-full justify-start text-xs h-auto py-1.5"
                   >
-                    <span className="font-medium">User</span>
-                    <span className="text-muted-foreground">
-                      {" "}— demo@sample.com / demo123
-                    </span>
+                    <div className="text-left">
+                      <div><span className="font-medium">Demo User</span> <span className="text-muted-foreground">— Demo Company Inc.</span></div>
+                      <div className="text-muted-foreground">CRM2QB · Creatio → QuickBooks · user</div>
+                    </div>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fillDemo("admin@magentocrm.com", "magcrm123")}
+                    className="w-full justify-start text-xs h-auto py-1.5"
+                  >
+                    <div className="text-left">
+                      <div><span className="font-medium">Maria Garcia</span> <span className="text-muted-foreground">— MagentoCRM Solutions</span></div>
+                      <div className="text-muted-foreground">CRM2MG2 · Creatio ↔ Magento 2 · admin</div>
+                    </div>
                   </Button>
                 </div>
               )}

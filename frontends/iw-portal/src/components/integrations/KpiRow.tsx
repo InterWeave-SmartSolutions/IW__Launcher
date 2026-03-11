@@ -21,10 +21,10 @@ interface KpiRowProps {
 }
 
 const KPI_DEFS = [
-  { key: "flows", label: "Active Flows", icon: Workflow, color: "text-[hsl(var(--primary))]" },
-  { key: "running", label: "Running Now", icon: Play, color: "text-[hsl(var(--success))]" },
-  { key: "success", label: "24h Success Rate", icon: CheckCircle, color: "text-[hsl(var(--success))]" },
-  { key: "failures", label: "24h Failures", icon: AlertTriangle, color: "" },
+  { key: "flows", label: "Active Flows", icon: Workflow, color: "text-[hsl(var(--primary))]", accent: "border-t-[3px] border-t-[hsl(var(--primary))]" },
+  { key: "running", label: "Running Now", icon: Play, color: "text-[hsl(var(--success))]", accent: "border-t-[3px] border-t-[hsl(var(--success))]" },
+  { key: "success", label: "24h Success Rate", icon: CheckCircle, color: "text-[hsl(var(--success))]", accent: "border-t-[3px] border-t-[hsl(var(--accent))]" },
+  { key: "failures", label: "24h Failures", icon: AlertTriangle, color: "", accent: "border-t-[3px] border-t-[hsl(var(--warning))]" },
 ] as const;
 
 export function KpiRow({
@@ -59,7 +59,7 @@ export function KpiRow({
               : kpi.color;
 
         return (
-          <div key={kpi.key} className="glass-panel rounded-[var(--radius)] p-4 space-y-2">
+          <div key={kpi.key} className={cn("glass-panel rounded-[var(--radius)] p-4 space-y-2", kpi.accent)}>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">{kpi.label}</p>
               <kpi.icon className={cn("w-4 h-4", dynamicColor)} />

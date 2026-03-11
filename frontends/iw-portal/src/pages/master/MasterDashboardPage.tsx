@@ -7,10 +7,10 @@ import { useDevMode } from "@/providers/DevModeProvider";
 
 // TODO: wire to GET /api/master/dashboard
 const KPIS = [
-  { label: "Active Subscribers", value: "1,284", delta: "+4.6% WoW",  spark: [8,9,9.5,10,10.3,10.8,11.4,12.2,12.4] },
-  { label: "MRR",                value: "$38,520",delta: "Churn 1.1%", spark: [31,31.2,31.8,32.5,33.4,34.0,35.6,37.2,38.5] },
-  { label: "Portal Engagement",  value: "67%",   delta: "DAU/WAU",    spark: [52,54,58,60,62,61,64,66,67] },
-  { label: "Exceptions",         value: "3",     delta: "Open issues", spark: [1,2,1,3,2,1,2,3,3], bad: true },
+  { label: "Active Subscribers", value: "1,284", delta: "+4.6% WoW",  spark: [8,9,9.5,10,10.3,10.8,11.4,12.2,12.4], accent: "border-t-[3px] border-t-[hsl(var(--accent))]" },
+  { label: "MRR",                value: "$38,520",delta: "Churn 1.1%", spark: [31,31.2,31.8,32.5,33.4,34.0,35.6,37.2,38.5], accent: "border-t-[3px] border-t-[hsl(var(--success))]" },
+  { label: "Portal Engagement",  value: "67%",   delta: "DAU/WAU",    spark: [52,54,58,60,62,61,64,66,67], accent: "border-t-[3px] border-t-[hsl(var(--primary))]" },
+  { label: "Exceptions",         value: "3",     delta: "Open issues", spark: [1,2,1,3,2,1,2,3,3], bad: true, accent: "border-t-[3px] border-t-[hsl(var(--warning))]" },
 ];
 
 const QUEUE = [
@@ -45,7 +45,7 @@ export function MasterDashboardPage() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {KPIS.map((k) => (
-          <section key={k.label} className="glass-panel rounded-[var(--radius)] p-4">
+          <section key={k.label} className={`glass-panel rounded-[var(--radius)] p-4 ${k.accent}`}>
             <p className="text-xs text-muted-foreground mb-1">{k.label}</p>
             <div className={`text-2xl font-bold ${k.bad ? "text-[hsl(var(--destructive))]" : ""}`}>{k.value}</div>
             <p className="text-xs text-muted-foreground mt-0.5">{k.delta}</p>

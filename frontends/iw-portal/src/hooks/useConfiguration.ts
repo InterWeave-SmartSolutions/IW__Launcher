@@ -11,6 +11,7 @@ import type {
   ProfilesResponse,
 } from "@/types/configuration";
 import type { ApiMessageResponse } from "@/types/profile";
+import type { SyncActionResponse } from "@/types/sync";
 
 export function useWizardConfig() {
   const { user } = useAuth();
@@ -32,6 +33,13 @@ export function useSaveWizardConfig() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config"] });
       queryClient.invalidateQueries({ queryKey: ["company-profile"] });
+      // Auto-push to IDE workspace so changes appear immediately
+      apiFetch<SyncActionResponse>("/api/sync/push", {
+        method: "POST",
+        body: JSON.stringify({}),
+      })
+        .then(() => queryClient.invalidateQueries({ queryKey: ["sync-status"] }))
+        .catch(() => {/* sync push is best-effort; wizard save already succeeded */});
     },
   });
 }

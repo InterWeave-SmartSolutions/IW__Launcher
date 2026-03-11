@@ -91,12 +91,12 @@ interface StripCell {
 }
 
 function stripCellColor(cell: StripCell): string {
-  if (!cell.hasData) return "bg-[hsl(var(--muted)/0.08)]";
+  if (!cell.hasData) return "bg-muted/30";
   if (cell.errors === 0) return "bg-[hsl(var(--muted)/0.3)]";
-  if (cell.errors <= 2) return "bg-amber-500/40";
-  if (cell.errors <= 8) return "bg-orange-500/50";
-  if (cell.errors <= 16) return "bg-red-500/50";
-  return "bg-red-600/70";
+  if (cell.errors <= 2) return "bg-[hsl(var(--warning)/0.4)]";
+  if (cell.errors <= 8) return "bg-[hsl(var(--warning)/0.6)]";
+  if (cell.errors <= 16) return "bg-[hsl(var(--destructive)/0.5)]";
+  return "bg-[hsl(var(--destructive)/0.7)]";
 }
 
 function buildContributionStrip(
@@ -354,11 +354,11 @@ function ActivityLogsTab() {
   function statusBadge(status: string) {
     const s = status?.toLowerCase() ?? "";
     if (s === "success" || s === "completed")
-      return <span className="inline-flex items-center gap-1 text-xs text-emerald-400"><CheckCircle2 className="w-3 h-3" />Success</span>;
+      return <span className="inline-flex items-center gap-1 text-xs text-[hsl(var(--success))]"><CheckCircle2 className="w-3 h-3" />Success</span>;
     if (s === "error" || s === "failed")
-      return <span className="inline-flex items-center gap-1 text-xs text-red-400"><XCircle className="w-3 h-3" />Failed</span>;
+      return <span className="inline-flex items-center gap-1 text-xs text-[hsl(var(--destructive))]"><XCircle className="w-3 h-3" />Failed</span>;
     if (s === "running" || s === "in_progress")
-      return <span className="inline-flex items-center gap-1 text-xs text-blue-400"><Clock className="w-3 h-3" />Running</span>;
+      return <span className="inline-flex items-center gap-1 text-xs text-[hsl(var(--primary))]"><Clock className="w-3 h-3" />Running</span>;
     return <span className="text-xs text-muted-foreground">{status ?? "—"}</span>;
   }
 
@@ -402,16 +402,16 @@ function ActivityLogsTab() {
           No transaction logs found for your account.
         </div>
       ) : (
-        <div className="rounded-lg border border-[hsl(var(--border))] overflow-hidden">
+        <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Time</th>
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Flow</th>
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground">Status</th>
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground hidden md:table-cell">Records</th>
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground hidden lg:table-cell">Duration</th>
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground hidden lg:table-cell">Error</th>
+              <tr className="border-b border-[hsl(var(--border))] bg-muted/80">
+                <th className="px-3 py-2 text-left font-semibold text-foreground/70">Time</th>
+                <th className="px-3 py-2 text-left font-semibold text-foreground/70">Flow</th>
+                <th className="px-3 py-2 text-left font-semibold text-foreground/70">Status</th>
+                <th className="px-3 py-2 text-left font-semibold text-foreground/70 hidden md:table-cell">Records</th>
+                <th className="px-3 py-2 text-left font-semibold text-foreground/70 hidden lg:table-cell">Duration</th>
+                <th className="px-3 py-2 text-left font-semibold text-foreground/70 hidden lg:table-cell">Error</th>
               </tr>
             </thead>
             <tbody>
@@ -420,14 +420,14 @@ function ActivityLogsTab() {
                 const dur = tx.duration_ms != null ? `${(tx.duration_ms / 1000).toFixed(1)}s` : "—";
                 return (
                   <tr key={tx.execution_id ?? i}
-                    className={cn("border-b border-[hsl(var(--border)/0.5)] hover:bg-[hsl(var(--muted)/0.2)]",
-                      i % 2 === 0 ? "" : "bg-[hsl(var(--muted)/0.05)]")}>
+                    className={cn("border-b border-[hsl(var(--border)/0.5)] hover:bg-muted/30",
+                      i % 2 === 1 && "bg-muted/40")}>
                     <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{ts}</td>
                     <td className="px-3 py-2 font-medium max-w-[180px] truncate">{tx.flow_name ?? "—"}</td>
                     <td className="px-3 py-2">{statusBadge(tx.status)}</td>
                     <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{tx.records_processed ?? "—"}</td>
                     <td className="px-3 py-2 text-muted-foreground hidden lg:table-cell">{dur}</td>
-                    <td className="px-3 py-2 text-red-400/80 hidden lg:table-cell max-w-[200px] truncate">
+                    <td className="px-3 py-2 text-[hsl(var(--destructive)/0.8)] hidden lg:table-cell max-w-[200px] truncate">
                       {tx.error_message ?? ""}
                     </td>
                   </tr>
@@ -832,9 +832,9 @@ export function LoggingPage() {
                                     <div className="mt-0.5">
                                       <span className="text-muted-foreground">{cell.lines.toLocaleString()} lines</span>
                                       {cell.errors > 0 ? (
-                                        <span className="ml-1.5 text-red-300">{cell.severe} errors</span>
+                                        <span className="ml-1.5 text-[hsl(var(--destructive))]">{cell.severe} errors</span>
                                       ) : (
-                                        <span className="text-green-300 ml-1.5">clean</span>
+                                        <span className="text-[hsl(var(--success))] ml-1.5">clean</span>
                                       )}
                                     </div>
                                   ) : (
@@ -858,7 +858,7 @@ export function LoggingPage() {
 
                   <div className="flex items-center gap-3 pt-1 border-t border-[hsl(var(--border)/0.3)]">
                     <span className="text-[9px] text-muted-foreground/50">Less</span>
-                    {["bg-[hsl(var(--muted)/0.3)]", "bg-amber-500/40", "bg-orange-500/50", "bg-red-500/50", "bg-red-600/70"].map((cls, i) => (
+                    {["bg-[hsl(var(--muted)/0.3)]", "bg-[hsl(var(--warning)/0.4)]", "bg-[hsl(var(--warning)/0.6)]", "bg-[hsl(var(--destructive)/0.5)]", "bg-[hsl(var(--destructive)/0.7)]"].map((cls, i) => (
                       <div key={i} className={cn("w-[14px] h-[14px] rounded-[3px]", cls)} />
                     ))}
                     <span className="text-[9px] text-muted-foreground/50">More</span>
@@ -913,9 +913,9 @@ export function LoggingPage() {
                 </div>
 
                 {/* ── Day list table (2 new columns: Error % + Top Issue) ── */}
-                <div className="border border-[hsl(var(--border))] rounded-[14px] overflow-hidden">
-                  <div className="bg-[hsl(var(--muted)/0.2)] border-b border-[hsl(var(--border))]">
-                    <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_60px_50px_minmax(0,160px)_auto_28px] max-md:grid-cols-[minmax(0,1fr)_90px_50px_auto_28px] px-4 py-2 text-[11px] font-medium text-muted-foreground">
+                <div className="border border-[hsl(var(--border))] rounded-[14px] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
+                  <div className="bg-muted/80 border-b border-[hsl(var(--border))]">
+                    <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_60px_50px_minmax(0,160px)_auto_28px] max-md:grid-cols-[minmax(0,1fr)_90px_50px_auto_28px] px-4 py-2 text-[11px] font-semibold text-foreground/70">
                       <span>Event</span>
                       <span className="max-md:hidden">Date</span>
                       <span className="text-right">Lines</span>
@@ -947,7 +947,7 @@ export function LoggingPage() {
                             className={cn(
                               "w-full grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_60px_50px_minmax(0,160px)_auto_28px] max-md:grid-cols-[minmax(0,1fr)_90px_50px_auto_28px] items-center px-4 py-2.5",
                               "border-b border-[hsl(var(--border)/0.5)] text-left",
-                              "hover:bg-[hsl(var(--muted)/0.15)] transition-colors group",
+                              "hover:bg-muted/30 transition-colors group",
                             )}
                           >
                             {/* Name */}
@@ -1121,7 +1121,7 @@ export function LoggingPage() {
                           </div>
                           <div className="space-y-1">
                             {patterns.slice(0, 8).map((p, i) => (
-                              <div key={i} className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-[hsl(var(--muted)/0.1)] text-xs">
+                              <div key={i} className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-muted/40 text-xs">
                                 <AlertCircle className="w-3 h-3 text-[hsl(var(--destructive))] shrink-0" />
                                 <span className="text-muted-foreground truncate min-w-0 flex-1 font-mono text-[11px]">{p.message}</span>
                                 <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-[16px] shrink-0">{p.count}×</Badge>
@@ -1152,7 +1152,7 @@ export function LoggingPage() {
                                     onClick={() => hasStack && toggleIncident(i)}
                                     className={cn(
                                       "w-full flex items-start gap-2 py-1.5 px-3 rounded-lg text-xs text-left transition-colors",
-                                      inc.level === "error" ? "bg-red-500/[0.04] hover:bg-red-500/[0.08]" : "bg-amber-500/[0.04] hover:bg-amber-500/[0.08]",
+                                      inc.level === "error" ? "bg-[hsl(var(--destructive)/0.04)] hover:bg-[hsl(var(--destructive)/0.08)]" : "bg-[hsl(var(--warning)/0.04)] hover:bg-[hsl(var(--warning)/0.08)]",
                                       hasStack && "cursor-pointer",
                                     )}
                                   >
@@ -1160,11 +1160,11 @@ export function LoggingPage() {
                                       L{inc.startLine}
                                     </span>
                                     {inc.level === "error" ? (
-                                      <AlertCircle className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+                                      <AlertCircle className="w-3 h-3 text-[hsl(var(--destructive))] shrink-0 mt-0.5" />
                                     ) : (
-                                      <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0 mt-0.5" />
+                                      <AlertTriangle className="w-3 h-3 text-[hsl(var(--warning))] shrink-0 mt-0.5" />
                                     )}
-                                    <span className={cn("min-w-0 flex-1 font-mono text-[11px] break-all", inc.level === "error" ? "text-red-300/80" : "text-amber-300/80")}>
+                                    <span className={cn("min-w-0 flex-1 font-mono text-[11px] break-all", inc.level === "error" ? "text-[hsl(var(--destructive)/0.8)]" : "text-[hsl(var(--warning)/0.8)]")}>
                                       {inc.headline.length > 120 ? inc.headline.substring(0, 120) + "…" : inc.headline}
                                     </span>
                                     {hasStack && (
@@ -1174,7 +1174,7 @@ export function LoggingPage() {
                                     )}
                                   </button>
                                   {expanded && contentData?.lines && (
-                                    <div className="ml-12 mr-3 mb-1 px-3 py-2 rounded-lg bg-[hsl(var(--muted)/0.15)] border-l-2 border-red-500/30">
+                                    <div className="ml-12 mr-3 mb-1 px-3 py-2 rounded-lg bg-muted/40 border-l-2 border-red-500/30">
                                       {contentData.lines
                                         .filter((l) => l.num >= inc.startLine && l.num <= inc.endLine)
                                         .map((l) => (
@@ -1263,7 +1263,7 @@ export function LoggingPage() {
                   </div>
 
                   {/* Log content */}
-                  <div className="border border-[hsl(var(--border))] rounded-[14px] overflow-hidden">
+                  <div className="border border-[hsl(var(--border))] rounded-[14px] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
                     <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
                       <table className="w-full text-xs font-mono">
                         <tbody>
@@ -1275,13 +1275,13 @@ export function LoggingPage() {
                             </tr>
                           ) : (
                             filteredLines.map((line) => (
-                              <tr key={line.num} className={cn("border-b border-[hsl(var(--border)/0.3)] hover:bg-[hsl(var(--muted)/0.1)]", line.level === "error" && "bg-red-500/[0.06]", line.level === "warn" && "bg-amber-500/[0.06]")}>
+                              <tr key={line.num} className={cn("border-b border-[hsl(var(--border)/0.3)] hover:bg-muted/30", line.level === "error" && "bg-[hsl(var(--destructive)/0.1)]", line.level === "warn" && "bg-[hsl(var(--warning)/0.1)]")}>
                                 <td className="px-3 py-1 text-right text-muted-foreground/30 select-none w-12 align-top tabular-nums">{line.num}</td>
                                 <td className="px-1 py-1 w-5 align-top">
-                                  {line.level === "error" && <AlertCircle className="w-3 h-3 text-red-400 mt-0.5" />}
-                                  {line.level === "warn" && <AlertTriangle className="w-3 h-3 text-amber-400 mt-0.5" />}
+                                  {line.level === "error" && <AlertCircle className="w-3 h-3 text-[hsl(var(--destructive))] mt-0.5" />}
+                                  {line.level === "warn" && <AlertTriangle className="w-3 h-3 text-[hsl(var(--warning))] mt-0.5" />}
                                 </td>
-                                <td className={cn("px-2 py-1 whitespace-pre-wrap break-all", line.level === "error" && "text-red-300", line.level === "warn" && "text-amber-300")}>{line.text}</td>
+                                <td className={cn("px-2 py-1 whitespace-pre-wrap break-all", line.level === "error" && "text-[hsl(var(--destructive))]", line.level === "warn" && "text-[hsl(var(--warning))]")}>{line.text}</td>
                               </tr>
                             ))
                           )}

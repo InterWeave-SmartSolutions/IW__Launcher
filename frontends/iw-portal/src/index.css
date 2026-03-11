@@ -3,70 +3,70 @@
 /* ===== IW Portal Theme: ASSA-inspired dark/light ===== */
 
 :root {
-  /* Light mode — ASSA-inspired slate-blue tint (not harsh white) */
-  --background: 218 40% 95%;
-  --foreground: 222 47% 11%;
-  --card: 220 45% 98%;
-  --card-foreground: 222 47% 11%;
-  --popover: 220 45% 98%;
-  --popover-foreground: 222 47% 11%;
-  --primary: 217 91% 60%;
-  --primary-foreground: 220 45% 98%;
-  --secondary: 216 32% 90%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 216 32% 90%;
-  --muted-foreground: 218 20% 45%;
-  --accent: 216 32% 90%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 220 45% 98%;
-  --success: 142 71% 38%;
-  --success-foreground: 220 45% 98%;
-  --warning: 38 92% 45%;
-  --warning-foreground: 222 47% 11%;
-  --border: 216 28% 80%;
-  --input: 216 28% 80%;
-  --ring: 217 91% 60%;
-  --radius: 1.125rem;
+  /* Light mode — Owner Console palette: navy sidebar + white cards + cool gray content */
+  --background: 214 25% 95%;        /* #edf1f7 — cool blue-gray, visible contrast to white cards */
+  --foreground: 216 47% 15%;        /* #142538 — near-black navy text, maximum readability */
+  --card: 0 0% 100%;                /* #ffffff — crisp white cards */
+  --card-foreground: 216 47% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 216 47% 15%;
+  --primary: 197 100% 44%;          /* #0098e0 — deeper teal/cyan, better on white */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 216 25% 88%;         /* #d5dce8 — visible blue-gray secondary */
+  --secondary-foreground: 216 47% 15%;
+  --muted: 216 25% 88%;             /* #d5dce8 — strong enough for zebra/header bg */
+  --muted-foreground: 215 25% 38%;  /* #486080 — darker, clearly readable secondary text */
+  --accent: 197 100% 44%;           /* #0098e0 — deeper teal accent */
+  --accent-foreground: 216 47% 15%;
+  --destructive: 0 72% 50%;         /* #da2d2d — darker red for light bg */
+  --destructive-foreground: 0 0% 100%;
+  --success: 162 80% 35%;           /* #12a06e — darker green for light bg readability */
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 40%;            /* #c47800 — darker amber */
+  --warning-foreground: 0 0% 100%;
+  --border: 214 25% 80%;            /* #bcc8d8 — clearly visible borders */
+  --input: 214 25% 80%;
+  --ring: 197 100% 50%;             /* teal ring to match primary */
+  --radius: 0.75rem;                /* 12px — tighter radius from Owner Console */
 
-  /* Sidebar (light — slightly deeper slate) */
-  --sidebar: 218 35% 91%;
-  --sidebar-foreground: 222 47% 11%;
-  --sidebar-border: 216 28% 80%;
-  --sidebar-accent: 217 91% 60%;
+  /* Sidebar (light mode — deep navy, structural contrast) */
+  --sidebar: 217 64% 14%;           /* #0d1f3c — deep navy (identical to Owner Console) */
+  --sidebar-foreground: 210 30% 92%; /* #e0eaf4 — high-contrast light text */
+  --sidebar-border: 210 40% 21%;    /* #1a3050 — from Owner Console sidebar dividers */
+  --sidebar-accent: 197 100% 50%;   /* #00b8ff — teal active indicator */
 }
 
 .dark {
-  /* ASSA dark palette */
+  /* Dark palette — teal-forward (Owner Console adapted) */
   --background: 222 68% 6%;
   --foreground: 226 100% 95%;
   --card: 222 56% 12%;
   --card-foreground: 226 100% 95%;
   --popover: 222 56% 12%;
   --popover-foreground: 226 100% 95%;
-  --primary: 217 91% 60%;
-  --primary-foreground: 226 100% 95%;
+  --primary: 197 100% 50%;           /* #00b8ff — teal primary */
+  --primary-foreground: 216 64% 14%;  /* dark navy on teal buttons */
   --secondary: 222 56% 15%;
   --secondary-foreground: 226 100% 95%;
   --muted: 222 56% 15%;
-  --muted-foreground: 224 30% 76%;
+  --muted-foreground: 213 25% 65%;   /* #8099bb — from Owner Console */
   --accent: 222 56% 18%;
   --accent-foreground: 226 100% 95%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 226 100% 95%;
-  --success: 142 71% 45%;
-  --success-foreground: 226 100% 95%;
+  --success: 162 100% 45%;           /* #00e5a0 — mint teal-green */
+  --success-foreground: 216 64% 14%;
   --warning: 38 92% 50%;
   --warning-foreground: 222 68% 6%;
   --border: 0 0% 100% / 0.10;
   --input: 0 0% 100% / 0.10;
-  --ring: 217 91% 60%;
+  --ring: 197 100% 50%;              /* teal ring */
 
-  /* Sidebar (dark — ASSA glassmorphism) */
-  --sidebar: 222 56% 10%;
-  --sidebar-foreground: 226 100% 95%;
-  --sidebar-border: 0 0% 100% / 0.10;
-  --sidebar-accent: 217 91% 60%;
+  /* Sidebar (dark — Deep Ocean glassmorphism with cyan accents) */
+  --sidebar: 222 60% 5%;              /* #050a15 — deepest navy */
+  --sidebar-foreground: 210 30% 78%;  /* #b0c4de — soft blue-white nav text */
+  --sidebar-border: 0 0% 100% / 0.06;
+  --sidebar-accent: 197 100% 50%;    /* #00b8ff — cyan active indicator */
 }
 
 /* Base styles */
@@ -80,35 +80,41 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ASSA-style radial gradient background */
+/* Teal-forward radial gradient background */
 .dark body,
 .dark .app-background {
   background:
-    radial-gradient(1000px 700px at 15% 10%, hsl(217 91% 60% / 0.16), transparent 55%),
-    radial-gradient(800px 600px at 85% 15%, hsl(142 71% 45% / 0.12), transparent 60%),
-    radial-gradient(700px 500px at 55% 90%, hsl(38 92% 50% / 0.06), transparent 60%),
+    radial-gradient(1000px 700px at 15% 10%, hsl(197 100% 50% / 0.14), transparent 55%),
+    radial-gradient(800px 600px at 85% 15%, hsl(162 100% 45% / 0.10), transparent 60%),
+    radial-gradient(700px 500px at 55% 90%, hsl(38 92% 50% / 0.05), transparent 60%),
     hsl(var(--background));
 }
 
-/* Light mode: softer directional tint (blue upper-left accent) */
+/* Light mode: flat blue-white content area (N-FUSION) */
 body,
 .app-background {
-  background:
-    radial-gradient(900px 600px at 10% 0%, hsl(217 91% 60% / 0.07), transparent 50%),
-    radial-gradient(700px 500px at 90% 100%, hsl(142 71% 45% / 0.05), transparent 55%),
-    hsl(var(--background));
+  background: hsl(var(--background));
 }
 
 /* Utility classes */
 @layer utilities {
+  /* Light mode: solid white cards, no glass blur */
   .glass-panel {
-    background: linear-gradient(180deg, hsl(var(--card) / 0.76), hsl(var(--card) / 0.76));
+    background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
-    backdrop-filter: blur(10px);
   }
   .glass-sidebar {
-    background: linear-gradient(180deg, hsl(var(--sidebar) / 0.92), hsl(var(--sidebar) / 0.92));
+    background: hsl(var(--sidebar));
     border-right: 1px solid hsl(var(--sidebar-border));
+  }
+
+  /* Dark mode: retain glassmorphism */
+  .dark .glass-panel {
+    background: linear-gradient(180deg, hsl(var(--card) / 0.76), hsl(var(--card) / 0.76));
+    backdrop-filter: blur(10px);
+  }
+  .dark .glass-sidebar {
+    background: linear-gradient(180deg, hsl(var(--sidebar) / 0.92), hsl(var(--sidebar) / 0.92));
     backdrop-filter: blur(10px);
   }
 }

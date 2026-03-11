@@ -11,6 +11,9 @@ import {
   Settings2,
   CheckSquare,
   X,
+  Search,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,6 +50,8 @@ const LEGEND = [
   { label: "Stopped", dot: "bg-muted-foreground opacity-40" },
 ] as const;
 
+const PAGE_SIZE = 15;
+
 export function FlowTable({
   title,
   flows,
@@ -60,6 +65,8 @@ export function FlowTable({
 }: FlowTableProps) {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState(false);
 
   const toggleAll = () => {
     if (selected.size === flows.length) {
@@ -105,19 +112,41 @@ export function FlowTable({
 
   if (flows.length === 0) return null;
 
+  // Filter flows by search
+  const filtered = search
+    ? flows.filter((f) => f.flowId.toLowerCase().includes(search.toLowerCase()))
+    : flows;
+
+  // Pagination: show first PAGE_SIZE unless expanded
+  const needsPagination = filtered.length > PAGE_SIZE;
+  const visible = expanded ? filtered : filtered.slice(0, PAGE_SIZE);
+
   const gridCols = selecting
     ? "grid-cols-[auto_1fr_44px_80px_80px_90px_70px_60px_44px_80px_40px]"
     : "grid-cols-[1fr_44px_80px_80px_90px_70px_60px_44px_80px_40px]";
 
   return (
     <div className="relative">
-      {/* Table header */}
+      {/* Table header with search */}
       <div className="flex items-center gap-2 mb-2">
         <Timer className="w-4 h-4 text-muted-foreground" />
         <h3 className="text-sm font-semibold">{title}</h3>
         <Badge variant="secondary" className="text-xs">
-          {flows.length}
+          {filtered.length !== flows.length ? `${filtered.length}/${flows.length}` : flows.length}
         </Badge>
+        {/* Inline search */}
+        {flows.length > 5 && (
+          <div className="relative ml-2">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Filter flows…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setExpanded(false); }}
+              className="pl-7 pr-3 py-1 text-xs rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))] placeholder:text-muted-foreground w-44"
+            />
+          </div>
+        )}
         <div className="ml-auto">
           {isAdmin && !selecting && (
             <Button
@@ -145,9 +174,9 @@ export function FlowTable({
       </div>
 
       {/* Grid table */}
-      <div className="rounded-lg border border-[hsl(var(--border))] overflow-hidden">
+      <div className="rounded-lg border border-[hsl(var(--border))] overflow-hidden bg-[hsl(var(--card))] shadow-sm">
         {/* Column headers */}
-        <div className={cn("grid gap-0 bg-muted/50 px-3 py-2 text-xs font-medium text-muted-foreground items-center", gridCols)}>
+        <div className={cn("grid gap-0 bg-muted/80 px-3 py-2 text-xs font-semibold text-foreground/70 items-center border-b border-[hsl(var(--border))]", gridCols)}>
           {selecting && (
             <div className="flex justify-center">
               <input
@@ -246,173 +275,200 @@ export function FlowTable({
         </div>
 
         {/* Rows */}
-        {flows.map((flow, idx) => {
-          const style = engineFlowRowStyle(flow.running, flow.executing);
-          const log = logLevelLabel(flow.logLevel);
-          const isRunning = flow.running || flow.executing;
+        {visible.length === 0 ? (
+          <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+            No flows match &ldquo;{search}&rdquo;
+          </div>
+        ) : (
+          visible.map((flow, idx) => {
+            const style = engineFlowRowStyle(flow.running, flow.executing);
+            const log = logLevelLabel(flow.logLevel);
+            const isRunning = flow.running || flow.executing;
 
-          return (
-            <div
-              key={flow.flowId}
-              className={cn(
-                "group grid gap-0 px-3 py-2 items-center border-b border-[hsl(var(--border))] last:border-b-0 transition-colors hover:bg-muted/30",
-                gridCols,
-                style.bg,
-                style.border,
-              )}
-            >
-              {/* Checkbox (only in selection mode) */}
-              {selecting && (
-                <div className="flex justify-center">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(idx)}
-                    onChange={() => toggleOne(idx)}
-                    className="rounded border-muted-foreground/30 flex-shrink-0"
-                    aria-label={`Select ${flow.flowId}`}
-                  />
-                </div>
-              )}
-
-              {/* Flow ID */}
-              <div className="min-w-0">
-                <button
-                  type="button"
-                  onClick={() => onEditProperties?.(flow.flowId, flow.type !== "query")}
-                  className="text-sm font-medium truncate hover:text-[hsl(var(--primary))] hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
-                >
-                  {flow.flowId}
-                  <FileText className="w-2.5 h-2.5 opacity-0 group-hover:opacity-50 transition-opacity flex-shrink-0" />
-                </button>
-              </div>
-
-              {/* State */}
-              <div className="flex justify-center">
-                <FlowStateIndicator running={flow.running} executing={flow.executing} />
-              </div>
-
-              {/* Start/Stop */}
-              <div className="flex justify-center">
-                <Button
-                  size="sm"
-                  variant={isRunning ? "destructive" : "default"}
-                  className="h-7 px-2.5 text-xs [&_svg]:size-3"
-                  disabled={!isAdmin || isPending}
-                  onClick={() => onStartStop(flow)}
-                >
-                  {isRunning ? (
-                    <>
-                      <Square />
-                      Stop
-                    </>
-                  ) : (
-                    <>
-                      <Play />
-                      Start
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {/* Mode */}
-              <div className="text-center">
-                <Badge variant="outline" className="text-[10px] px-1.5">
-                  {flow.isScheduled ? "Sched" : "Single"}
-                </Badge>
-              </div>
-
-              {/* Interval */}
-              <div className="flex items-center justify-center gap-1">
-                <span className="text-xs text-muted-foreground">
-                  {flow.intervalDisplay || flow.interval}
-                </span>
-                {onEditSchedule && isAdmin && (
-                  <button
-                    onClick={() => onEditSchedule(flow)}
-                    className="opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity cursor-pointer"
-                    aria-label={`Edit schedule for ${flow.flowId}`}
-                  >
-                    <Pencil className="w-3 h-3 text-muted-foreground" />
-                  </button>
+            return (
+              <div
+                key={flow.flowId}
+                className={cn(
+                  "group grid gap-0 px-3 py-2 items-center border-b border-[hsl(var(--border))] last:border-b-0 transition-colors hover:bg-muted/30",
+                  idx % 2 === 1 && "bg-muted/60",
+                  gridCols,
+                  style.bg,
+                  style.border,
                 )}
-              </div>
+              >
+                {/* Checkbox (only in selection mode) */}
+                {selecting && (
+                  <div className="flex justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(idx)}
+                      onChange={() => toggleOne(idx)}
+                      className="rounded border-muted-foreground/30 flex-shrink-0"
+                      aria-label={`Select ${flow.flowId}`}
+                    />
+                  </div>
+                )}
 
-              {/* Shift */}
-              <div className="text-center text-xs text-muted-foreground">
-                {flow.shiftDisplay || flow.shift}
-              </div>
+                {/* Flow ID */}
+                <div className="min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => onEditProperties?.(flow.flowId, flow.type !== "query")}
+                    className="text-sm font-medium truncate hover:text-[hsl(var(--primary))] hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                  >
+                    {flow.flowId}
+                    <FileText className="w-2.5 h-2.5 opacity-0 group-hover:opacity-50 transition-opacity flex-shrink-0" />
+                  </button>
+                </div>
 
-              {/* Counter */}
-              <div className="text-center text-xs text-muted-foreground">
-                {flow.counter === 0 ? "\u221E" : flow.counter}
-              </div>
+                {/* State */}
+                <div className="flex justify-center">
+                  <FlowStateIndicator running={flow.running} executing={flow.executing} />
+                </div>
 
-              {/* Log */}
-              <div className="flex justify-center">
-                <span className={cn("text-[10px] font-mono font-semibold", log.color)}>
-                  {log.label}
-                </span>
-              </div>
-
-              {/* S/F */}
-              <div className="flex items-center justify-center gap-1">
-                <Link
-                  to={`/monitoring/transactions?flow=${encodeURIComponent(flow.flowId)}&status=success`}
-                  className="text-xs text-[hsl(var(--success))] hover:underline"
-                >
-                  {flow.successes}
-                </Link>
-                <span className="text-xs text-muted-foreground">/</span>
-                <Link
-                  to={`/monitoring/transactions?flow=${encodeURIComponent(flow.flowId)}&status=failed`}
-                  className="text-xs text-[hsl(var(--destructive))] hover:underline"
-                >
-                  {flow.failures}
-                </Link>
-              </div>
-
-              {/* Row actions menu */}
-              <div className="flex justify-center">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>{flow.flowId}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => onEditProperties?.(flow.flowId, flow.type !== "query")}>
-                      <FileText />
-                      Edit Properties
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={`/monitoring/transactions?flow=${encodeURIComponent(flow.flowId)}`}>
-                        <History />
-                        View Transactions
-                      </Link>
-                    </DropdownMenuItem>
-                    {onEditSchedule && isAdmin && (
-                      <DropdownMenuItem onClick={() => onEditSchedule(flow)}>
-                        <Settings2 />
-                        Edit Schedule
-                      </DropdownMenuItem>
+                {/* Start/Stop */}
+                <div className="flex justify-center">
+                  <Button
+                    size="sm"
+                    variant={isRunning ? "destructive" : "default"}
+                    className="h-7 px-2.5 text-xs [&_svg]:size-3"
+                    disabled={!isAdmin || isPending}
+                    onClick={() => onStartStop(flow)}
+                  >
+                    {isRunning ? (
+                      <>
+                        <Square />
+                        Stop
+                      </>
+                    ) : (
+                      <>
+                        <Play />
+                        Start
+                      </>
                     )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onStartStop(flow)}
-                      disabled={!isAdmin || isPending}
-                      className={isRunning ? "text-[hsl(var(--destructive))]" : "text-[hsl(var(--success))]"}
+                  </Button>
+                </div>
+
+                {/* Mode */}
+                <div className="text-center">
+                  <Badge variant="outline" className="text-[10px] px-1.5">
+                    {flow.isScheduled ? "Sched" : "Single"}
+                  </Badge>
+                </div>
+
+                {/* Interval */}
+                <div className="flex items-center justify-center gap-1">
+                  <span className="text-xs font-medium text-foreground/80">
+                    {flow.intervalDisplay || flow.interval}
+                  </span>
+                  {onEditSchedule && isAdmin && (
+                    <button
+                      onClick={() => onEditSchedule(flow)}
+                      className="opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity cursor-pointer"
+                      aria-label={`Edit schedule for ${flow.flowId}`}
                     >
-                      {isRunning ? <Square /> : <Play />}
-                      {isRunning ? "Stop Flow" : "Start Flow"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      <Pencil className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Shift */}
+                <div className="text-center text-xs font-medium text-foreground/80">
+                  {flow.shiftDisplay || flow.shift}
+                </div>
+
+                {/* Counter */}
+                <div className="text-center text-xs font-medium text-foreground/80">
+                  {flow.counter === 0 ? "\u221E" : flow.counter}
+                </div>
+
+                {/* Log */}
+                <div className="flex justify-center">
+                  <span className={cn("text-[10px] font-mono font-semibold", log.color)}>
+                    {log.label}
+                  </span>
+                </div>
+
+                {/* S/F */}
+                <div className="flex items-center justify-center gap-1">
+                  <Link
+                    to={`/monitoring/transactions?flow=${encodeURIComponent(flow.flowId)}&status=success`}
+                    className="text-xs text-[hsl(var(--success))] hover:underline"
+                  >
+                    {flow.successes}
+                  </Link>
+                  <span className="text-xs font-medium text-foreground/50">/</span>
+                  <Link
+                    to={`/monitoring/transactions?flow=${encodeURIComponent(flow.flowId)}&status=failed`}
+                    className="text-xs text-[hsl(var(--destructive))] hover:underline"
+                  >
+                    {flow.failures}
+                  </Link>
+                </div>
+
+                {/* Row actions menu */}
+                <div className="flex justify-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>{flow.flowId}</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onEditProperties?.(flow.flowId, flow.type !== "query")}>
+                        <FileText />
+                        Edit Properties
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to={`/monitoring/transactions?flow=${encodeURIComponent(flow.flowId)}`}>
+                          <History />
+                          View Transactions
+                        </Link>
+                      </DropdownMenuItem>
+                      {onEditSchedule && isAdmin && (
+                        <DropdownMenuItem onClick={() => onEditSchedule(flow)}>
+                          <Settings2 />
+                          Edit Schedule
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => onStartStop(flow)}
+                        disabled={!isAdmin || isPending}
+                        className={isRunning ? "text-[hsl(var(--destructive))]" : "text-[hsl(var(--success))]"}
+                      >
+                        {isRunning ? <Square /> : <Play />}
+                        {isRunning ? "Stop Flow" : "Start Flow"}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
+
+        {/* Show more / Show less */}
+        {needsPagination && !search && (
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="w-full px-3 py-2 text-xs text-center text-[hsl(var(--primary))] hover:bg-muted/30 transition-colors cursor-pointer flex items-center justify-center gap-1 font-medium"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="w-3 h-3" />
+                Show less ({PAGE_SIZE} of {filtered.length})
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3 h-3" />
+                Show all {filtered.length} flows ({filtered.length - PAGE_SIZE} more)
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Floating bulk action bar (only when selecting) */}

@@ -129,9 +129,10 @@ export function DashboardPage() {
       value: fmt(summary?.total_count_24h),
       sub: `${fmt(summary?.completed_count_24h)} completed, ${fmt(summary?.failed_count_24h)} failed`,
       icon: Activity,
-      color: "text-[hsl(var(--primary))]",
+      color: "text-[hsl(var(--accent))]",
       sparkData: spark,
-      sparkColor: "hsl(var(--primary))",
+      sparkColor: "hsl(var(--accent))",
+      accent: "border-t-[3px] border-t-[hsl(var(--accent))]",
     },
     {
       label: "Success Rate (24h)",
@@ -141,6 +142,7 @@ export function DashboardPage() {
       color: "text-[hsl(var(--success))]",
       sparkData: sparkRate,
       sparkColor: "hsl(var(--success))",
+      accent: "border-t-[3px] border-t-[hsl(var(--success))]",
     },
     {
       label: "Records (24h)",
@@ -150,15 +152,17 @@ export function DashboardPage() {
       color: "text-[hsl(var(--warning))]",
       sparkData: sparkRecords,
       sparkColor: "hsl(var(--warning))",
+      accent: "border-t-[3px] border-t-[hsl(var(--warning))]",
     },
     {
       label: "Avg Duration (24h)",
       value: fmtDuration(summary?.avg_duration_ms_24h),
       sub: recent ? `Last hour: ${recent.total} txns` : "—",
       icon: Clock,
-      color: "text-muted-foreground",
+      color: "text-[hsl(var(--primary))]",
       sparkData: sparkDuration,
-      sparkColor: "hsl(var(--muted-foreground))",
+      sparkColor: "hsl(var(--primary))",
+      accent: "border-t-[3px] border-t-[hsl(var(--primary))]",
     },
   ];
 
@@ -200,7 +204,7 @@ export function DashboardPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
         {kpis.map((kpi) => (
-          <div key={kpi.label} className="glass-panel rounded-[var(--radius)] p-4 space-y-2">
+          <div key={kpi.label} className={cn("glass-panel rounded-[var(--radius)] p-4 space-y-2", kpi.accent)}>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">{kpi.label}</p>
               <kpi.icon className={cn("w-4 h-4", kpi.color)} />
@@ -287,15 +291,15 @@ export function DashboardPage() {
             </Link>
           </div>
         </div>
-        <div className="border border-[hsl(var(--border))] rounded-[14px] overflow-hidden">
+        <div className="border border-[hsl(var(--border))] rounded-[14px] overflow-hidden bg-[hsl(var(--card))] shadow-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[hsl(var(--muted)/0.3)]">
-                <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">Time</th>
-                <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">Flow</th>
-                <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">Status</th>
-                <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">Records</th>
-                <th className="text-left px-3 py-2 text-xs text-muted-foreground font-medium">Duration</th>
+              <tr className="bg-muted/80 border-b border-[hsl(var(--border))]">
+                <th className="text-left px-3 py-2 text-xs text-foreground/70 font-semibold">Time</th>
+                <th className="text-left px-3 py-2 text-xs text-foreground/70 font-semibold">Flow</th>
+                <th className="text-left px-3 py-2 text-xs text-foreground/70 font-semibold">Status</th>
+                <th className="text-left px-3 py-2 text-xs text-foreground/70 font-semibold">Records</th>
+                <th className="text-left px-3 py-2 text-xs text-foreground/70 font-semibold">Duration</th>
               </tr>
             </thead>
             <tbody>
@@ -312,8 +316,8 @@ export function DashboardPage() {
                   </td>
                 </tr>
               ) : (
-                transactions.map((tx: Transaction) => (
-                  <tr key={tx.execution_id} className="border-t border-[hsl(var(--border))]">
+                transactions.map((tx: Transaction, idx: number) => (
+                  <tr key={tx.execution_id} className={cn("border-t border-[hsl(var(--border))]", idx % 2 === 1 && "bg-muted/40")}>
                     <td className="px-3 py-2 text-xs">{fmtTime(tx.started_at)}</td>
                     <td className="px-3 py-2 text-xs font-medium">{tx.flow_name}</td>
                     <td className="px-3 py-2">{statusBadge(tx.status)}</td>

@@ -172,12 +172,12 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
   const pct = Math.round(confidence * 100);
   const color =
     pct >= 90
-      ? "text-green-400 bg-green-400/10 border-green-400/30"
+      ? "text-[hsl(var(--success))] bg-[hsl(var(--success)/0.1)] border-[hsl(var(--success)/0.3)]"
       : pct >= 70
-        ? "text-blue-400 bg-blue-400/10 border-blue-400/30"
+        ? "text-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)] border-[hsl(var(--primary)/0.3)]"
         : pct >= 50
-          ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/30"
-          : "text-orange-400 bg-orange-400/10 border-orange-400/30";
+          ? "text-[hsl(var(--warning))] bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning)/0.3)]"
+          : "text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.1)] border-[hsl(var(--destructive)/0.3)]";
 
   return (
     <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 text-xs font-mono rounded-full border", color)}>
@@ -203,8 +203,8 @@ function MappingRow({
     <div
       className={cn(
         "grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3 px-4 py-3 rounded-xl border transition-all",
-        status === "accepted" && "bg-green-400/5 border-green-400/20",
-        status === "rejected" && "bg-red-400/5 border-red-400/20 opacity-50",
+        status === "accepted" && "bg-[hsl(var(--success)/0.05)] border-[hsl(var(--success)/0.2)]",
+        status === "rejected" && "bg-[hsl(var(--destructive)/0.05)] border-[hsl(var(--destructive)/0.2)] opacity-50",
         status === "suggested" && "bg-card border-border hover:border-primary/30"
       )}
     >
@@ -232,23 +232,23 @@ function MappingRow({
           <>
             <button
               onClick={onAccept}
-              className="p-1.5 rounded-lg text-green-400 hover:bg-green-400/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.1)] transition-colors cursor-pointer"
               title="Accept mapping"
             >
               <Check className="w-4 h-4" />
             </button>
             <button
               onClick={onReject}
-              className="p-1.5 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-[hsl(var(--destructive))] hover:bg-[hsl(var(--destructive)/0.1)] transition-colors cursor-pointer"
               title="Reject mapping"
             >
               <X className="w-4 h-4" />
             </button>
           </>
         ) : status === "accepted" ? (
-          <span className="text-xs text-green-400 font-medium">Accepted</span>
+          <span className="text-xs text-[hsl(var(--success))] font-medium">Accepted</span>
         ) : (
-          <span className="text-xs text-red-400 font-medium">Rejected</span>
+          <span className="text-xs text-[hsl(var(--destructive))] font-medium">Rejected</span>
         )}
       </div>
     </div>
@@ -341,9 +341,9 @@ export function FieldMappingPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: "Suggested", value: stats.total, color: "text-primary" },
-          { label: "Accepted", value: stats.accepted, color: "text-green-400" },
-          { label: "Rejected", value: stats.rejected, color: "text-red-400" },
-          { label: "Pending", value: stats.pending, color: "text-yellow-400" },
+          { label: "Accepted", value: stats.accepted, color: "text-[hsl(var(--success))]" },
+          { label: "Rejected", value: stats.rejected, color: "text-[hsl(var(--destructive))]" },
+          { label: "Pending", value: stats.pending, color: "text-[hsl(var(--warning))]" },
         ].map((s) => (
           <div key={s.label} className="p-3 rounded-xl border border-border bg-card">
             <p className="text-xs text-muted-foreground">{s.label}</p>

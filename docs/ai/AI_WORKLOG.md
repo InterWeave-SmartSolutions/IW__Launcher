@@ -5224,3 +5224,737 @@ Commands run:
 
 Verification: TypeScript strict mode 0 errors, Vite build succeeded, pushed to main
 Follow-ups: Vercel will auto-deploy; test with two different accounts to confirm cache isolation
+
+---
+
+## 2026-03-11 (session 14) — N-FUSION light mode palette
+Agent/tool: Claude Code (Opus 4.6)
+User request: Implement the N-FUSION palette as the light mode theme for the IW Portal React frontend
+
+Actions taken:
+1. Replaced `:root` light mode CSS custom property tokens in `index.css` with N-FUSION palette:
+   - `--background` → `#f0f5ff` (light blue-white content bg, was slate gray)
+   - `--card` → `#ffffff` (crisp white cards, was `220 45% 98%`)
+   - `--primary` → `#2563eb` (vivid indigo CTAs, was `217 91% 60%`)
+   - `--accent` → `#00b8ff` (cyan highlight, was `216 32% 90%`)
+   - `--success` → `#00c987` (vibrant green)
+   - `--border` → `#dde8f8` (subtle blue border, was `216 28% 80%`)
+   - `--sidebar` → `#0d1f3c` (deep navy for structural contrast, was light slate)
+   - `--sidebar-foreground` → muted blue-white text on navy
+   - `--sidebar-accent` → `#00b8ff` (cyan active nav indicator)
+2. Updated `.glass-panel` and `.glass-sidebar` utility classes:
+   - Light mode: solid white cards + solid navy sidebar (no backdrop-filter/blur)
+   - Dark mode: glassmorphism retained unchanged
+3. Simplified light mode `.app-background` to flat `#f0f5ff` (removed radial gradients)
+4. Dark mode (`.dark`) block left completely untouched
+
+Files changed:
+- `frontends/iw-portal/src/index.css` — N-FUSION light mode tokens + glass utility split
+- `web_portal/tomcat/webapps/iw-portal/` (rebuilt production output)
+
+Commands run:
+- `node node_modules/typescript/bin/tsc -b --noEmit` → 0 errors
+- `node node_modules/vite/bin/vite.js build` → ✓ built in 6.29s
+
+Verification: TypeScript strict 0 errors, Vite build succeeded
+Follow-ups: Visual QA in browser (light mode toggle), Vercel redeploy if pushing
+
+## 2026-03-11 18:15 (EDT)
+- Agent: Claude Code (Opus 4.6)
+- Task: Create Creatio ↔ Magento 2 bidirectional integration project
+
+### What I did (this response)
+Created a complete InterWeave IDE workspace project for Creatio ↔ Magento 2 bidirectional integration:
+
+**Workspace project (`workspace/Creatio_Magento2_Integration/`)**:
+- `.project` — Eclipse project descriptor
+- `configuration/im/config.xml` — 11 TransactionDescription elements (8 scheduled flows + 3 queries)
+- `configuration/ts/config.xml` — Transformation server config
+- `configuration/Creatio_Magento2_Integration.properties` — Project version metadata
+- `xslt/include/dataconnections.xslt` — Creatio REST + Magento 2 REST connection params
+- `xslt/Site/include/appconstants.xslt` — Session variable bindings
+- `xslt/Site/include/globals.xslt` — Global imports
+- `xslt/Site/include/sitetran_ent.xslt` — Enterprise site transactions (index/session)
+- `xslt/Site/include/sitetran_host.xslt` — Hosted site transactions (full: user/company CRUD, login, password change)
+- `xslt/Site/new/include/soltran.xslt` — 8 bidirectional flows + 3 query definitions:
+  - SyncAccounts_CRM2MG / SyncAccounts_MG2CRM (hourly)
+  - SyncProducts_CRM2MG / SyncProducts_MG2CRM (hourly)
+  - SyncOrders_MG2CRM / SyncOrders_CRM2MG (30min)
+  - SyncInvoices_MG2CRM / SyncInvoices_CRM2MG (hourly)
+  - GetCreatioAccount, GetMagentoCustomer, GetMagentoOrder (on-demand queries)
+- `xslt/Site/new/include/soltran_start.dat` + `soltran_end.dat` — Template wrappers
+- `xslt/Site/new/transactions.xslt` — Master XSLT (imports + calls sitetran/soltran/soltran1)
+- `xslt/Site/new/xml/transactions.xml` — Empty mappings placeholder
+- Runtime profiles for Demo Company + MagentoCRM Solutions
+
+**Solution type mapping**:
+- Added `CRM2MG2=Creatio_Magento2_Integration` to `config/workspace-profile-map.properties`
+
+**Database (Supabase)**:
+- Company: `MagentoCRM Solutions` (id=9, solution_type=CRM2MG2, code=MGCRM01)
+- User: `Maria Garcia` (admin@magentocrm.com, id=14, company_id=9, role=admin, pwd=magcrm123)
+- Configuration: profile `MagentoCRM Solutions:admin@magentocrm.com` (id=59, CRM2MG2 XML)
+
+### Files changed
+- NEW: `workspace/Creatio_Magento2_Integration/` (18 files)
+- MODIFIED: `config/workspace-profile-map.properties` (+1 line: CRM2MG2 mapping)
+
+### Notes
+- Project will auto-import in Eclipse via `iw_workspace_init_1.0.0` plugin on next IDE launch
+- Sync bridge will detect the new project and sync profiles via WorkspaceProfileSyncServlet
+- Another AI agent was concurrently fixing user profile DB/editing — no conflicts (this work is additive only)
+- Login: admin@magentocrm.com / magcrm123
+
+---
+
+## 2026-03-11 ~17:00 (EST)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Analyze new UI prototype directories in docs/ui-ux, update docs/logs/instructions
+
+### What I did (this response)
+
+**Analyzed two new static HTML prototype directories:**
+- `docs/ui-ux/iw_associate_portal/` — 9 pages (home, library, search, intake, webinars, notifications, support, profile, billing), CSS tokens aligned with iw-portal (`--bg:#071021`, `--brand:#3b82f6`), new patterns: hero section, tile cards, resource search, intake wizard
+- `docs/ui-ux/iw_master_console/` — 10 pages (dashboard, users, content, subscriptions, integrations, notifications, analytics, audit, support, settings), 4-col KPI grid with SVG sparklines via `data-spark` attribute, operational queue table with filter, analytics funnel
+
+**Updated documentation:**
+1. `docs/NEXT_STEPS.md` — Updated session date (13), marked Cloudflare tunnel item #15 as DONE (quickstart_tunnel.bat working, Vercel rootDirectory bug fixed), added new "UI Prototype Incorporation" section with phased adoption plan (A-D) referencing PORTAL_ARCHITECTURE.md
+2. `docs/ui-ux/README.md` — Added PORTAL_ARCHITECTURE.md to documents table, added "Static HTML Prototypes" section documenting both new directories with page counts, build dates, key patterns, and local serve instructions
+3. `CLAUDE.md` — Added `docs/ui-ux/` tree to directory structure section showing both prototype directories and all analysis documents
+
+### Files modified
+- `docs/NEXT_STEPS.md` (updated tunnel status, added UI prototype section)
+- `docs/ui-ux/README.md` (added prototype directory docs + PORTAL_ARCHITECTURE ref)
+- `CLAUDE.md` (added docs/ui-ux directory tree)
+
+### Notes
+- Another agent is concurrently working on the Vercel/Cloudflare deployment bug — no conflicts (this work is docs-only)
+- Both prototypes share the same ASSA design language as iw-portal (same color system, glassmorphism, card/table primitives) — no redesign needed for incorporation, only feature additions
+- Master Console app.js includes a reusable SVG sparkline generator (`data-spark` attribute → polyline) that could replace Recharts for lightweight inline use
+- Associate Portal introduces a Business Checkup intake wizard pattern that maps conceptually to the existing Config Wizard
+- PORTAL_ARCHITECTURE.md (already existed) has the full phased adoption plan — Phases A through D
+
+---
+
+## 2026-03-11 ~18:30 (EST)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Ensure data is synced correctly per user/company profiles — solution type filtering, flow scoping, IDE real-time sync
+
+### What I did (this response)
+
+**Investigation (3 parallel sub-agents):**
+- Solution Type filtering: client-side works (suffix-based logic in buildSyncMappings), but server had NO validation — accepted any mapping keys for any solution type
+- Flow scoping: CORRECTLY implemented at all layers (ApiFlowManagementServlet filters by profileName from session, React Query cache scoped by companyId)
+- IDE sync: WORKING both directions (sync bridge polls every 1-2 sec, portal→IDE on startup/login), but portal didn't auto-refresh when IDE pushed changes
+
+**Fix 1 — Server-side solution type validation (ApiConfigurationServlet.java):**
+- Added `allowedKeysForSolutionType()` method mirroring the React `buildSyncMappings()` suffix logic:
+  - Core keys (SyncTypeAC/SO/Inv/SR/Prd) always allowed
+  - Bidi keys (Est/Bill/Check/CM) for suffix [12BNPTGPC]
+  - Ext1 keys (VAC/OJ/PO/VC/Dep/PR/BP/CCC) for suffix [1BNPTGPC]
+  - Ext2 keys (COA/JE/TT/SC) for suffix [BNPTG]
+- `handlePutWizard()` now strips disallowed SyncType* keys before building XML, logs stripped keys
+- Non-SyncType keys (detail fields, credentials) pass through unfiltered
+
+**Fix 2 — Auto-invalidate React queries on IDE sync:**
+- Enhanced `useSyncStatus()` hook: tracks previous sync status per profile, detects transitions to "in_sync" (meaning sync bridge just imported IDE changes or portal just pushed)
+- On transition, auto-invalidates `config`, `engine-flows`, and `company-profile` query keys
+- Reduced poll interval from 15s to 10s
+- Activated `useSyncStatus()` globally in `AppShell.tsx` (was previously only on IDESyncPage)
+
+**Fix 3 — Auto-push to IDE after wizard save:**
+- `useSaveWizardConfig()` now calls `POST /api/sync/push` after successful wizard save
+- Best-effort (catch swallowed) — wizard save success is not gated on sync push
+- Also invalidates `sync-status` query key after push
+
+### Files modified
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiConfigurationServlet.java` (server-side validation)
+- `frontends/iw-portal/src/hooks/useConfiguration.ts` (auto-push after wizard save)
+- `frontends/iw-portal/src/hooks/useSync.ts` (auto-invalidate on sync status change)
+- `frontends/iw-portal/src/components/layout/AppShell.tsx` (global sync watcher)
+
+### Verification
+- javac: 0 errors (4 warnings — obsolete source/target)
+- tsc: 0 errors
+- Vite build: 5.68s, all chunks present
+
+### Notes
+- Flow scoping was already correct — no changes needed. ProfileName-based filtering at server + companyId-scoped React Query cache
+- The `allowedKeysForSolutionType()` logic is duplicated between Java and TypeScript. This is intentional: client-side for UX (hide unavailable options), server-side for security (reject invalid data).
+- ConfigContext is global by design (all workspace projects in one Vector). Per-company isolation is via TransactionThread lookup keyed by profileName. This matches original BDConfigurator.jsp behavior.
+
+---
+
+## 2026-03-11 ~20:00 (UTC) — Session 14b: Deep Ocean dark mode + theme verification
+
+Agent/tool: Claude Code (Opus 4.6)
+User request: "Lets go with A deep ocean. Make sure the UI update is applied thoroughly with all navigation and pages"
+
+### Actions taken
+- Implemented Deep Ocean dark mode palette in `index.css` (near-black navy bg, cyan highlights, glassmorphism)
+- Comprehensive sweep of all 41 pages/components for hardcoded dark-mode-only colors
+- Fixed `IDESyncPage.tsx`: replaced 11× `border-white/8`, 7× `bg-white/3`, `bg-white/10`, `bg-black/20`, `text-yellow-400`, `bg-yellow-400/10`, `border-yellow-400/40` with theme tokens
+- Added colored KPI card top borders (`border-t-[3px]`) to DashboardPage, MonitoringPage, MasterDashboardPage, KpiRow
+- Verified sidebar-aware tokens throughout Sidebar.tsx (brand, context pill, nav groups, items, footer)
+- Visual verification via Playwright: Dashboard + Monitoring in both light and dark modes — all correct
+
+### Files modified
+- `frontends/iw-portal/src/index.css` — Deep Ocean dark tokens + Owner Console light tokens + glass utility split
+- `frontends/iw-portal/src/pages/IDESyncPage.tsx` — replaced ~25 hardcoded dark-mode colors with theme tokens
+- `frontends/iw-portal/src/pages/DashboardPage.tsx` — KPI card accent borders
+- `frontends/iw-portal/src/pages/MonitoringPage.tsx` — KPI card accent borders + SummaryCard accent prop
+- `frontends/iw-portal/src/pages/master/MasterDashboardPage.tsx` — KPI card accent borders
+- `frontends/iw-portal/src/components/integrations/KpiRow.tsx` — accent property on KPI_DEFS
+- `frontends/iw-portal/src/components/layout/Sidebar.tsx` — sidebar-aware tokens (user also modified independently)
+
+### Verification
+- Playwright screenshots: dark-mode-dashboard.png, light-mode-dashboard.png, light-mode-monitoring.png, dark-mode-monitoring.png — all rendering correctly
+- Sidebar text visible in both modes (sidebar-specific foreground tokens)
+- KPI cards have distinct colored top borders per metric
+- Charts, tables, glassmorphism panels all render properly in both themes
+
+---
+
+## 2026-03-11 ~22:40 (UTC) — Session 14c: Light mode theme token sweep
+
+Agent/tool: Claude Code (Opus 4.6)
+User request: "there are certain pages in 'light mode' that are not matching the new theme we have set"
+
+### Actions taken
+- Systematically navigated all pages in light mode via Playwright to identify mismatches
+- Found 3 files with hardcoded Tailwind color classes (e.g. `text-red-400`, `bg-amber-500/15`, `text-green-300`) that were invisible or wrong in light mode
+- Converted all ~40 instances to theme-aware `hsl(var(--token))` equivalents
+
+### Files modified
+- `frontends/iw-portal/src/pages/FieldMappingPage.tsx` — confidence badges, mapping row statuses, accept/reject buttons, stats bar (11 replacements)
+- `frontends/iw-portal/src/pages/AuditLogPage.tsx` — all action badge colors for login/update/flow/config/register/security categories (6 replacements)
+- `frontends/iw-portal/src/pages/LoggingPage.tsx` — heatmap cells + legend, status badges, error message column, tooltip text, incident panel icons + text, raw log row highlighting + icons + text (20+ replacements)
+
+### Verification
+- tsc: 0 errors
+- Vite build: 6.24s, all chunks present
+- Playwright screenshots verified: logging (both tabs), audit log, notifications, field mapping, all portals — all render correctly in light mode
+- Token mapping: `text-red-*` → `--destructive`, `text-green-*`/`text-emerald-*` → `--success`, `text-blue-*` → `--primary`, `text-amber-*`/`text-yellow-*`/`text-orange-*` → `--warning`
+
+## 2026-03-11 19:00 (EDT)
+- Agent: Claude Code (Opus 4.6)
+- Task: Differentiate user profiles, seed per-company data, reorganize sidebar
+
+### What I did (this response)
+
+**1. Sidebar reorganization (IDE Sync + Field Mapping removal)**
+- Removed "Field Mapping" and "IDE Sync" from sidebar Administration group
+- IDE Sync → embedded as "Workspace Sync" tab in Integrations page (IntegrationOverviewPage)
+- Field Mapping → route redirects to /company/config/wizard (will become wizard step later)
+- Extracted `WorkspaceSyncPanel` as reusable component from IDESyncPage
+- Old URLs (/admin/sync, /admin/field-mapping) redirect to new locations
+- TypeScript 0 errors, production build successful
+
+**2. Differentiated all loginable user profiles**
+- admin@sample.com: Moved from Demo Company → new company "Pinnacle Integrations" (id=11, SF2NS, New York NY)
+  - Name: Sarah Chen, VP of Operations
+  - Solution: Salesforce → NetSuite (SF2NS)
+  - Credentials: Salesforce Production + NetSuite Production
+  - Config: sandbox=Yes, env=Production, timezone=-5, email on error
+  - Flows: SyncAccounts_SF2NS, SyncAccounts_NS2SF, SyncOpportunities_SF2NS, SyncInvoices_NS2SF, SyncVendors_NS2SF, SyncPOs_SF2NS
+  - 30 transaction executions seeded (27 success, 3 failed)
+
+- demo@sample.com: Stays at Demo Company Inc. (id=2, CRM2QB, San Francisco CA)
+  - Title updated: Integration Specialist
+  - Credentials: Creatio CRM Sandbox + QuickBooks Online (newly added)
+  - 621 existing transaction executions (10 distinct flows)
+
+- admin@magentocrm.com: MagentoCRM Solutions (id=9, CRM2MG2, Austin TX)
+  - Credentials: Creatio CRM Production + Magento 2 Commerce (newly added)
+  - 34 transaction executions seeded (8 distinct bidirectional flows)
+
+**3. Per-company data isolation verified**
+All pages (Dashboard, Monitoring, Integrations, Config, Credentials) are already scoped by company_id via:
+- React Query keys include companyId
+- Java servlets filter by session.companyId
+- queryClient.clear() on login/logout
+
+### Files changed
+- MODIFIED: `frontends/iw-portal/src/components/layout/Sidebar.tsx` (removed 2 nav items + unused imports)
+- MODIFIED: `frontends/iw-portal/src/routes.tsx` (replaced standalone routes with redirects)
+- MODIFIED: `frontends/iw-portal/src/pages/IDESyncPage.tsx` (extracted WorkspaceSyncPanel)
+- MODIFIED: `frontends/iw-portal/src/pages/IntegrationOverviewPage.tsx` (added Workspace Sync tab)
+- MODIFIED: `web_portal/tomcat/webapps/iw-portal/` (rebuilt production bundle)
+
+### Database changes
+- NEW company: Pinnacle Integrations (id=11, SF2NS, PINN01)
+- UPDATED user: admin@sample.com → company_id=11, name=Sarah Chen
+- UPDATED user: demo@sample.com → title=Integration Specialist
+- UPDATED company config: Pinnacle → SF2NS config XML
+- NEW credentials: 4 rows (Demo: creatio+quickbooks, MagentoCRM: creatio+magento2)
+- NEW transaction_executions: 64 rows (30 for Pinnacle, 34 for MagentoCRM)
+- NEW transaction_metrics: 15 rows (hourly + daily aggregates for companies 2, 9, 11)
+
+## 2026-03-11 (Session 14) — IDE-to-DB Field Mapping & Credential Wiring
+**Agent**: Claude Code (Opus 4.6)
+**What I did (this response)**:
+1. Analyzed the full data pipeline: Portal Wizard → ApiConfigurationServlet → company_configurations DB → WorkspaceProfileSyncSupport → WorkspaceProfileCompiler → Generated workspace files → IDE views
+2. Identified the gap: compiler generated im/config.xml and profile.properties but did NOT generate `dataconnections.xslt` with credential values, leaving IDE ConnectionView empty
+3. Enhanced `WorkspaceProfileCompiler.java`:
+   - Added `buildDataConnectionsXslt()` method that maps wizard config fields (SFIntUsr, SFPswd, QDSN0, QBIntUsr0, QBPswd0, SandBoxUsed) to XSLT connection params (iwurl, iwuser, password, msurl, msuser, mspassword)
+   - Added `xmlAttrEscape()` helper for safe XML attribute escaping
+   - Added directory creation for `xslt/include/` and `xslt/Site/include/`
+   - Now copies `appconstants.xslt` from template project (39 session variable definitions)
+   - Handles CRM2QB solution types differently (Creatio URL vs Salesforce URL)
+4. Compiled successfully (0 errors, 4 warnings)
+5. Created comprehensive `docs/development/IDE_DB_FIELD_MAPPING.md` — maps all 8 IDE views to their DB tables, wizard config fields, and generated workspace files
+
+### Files changed
+- MODIFIED: `web_portal/.../config/WorkspaceProfileCompiler.java` (added dataconnections.xslt + appconstants.xslt generation)
+- CREATED: `docs/development/IDE_DB_FIELD_MAPPING.md` (IDE view ↔ DB field mapping reference)
+
+### What I did NOT change
+- company_credentials table not directly wired to compiler (credentials flow through wizard XML instead)
+
+## 2026-03-11 (Session 14c) — Populate Creatio Projects + Compiler CRM Support
+**Agent**: Claude Code (Opus 4.6)
+**What I did (this response)**:
+
+### Research (3 parallel agents)
+1. **IDE Plugin Build System** — Explored `plugin.xml` (3 perspectives, 11 views, 9 commands, 4 wizards). Found `AutoImportStartup` plugin at `plugins/iw_workspace_init_1.0.0/` that auto-imports workspace dirs with `.project` on IDE startup (skips GeneratedProfiles and IW_Runtime_Sync).
+2. **IM/TS Config Structure** — SF2AuthNet: 24 TransactionDescriptions + 46 Queries. Both Creatio projects had EMPTY im/config.xml.
+3. **Eclipse Metadata** — All 4 projects registered in metadata. Creatio_Magento2_Integration had minimal 48-byte snap files.
+
+### Changes Made
+1. **Populated `Creatio_QuickBooks_Integration/configuration/im/config.xml`** — 7 TransactionDescriptions + 7 Queries, Solution="CRM2QB"
+2. **Populated `Creatio_Magento2_Integration/configuration/im/config.xml`** — 8 TransactionDescriptions + 6 Queries, Solution="CRM2M2" (includes M2→CRM reverse sync)
+3. **Updated `WorkspaceProfileCompiler.java`** — Added CRM2QB compiler module + `shouldEnableCrmItem()` for CRM-specific flow enable/disable
+4. **Updated `WorkspaceProfileSyncSupport.java`** — Added CRM2M/CRM2MG fallback mapping to Creatio_Magento2_Integration
+
+### Files changed
+- MODIFIED: `workspace/Creatio_QuickBooks_Integration/configuration/im/config.xml` (empty → 7 TDs + 7 Queries)
+- MODIFIED: `workspace/Creatio_Magento2_Integration/configuration/im/config.xml` (empty → 8 TDs + 6 Queries)
+- MODIFIED: `web_portal/.../config/WorkspaceProfileCompiler.java` (added CRM2QB module + shouldEnableCrmItem)
+- MODIFIED: `web_portal/.../config/WorkspaceProfileSyncSupport.java` (added CRM2M mapping)
+
+---
+
+## Session 14d — Light mode background & flow separation fix
+**Date:** 2026-03-11
+**Agent:** Claude Code (Opus 4.6)
+**Trigger:** User: "still not loving that general grey background in the light mode. Plus its blending into the Integrations Engine controls listing which is hard to see individual flows"
+
+### What I did (this response)
+1. Verified light mode theme tokens in `index.css` — confirmed `--background: 210 20% 98%` (#f8f9fb near-white), `--border: 214 32% 87%` (stronger borders), `--card: 0 0% 100%` (pure white)
+2. **Flows tab** (`IntegrationOverviewPage.tsx`): Added `bg-[hsl(var(--card))] shadow-sm` to flow link cards — gives them visual lift and clear separation from the near-white page background
+3. **Engine Controls tab** (`FlowTable.tsx`): Added zebra striping via `idx % 2 === 1 && "bg-muted/60"` — alternating rows have visible blue-gray tint for easy row scanning
+4. Verified both tabs in light mode via Playwright screenshots — cards clearly distinct, rows scannable
+5. Verified dark mode unaffected — glassmorphism panels and flow cards render correctly
+6. TypeScript: 0 errors. Vite build: success (5.77s)
+
+### Files changed
+- MODIFIED: `frontends/iw-portal/src/pages/IntegrationOverviewPage.tsx` (line 214: added `bg-[hsl(var(--card))] shadow-sm` to flow cards)
+- MODIFIED: `frontends/iw-portal/src/components/integrations/FlowTable.tsx` (line 258: added zebra striping `idx % 2 === 1 && "bg-muted/60"`)
+- REBUILT: `web_portal/tomcat/webapps/iw-portal/` (production build output)
+
+---
+
+## Session 14e — Light mode readability overhaul
+**Date:** 2026-03-11
+**Agent:** Claude Code (Opus 4.6)
+**Trigger:** User: "The UI for this is too bland and hard to read. We need the flows and everything to be readable"
+
+### What I did (this response)
+
+**Root cause:** Light mode CSS tokens had insufficient contrast — `--muted-foreground` was too pale (#6080a0 at 50% lightness), `--border` too faint, `--background` too close to white, and semantic colors (success/destructive/warning) were designed for dark backgrounds.
+
+**Theme token overhaul (`index.css` `:root`):**
+- `--background`: `210 20% 98%` → `214 25% 95%` (#edf1f7) — visible cool blue-gray, clear contrast vs white cards
+- `--foreground`: lightness 18% → 15% (#142538) — near-black navy, maximum readability
+- `--muted-foreground`: `213 21% 50%` → `215 25% 38%` (#486080) — **+12 lightness points darker**, now clearly readable
+- `--muted`: lightness 92% → 88% (#d5dce8) — stronger zebra stripes and header backgrounds
+- `--border`: lightness 87% → 80% (#bcc8d8) — clearly visible row separators and card borders
+- `--primary`: lightness 50% → 44% (#0098e0) — deeper teal, better contrast on white
+- `--destructive`: `0 84% 60%` → `0 72% 50%` — darker red for white backgrounds
+- `--success`: `162 100% 45%` → `162 80% 35%` — darker green, readable on white
+- `--warning`: lightness 45% → 40% — darker amber
+
+**Component fixes:**
+- `FlowTable.tsx`: Table container gets `bg-[hsl(var(--card))] shadow-sm`, column headers use `font-semibold text-foreground/70` with `bg-muted/80`, data cells (interval/shift/counter) use `font-medium text-foreground/80` instead of `text-muted-foreground`
+- `EngineControlsTab.tsx`: Query flow cards get `bg-[hsl(var(--card))] shadow-sm`
+- Dark mode tokens unchanged — verified no regression
+
+### Files changed
+- MODIFIED: `frontends/iw-portal/src/index.css` (light mode `:root` tokens overhauled — 12 variables)
+- MODIFIED: `frontends/iw-portal/src/components/integrations/FlowTable.tsx` (table container, header, and cell styling)
+- MODIFIED: `frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx` (query flow card styling)
+- REBUILT: `web_portal/tomcat/webapps/iw-portal/` (production build output)
+
+---
+
+## 2026-03-11 ~23:30 UTC — Session 14f: List filtering, pagination, and readability across all listing pages
+
+**Agent/tool:** Claude Code (Opus 4.6)
+**User request:** "Apply this to all listing pages. Make the listing pages actually filtered lists for easy management and to ensure the list does not cause extended scrolling for too long."
+
+### What I did (this response)
+
+**Filtering + pagination pattern applied to all listing sections:**
+
+1. **FlowTable.tsx (Scheduled + Utility flows)** — Complete rewrite:
+   - Added inline search filter (shown when >5 flows) with `Search` icon input
+   - Added `PAGE_SIZE = 15` pagination with "Show all X flows (Y more)" / "Show less" toggle
+   - Badge shows `filtered.length / flows.length` when search active
+   - Empty state: `No flows match "searchterm"`
+   - Table container: `bg-[hsl(var(--card))] shadow-sm`
+   - Headers: `bg-muted/80 font-semibold text-foreground/70 border-b`
+   - Zebra striping: `idx % 2 === 1 && "bg-muted/60"` (JS-based, not CSS `:nth-child` which breaks with header siblings)
+
+2. **EngineControlsTab.tsx (Query Flows)** — Search + pagination:
+   - Added `querySearch` + `queryExpanded` state
+   - `QUERY_PAGE = 15` pagination with "Show all X queries (Y more)" / "Show less"
+   - Inline search filter for query flows (>5 items)
+   - Query flow cards: `bg-[hsl(var(--card))] shadow-sm`
+   - Empty state for no matches
+
+3. **CredentialInventory.tsx** — Card styling:
+   - Table container: `bg-[hsl(var(--card))] shadow-sm border-[hsl(var(--border))]`
+   - Headers: `bg-muted/80 font-semibold text-foreground/70`
+   - Zebra: `idx % 2 === 1 && "bg-muted/40"` on credential rows + profile credentials table
+
+4. **DashboardPage.tsx** — Transaction table styling:
+   - Table container: `bg-[hsl(var(--card))] shadow-sm`
+   - Headers: `bg-muted/80 font-semibold text-foreground/70`
+   - Zebra: `idx % 2 === 1 && "bg-muted/40"` on transaction rows
+
+5. **IntegrationOverviewPage.tsx** — Flows tab search:
+   - Added `flowSearch` state + `Search` import
+   - Inline search input in Flows header (shown when >5 flows)
+   - Flows filtered by `flowSearch` before rendering
+
+### Verification
+- TypeScript: 0 errors (`tsc -b --noEmit`)
+- Vite build: success (6.57s)
+- Playwright screenshots (light mode): Flows tab, Engine Controls tab (search + pagination visible), Query Flows ("Show all 46 queries (31 more)"), Dashboard transaction table — all readable with clear card separation, zebra striping, and search inputs
+- Dark mode: verified no regression — glassmorphism and styling intact
+
+### Files changed
+- MODIFIED: `frontends/iw-portal/src/components/integrations/FlowTable.tsx`
+- MODIFIED: `frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx`
+- MODIFIED: `frontends/iw-portal/src/components/integrations/CredentialInventory.tsx`
+- MODIFIED: `frontends/iw-portal/src/pages/DashboardPage.tsx`
+- MODIFIED: `frontends/iw-portal/src/pages/IntegrationOverviewPage.tsx`
+
+---
+## 2026-03-11 (session 14 — per-company flow isolation + UX fixes)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Fix Integrations Engine Controls showing wrong flows for each user, fix AuditLogPage stale chunk error, default activity overview to month, investigate missing system server logs.
+Actions taken:
+1. **ApiFlowManagementServlet — solution-type flow filtering**: Added `getAllowedFlowIds()` method that reads `config/workspace-profile-map.properties` to resolve the company's solutionType → workspace project directory, then parses that project's `im/config.xml` to extract allowed TransactionDescription/Query IDs. Flows in the engine are now filtered to only show ones belonging to the logged-in company's workspace project. Also returns `configuredFlowIds` array so the frontend can show configured flows even when the engine hasn't loaded them yet.
+2. **EngineControlsTab** — When engine has no flows loaded but config.xml has configured flows, now shows a list of configured flow IDs with a badge display and instructions to initialize the engine.
+3. **MonitoringPage** — Changed default time period from "7d" to "30d" (month view).
+4. **Portal rebuild** — Rebuilt React portal to fix stale chunk errors for AuditLogPage and ConfigurationWizardPage.
+5. **System server logs investigation** — Confirmed that Catalina logs ARE the system server logs. The LoggingPage Server tab shows `catalina.YYYY-MM-DD.log` files which contain Tomcat lifecycle/system messages. No separate "system" log category exists — this is by design. The `localhost.YYYY-MM-DD.log` files contain webapp-level (application) logs.
+
+Files changed/created:
+- MODIFIED: `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiFlowManagementServlet.java` — solution-type filtering via workspace config.xml
+- MODIFIED: `frontends/iw-portal/src/types/flows.ts` — added solutionType, configuredFlowIds to FlowsResponse
+- MODIFIED: `frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx` — show configured flows when engine empty
+- MODIFIED: `frontends/iw-portal/src/pages/MonitoringPage.tsx` — default period "7d" → "30d"
+- REBUILT: `web_portal/tomcat/webapps/iw-portal/` — fresh chunk hashes
+
+Commands run:
+- `javac -source 1.8 -target 1.8 ...ApiFlowManagementServlet.java` — compiled successfully (warnings only)
+- `node node_modules/typescript/bin/tsc -b --noEmit` — 0 errors
+- `node node_modules/vite/bin/vite.js build` — 37 chunks, built in 6.6s
+
+Verification performed:
+- TypeScript strict mode: 0 errors
+- Servlet compilation: success (4 warnings about Java 8 source/target deprecation)
+- Portal build: all chunks regenerated with new hashes (fixes stale chunk errors)
+
+Follow-ups / known issues:
+- Engine Controls still require engine initialization via BDConfigurator before flows can be started/stopped (the filtering only prevents showing OTHER companies' flows)
+- Dashboard transaction data is already company-scoped via company_id in query keys and session-based backend filtering
+- Tomcat restart required for servlet changes to take effect
+
+---
+
+## Session 15 — Populate IDE Transaction Views for Creatio Projects
+Date: 2026-03-11
+Agent: Claude Code (Opus 4.6)
+
+### What changed
+Populated the transaction definition files that feed ALL inner IDE views (ConnectionView, DataMapView, AccessParameterView, TransactionDetailsView) for both Creatio workspace projects. Previously these projects only had im/config.xml (scheduling) but empty transaction definitions, so the IDE showed no connections, data maps, or transaction details.
+
+### Files created
+1. **`workspace/Creatio_QuickBooks_Integration/xslt/Site/new/include/soltran.xslt`** (NEW)
+   - 7 transaction flows: CRMLogin, CRMAcctSync2QB, CRMOrderSync2QB, CRMInvSync2QB, CRMProdSync2QB, CRMSRSync2QB, CRMDRSSync
+   - 7 query flows: Creatio2AuthNetQ, Creatio2StrpQ, CRMAcct2QBQ, CRMOrder2QBQ, CRMInv2QBQ, CRMProd2QBQ, CRMSRSync2QBQ
+   - Uses `com.interweave.adapter.rest.IWRestJson` for CRM flows, `com.interweave.adapter.http.IWHttpBaseAdaptor` for payment queries
+   - Creatio OData endpoints for source, QuickBooks v3 API endpoints for destination
+
+2. **`workspace/Creatio_QuickBooks_Integration/xslt/Site/new/xml/transactions.xml`** (was empty `<iwmappings></iwmappings>`)
+   - Static build output containing 16 transactions: 2 site (index, session) + 7 CRM flows + 7 queries
+   - Each transaction has classname, datamap(s) with driver/url/user/password/access structure
+   - Payment queries use hardcoded Authorize.Net and Stripe API URLs
+
+3. **`workspace/Creatio_Magento2_Integration/xslt/Site/new/xml/transactions.xml`** (was empty `<iwmappings></iwmappings>`)
+   - Static build output containing 13 transactions: 2 site + 8 bidirectional CRM↔Magento flows + 3 queries
+   - Bidirectional: CRM2MG and MG2CRM variants for accounts, products, orders, invoices
+   - Magento REST V1 endpoints, Creatio OData endpoints
+
+4. **`workspace/Creatio_QuickBooks_Integration/xslt/Site/include/sitetran.xslt`** (NEW - was missing)
+   - Enterprise variant of site transactions (index + session)
+   - Required by `transactions.xslt` import chain — without this, XSLT compilation would fail
+
+5. **`workspace/Creatio_Magento2_Integration/xslt/Site/include/sitetran.xslt`** (NEW - was missing)
+   - Same enterprise variant, matching SF2AuthNet's sitetran.xslt
+
+### Architecture notes
+- **Two-file config system**: `im/config.xml` defines WHAT flows exist and scheduling; `transactions.xml` defines HOW each flow works (connections, adapters, data maps, access parameters)
+- **XSLT compilation chain**: `transactions.xslt` → imports `sitetran.xslt` + `dataconnections.xslt` + `soltran.xslt` → generates `transactions.xml`
+- **IDE view mapping**: transactions.xml feeds ConnectionView (driver/url/user/password), DataMapView (datamap elements), AccessParameterView (access/statementpre), TransactionDetailsView (classname/transform/nexttransaction)
+- Magento2 project already had `soltran.xslt` (302 lines, 11 flows + 3 queries); QuickBooks project was missing it entirely
+
+### What I did (this response)
+1. Read existing Magento2 soltran.xslt to understand CRM transaction patterns
+2. Read SF2AuthNet reference files for sitetran.xslt structure
+3. Created soltran.xslt for QuickBooks project with CRM-specific flows
+4. Populated both transactions.xml files with resolved static XML
+5. Created missing sitetran.xslt for both projects (enterprise variant)
+6. Verified XSLT import chain completeness
+
+### Follow-ups
+- Build TS in IDE should now work (XSLT compilation chain is complete)
+- Connection credentials remain empty (populated at runtime by WorkspaceProfileCompiler from wizard config)
+- No compiled .class transformer files exist for Creatio flows (SF2AuthNet has 472 .class files) — Build TS would need to create these
+- IDE's Build Project/Build IM/Build TS are handled by `ProjectActions.class` (source unavailable)
+
+---
+
+## 2026-03-11 ~23:30 UTC — Session 14g: Fix light mode blending on Logging, Workspace Sync, and Notifications
+
+**Agent/tool:** Claude Code (Opus 4.6)
+**User request:** "logging still has the same blended gray background problem, as does integrations workspace sync, as does potentially notifications"
+
+### What I did (this response)
+
+Root cause: Many panels used `bg-[hsl(var(--muted)/0.08)]` or similarly low-opacity backgrounds that are nearly invisible against the light mode `--background: 214 25% 95%`.
+
+**LoggingPage.tsx fixes:**
+- Activity Logs table: added `bg-[hsl(var(--card))] shadow-sm` card wrapper, upgraded headers to `bg-muted/80 font-semibold text-foreground/70`, fixed zebra from `bg-muted/0.05` to `bg-muted/40`
+- Server Logs list: table wrapper gets `bg-[hsl(var(--card))] shadow-sm`, header row upgraded to `bg-muted/80 font-semibold text-foreground/70`
+- Server Logs row hover: `bg-muted/0.15` → `bg-muted/30`
+- Detail view log table: added `bg-[hsl(var(--card))] shadow-sm`, error/warn row backgrounds 0.06→0.1 opacity
+- Heatmap empty cells: `bg-muted/0.08` → `bg-muted/30`
+- Context block: `bg-muted/0.15` → `bg-muted/40`
+- Stack trace items: `bg-muted/0.1` → `bg-muted/40`
+
+**IDESyncPage.tsx (WorkspaceSyncPanel) fixes:**
+- All 7 instances of `bg-[hsl(var(--muted)/0.08)]` → `bg-[hsl(var(--card))] shadow-sm` (status bar, profile cards, skeleton loaders, empty state, How Sync Works, Log Panel)
+- Log panel hover: fixed accidental replace_all damage → `hover:bg-muted/30`
+
+**NotificationsPage.tsx:**
+- Already uses `glass-panel` which resolves to `bg: hsl(var(--card))` in light mode — no changes needed. Verified via screenshot.
+
+### Verification
+- TypeScript: 0 errors
+- Vite build: success (6.64s)
+- Playwright screenshots (light mode): Server Logs table (white card, bold headers), Workspace Sync (white profile cards with shadow), Notifications (already fine)
+- Dark mode: not retested (changes use same token patterns as previous fixes)
+
+### Files changed
+- MODIFIED: `frontends/iw-portal/src/pages/LoggingPage.tsx`
+- MODIFIED: `frontends/iw-portal/src/pages/IDESyncPage.tsx`
+- REBUILT: `web_portal/tomcat/webapps/iw-portal/`
+
+---
+
+## 2026-03-12 ~00:30 UTC — Session 15: Populate IDE Transaction Views + Build Transformers
+
+**Agent/tool:** Claude Code (Opus 4.6)
+**User request:** Fill out IDE views for Creatio projects; build transformer .class files for Creatio_Magento2_Integration
+
+### What changed
+
+**Part A — Populate IDE views (transactions.xml, soltran.xslt, sitetran.xslt)**
+
+Both Creatio projects had empty `transactions.xml` files, meaning all inner IDE views (ConnectionView, DataMapView, AccessParameterView, TransactionDetailsView) showed no data. Also, both projects were missing `sitetran.xslt` (required by the XSLT import chain), and the QuickBooks project was missing `soltran.xslt` entirely.
+
+Files created/populated:
+- `workspace/Creatio_QuickBooks_Integration/xslt/Site/new/include/soltran.xslt` — NEW: 7 transaction flows + 7 query flows
+- `workspace/Creatio_QuickBooks_Integration/xslt/Site/new/xml/transactions.xml` — POPULATED: 16 transactions
+- `workspace/Creatio_Magento2_Integration/xslt/Site/new/xml/transactions.xml` — POPULATED: 13 transactions
+- `workspace/Creatio_QuickBooks_Integration/xslt/Site/include/sitetran.xslt` — NEW: enterprise variant
+- `workspace/Creatio_Magento2_Integration/xslt/Site/include/sitetran.xslt` — NEW: enterprise variant
+
+**Part B — Build transformer .class files for Magento2**
+
+Created 11 XSLT transformer source files and compiled to Java bytecode using XSLTC (`xsltc.jar` from iwtransformationserver vendor libs).
+
+XSLT sources + compiled classes (`workspace/Creatio_Magento2_Integration/`):
+- `xslt/SyncAccounts_CRM2MG.xslt` → `classes/iwtransformationserver/SyncAccounts_CRM2MG.class`
+- `xslt/SyncAccounts_MG2CRM.xslt` → `classes/iwtransformationserver/SyncAccounts_MG2CRM.class`
+- `xslt/SyncProducts_CRM2MG.xslt` → `classes/iwtransformationserver/SyncProducts_CRM2MG.class`
+- `xslt/SyncProducts_MG2CRM.xslt` → `classes/iwtransformationserver/SyncProducts_MG2CRM.class`
+- `xslt/SyncOrders_MG2CRM.xslt` → `classes/iwtransformationserver/SyncOrders_MG2CRM.class`
+- `xslt/SyncOrders_CRM2MG.xslt` → `classes/iwtransformationserver/SyncOrders_CRM2MG.class`
+- `xslt/SyncInvoices_MG2CRM.xslt` → `classes/iwtransformationserver/SyncInvoices_MG2CRM.class`
+- `xslt/SyncInvoices_CRM2MG.xslt` → `classes/iwtransformationserver/SyncInvoices_CRM2MG.class`
+- `xslt/GetCreatioAccount.xslt` → `classes/iwtransformationserver/GetCreatioAccount.class`
+- `xslt/GetMagentoCustomer.xslt` → `classes/iwtransformationserver/GetMagentoCustomer.class`
+- `xslt/GetMagentoOrder.xslt` → `classes/iwtransformationserver/GetMagentoOrder.class`
+
+Build command: `java -cp "xsltc.jar;xalan.jar;serializer.jar" org.apache.xalan.xsltc.cmdline.Compile -o <name> -d classes/iwtransformationserver <xslt>`
+
+### Follow-ups
+- QuickBooks project still needs transformer files (same pattern, different field mappings)
+- Connection credentials populated at runtime by WorkspaceProfileCompiler
+
+## 2026-03-11 (Session 14h) — Toggleable Live Engine Log panel
+
+### Agent
+Claude Opus 4.6 (Claude Code Desktop)
+
+### What changed
+- **`frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx`** — Major UX refactor of Live Engine Log:
+  - Extracted `LiveLogPanel` as internal component with typed props (`LiveLogPanelProps` interface)
+  - Added `logOpen` (default false) and `logPosition` ("bottom" | "side") state
+  - **Collapsed state**: Compact toggle bar at bottom showing engine status badge, Test/Record/Seed buttons, and "Bottom"/"Side" open buttons
+  - **Bottom mode**: Full log panel renders inline below flow tables (same as before, but now dismissible)
+  - **Side mode**: Wraps page in flex layout — main content `flex-1 min-w-0`, log panel `w-[380px] shrink-0 sticky top-4`
+  - LiveLogPanel header includes position toggle button (switch between bottom/side) and close (X) button
+  - Log lines container uses `max-h-[60vh]` in side mode vs `max-h-64` in bottom mode
+  - Added `PanelBottomOpen`, `PanelRightOpen`, `X` icon imports from lucide-react
+
+### Light mode blending fixes (Session 14g, same build)
+- **`frontends/iw-portal/src/pages/LoggingPage.tsx`** — Fixed invisible tables/rows in light mode:
+  - Activity Logs table: card wrapper with `bg-[hsl(var(--card))] shadow-sm`, header `bg-muted/80`, zebra `bg-muted/40`, hover `bg-muted/30`
+  - Server Logs list: same card/header pattern, fixed hover from `bg-muted/0.15` to `bg-muted/30`
+  - Detail log table, heatmap empty cells, context blocks all updated
+- **`frontends/iw-portal/src/pages/IDESyncPage.tsx`** — Replaced 7 instances of `bg-[hsl(var(--muted)/0.08)]` with `bg-[hsl(var(--card))] shadow-sm`; fixed collateral hover damage
+
+### Verification
+- TypeScript: 0 errors
+- Playwright screenshots: collapsed bar, bottom panel, side panel — all rendering correctly
+- Production build: success (6.4s)
+
+### Build
+```bash
+cd frontends/iw-portal && node node_modules/vite/bin/vite.js build
+```
+Output → `web_portal/tomcat/webapps/iw-portal/`
+
+---
+## 2026-03-11 (session 14b — engine flow registration + initialize from React UI)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Make Magento2 flows actually appear in Engine Controls (not just "configured but not loaded"), enable initialization from React UI instead of requiring classic BDConfigurator.
+
+Root cause analysis:
+- `WEB-INF/config.xml` is loaded at Tomcat startup into ConfigContext — this is the ONLY source of flow definitions for the engine
+- It only contained SF2AUTH (68 flows) and CRM2QB (14 flows) — NO CRM2M2 (Magento2) flows
+- `bindHostedProfile()` at login creates TransactionThread/QueryInstance objects for ALL flows in ConfigContext
+- Since Magento2 flows weren't in ConfigContext, no threads were ever created for them
+
+Actions taken:
+1. **Added CRM2M2 flows to WEB-INF/config.xml** — 8 TransactionDescription elements (BPMTransactions2Magento, CRMAcctSync2M2, CRMOrderSync2M2, CRMInvSync2M2, CRMProdSync2M2, CRMSRSync2M2, M2OrderSync2CRM, M2InventorySync2CRM) + 6 Query elements (CRMAcct2M2Q, CRMOrder2M2Q, CRMInv2M2Q, CRMProd2M2Q, M2Order2CRMQ, M2Inv2CRMQ)
+2. **Added POST /api/flows/initialize endpoint** to ApiFlowManagementServlet — replicates `bindHostedProfile()` logic from ApiLoginServlet (sets up ProfileDescriptor, creates TransactionThread for each flow, creates QueryInstance for each query, applies endpoint URLs, loads saved config from DB)
+3. **Added "Initialize Engine" button** to EngineControlsTab — appears when configured flows exist but aren't loaded in the engine. Admin-only. Calls `/api/flows/initialize`, then refreshes the flow listing.
+4. **Fixed stale chunk errors** — cleaned assets/ directory before each build to prevent old chunks lingering
+
+Files changed/created:
+- MODIFIED: `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml` — added 14 CRM2M2 flow/query definitions
+- MODIFIED: `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiFlowManagementServlet.java` — added /initialize endpoint, bindHostedProfile(), setupTransactionThread(), setupQueryInstance(), all endpoint URL rewriting helpers, loadSavedConfig()
+- MODIFIED: `frontends/iw-portal/src/hooks/useFlows.ts` — added useInitializeProfile() mutation hook
+- MODIFIED: `frontends/iw-portal/src/components/integrations/EngineControlsTab.tsx` — added Initialize Engine button with loading state
+- REBUILT: `web_portal/tomcat/webapps/iw-portal/` — clean build with fresh chunk hashes
+
+Architecture note:
+- Flow lifecycle: WEB-INF/config.xml → ConfigContext (startup) → bindHostedProfile (login or /initialize) → TransactionThread per profile → start/stop via /api/flows/start|stop
+- Solution-type filtering: servlet reads session solutionType → workspace-profile-map.properties → project im/config.xml → allowed flow IDs → filters ConfigContext output
+- All three solution types now have flows in the engine: SF2AUTH (68), CRM2QB (14), CRM2M2 (14)
+
+Verification performed:
+- Java compilation: 0 errors (4 deprecation warnings)
+- TypeScript strict: 0 errors
+- Portal build: success (clean assets, 37 chunks)
+- Tomcat restart: HTTP 200 confirmed
+
+Follow-ups / known issues:
+- Actual flow execution still requires valid external API credentials (Magento 2 REST, Creatio OData, etc.)
+- New workspace projects need their flows added to WEB-INF/config.xml AND workspace-profile-map.properties
+
+---
+
+## 2026-03-12 ~01:00 UTC — Session 15c: Sync Transformer Pipeline with Portal + Update Docs
+
+**Agent/tool:** Claude Code (Opus 4.6)
+**User request:** Ensure transformer build process is synced with web portal frontend; update all docs, instructions, logs
+
+### What changed
+
+**1. WorkspaceProfileCompiler.java — Added transformer pipeline copy**
+
+Previously the compiler only copied config files (im/config.xml, ts/config.xml, transactions.xml, transactions.xslt, dataconnections.xslt, appconstants.xslt) to GeneratedProfiles. Now it also copies:
+
+- `sitetran.xslt` — shared site transactions (index, session)
+- `soltran.xslt` — solution-specific flow definitions
+- Individual transformer `.xslt` files — field mapping sources (e.g., SyncAccounts_CRM2MG.xslt)
+- Compiled transformer `.class` files — XSLTC-compiled bytecode from `classes/iwtransformationserver/`
+
+New methods added:
+- `copyXsltTransformers()` — copies `xslt/*.xslt` files (root level only, not subdirs)
+- `copyTransformerClasses()` — copies `classes/iwtransformationserver/*.class` files
+- `copyBinaryIfPresent()` — byte-level file copy for binary .class files
+- Added `classes/iwtransformationserver` and `xslt/Site/new/include` to directory creation
+
+This means the portal's "Push to IDE" (via `usePushToIDE()` → `/api/sync/push` → `WorkspaceProfileCompiler.compileProfile()`) now generates fully self-contained profile overlays with all transformer files included.
+
+**2. Documentation updates**
+
+- **`docs/development/IDE_DB_FIELD_MAPPING.md`** — Added "XSLT Transformer Pipeline" section:
+  - Transformer file locations table
+  - XSLT compilation command (XSLTC)
+  - Transformer XSLT patterns (iwtransformationserver root match, XPath extraction)
+  - Compiler profile generation mapping table (what files go where)
+  - Per-project transformer inventory table (SF2AuthNet: 142/472, Magento2: 11/11, QB: pending)
+
+- **`CLAUDE.md`** — Added "XSLT Transformer Build Pipeline" section:
+  - Transformer file structure diagram
+  - XSLT→.class compile command
+  - Batch compile command for all transformers
+  - Current transformer inventory table
+  - Updated Integration Projects section with accurate project descriptions
+  - Updated directory structure to show all workspace projects including GeneratedProfiles and IW_Runtime_Sync
+
+### Files modified
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileCompiler.java`
+- `docs/development/IDE_DB_FIELD_MAPPING.md`
+- `CLAUDE.md`
+- `docs/ai/AI_WORKLOG.md`
+
+### Architecture summary — Portal ↔ Transformer sync flow
+```
+User saves wizard config in React portal
+  → PUT /api/config/wizard (ApiConfigurationServlet)
+  → auto-push: POST /api/sync/push (ApiWorkspaceSyncServlet)
+  → WorkspaceProfileCompiler.compileProfile()
+    → copies im/config.xml, ts/config.xml (modified with wizard values)
+    → copies transactions.xml, transactions.xslt (from template)
+    → generates dataconnections.xslt (credentials from wizard)
+    → copies appconstants.xslt, sitetran.xslt, soltran.xslt (from template) ← NEW
+    → copies xslt/*.xslt transformer sources (from template) ← NEW
+    → copies classes/iwtransformationserver/*.class (from template) ← NEW
+  → writes to workspace/GeneratedProfiles/<profile>/
+  → React invalidates ["sync-status", "engine-flows", "config"] queries
+```
+
+### What I did (this response)
+1. Analyzed WorkspaceProfileCompiler to identify missing transformer copy steps
+2. Added sitetran.xslt, soltran.xslt, individual .xslt, and .class copy operations
+3. Added copyBinaryIfPresent() for binary class files
+4. Recompiled WorkspaceProfileCompiler (0 errors, 4 deprecation warnings)
+5. Updated IDE_DB_FIELD_MAPPING.md with transformer pipeline documentation
+6. Updated CLAUDE.md with XSLT build commands and transformer inventory
+7. Updated directory structure in CLAUDE.md
+
+### Follow-ups
+- QuickBooks project still needs individual transformer .xslt files and compiled .class files
+- Tomcat restart needed for compiler changes to take effect
+- No API endpoint yet for triggering XSLT compilation from portal (currently CLI-only via XSLTC)

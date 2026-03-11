@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-10 (Session 12 — All "Ready Now" items completed)
+**Last Updated:** 2026-03-11 (Session 14h — filtering/pagination, light mode fixes, toggleable log panel)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -39,8 +39,8 @@ These items from the original roadmap are now DONE:
 - Dynamic document titles on all pages
 - Login page redesign + "already signed in" state (banner bug fix)
 - Shared config label utilities (config-labels.ts)
-- 58 TypeScript source files, 12 API servlet .class files
-- All 12 React pages use shadcn/ui consistently
+- 108 TypeScript source files (41 pages), 16 API servlet sources
+- All React pages use shadcn/ui consistently, light + dark mode verified
 - ErrorHandlingFilter compiled and enabled (bypassed Maven with direct javac)
 - MFA / Forgot Password: TOTP-based MFA (Google Authenticator), password reset tokens, 3 React pages, 2 API servlets
 - Notifications Inbox: system/alert/flow/security notification types, bell badge, read/unread, React page + API servlet
@@ -48,6 +48,7 @@ These items from the original roadmap are now DONE:
 - 3 database schemas (mfa, notifications, audit_log) with RLS
 - Code-split all new pages via React.lazy() — main chunk under 500kB
 - Config Wizard expansion: schema-driven object detail panels (~80 properties matching original JSP UI), categorized review sections with human-readable labels
+- Session 14: Filtering/pagination on all listing pages, light mode blending fixes (LoggingPage, IDESyncPage), toggleable Live Engine Log panel (bottom/side/collapsed modes)
 
 ---
 
@@ -150,23 +151,54 @@ Detail schemas fully expanded (2026-03-10):
 
 | Component | Status | Notes |
 |---|---|---|
-| Vercel deployment | ✅ Live | `frontends/iw-portal`, auto-builds on redeploy |
-| Backend tunnel | ⚠️ Ephemeral | localtunnel, port 9090, subdomain `iw-portal-demo` |
-| Tunnel password | ℹ️ Required | First visit to `loca.lt` requires entering your public IP (`135.84.57.36`) |
+| Vercel deployment | ✅ Live | `frontends/iw-portal`, auto-builds on push to main |
+| Cloudflare Quick Tunnel | ✅ Working | `scripts/quickstart_tunnel.bat` — no auth needed, auto-patches vercel.json |
+| Named Cloudflare Tunnel | ⚠️ Optional | `scripts/setup_cloudflare_tunnel.bat` — stable URL, requires Cloudflare account |
 
-### 15. Replace localtunnel with Cloudflare Tunnel — SCRIPTS READY
-**Priority: High** — localtunnel has two friction points for demos:
-1. Requires visitor to enter a "tunnel password" (your public IP) on first visit
-2. URL changes every restart, requiring `vercel.json` update + redeploy
+### 15. ~~Replace localtunnel with Cloudflare Tunnel~~ DONE
 
-**Scripts created (2026-03-10):**
-- `scripts/setup_cloudflare_tunnel.bat` — interactive setup (installs cloudflared, authenticates, creates tunnel)
-- `scripts/start_cloudflare_tunnel.bat` — starts tunnel (localhost:9090 → Cloudflare)
+**Resolved (2026-03-11):**
+- **Quick tunnel (recommended):** Double-click `scripts\quickstart_tunnel.bat` — starts Cloudflare Quick Tunnel (no account/auth), captures `*.trycloudflare.com` URL, auto-patches `vercel.json`, commits + pushes, Vercel rebuilds in ~30s. Keep the window open (tunnel lives while it runs).
+- **Named tunnel (optional):** `scripts\setup_cloudflare_tunnel.bat` creates a persistent named tunnel with stable `*.cfargotunnel.com` URL (requires Cloudflare account login).
+- **Vercel rootDirectory bug fixed (2026-03-11):** trailing space in project settings caused all builds to fail (0ms/ERROR). Patched via Vercel API.
+
+**Scripts:**
+- `scripts/quickstart_tunnel.bat` — one-click: starts Tomcat if needed → Cloudflare quick tunnel → patches vercel.json → git push
+- `scripts/setup_cloudflare_tunnel.bat` — named tunnel setup (Cloudflare auth + stable URL)
+- `scripts/start_cloudflare_tunnel.bat` — starts named tunnel from existing config
 - `scripts/stop_cloudflare_tunnel.bat` — kills tunnel process
 
-**To complete:** Run `scripts\setup_cloudflare_tunnel.bat` (requires Cloudflare account + domain). Then update `frontends/iw-portal/vercel.json` destination URL and redeploy.
+---
 
-**Workaround until then**: `npx localtunnel@2 --port 9090 --subdomain iw-portal-demo`
+## UI Prototype Incorporation (Three-Portal Architecture)
+
+Two new static HTML prototypes were added to `docs/ui-ux/` — they define the target UI for the Associate Portal and Master Console surfaces. Both use the same ASSA design tokens as `iw-portal` (same color system, glassmorphism, card/table/sidebar primitives).
+
+**Full architecture doc:** `docs/ui-ux/PORTAL_ARCHITECTURE.md`
+
+### Associate Portal (`docs/ui-ux/iw_associate_portal/`) — 9 pages
+Customer-facing portal for ASSA associate owners/members. Key new patterns:
+- **Hero section** — welcome banner with role-aware CTAs (not in iw-portal yet)
+- **Tile component** — nested content cards within cards
+- **Business Checkup** — structured intake wizard (maps to Config Wizard concept)
+- **Resource Library + Search** — content browsing with category filters
+- **Webinars** — media library (upcoming + recorded)
+- **Billing** — subscription/plan management (future Stripe integration)
+
+### Master Console (`docs/ui-ux/iw_master_console/`) — 10 pages
+Program admin console for IW/ASSA administrators. Key new patterns:
+- **4-column KPI grid** (`span-3`) with SVG sparklines via `data-spark` attribute
+- **Operational Queue** — filterable admin action table with status dots
+- **Analytics** — engagement funnel, content adoption, search demand signals
+- **Subscriptions** — plan management, churn metrics, MRR tracking
+- **Content Library** — resource publishing/CMS admin
+- **Users & Roles** — cross-org user management with role assignment
+
+### Phased adoption into iw-portal (see PORTAL_ARCHITECTURE.md):
+- **Phase A** (1-2 hrs): Hero section on Dashboard, 4th KPI card, radius token alignment
+- **Phase B** (8-12 hrs): `/resources`, `/resources/webinars`, `/billing` pages
+- **Phase C** (12-16 hrs): `/admin/content`, `/admin/analytics`, `/admin/subscriptions` pages
+- **Phase D** (4-8 hrs): Role architecture — `operator|associate|admin` field, sidebar auto-config, route guards
 
 ---
 

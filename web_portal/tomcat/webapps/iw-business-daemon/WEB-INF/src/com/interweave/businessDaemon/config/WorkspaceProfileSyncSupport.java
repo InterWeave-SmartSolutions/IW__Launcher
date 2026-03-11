@@ -202,6 +202,9 @@ public final class WorkspaceProfileSyncSupport {
         if (upper.startsWith("CRM2QB")) {
             return "Creatio_QuickBooks_Integration";
         }
+        if (upper.startsWith("CRM2M") || upper.startsWith("CRM2MG")) {
+            return "Creatio_Magento2_Integration";
+        }
         if (upper.startsWith("SF") || upper.contains("AUTH")) {
             return "SF2AuthNet";
         }

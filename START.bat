@@ -141,6 +141,9 @@ echo.
 :open_browser
 start "" "http://localhost:9090/iw-portal/"
 
+REM Ensure all workspace projects are visible in IDE Navigator
+call "%IW_HOME%\scripts\setup\ensure_workspace_projects.bat"
+
 REM Launch IDE
 cd /d "%IW_HOME%"
 if exist "%IW_HOME%\iw_ide.exe" (

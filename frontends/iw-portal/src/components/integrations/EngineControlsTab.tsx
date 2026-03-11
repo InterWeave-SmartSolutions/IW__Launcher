@@ -14,9 +14,12 @@ import {
   MoreHorizontal,
   Terminal,
   Search,
+  PanelBottomOpen,
+  PanelRightOpen,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEngineFlows, useStartFlow, useStopFlow, useSubmitFlows } from "@/hooks/useFlows";
+import { useEngineFlows, useStartFlow, useStopFlow, useSubmitFlows, useInitializeProfile } from "@/hooks/useFlows";
 import { useLiveLogs } from "@/hooks/useLogs";
 import { useEngineStatus, useEngineTest, useEngineRecord, useSeedTransactions } from "@/hooks/useEngine";
 import { useAuth } from "@/providers/AuthProvider";
@@ -38,6 +41,149 @@ import { EditScheduleDialog } from "./EditScheduleDialog";
 import { FlowPropertiesDialog } from "./FlowPropertiesDialog";
 import type { EngineFlow } from "@/types/flows";
 
+/* ── Extracted Live Log Panel ── */
+
+interface LiveLogPanelProps {
+  logFilter: string;
+  setLogFilter: (v: string) => void;
+  liveLogsRes: ReturnType<typeof useLiveLogs>["data"];
+  logsFetching: boolean;
+  engineStatus: ReturnType<typeof useEngineStatus>["data"];
+  engineTest: ReturnType<typeof useEngineTest>;
+  engineRecord: ReturnType<typeof useEngineRecord>;
+  seedTransactions: ReturnType<typeof useSeedTransactions>;
+  isAdmin: boolean;
+  showToast: (msg: string, type: "success" | "error") => void;
+  position: "bottom" | "side";
+  onChangePosition: () => void;
+  onClose: () => void;
+}
+
+function LiveLogPanel({
+  logFilter, setLogFilter, liveLogsRes, logsFetching,
+  engineStatus, engineTest, engineRecord, seedTransactions,
+  isAdmin, showToast, position, onChangePosition, onClose,
+}: LiveLogPanelProps) {
+  return (
+    <div className="glass-panel rounded-[var(--radius)] p-4 space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Terminal className="w-4 h-4 text-[hsl(var(--primary))]" />
+          Live Engine Log
+          {logsFetching && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+        </h3>
+        <div className="flex items-center gap-1.5">
+          {engineStatus && (
+            <Badge variant={engineStatus.engineUp ? "success" : "destructive"} className="text-xs">
+              {engineStatus.engineUp ? `Online · ${engineStatus.responseMs}ms` : "Offline"}
+            </Badge>
+          )}
+          <Button
+            variant="outline" size="sm" className="h-7 text-xs"
+            onClick={() => void engineTest.mutateAsync("sessionvars")}
+            disabled={engineTest.isPending}
+          >
+            {engineTest.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+            Test
+          </Button>
+          <Button
+            variant="outline" size="sm" className="h-7 text-xs"
+            onClick={() => void engineRecord.mutateAsync().then(() => showToast("Transaction recorded", "success")).catch((e: Error) => showToast(e.message, "error"))}
+            disabled={engineRecord.isPending}
+            title="Call the engine and record the result in transaction history"
+          >
+            {engineRecord.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <History className="w-3 h-3" />}
+            Record
+          </Button>
+          {isAdmin && (
+            <Button
+              variant="outline" size="sm" className="h-7 text-xs text-muted-foreground"
+              onClick={() => void seedTransactions.mutateAsync({ count: 100, days: 7 }).then((r) => showToast(r.message, "success")).catch((e: Error) => showToast(e.message, "error"))}
+              disabled={seedTransactions.isPending}
+              title="Insert 100 synthetic transaction records spread over 7 days"
+            >
+              {seedTransactions.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+              Seed
+            </Button>
+          )}
+          <div className="w-px h-5 bg-[hsl(var(--border))]" />
+          <Button
+            variant="ghost" size="icon" className="h-7 w-7"
+            onClick={onChangePosition}
+            title={position === "bottom" ? "Move to side" : "Move to bottom"}
+          >
+            {position === "bottom" ? <PanelRightOpen className="w-3.5 h-3.5" /> : <PanelBottomOpen className="w-3.5 h-3.5" />}
+          </Button>
+          <Button
+            variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            onClick={onClose}
+            title="Hide log panel"
+          >
+            <X className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter */}
+      <div className="relative">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+        <input
+          type="text"
+          placeholder="Filter log lines…"
+          value={logFilter}
+          onChange={(e) => setLogFilter(e.target.value)}
+          className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))] placeholder:text-muted-foreground"
+        />
+      </div>
+
+      {/* Log lines */}
+      <div className={cn(
+        "bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg p-3 font-mono text-[11px] overflow-y-auto space-y-0.5",
+        position === "side" ? "max-h-[60vh]" : "max-h-64"
+      )}>
+        {liveLogsRes?.lines.length ? (
+          liveLogsRes.lines.map((line) => (
+            <div
+              key={line.num}
+              className={cn(
+                "leading-relaxed whitespace-pre-wrap break-all",
+                line.level === "error" && "text-[hsl(var(--destructive))]",
+                line.level === "warn" && "text-[hsl(var(--warning))]",
+                line.level === "ts" && "text-[hsl(var(--primary))]",
+                line.level === "info" && "text-muted-foreground",
+              )}
+            >
+              {line.text}
+            </div>
+          ))
+        ) : (
+          <p className="text-muted-foreground text-center py-4">No log lines yet. Auto-refreshes every 5s.</p>
+        )}
+      </div>
+      {liveLogsRes && (
+        <p className="text-[10px] text-muted-foreground">
+          {liveLogsRes.file} · showing last {liveLogsRes.lines.length} of {liveLogsRes.totalLines} lines
+        </p>
+      )}
+
+      {/* Test result */}
+      {engineTest.data && (
+        <div className="bg-muted/40 rounded-lg p-3 space-y-1">
+          <p className="text-xs font-medium">
+            Test result — {engineTest.data.flow} · HTTP {engineTest.data.httpCode} · {engineTest.data.responseMs}ms
+          </p>
+          {engineTest.data.rawXml && (
+            <pre className="text-[10px] text-muted-foreground max-h-32 overflow-y-auto whitespace-pre-wrap break-all">
+              {engineTest.data.rawXml.slice(0, 800)}
+            </pre>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function EngineControlsTab() {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -47,6 +193,7 @@ export function EngineControlsTab() {
   const startFlow = useStartFlow();
   const stopFlow = useStopFlow();
   const submitFlows = useSubmitFlows();
+  const initializeProfile = useInitializeProfile();
   const { data: engineStatus } = useEngineStatus();
   const engineTest = useEngineTest();
   const engineRecord = useEngineRecord();
@@ -54,6 +201,10 @@ export function EngineControlsTab() {
   const { data: liveLogsRes, isFetching: logsFetching } = useLiveLogs(80, logFilter);
   const [editFlow, setEditFlow] = useState<EngineFlow | null>(null);
   const [propsTarget, setPropsTarget] = useState<{ flowId: string; isFlow: boolean } | null>(null);
+  const [querySearch, setQuerySearch] = useState("");
+  const [queryExpanded, setQueryExpanded] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const [logPosition, setLogPosition] = useState<"bottom" | "side">("bottom");
 
   const isAdmin = user?.isAdmin === true;
   const data = flowsRes?.data;
@@ -146,8 +297,8 @@ export function EngineControlsTab() {
   const runningCount = allFlows.filter((f) => f.running || f.executing).length;
   const isPending = startFlow.isPending || stopFlow.isPending;
 
-  return (
-    <div className="space-y-4">
+  const mainContent = (
+    <div className={cn("space-y-4", logOpen && logPosition === "side" && "flex-1 min-w-0")}>
       {/* Server info bar */}
       <div className="glass-panel rounded-[var(--radius)] p-4 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -233,83 +384,160 @@ export function EngineControlsTab() {
       )}
 
       {/* Query Flows */}
-      {data.queryFlows.length > 0 && (
-        <div className="glass-panel rounded-[var(--radius)] p-4">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-[hsl(var(--primary))]" />
-            Query Flows
-            <Badge variant="secondary" className="text-xs">
-              {data.queryFlows.length}
-            </Badge>
-          </h3>
-          <div className="space-y-2">
-            {data.queryFlows.map((q) => (
-              <div
-                key={q.flowId}
-                className="group rounded-xl border border-[hsl(var(--border))] p-3 flex items-center gap-4 hover:bg-muted/20 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-[hsl(var(--muted)/0.3)] grid place-items-center shrink-0">
-                  <Zap className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
+      {data.queryFlows.length > 0 && (() => {
+        const filteredQueries = querySearch
+          ? data.queryFlows.filter((q) => q.flowId.toLowerCase().includes(querySearch.toLowerCase()))
+          : data.queryFlows;
+        const QUERY_PAGE = 15;
+        const queryNeedsPagination = filteredQueries.length > QUERY_PAGE;
+        const visibleQueries = queryExpanded ? filteredQueries : filteredQueries.slice(0, QUERY_PAGE);
+
+        return (
+          <div className="glass-panel rounded-[var(--radius)] p-4">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <Zap className="w-4 h-4 text-[hsl(var(--primary))]" />
+              <h3 className="text-sm font-semibold">Query Flows</h3>
+              <Badge variant="secondary" className="text-xs">
+                {filteredQueries.length !== data.queryFlows.length
+                  ? `${filteredQueries.length}/${data.queryFlows.length}`
+                  : data.queryFlows.length}
+              </Badge>
+              {data.queryFlows.length > 5 && (
+                <div className="relative ml-2">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Filter queries…"
+                    value={querySearch}
+                    onChange={(e) => { setQuerySearch(e.target.value); setQueryExpanded(false); }}
+                    className="pl-7 pr-3 py-1 text-xs rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))] placeholder:text-muted-foreground w-44"
+                  />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <button
-                    type="button"
-                    onClick={() => setPropsTarget({ flowId: q.flowId, isFlow: false })}
-                    className="text-sm font-medium truncate hover:text-[hsl(var(--primary))] hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+              )}
+            </div>
+            <div className="space-y-2">
+              {visibleQueries.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No queries match &ldquo;{querySearch}&rdquo;
+                </p>
+              ) : (
+                visibleQueries.map((q) => (
+                  <div
+                    key={q.flowId}
+                    className="group rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm p-3 flex items-center gap-4 hover:bg-muted/20 transition-colors"
                   >
-                    {q.flowId}
-                    <FileText className="w-2.5 h-2.5 opacity-0 group-hover:opacity-50 transition-opacity flex-shrink-0" />
-                  </button>
-                  <p className="text-xs text-muted-foreground">
-                    Counter: {q.counter === 0 ? "\u221E" : q.counter} · Interval: {q.interval}s
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {q.httpGetQuery && (
-                    <Button variant="outline" size="sm" className="text-xs h-7" asChild>
-                      <a href={q.httpGetQuery} target="_blank" rel="noopener noreferrer">
-                        <Play />
-                        GO
-                      </a>
-                    </Button>
-                  )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                        <MoreHorizontal className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-lg bg-[hsl(var(--muted)/0.3)] grid place-items-center shrink-0">
+                      <Zap className="w-3.5 h-3.5 text-[hsl(var(--primary))]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => setPropsTarget({ flowId: q.flowId, isFlow: false })}
+                        className="text-sm font-medium truncate hover:text-[hsl(var(--primary))] hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                      >
+                        {q.flowId}
+                        <FileText className="w-2.5 h-2.5 opacity-0 group-hover:opacity-50 transition-opacity flex-shrink-0" />
                       </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>{q.flowId}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setPropsTarget({ flowId: q.flowId, isFlow: false })}>
-                        <FileText />
-                        Edit Properties
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link to={`/monitoring/transactions?flow=${encodeURIComponent(q.flowId)}`}>
-                          <History />
-                          View Transactions
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
+                      <p className="text-xs text-muted-foreground">
+                        Counter: {q.counter === 0 ? "\u221E" : q.counter} · Interval: {q.interval}s
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {q.httpGetQuery && (
+                        <Button variant="outline" size="sm" className="text-xs h-7" asChild>
+                          <a href={q.httpGetQuery} target="_blank" rel="noopener noreferrer">
+                            <Play />
+                            GO
+                          </a>
+                        </Button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>{q.flowId}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setPropsTarget({ flowId: q.flowId, isFlow: false })}>
+                            <FileText />
+                            Edit Properties
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link to={`/monitoring/transactions?flow=${encodeURIComponent(q.flowId)}`}>
+                              <History />
+                              View Transactions
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {queryNeedsPagination && !querySearch && (
+              <button
+                onClick={() => setQueryExpanded((v) => !v)}
+                className="w-full mt-2 px-3 py-2 text-xs text-center text-[hsl(var(--primary))] hover:bg-muted/30 rounded-lg transition-colors cursor-pointer font-medium"
+              >
+                {queryExpanded
+                  ? `Show less (${QUERY_PAGE} of ${filteredQueries.length})`
+                  : `Show all ${filteredQueries.length} queries (${filteredQueries.length - QUERY_PAGE} more)`}
+              </button>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {allFlows.length === 0 && data.queryFlows.length === 0 && (
         <div className="glass-panel rounded-[var(--radius)] p-8 text-center space-y-3">
           <Server className="w-8 h-8 text-muted-foreground mx-auto" />
           <div>
             <p className="text-sm text-muted-foreground">No flows loaded in engine.</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Flows are loaded when a workspace profile is compiled and the engine is initialized
-              through the classic Business Daemon Configurator.
-            </p>
+            {data.configuredFlowIds && data.configuredFlowIds.length > 0 ? (
+              <>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {data.configuredFlowIds.length} flow(s) configured for this workspace
+                  {data.solutionType ? ` (${data.solutionType})` : ""}
+                  {" "}but not yet initialized in the engine.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+                  {data.configuredFlowIds.map((fid) => (
+                    <Badge key={fid} variant="outline" className="text-xs">
+                      {fid}
+                    </Badge>
+                  ))}
+                </div>
+                {isAdmin ? (
+                  <Button
+                    className="mt-4"
+                    onClick={() => void initializeProfile.mutateAsync().then((r) => {
+                      showToast(r.message, "success");
+                      void refetch();
+                    }).catch((e: Error) => showToast(e.message, "error"))}
+                    disabled={initializeProfile.isPending}
+                  >
+                    {initializeProfile.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    Initialize Engine
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Admin access required to initialize the engine.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-1">
+                Flows are loaded when a workspace profile is compiled and the engine is initialized
+                through the classic Business Daemon Configurator.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -321,20 +549,20 @@ export function EngineControlsTab() {
         </Badge>
       )}
 
-      {/* Engine Status + Live Log Panel */}
-      <div className="glass-panel rounded-[var(--radius)] p-4 space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <h3 className="text-sm font-semibold flex items-center gap-2">
+      {/* Live Engine Log — toggle bar */}
+      {!logOpen && (
+        <div className="glass-panel rounded-[var(--radius)] px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-[hsl(var(--primary))]" />
-            Live Engine Log
-            {logsFetching && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
-          </h3>
-          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold">Live Engine Log</span>
             {engineStatus && (
               <Badge variant={engineStatus.engineUp ? "success" : "destructive"} className="text-xs">
                 {engineStatus.engineUp ? `Engine Online · ${engineStatus.responseMs}ms` : "Engine Offline"}
               </Badge>
             )}
+            {logsFetching && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -369,58 +597,49 @@ export function EngineControlsTab() {
                 Seed Demo Data
               </Button>
             )}
+            <div className="w-px h-5 bg-[hsl(var(--border))]" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => { setLogOpen(true); setLogPosition("bottom"); }}
+              title="Show log panel at bottom"
+            >
+              <PanelBottomOpen className="w-3.5 h-3.5" />
+              Bottom
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => { setLogOpen(true); setLogPosition("side"); }}
+              title="Show log panel on the side"
+            >
+              <PanelRightOpen className="w-3.5 h-3.5" />
+              Side
+            </Button>
           </div>
         </div>
-        {/* Filter input */}
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Filter log lines…"
-            value={logFilter}
-            onChange={(e) => setLogFilter(e.target.value)}
-            className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--primary))] placeholder:text-muted-foreground"
-          />
-        </div>
-        {/* Log lines */}
-        <div className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-lg p-3 font-mono text-[11px] max-h-64 overflow-y-auto space-y-0.5">
-          {liveLogsRes?.lines.length ? (
-            liveLogsRes.lines.map((line) => (
-              <div
-                key={line.num}
-                className={cn(
-                  "leading-relaxed whitespace-pre-wrap break-all",
-                  line.level === "error" && "text-[hsl(var(--destructive))]",
-                  line.level === "warn" && "text-[hsl(var(--warning))]",
-                  line.level === "ts" && "text-[hsl(var(--primary))]",
-                  line.level === "info" && "text-muted-foreground",
-                )}
-              >
-                {line.text}
-              </div>
-            ))
-          ) : (
-            <p className="text-muted-foreground text-center py-4">No log lines yet. Auto-refreshes every 5s.</p>
-          )}
-        </div>
-        {liveLogsRes && (
-          <p className="text-[10px] text-muted-foreground">
-            {liveLogsRes.file} · showing last {liveLogsRes.lines.length} of {liveLogsRes.totalLines} lines
-          </p>
-        )}
-        {engineTest.data && (
-          <div className="bg-[hsl(var(--muted)/0.3)] rounded-lg p-3 space-y-1">
-            <p className="text-xs font-medium">
-              Test result — {engineTest.data.flow} · HTTP {engineTest.data.httpCode} · {engineTest.data.responseMs}ms
-            </p>
-            {engineTest.data.rawXml && (
-              <pre className="text-[10px] text-muted-foreground max-h-32 overflow-y-auto whitespace-pre-wrap break-all">
-                {engineTest.data.rawXml.slice(0, 800)}
-              </pre>
-            )}
-          </div>
-        )}
-      </div>
+      )}
+
+      {/* Live Engine Log — expanded panel */}
+      {logOpen && logPosition === "bottom" && (
+        <LiveLogPanel
+          logFilter={logFilter}
+          setLogFilter={setLogFilter}
+          liveLogsRes={liveLogsRes}
+          logsFetching={logsFetching}
+          engineStatus={engineStatus}
+          engineTest={engineTest}
+          engineRecord={engineRecord}
+          seedTransactions={seedTransactions}
+          isAdmin={isAdmin}
+          showToast={showToast}
+          position="bottom"
+          onChangePosition={() => setLogPosition("side")}
+          onClose={() => setLogOpen(false)}
+        />
+      )}
 
       {/* Schedule editor dialog */}
       <EditScheduleDialog
@@ -438,4 +657,32 @@ export function EngineControlsTab() {
       />
     </div>
   );
+
+  // Side panel mode: wrap in flex row
+  if (logOpen && logPosition === "side") {
+    return (
+      <div className="flex gap-4 items-start">
+        {mainContent}
+        <div className="w-[380px] shrink-0 sticky top-4">
+          <LiveLogPanel
+            logFilter={logFilter}
+            setLogFilter={setLogFilter}
+            liveLogsRes={liveLogsRes}
+            logsFetching={logsFetching}
+            engineStatus={engineStatus}
+            engineTest={engineTest}
+            engineRecord={engineRecord}
+            seedTransactions={seedTransactions}
+            isAdmin={isAdmin}
+            showToast={showToast}
+            position="side"
+            onChangePosition={() => setLogPosition("bottom")}
+            onClose={() => setLogOpen(false)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return mainContent;
 }

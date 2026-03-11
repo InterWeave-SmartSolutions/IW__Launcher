@@ -27,7 +27,7 @@ function statusMeta(status: SyncStatus) {
     case "in_sync":
       return { label: "In Sync", color: "text-[hsl(var(--success))]", bg: "bg-[hsl(var(--success)/0.12)]", icon: CheckCircle2 };
     case "db_ahead":
-      return { label: "Portal Ahead", color: "text-yellow-400", bg: "bg-yellow-400/10", icon: AlertCircle };
+      return { label: "Portal Ahead", color: "text-[hsl(var(--warning))]", bg: "bg-[hsl(var(--warning)/0.1)]", icon: AlertCircle };
     case "workspace_ahead":
       return { label: "IDE Ahead", color: "text-[hsl(var(--primary))]", bg: "bg-[hsl(var(--primary)/0.12)]", icon: Activity };
     case "not_synced":
@@ -63,7 +63,7 @@ function ProfileCard({ profile, onPush, onPull, pushing, pulling }: ProfileCardP
     : null;
 
   return (
-    <div className="rounded-xl border border-white/8 bg-white/3 p-4 flex flex-col gap-3">
+    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm p-4 flex flex-col gap-3">
       {/* Header row */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -106,7 +106,7 @@ function ProfileCard({ profile, onPush, onPull, pushing, pulling }: ProfileCardP
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-1 border-t border-white/5">
+      <div className="flex gap-2 pt-1 border-t border-[hsl(var(--border))]">
         <Button
           size="sm"
           variant="outline"
@@ -142,9 +142,9 @@ function LogPanel() {
   const lines = data?.data?.lines ?? [];
 
   return (
-    <div className="rounded-xl border border-white/8 bg-white/3 overflow-hidden">
+    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
       <button
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-white/3 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/30 transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
         <span className="flex items-center gap-2">
@@ -160,7 +160,7 @@ function LogPanel() {
       </button>
 
       {expanded && (
-        <div className="border-t border-white/8 bg-black/20 p-3 max-h-72 overflow-y-auto font-mono text-xs text-muted-foreground space-y-0.5">
+        <div className="border-t border-[hsl(var(--border))] bg-muted/40 p-3 max-h-72 overflow-y-auto font-mono text-xs text-muted-foreground space-y-0.5">
           {lines.length === 0 ? (
             <div className="text-center py-4">No log entries</div>
           ) : (
@@ -186,10 +186,9 @@ function LogPanel() {
   );
 }
 
-// ── Main page ────────────────────────────────────────────────────────────────
+// ── Embeddable panel (used as tab in IntegrationOverviewPage) ─────────────────
 
-export function IDESyncPage() {
-  useDocumentTitle("IDE Sync");
+export function WorkspaceSyncPanel() {
   const { showToast } = useToast();
 
   const { data, isLoading, refetch, isFetching } = useSyncStatus();
@@ -239,29 +238,9 @@ export function IDESyncPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">IDE Sync</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Bidirectional sync between the web portal and the IW IDE workspace
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="gap-1.5"
-        >
-          <RefreshCw className={cn("w-3.5 h-3.5", isFetching && "animate-spin")} />
-          Refresh
-        </Button>
-      </div>
-
+    <div className="space-y-4">
       {/* Status bar */}
-      <div className="rounded-xl border border-white/8 bg-white/3 p-4">
+      <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm p-4">
         <div className="flex flex-wrap items-center gap-4">
           {/* Bridge status */}
           <div className="flex items-center gap-2">
@@ -280,7 +259,7 @@ export function IDESyncPage() {
             </span>
           </div>
 
-          <div className="h-4 w-px bg-white/10" />
+          <div className="h-4 w-px bg-[hsl(var(--border))]" />
 
           {/* Summary badges */}
           {!isLoading && profiles.length > 0 && (
@@ -291,7 +270,7 @@ export function IDESyncPage() {
                 </Badge>
               )}
               {syncCounts["db_ahead"] != null && (
-                <Badge variant="outline" className="text-yellow-400 border-yellow-400/40">
+                <Badge variant="outline" className="text-[hsl(var(--warning))] border-[hsl(var(--warning)/0.4)]">
                   {syncCounts["db_ahead"]} portal ahead
                 </Badge>
               )}
@@ -308,7 +287,16 @@ export function IDESyncPage() {
             </div>
           )}
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => void refetch()}
+              disabled={isFetching}
+              className="gap-1.5 text-xs"
+            >
+              <RefreshCw className={cn("w-3.5 h-3.5", isFetching && "animate-spin")} />
+            </Button>
             <Button
               size="sm"
               onClick={() => handlePush()}
@@ -325,7 +313,7 @@ export function IDESyncPage() {
           </div>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-white/8 text-xs text-muted-foreground space-y-1">
+        <div className="mt-3 pt-3 border-t border-[hsl(var(--border))] text-xs text-muted-foreground space-y-1">
           <p>
             <span className="font-medium text-foreground">Push to IDE</span> — exports portal wizard config to{" "}
             <code className="font-mono">workspace/IW_Runtime_Sync/</code> and compiles a{" "}
@@ -347,11 +335,11 @@ export function IDESyncPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="rounded-xl border border-white/8 bg-white/3 h-44 animate-pulse" />
+            <div key={n} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm h-44 animate-pulse" />
           ))}
         </div>
       ) : profiles.length === 0 ? (
-        <div className="rounded-xl border border-white/8 bg-white/3 p-8 text-center text-muted-foreground text-sm">
+        <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm p-8 text-center text-muted-foreground text-sm">
           No saved configurations found.{" "}
           <a href="/company/config/wizard" className="text-[hsl(var(--primary))] underline">
             Run the setup wizard
@@ -374,7 +362,7 @@ export function IDESyncPage() {
       )}
 
       {/* How sync works */}
-      <div className="rounded-xl border border-white/8 bg-white/3 p-4 space-y-2">
+      <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm p-4 space-y-2">
         <h3 className="text-sm font-medium flex items-center gap-2">
           <Clock className="w-4 h-4 text-muted-foreground" />
           How Sync Works
@@ -403,6 +391,17 @@ export function IDESyncPage() {
 
       {/* Log panel */}
       <LogPanel />
+    </div>
+  );
+}
+
+// ── Standalone page (kept for backward compat, redirects handle it now) ──────
+
+export function IDESyncPage() {
+  useDocumentTitle("IDE Sync");
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-6">
+      <WorkspaceSyncPanel />
     </div>
   );
 }
