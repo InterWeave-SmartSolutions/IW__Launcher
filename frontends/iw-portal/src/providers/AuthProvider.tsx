@@ -26,8 +26,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function checkSession() {
+    // 5-second timeout: if the backend proxy hangs (tunnel down, etc.),
+    // we abort and treat the user as unauthenticated so the login form appears.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const res = await apiFetch<SessionResponse>("/api/auth/session");
+      const res = await apiFetch<SessionResponse>("/api/auth/session", {
+        signal: controller.signal,
+      });
       if (res.authenticated && res.user) {
         setUser(res.user);
       } else {
@@ -36,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       setUser(null);
     } finally {
+      clearTimeout(timer);
       setIsLoading(false);
     }
   }
