@@ -31,6 +31,9 @@ export async function apiFetch<T>(
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    // Bypasses localtunnel's browser confirmation page when Vercel proxies via loca.lt.
+    // Forwarded transparently by Vercel's rewrite and ignored by Cloudflare/direct.
+    "bypass-tunnel-reminder": "true",
   };
 
   // Include Bearer token for proxy deployments where cookies don't survive
