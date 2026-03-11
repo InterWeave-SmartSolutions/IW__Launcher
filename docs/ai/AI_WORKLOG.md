@@ -4889,3 +4889,41 @@ The sync bridge (`scripts/sync_bridge.ps1`) and workspace sync servlets were alr
 - TypeScript: 0 strict-mode errors
 - Vite build: success, IDESyncPage chunk visible in output
 - Tomcat restart required to pick up new servlet (web.xml change)
+
+---
+
+## 2026-03-11 (UTC) — session 15 follow-up
+Agent/tool: Claude Code (Sonnet 4.6)
+User request: Complete the pending items from session 14: commit master pages, portal visibility toggle in ProfilePage, and Java API servlets for associate/master endpoints.
+Actions taken:
+- Committed 10 Master Console pages (AuditSecurityPage, NotificationTemplatesPage, SupportQueuePage, TenantSettingsPage + 6 from prior session) — git commit b2e5335
+- Added Portal Preferences card to ProfilePage using usePortalVisibility() hook — per-portal Visible/Hidden toggles, persisted to localStorage, last portal protected from removal
+- Created ApiAssociateServlet.java (8 endpoints: home, resources, search, webinars, intake, support/tickets, billing) + registered in web.xml
+- Created ApiMasterServlet.java (10 endpoints: dashboard with live DB count, users, content, subscriptions, integrations, analytics, audit, notifications, support, settings) + registered in web.xml
+- Compiled both new servlets (0 errors, 4 expected JDK 8 deprecation warnings)
+- Also staged IDESyncPage.tsx + useSync.ts + sync.ts types added by concurrent agent session
+- React build: 0 TS errors, Vite ✓ 5.57s
+- git commit 1534d4b
+Files changed/created:
+- `frontends/iw-portal/src/pages/ProfilePage.tsx` (portal preferences section)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiAssociateServlet.java` (new)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiMasterServlet.java` (new)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/api/ApiAssociateServlet.class` (compiled)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/api/ApiMasterServlet.class` (compiled)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml` (registered /api/associate/* and /api/master/*)
+- `frontends/iw-portal/src/pages/IDESyncPage.tsx` (concurrent agent)
+- `frontends/iw-portal/src/hooks/useSync.ts` (concurrent agent)
+- `frontends/iw-portal/src/types/sync.ts` (concurrent agent)
+Commands run:
+- `javac -source 1.8 -target 1.8 ... ApiAssociateServlet.java ApiMasterServlet.java`
+- `node node_modules/typescript/bin/tsc -b --noEmit`
+- `node node_modules/vite/bin/vite.js build`
+- `git add ... && git commit`
+Verification performed:
+- javac: 0 errors (4 expected JDK 8 deprecation warnings)
+- TypeScript: 0 errors
+- Vite build: ✓ 5.57s
+Follow-ups / known issues:
+1. API servlets return mock JSON — DB wiring for associate/master data is a follow-up (requires schema additions for resources, webinars, tickets, etc.)
+2. ProfilePage portal preferences only affect Topbar switcher visibility; Sidebar nav changes per URL automatically (usePortal hook)
+3. Tomcat needs reload for new servlets to take effect (servlet-mapping registered but Tomcat not running at time of commit)
