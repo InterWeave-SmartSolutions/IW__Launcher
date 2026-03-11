@@ -4599,3 +4599,24 @@ Files changed/created:
 - `NEXT_STEPS.md` (items 6, 15, MoreCustomMappings, InterWoven updated)
 
 Verification: TS 0 errors, build 2579 modules/6.44s, all 8 endpoints healthy, webhook `{"success":true}`
+
+## 2026-03-10 20:15 (EST)
+Session 12d — Token-based auth for Vercel proxy deployment
+
+**Problem:** Vercel's server-side rewrites don't forward session cookies. Each proxied request hits Tomcat with a new connection (no JSESSIONID), so `POST /login` creates a session that `GET /session` can't find.
+
+**Solution:** Bearer token auth layer that bridges to Tomcat sessions:
+- `ApiTokenStore.java` — in-memory ConcurrentHashMap<token, user attributes> with 24h TTL
+- `ApiTokenAuthFilter.java` — servlet filter on `/api/*`, reads `Authorization: Bearer <token>`, populates HttpSession from stored attributes
+- `ApiLoginServlet.java` — generates UUID token on successful login, returns `"token":"..."` in JSON response
+- `web.xml` — registered ApiTokenAuthFilter before all API servlets
+- `api.ts` — reads token from localStorage, adds `Authorization: Bearer <token>` header
+- `AuthProvider.tsx` — stores token on login, clears on logout
+- `auth.ts` — added `token?` field to LoginResponse type
+
+**Key design:** Zero changes needed to existing servlets. The filter bridges tokens to sessions transparently. Dual auth: cookies (local dev) + tokens (proxy) both work.
+
+Files created: `ApiTokenStore.java`, `ApiTokenAuthFilter.java` (+ 3 .class files)
+Files modified: `ApiLoginServlet.java`, `web.xml`, `api.ts`, `AuthProvider.tsx`, `auth.ts`
+
+Verification: javac 0 errors, tsc 0 errors, build 2579 modules, pushed to main for Vercel auto-deploy
