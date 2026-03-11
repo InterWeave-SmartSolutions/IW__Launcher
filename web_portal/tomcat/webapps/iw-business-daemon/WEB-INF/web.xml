@@ -35,6 +35,16 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
+	<!-- Token Auth Filter - bridges Bearer tokens to Tomcat sessions for proxy deployments -->
+	<filter>
+		<filter-name>ApiTokenAuthFilter</filter-name>
+		<filter-class>com.interweave.businessDaemon.api.ApiTokenAuthFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>ApiTokenAuthFilter</filter-name>
+		<url-pattern>/api/*</url-pattern>
+	</filter-mapping>
+
 	<servlet>
 		<servlet-name>IWBusinessDaemon</servlet-name>
 		<servlet-class>com.interweave.businessDaemon.BusinessDaemonInit</servlet-class>

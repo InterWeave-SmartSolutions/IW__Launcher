@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, setAuthToken, clearAuthToken } from "@/lib/api";
 import type { User, LoginRequest, LoginResponse, SessionResponse } from "@/types/auth";
 
 interface AuthState {
@@ -52,6 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     if (res.success && res.user) {
+      // Store token for proxy deployments (Vercel) where cookies don't survive
+      if (res.token) {
+        setAuthToken(res.token);
+      }
       setUser(res.user);
     } else {
       throw new Error(res.error ?? "Login failed");
@@ -67,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ignore — we clear local state regardless
     }
+    clearAuthToken();
     setUser(null);
   }, []);
 

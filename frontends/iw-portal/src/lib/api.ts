@@ -2,6 +2,20 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BASE_URL: string = (import.meta as any).env?.VITE_API_BASE_URL || "/iw-business-daemon";
 
+const TOKEN_KEY = "iw_auth_token";
+
+export function getAuthToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearAuthToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -14,10 +28,21 @@ export async function apiFetch<T>(
   options?: RequestInit
 ): Promise<T> {
   const url = endpoint.startsWith("http") ? endpoint : `${BASE_URL}${endpoint}`;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  // Include Bearer token for proxy deployments where cookies don't survive
+  const token = getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
-    credentials: "include", // share session cookie with Tomcat
+    credentials: "include", // still send cookies for direct/local access
     headers: {
-      "Content-Type": "application/json",
+      ...headers,
       ...options?.headers,
     },
     ...options,

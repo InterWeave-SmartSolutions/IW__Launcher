@@ -189,9 +189,22 @@ public class ApiLoginServlet extends HttpServlet {
 
                     log("API login successful: " + userEmail + " (Company: " + companyName + ")");
 
+                    // Generate a Bearer token for stateless auth (Vercel/proxy deployments)
+                    java.util.Map<String, Object> tokenAttrs = new java.util.HashMap<>();
+                    tokenAttrs.put("userId", userId);
+                    tokenAttrs.put("userEmail", userEmail);
+                    tokenAttrs.put("userName", userName);
+                    tokenAttrs.put("companyId", companyId);
+                    tokenAttrs.put("companyName", companyName);
+                    tokenAttrs.put("isAdmin", isAdmin);
+                    tokenAttrs.put("role", role);
+                    tokenAttrs.put("solutionType", solutionType);
+                    tokenAttrs.put("authenticated", true);
+                    String authToken = ApiTokenStore.createToken(tokenAttrs);
+
                     // Build JSON response matching React User type
                     StringBuilder json = new StringBuilder();
-                    json.append("{\"success\":true,\"user\":{");
+                    json.append("{\"success\":true,\"token\":\"").append(authToken).append("\",\"user\":{");
                     json.append("\"userId\":\"").append(userId).append("\",");
                     json.append("\"userName\":\"").append(escapeJson(userName)).append("\",");
                     json.append("\"email\":\"").append(escapeJson(userEmail)).append("\",");
