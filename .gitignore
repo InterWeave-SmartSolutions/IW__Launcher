@@ -68,6 +68,8 @@ out/
 !web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/**
 # JAXB 1.0-ea trimmed JAR (endorsed override - fixes InstantiationError on Tomcat startup)
 !jre/lib/endorsed/**
+# Tomcat endorsed JARs (trimmed JAXB + XJC - replaces full jaxb-rt to avoid DOM Level 1 conflict)
+!web_portal/tomcat/endorsed/**
 # Override *.class and bin/ ignores for the iw_sdk Eclipse plugin (required for IDE to launch)
 !plugins/iw_sdk_1.0.0/bin/
 !plugins/iw_sdk_1.0.0/bin/**
