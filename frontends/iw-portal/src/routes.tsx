@@ -1,5 +1,60 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
+
+/* ── Associate portal pages (lazy) ── */
+const AssociateHomePage = lazy(() =>
+  import("@/pages/associate/AssociateHomePage").then((m) => ({ default: m.AssociateHomePage }))
+);
+const ResourceLibraryPage = lazy(() =>
+  import("@/pages/associate/ResourceLibraryPage").then((m) => ({ default: m.ResourceLibraryPage }))
+);
+const WebinarsPage = lazy(() =>
+  import("@/pages/associate/WebinarsPage").then((m) => ({ default: m.WebinarsPage }))
+);
+const BusinessIntakePage = lazy(() =>
+  import("@/pages/associate/BusinessIntakePage").then((m) => ({ default: m.BusinessIntakePage }))
+);
+const AssociateSupportPage = lazy(() =>
+  import("@/pages/associate/SupportPage").then((m) => ({ default: m.SupportPage }))
+);
+const BillingPage = lazy(() =>
+  import("@/pages/associate/BillingPage").then((m) => ({ default: m.BillingPage }))
+);
+const SearchPage = lazy(() =>
+  import("@/pages/associate/SearchPage").then((m) => ({ default: m.SearchPage }))
+);
+
+/* ── Master console pages (lazy) ── */
+const MasterDashboardPage = lazy(() =>
+  import("@/pages/master/MasterDashboardPage").then((m) => ({ default: m.MasterDashboardPage }))
+);
+const UserManagementPage = lazy(() =>
+  import("@/pages/master/UserManagementPage").then((m) => ({ default: m.UserManagementPage }))
+);
+const ContentManagementPage = lazy(() =>
+  import("@/pages/master/ContentManagementPage").then((m) => ({ default: m.ContentManagementPage }))
+);
+const SubscriptionsPage = lazy(() =>
+  import("@/pages/master/SubscriptionsPage").then((m) => ({ default: m.SubscriptionsPage }))
+);
+const ConnectorManagementPage = lazy(() =>
+  import("@/pages/master/ConnectorManagementPage").then((m) => ({ default: m.ConnectorManagementPage }))
+);
+const ProgramAnalyticsPage = lazy(() =>
+  import("@/pages/master/ProgramAnalyticsPage").then((m) => ({ default: m.ProgramAnalyticsPage }))
+);
+const AuditSecurityPage = lazy(() =>
+  import("@/pages/master/AuditSecurityPage").then((m) => ({ default: m.AuditSecurityPage }))
+);
+const NotificationTemplatesPage = lazy(() =>
+  import("@/pages/master/NotificationTemplatesPage").then((m) => ({ default: m.NotificationTemplatesPage }))
+);
+const SupportQueuePage = lazy(() =>
+  import("@/pages/master/SupportQueuePage").then((m) => ({ default: m.SupportQueuePage }))
+);
+const TenantSettingsPage = lazy(() =>
+  import("@/pages/master/TenantSettingsPage").then((m) => ({ default: m.TenantSettingsPage }))
+);
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -197,6 +252,79 @@ export const router = createBrowserRouter(
             </Suspense>
           ),
         },
+
+        /* ── Associate portal routes ── */
+        {
+          path: "associate/home",
+          element: <Suspense fallback={<LazyFallback />}><AssociateHomePage /></Suspense>,
+        },
+        {
+          path: "associate/resources",
+          element: <Suspense fallback={<LazyFallback />}><ResourceLibraryPage /></Suspense>,
+        },
+        {
+          path: "associate/webinars",
+          element: <Suspense fallback={<LazyFallback />}><WebinarsPage /></Suspense>,
+        },
+        {
+          path: "associate/intake",
+          element: <Suspense fallback={<LazyFallback />}><BusinessIntakePage /></Suspense>,
+        },
+        {
+          path: "associate/support",
+          element: <Suspense fallback={<LazyFallback />}><AssociateSupportPage /></Suspense>,
+        },
+        {
+          path: "associate/billing",
+          element: <Suspense fallback={<LazyFallback />}><BillingPage /></Suspense>,
+        },
+        {
+          path: "associate/search",
+          element: <Suspense fallback={<LazyFallback />}><SearchPage /></Suspense>,
+        },
+
+        /* ── Master console routes ── */
+        {
+          path: "master/dashboard",
+          element: <Suspense fallback={<LazyFallback />}><MasterDashboardPage /></Suspense>,
+        },
+        {
+          path: "master/users",
+          element: <Suspense fallback={<LazyFallback />}><UserManagementPage /></Suspense>,
+        },
+        {
+          path: "master/content",
+          element: <Suspense fallback={<LazyFallback />}><ContentManagementPage /></Suspense>,
+        },
+        {
+          path: "master/subscriptions",
+          element: <Suspense fallback={<LazyFallback />}><SubscriptionsPage /></Suspense>,
+        },
+        {
+          path: "master/integrations",
+          element: <Suspense fallback={<LazyFallback />}><ConnectorManagementPage /></Suspense>,
+        },
+        {
+          path: "master/analytics",
+          element: <Suspense fallback={<LazyFallback />}><ProgramAnalyticsPage /></Suspense>,
+        },
+        {
+          path: "master/audit",
+          element: <Suspense fallback={<LazyFallback />}><AuditSecurityPage /></Suspense>,
+        },
+        {
+          path: "master/notifications",
+          element: <Suspense fallback={<LazyFallback />}><NotificationTemplatesPage /></Suspense>,
+        },
+        {
+          path: "master/support",
+          element: <Suspense fallback={<LazyFallback />}><SupportQueuePage /></Suspense>,
+        },
+        {
+          path: "master/settings",
+          element: <Suspense fallback={<LazyFallback />}><TenantSettingsPage /></Suspense>,
+        },
+
         { path: "*", element: <NotFoundPage /> },
       ],
     },

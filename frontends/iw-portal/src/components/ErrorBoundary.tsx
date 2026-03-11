@@ -19,6 +19,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("ErrorBoundary caught:", error, info.componentStack);
+    // Stale deployment: chunk filenames changed since the user loaded index.html.
+    // Auto-reload once to fetch the new index.html and correct chunk names.
+    if (error.message.includes("Failed to fetch dynamically imported module") ||
+        error.message.includes("Importing a module script failed")) {
+      const reloaded = sessionStorage.getItem("chunk_reload");
+      if (!reloaded) {
+        sessionStorage.setItem("chunk_reload", "1");
+        window.location.reload();
+      }
+    }
   }
 
   render() {

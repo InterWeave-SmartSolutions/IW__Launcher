@@ -4741,3 +4741,38 @@ Follow-ups / Tier 2+ audit items:
 3. **`scripts/full_startup.bat`, `START_HERE.bat`, `run_start_debug.bat`** — review for consolidation with root `START.bat`
 4. **`web_portal/start_web_portal.bat` + `.sh`** — thin wrappers; consider removing and pointing users to `scripts/` directly
 5. **Tunnel URL changes on each restart** — for permanent showcase use `SETUP_SHOWCASE.bat` (cloudflared service + Tomcat scheduled task)
+
+---
+
+## 2026-03-11 (UTC)
+Agent/tool: Claude Code (Sonnet 4.6) — continued from session 14 (context compaction)
+User request: Complete three-portal incorporation — finish remaining Master Console pages, wire all new routes, and verify build.
+Actions taken:
+- Created 4 remaining Master Console pages (completing the 10-page set):
+  - `AuditSecurityPage.tsx` — MFA enrollment matrix by role, security events log, filterable audit trail
+  - `NotificationTemplatesPage.tsx` — template list with inline editor panel, delivery channel selector, preference center by segment
+  - `SupportQueuePage.tsx` — open ticket queue with row-click detail/reply panel + create-ticket intake form
+  - `TenantSettingsPage.tsx` — program configuration form, platform limits panel, danger zone actions, feature rollout policy table
+- Updated `src/routes.tsx` with all 17 new lazy-loaded routes:
+  - 7 Associate portal routes under `/associate/*`
+  - 10 Master Console routes under `/master/*`
+- Ran TypeScript check (0 errors) and Vite build (✓ built in 5.34s, 0 errors)
+Files changed/created:
+- `frontends/iw-portal/src/pages/master/AuditSecurityPage.tsx` (new)
+- `frontends/iw-portal/src/pages/master/NotificationTemplatesPage.tsx` (new)
+- `frontends/iw-portal/src/pages/master/SupportQueuePage.tsx` (new)
+- `frontends/iw-portal/src/pages/master/TenantSettingsPage.tsx` (new)
+- `frontends/iw-portal/src/routes.tsx` (updated — added 17 new lazy routes)
+- `web_portal/tomcat/webapps/iw-portal/` (rebuilt — all new chunks deployed)
+Commands run:
+- `node node_modules/typescript/bin/tsc -b --noEmit`
+- `node node_modules/vite/bin/vite.js build`
+Verification performed:
+- TypeScript: 0 errors
+- Vite build: ✓ 5.34s, all 17 new page chunks emitted (UserManagementPage, ResourceLibraryPage, SupportPage, ConnectorManagementPage, SubscriptionsPage, ProgramAnalyticsPage, ContentManagementPage, AssociateHomePage, MasterDashboardPage, TenantSettingsPage, NotificationTemplatesPage, AuditSecurityPage, SupportQueuePage + existing chunks unchanged)
+- All new pages use mock data with `// TODO: wire to /api/...` comments; no runtime regressions
+Follow-ups / known issues:
+1. Portal visibility toggle in ProfilePage/Settings (user-controlled hide per-portal) — not yet implemented
+2. `KpiCard` shared component still inlined in MasterDashboardPage — can be extracted later
+3. All new API endpoints (`/api/master/*`, `/api/associate/*`) are stubs — need Java servlet implementations
+4. Commit to `feat/ui-portal-incorporation` branch still pending

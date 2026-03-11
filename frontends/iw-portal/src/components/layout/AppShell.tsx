@@ -9,7 +9,7 @@ export function AppShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="app-background min-h-screen grid grid-cols-[260px_1fr] max-md:grid-cols-1">
+    <div className="app-background min-h-screen grid grid-cols-[280px_1fr] max-md:grid-cols-1">
       <Sidebar />
       {mobileMenuOpen && (
         <Sidebar mobile onClose={() => setMobileMenuOpen(false)} />
