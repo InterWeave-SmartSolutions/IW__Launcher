@@ -630,6 +630,36 @@
         	<url-pattern>/api/webhooks/receive</url-pattern>
         </servlet-mapping>
 
+        <!-- Workspace Sync API (IDE ↔ Portal) -->
+        <servlet>
+        	<servlet-name>ApiWorkspaceSyncServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiWorkspaceSyncServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiWorkspaceSyncServlet</servlet-name>
+        	<url-pattern>/api/sync/*</url-pattern>
+        </servlet-mapping>
+
+        <!-- Associate Portal API -->
+        <servlet>
+        	<servlet-name>ApiAssociateServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiAssociateServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiAssociateServlet</servlet-name>
+        	<url-pattern>/api/associate/*</url-pattern>
+        </servlet-mapping>
+
+        <!-- Master Console API -->
+        <servlet>
+        	<servlet-name>ApiMasterServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiMasterServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiMasterServlet</servlet-name>
+        	<url-pattern>/api/master/*</url-pattern>
+        </servlet-mapping>
+
 	<session-config>
 		<session-timeout>30</session-timeout>
 	</session-config>

@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Activity, User, Building2, Settings, FileText, Monitor,
   Bell, Shield, ClipboardList, Sparkles, X, Home, BookOpen, Search,
   Video, ClipboardCheck, HelpCircle, CreditCard, Users, BarChart2,
-  Plug, Lock, SlidersHorizontal, type LucideIcon,
+  Plug, Lock, SlidersHorizontal, ArrowLeftRight, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePortal, PORTAL_SUBTITLES, type Portal } from "@/hooks/usePortal";
@@ -29,6 +29,7 @@ const OPERATOR_NAV: NavItem[] = [
   { to: "/admin/logging",        label: "Logging",        icon: FileText,        description: "System logs",                  group: "admin"   },
   { to: "/admin/audit",          label: "Audit Log",      icon: ClipboardList,   description: "Activity history",             group: "admin"   },
   { to: "/admin/field-mapping",  label: "Field Mapping",  icon: Sparkles,        description: "AI mapping suggestions",       group: "admin"   },
+  { to: "/admin/sync",           label: "IDE Sync",       icon: ArrowLeftRight,  description: "Portal ↔ IDE workspace sync",  group: "admin"   },
 ];
 
 const OPERATOR_GROUPS: Record<string, string> = {

@@ -92,6 +92,9 @@ const AuditLogPage = lazy(() =>
 const FieldMappingPage = lazy(() =>
   import("@/pages/FieldMappingPage").then((m) => ({ default: m.FieldMappingPage }))
 );
+const IDESyncPage = lazy(() =>
+  import("@/pages/IDESyncPage").then((m) => ({ default: m.IDESyncPage }))
+);
 
 /* Lazy-load monitoring pages (recharts is ~380kB) */
 const MonitoringLayout = lazy(() =>
@@ -249,6 +252,14 @@ export const router = createBrowserRouter(
           element: (
             <Suspense fallback={<LazyFallback />}>
               <FieldMappingPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: "admin/sync",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <IDESyncPage />
             </Suspense>
           ),
         },

@@ -4776,3 +4776,116 @@ Follow-ups / known issues:
 2. `KpiCard` shared component still inlined in MasterDashboardPage — can be extracted later
 3. All new API endpoints (`/api/master/*`, `/api/associate/*`) are stubs — need Java servlet implementations
 4. Commit to `feat/ui-portal-incorporation` branch still pending
+
+---
+
+## 2026-03-11 18:30 (EST)
+Agent/tool: Claude Code (Sonnet 4.6) — continued (context compaction)
+User request: Continued from prior session — fix "Failed to fetch dynamically imported module" errors on Vercel, then fix "Failed to load configuration status, database error" seen by external user on another computer.
+
+Actions taken:
+
+**Issue 1 — "Failed to fetch dynamically imported module" (FIXED + DEPLOYED):**
+- Root cause: Prior commits (DevModeProvider, usePortal hook, new pages) caused Vite chunk hashes to rotate. Browsers with cached old `index.html` tried to fetch old filenames → 404 → React error boundary showed the error.
+- Fix A (vercel.json): Added `Cache-Control: no-cache, no-store, must-revalidate` on `index.html` so browsers always re-fetch the manifest; `immutable` on `/assets/*` for proper chunk caching.
+- Fix B (ErrorBoundary.tsx): Added `componentDidCatch` auto-reload logic: detects "Failed to fetch dynamically imported module" / "Importing a module script failed", sets `sessionStorage['chunk_reload']='1'` flag, calls `window.location.reload()` once to fetch fresh `index.html`.
+- TypeScript 6133 errors fixed: removed unused `inferStatus` import in `SearchPage.tsx`, removed unused `StatusBadge` import in `WebinarsPage.tsx`
+- Committed `07aa2a4`, pushed to main → Vercel auto-deploy triggered
+
+**Issue 2 — "Failed to load configuration status, database error" for external user (FIXED):**
+- Root cause: JDBC connection pool was serving stale connections. At 13:06 (12 min after Tomcat startup) Supabase's pooler closed idle connections; Tomcat's pool had `validationInterval=30000` meaning connections validated < 30s ago were not re-checked. Burst of simultaneous requests from external user hit the pool before eviction thread ran → all connections failed `clearWarnings` check → `PooledConnection.clearWarnings Unable to clear Warnings, connection will be closed` WARNINGs in catalina log → some servlet requests timed out waiting for a new connection → 500 "Database error".
+- Confirmed all APIs work correctly when pool has fresh connections.
+- Fix: edited `web_portal/tomcat/conf/context.xml` (NOT tracked in git — machine-specific):
+  - `validationInterval="30000"` → `"0"` (always validate connection before use, no caching)
+  - Added `minEvictableIdleTimeMillis="55000"` (evict idle connections after 55s, before Supabase's ~60s session timeout)
+- Restarted Tomcat to pick up context.xml change: confirmed HTTP 200 on startup.
+
+Files changed:
+- `frontends/iw-portal/src/components/ErrorBoundary.tsx` — chunk-reload auto-recover
+- `frontends/iw-portal/vercel.json` — Cache-Control headers
+- `frontends/iw-portal/src/pages/associate/SearchPage.tsx` — remove unused inferStatus import
+- `frontends/iw-portal/src/pages/associate/WebinarsPage.tsx` — remove unused StatusBadge import
+- `web_portal/tomcat/conf/context.xml` — validationInterval=0, minEvictableIdleTimeMillis=55000 (local only, not in git)
+
+Commands run:
+- `node node_modules/typescript/bin/tsc -b --noEmit` (0 errors)
+- `git add/commit/push origin main`
+- Tomcat stop + start via direct Java command
+- `curl` tests: local Tomcat (200), Cloudflare tunnel (200), Vercel proxy (200)
+
+Verification performed:
+- tsc: 0 errors
+- Tomcat restarted: `curl http://localhost:9090/... → 200`
+- Tunnel live: `curl https://genetics-paso-enable-mechanical.trycloudflare.com/... → 200`
+- Push pushed to main: `07aa2a4`
+
+---
+
+## Session: 2026-03-11 — IDE ↔ Portal Sync Visibility (ApiWorkspaceSyncServlet + IDESyncPage)
+
+**Agent:** Claude Code (Sonnet 4.6)
+**Goal:** Make the bidirectional IDE ↔ Portal sync visible and controllable from the React portal.
+
+### What I Did This Response
+
+**Problem identified:**
+The sync bridge (`scripts/sync_bridge.ps1`) and workspace sync servlets were already functional but completely invisible from the React portal. Users had no way to:
+- Know if their wizard changes had been pushed to the IDE workspace
+- See if the IDE engineer made changes that need pulling back
+- Check whether the sync bridge was running
+- View sync log output
+
+**New Java servlet — `ApiWorkspaceSyncServlet.java`:**
+- `GET /api/sync/status` — reads `company_configurations.updated_at` from DB, compares to `workspace/IW_Runtime_Sync/profiles/<profile>/company_configuration.xml` and `workspace/GeneratedProfiles/<profile>/configuration/im/config.xml` file timestamps; returns per-profile `syncStatus`: `"in_sync" | "db_ahead" | "workspace_ahead" | "not_synced"`. Also reports `bridgeRunning` by checking if `logs/sync_bridge.pid` exists AND `logs/sync_bridge.log` was modified within the last 120 seconds (no shell exec needed).
+- `POST /api/sync/push` — directly calls `WorkspaceProfileSyncSupport.exportProfile()` + `WorkspaceProfileCompiler.compileProfile()` for all profiles (or one specified by `profileName`). Portal → IDE.
+- `POST /api/sync/pull` — calls `WorkspaceProfileSyncSupport.loadMirroredProfile()` then does DB upsert. IDE → Portal.
+- `GET /api/sync/log?lines=N` — reads tail of `logs/sync_bridge.log`, returns as JSON array of strings.
+- Auth: requires authenticated session. No loopback restriction (unlike sync/compiler servlets).
+
+**web.xml registration:**
+- Added `<servlet>` + `<servlet-mapping>` for `ApiWorkspaceSyncServlet` → `/api/sync/*`.
+
+**New React hook — `src/hooks/useSync.ts`:**
+- `useSyncStatus(autoRefresh)` — polls `/api/sync/status` every 15 s
+- `useSyncLog(lines)` — polls `/api/sync/log` every 10 s
+- `usePushToIDE()` — mutation for POST `/api/sync/push`
+- `usePullFromIDE()` — mutation for POST `/api/sync/pull`
+
+**New TypeScript types — `src/types/sync.ts`:**
+- `SyncStatus`, `ProfileSyncState`, `SyncStatusResponse`, `SyncLogResponse`, `SyncActionResponse`
+
+**New React page — `src/pages/IDESyncPage.tsx`:**
+- Status bar: bridge running indicator (pulsing dot), per-status badge counts, "Push All to IDE" button
+- Profile cards (2-column grid): shows `profileName`, `solutionType`, DB timestamp, workspace file timestamp, IW_Runtime_Sync ✓/✗, GeneratedProfiles ✓/✗, status pill (In Sync / Portal Ahead / IDE Ahead / Not Synced), per-card Push and Pull buttons
+- "How Sync Works" explainer panel (Portal→IDE steps, IDE→Portal steps)
+- Collapsible log panel — shows last N sync bridge log entries, color-coded by level ([SYNC]=blue, [ERROR]/[WARN]=red), newest-first
+- Auto-refreshes every 15 s
+
+**Route added (`src/routes.tsx`):**
+- Lazy-loaded `IDESyncPage` at `/admin/sync`
+
+**Sidebar nav item (`src/components/layout/Sidebar.tsx`):**
+- "IDE Sync" with `ArrowLeftRight` icon in the Administration group
+
+### Files Changed
+
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiWorkspaceSyncServlet.java` — NEW
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml` — added servlet + mapping for `/api/sync/*`
+- `frontends/iw-portal/src/types/sync.ts` — NEW
+- `frontends/iw-portal/src/hooks/useSync.ts` — NEW
+- `frontends/iw-portal/src/pages/IDESyncPage.tsx` — NEW
+- `frontends/iw-portal/src/routes.tsx` — added lazy IDESyncPage import + `/admin/sync` route
+- `frontends/iw-portal/src/components/layout/Sidebar.tsx` — added "IDE Sync" nav item
+
+### Commands Run
+
+- `javac -source 1.8 -target 1.8 -cp "..." -d ... ApiWorkspaceSyncServlet.java` — compiled OK (4 deprecation warnings only)
+- `node node_modules/typescript/bin/tsc -b --noEmit` — 0 errors
+- `node node_modules/vite/bin/vite.js build` — built in 5.78 s, IDESyncPage-COOg3SYH.js emitted
+
+### Verification
+
+- Java: compiled with zero errors
+- TypeScript: 0 strict-mode errors
+- Vite build: success, IDESyncPage chunk visible in output
+- Tomcat restart required to pick up new servlet (web.xml change)

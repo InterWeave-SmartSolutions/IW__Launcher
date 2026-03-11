@@ -10,11 +10,13 @@ import {
   AlertTriangle,
   Eye,
   EyeOff,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProfile, useUpdateProfile, useChangePassword } from "@/hooks/useProfile";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useToast } from "@/providers/ToastProvider";
+import { usePortalVisibility, PORTAL_LABELS, type Portal } from "@/hooks/usePortal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +35,7 @@ export function ProfilePage() {
   const { data, isLoading, error: fetchError } = useProfile();
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
+  const { visible, toggle, all: allPortals } = usePortalVisibility();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -228,6 +231,46 @@ export function ProfilePage() {
                 <span className="text-muted-foreground">Role</span>
                 <span className="font-medium capitalize">{profile?.role || "—"}</span>
               </div>
+            </div>
+          </div>
+
+          {/* Portal Visibility Preferences */}
+          <div className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <LayoutGrid className="w-4 h-4 text-[hsl(var(--primary))]" />
+              <h3 className="font-semibold text-sm">Portal Preferences</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Choose which portals appear in the topbar switcher.
+            </p>
+            <div className="space-y-2">
+              {allPortals.map((portal: Portal) => {
+                const isOn = visible.includes(portal);
+                const isLast = visible.length === 1 && isOn;
+                return (
+                  <button
+                    key={portal}
+                    onClick={() => toggle(portal)}
+                    disabled={isLast}
+                    title={isLast ? "At least one portal must remain visible" : undefined}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-colors",
+                      isOn
+                        ? "bg-[hsl(var(--primary)/0.1)] border-[hsl(var(--primary)/0.4)] text-foreground"
+                        : "border-[hsl(var(--border))] text-muted-foreground hover:bg-[hsl(var(--muted)/0.3)]",
+                      isLast && "opacity-50 cursor-not-allowed",
+                    )}
+                  >
+                    <span className="font-medium capitalize">{PORTAL_LABELS[portal]}</span>
+                    <span className={cn(
+                      "text-xs px-1.5 py-0.5 rounded",
+                      isOn ? "bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))]" : "bg-[hsl(var(--muted)/0.5)]"
+                    )}>
+                      {isOn ? "Visible" : "Hidden"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
