@@ -4620,3 +4620,56 @@ Files created: `ApiTokenStore.java`, `ApiTokenAuthFilter.java` (+ 3 .class files
 Files modified: `ApiLoginServlet.java`, `web.xml`, `api.ts`, `AuthProvider.tsx`, `auth.ts`
 
 Verification: javac 0 errors, tsc 0 errors, build 2579 modules, pushed to main for Vercel auto-deploy
+
+---
+
+## 2026-03-11 16:00 (EST)
+Agent/tool: Claude Code (Sonnet 4.6) — main + Vercel sub-agent + Supabase MCP
+User request: Tackle items 1–3: webhook DB row, Cloudflare tunnel scripts, Vercel deployment verification
+
+Actions taken:
+
+**Item 1 — Webhook DB rows (DONE):**
+- Queried `webhook_endpoints` schema via Supabase MCP: 22 columns, table was empty
+- Inserted 2 rows: IW Portal Self-Notification for company_id=1 (Admin) and company_id=2 (Demo)
+- Endpoint URL: `http://localhost:9090/iw-business-daemon/api/webhooks/receive`
+- Both rows: auth_type=none, timeout=10s, retry=2, enabled=true
+- WebhookNotificationService will now deliver alerts to the self-notification endpoint on next Tomcat restart
+
+**Item 2 — Cloudflare Tunnel scripts (scripts rewritten):**
+- cloudflared v2026.3.0 detected (already installed, no install needed)
+- Rewrote `scripts/setup_cloudflare_tunnel.bat` — now: no domain required, uses `<uuid>.cfargotunnel.com` stable URL, auto-extracts UUID via PowerShell regex, auto-writes `~/.cloudflared/config.yml`, auto-patches `vercel.json` destination, saves URL to `logs/cloudflare_tunnel_url.txt`
+- Rewrote `scripts/start_cloudflare_tunnel.bat` — checks config exists, shows tunnel URL, routes to `cloudflared tunnel run iw-portal` (named tunnel, uses config.yml)
+- cloudflared is NOT yet authenticated (no `~/.cloudflared/cert.pem`). To complete: user runs `scripts\setup_cloudflare_tunnel.bat` (opens browser for Cloudflare login)
+
+**Item 3 — Vercel deployment (FIXED + LIVE):**
+- Root cause: `rootDirectory` in Vercel project had a trailing space (`"frontends/iw-portal "`) causing Linux `cd` to fail → 0ms build, 0 output files, instant ERROR
+- Pattern: `485d0b8` was last good build (16h ago); `e499530`, `45ac0f4`, and a retry all failed with identical 0ms/Error pattern
+- Fix: PATCH `https://api.vercel.com/v9/projects/prj_3OR0nxiCRU2EfD73yd7pMmZqqIeS` via Vercel API with `{"rootDirectory":"frontends/iw-portal"}` (no trailing space)
+- Triggered redeploy via `vercel redeploy` CLI; build completed in ~1 minute
+- **Result: ● Ready — https://iw-portal.vercel.app is live with all Session 12 code** (token auth, field mapping, webhook servlet, custom mappings, dashboard sparklines)
+- Future pushes to main will now auto-deploy correctly
+
+Files changed/created:
+- `scripts/setup_cloudflare_tunnel.bat` — fully rewritten (domain-free, UUID auto-extract, vercel.json auto-patch)
+- `scripts/start_cloudflare_tunnel.bat` — rewritten (config check, URL display, named tunnel run)
+- Supabase DB: 2 rows inserted into `webhook_endpoints`
+- Vercel project settings: `rootDirectory` fixed via API (no file change)
+
+Commands run:
+- Supabase MCP: list_projects, list_tables, execute_sql (schema query + INSERT)
+- `vercel ls`, `vercel inspect --json`, `vercel redeploy`
+- `VERCEL=1 node node_modules/vite/bin/vite.js build` (verified dist/ builds correctly)
+- `curl -X PATCH https://api.vercel.com/v9/projects/...` (rootDirectory fix)
+- `vercel pull --yes` (confirmed rootDirectory now 'frontends/iw-portal' with no trailing space)
+
+Verification performed:
+- Supabase: 2 webhook_endpoints rows confirmed returned by RETURNING clause
+- Vercel: `● Ready` status, 1m build duration, aliased to iw-portal.vercel.app
+- rootDirectory confirmed as `'frontends/iw-portal'` in re-pulled project.json
+- Local VERCEL=1 build: 20 chunks, 5.81s, all pages present
+
+Follow-ups / known issues:
+1. **Cloudflare Tunnel**: Run `scripts\setup_cloudflare_tunnel.bat` to authenticate + create tunnel + auto-patch vercel.json, then push + redeploy to point Vercel at Cloudflare instead of loca.lt
+2. **Tomcat restart needed**: webhook_endpoints rows are in DB but WebhookNotificationService reads them at startup. Restart Tomcat to activate webhook delivery
+3. **vercel.json still points to loca.lt**: Will be auto-patched by setup_cloudflare_tunnel.bat after tunnel is created
