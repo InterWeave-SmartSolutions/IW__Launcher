@@ -1,11 +1,16 @@
 package com.interweave.businessDaemon.config;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -164,7 +169,8 @@ public class WorkspaceProfileSyncServlet extends LocalUserManagementServlet {
                         "VALUES (?, ?, ?, ?) " +
                         "ON CONFLICT (company_id, profile_name) DO UPDATE SET " +
                         "solution_type = EXCLUDED.solution_type, " +
-                        "configuration_xml = EXCLUDED.configuration_xml")) {
+                        "configuration_xml = EXCLUDED.configuration_xml, " +
+                        "updated_at = CURRENT_TIMESTAMP")) {
                     stmt.setInt(1, companyId);
                     stmt.setString(2, profileName);
                     stmt.setString(3, solutionType);
@@ -183,6 +189,40 @@ public class WorkspaceProfileSyncServlet extends LocalUserManagementServlet {
                     stmt.setString(3, solutionType);
                     stmt.setString(4, payload.configXml);
                     stmt.executeUpdate();
+                }
+            }
+
+            // After import, align the .push_epoch sidecar with the new DB timestamp
+            // so status correctly reports "in_sync" (the DB now reflects what's in the IDE).
+            long storedMs = 0L;
+            try (PreparedStatement sel = conn.prepareStatement(
+                    "SELECT updated_at FROM company_configurations WHERE profile_name = ?")) {
+                sel.setString(1, profileName);
+                try (ResultSet rs2 = sel.executeQuery()) {
+                    if (rs2.next()) {
+                        Timestamp ts = rs2.getTimestamp(1);
+                        if (ts != null) storedMs = ts.getTime();
+                    }
+                }
+            }
+            if (storedMs > 0) {
+                try {
+                    File repoRoot = WorkspaceProfileSyncSupport.resolveRepoRoot(getServletContext());
+                    String safeProfile = WorkspaceProfileSyncSupport.sanitizeProfileKey(profileName);
+                    File profileDir = new File(
+                        new File(new File(new File(repoRoot, "workspace"), "IW_Runtime_Sync"), "profiles"), safeProfile);
+                    if (profileDir.isDirectory()) {
+                        File epochFile = new File(profileDir, ".push_epoch");
+                        BufferedWriter w = null;
+                        try {
+                            w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(epochFile), "UTF-8"));
+                            w.write(String.valueOf(storedMs));
+                        } finally {
+                            if (w != null) { try { w.close(); } catch (Exception ignored) {} }
+                        }
+                    }
+                } catch (Exception epochErr) {
+                    log("Failed to write .push_epoch after import for " + profileName, epochErr);
                 }
             }
 

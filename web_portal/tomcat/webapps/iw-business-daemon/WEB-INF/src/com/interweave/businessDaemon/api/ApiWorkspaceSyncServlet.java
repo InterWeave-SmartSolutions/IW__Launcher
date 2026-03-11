@@ -379,6 +379,30 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
                 }
             }
 
+            // After import, align the .push_epoch sidecar with the new DB timestamp
+            // so that /status correctly reports "in_sync" (the DB now reflects the IDE).
+            long storedMs = 0L;
+            try (PreparedStatement sel = conn.prepareStatement(
+                    "SELECT updated_at FROM company_configurations WHERE profile_name = ?")) {
+                sel.setString(1, profileName);
+                try (ResultSet rs2 = sel.executeQuery()) {
+                    if (rs2.next()) {
+                        Timestamp ts = rs2.getTimestamp(1);
+                        if (ts != null) storedMs = ts.getTime();
+                    }
+                }
+            }
+            if (storedMs > 0) {
+                File repoRoot = WorkspaceProfileSyncSupport.resolveRepoRoot(getServletContext());
+                File workspaceRoot = new File(repoRoot, "workspace");
+                String safeProfile = WorkspaceProfileSyncSupport.sanitizeProfileKey(profileName);
+                File profileDir = new File(
+                    new File(new File(workspaceRoot, "IW_Runtime_Sync"), "profiles"), safeProfile);
+                if (profileDir.isDirectory()) {
+                    writeEpochFile(new File(profileDir, PUSH_EPOCH_FILE), storedMs);
+                }
+            }
+
             response.getWriter().write("{\"success\":true,\"data\":{" +
                 "\"profileName\":\"" + escJson(profileName) + "\"," +
                 "\"solutionType\":\"" + escJson(solutionType) + "\"," +
