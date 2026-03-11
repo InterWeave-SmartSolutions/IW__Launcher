@@ -1,131 +1,179 @@
 ================================================================================
                     IW_IDE WINDOWS QUICK START
-                      (No WSL Required)
 ================================================================================
 
-PREREQUISITES
--------------
-NONE! This package includes everything needed:
-  - Bundled Java Runtime (JRE 8) in the 'jre' folder
-  - Apache Tomcat 9.0.83 pre-configured
-  - All required libraries and dependencies
+OPTION A: DEMO / EXTERNAL ACCESS (No setup required)
+-----------------------------------------------------
+Visit: https://iw-portal.vercel.app
 
-No system Java installation required.
+Log in with:
+  Email:    demo@sample.com
+  Password: demo123
 
-================================================================================
-                        QUICK START
-================================================================================
+That's it. No installation, no downloads, no configuration.
 
-Option A: Start Everything (Recommended)
-----------------------------------------
-1. Double-click: START.bat
-2. Wait 15-30 seconds for Web Portal to initialize
-3. IDE will launch automatically
-4. Open browser to: http://localhost:9090/iw-business-daemon/IWLogin.jsp
-
-Option B: Start Components Individually
----------------------------------------
-Start IDE only:        Double-click scripts\start_ide.bat (or iw_ide.exe)
-Start Web Portal only: Double-click scripts\start_webportal.bat
-Stop Web Portal:       Double-click scripts\stop_webportal.bat
 
 ================================================================================
-                        AVAILABLE SCRIPTS
+OPTION B: RUN LOCALLY (after git clone / git pull)
 ================================================================================
 
-Root Directory (C:\IW_IDE\IW_Launcher\):
-  START.bat             - Starts Web Portal + IDE (recommended)
-  STOP.bat              - Stops Web Portal
-  CHANGE_DATABASE.bat   - Switch database mode
-  iw_ide.exe            - IDE executable (direct launch)
+STEP 1 -- ONE-TIME: Install Tomcat
+------------------------------------
+Only needed once. If web_portal\tomcat\bin\catalina.bat is missing, run:
 
-Scripts (C:\IW_IDE\IW_Launcher\scripts\):
-  start_ide.bat         - Starts IW_IDE application
-  start_webportal.bat   - Starts Tomcat (Web Portal)
-  stop_webportal.bat    - Stops Tomcat
+  scripts\setup\install_tomcat.bat
+
+This downloads Tomcat 9.0.83 (~25 MB) and installs it automatically.
+
+STEP 2 -- ONE-TIME: Install the JRE
+--------------------------------------
+Only needed once. If jre\bin\java.exe is missing:
+
+  Download Eclipse Adoptium JRE 8 (32-bit / x86):
+  https://adoptium.net/temurin/releases/?version=8&arch=x86&os=windows&package=jre
+
+  Extract so that jre\bin\java.exe exists in this repo folder.
+
+  NOTE: Must be 32-bit (x86). iw_ide.exe is a 32-bit Eclipse application.
+        64-bit JREs will NOT work with the IDE launcher.
+
+STEP 3 -- START
+-----------------
+  Double-click: START.bat
+
+  First run creates .env automatically (credentials are pre-filled).
+  Browser opens to the React portal: http://localhost:9090/iw-portal/
+  Classic JSP login also available: http://localhost:9090/iw-business-daemon/IWLogin.jsp
+
+STEP 4 -- LOG IN
+------------------
+  Admin:
+    Username: __iw_admin__
+    Password: %iwps%
+
+  Demo user:
+    Email:    demo@sample.com
+    Password: demo123
+
 
 ================================================================================
-                        ADMIN LOGIN
+WHAT IS IN GIT vs. WHAT IS NOT
 ================================================================================
 
-URL:      http://localhost:9090/iw-business-daemon/IWLogin.jsp
-Username: __iw_admin__
-Password: %iwps%
+IN GIT (available immediately after clone):
+  iw_ide.exe                              Eclipse IDE launcher (32-bit)
+  startup.jar                             Eclipse startup JAR
+  web_portal/tomcat/webapps/              All deployed webapps:
+    iw-business-daemon/                     Java API + JSP pages (fully compiled)
+    iwtransformationserver/                 Transformation engine (133 vendor JARs)
+    iw-portal/                              React portal build output (NO build needed)
+  web_portal/tomcat/conf/                 All config file templates
+  web_portal/tomcat/lib/postgresql-*.jar  PostgreSQL JDBC driver
+  web_portal/tomcat/endorsed/             JAXB compatibility JARs
+  jre/lib/endorsed/                       Trimmed JAXB JAR for JRE
+  .env.example                            Config template with team credentials pre-filled
+  All scripts and documentation
 
-Other admin accounts available - see docs\authentication\ADMIN_CREDENTIALS.txt
+NOT IN GIT (install once after clone):
+  jre/bin/ and jre/lib/                   90 MB JRE binaries -- download per Step 2
+  web_portal/tomcat/bin/                  Tomcat startup scripts -- install per Step 1
+  web_portal/tomcat/lib/ (most files)     Tomcat libraries -- installed by Step 1
+  web_portal/tomcat/conf/context.xml      Machine-specific; regenerated by START.bat
+
+THINGS YOU DO NOT NEED TO DO:
+  npm install / npm run build             React portal build is already in git
+  mvn package                             Java servlets are already compiled in git
+  Database schema setup                   Supabase DB is shared and already configured
+
 
 ================================================================================
-                        TROUBLESHOOTING
+AFTER EACH GIT PULL (team members)
 ================================================================================
 
-Issue: "Port 9090 already in use"
-  -> Another app is using port 9090
-  -> Either stop that app, or edit web_portal\tomcat\conf\server.xml to change port
+  git pull
+  START.bat
 
-Issue: Tomcat window closes immediately
-  -> Run from Command Prompt to see error messages
-  -> Check web_portal\tomcat\logs\catalina.out for details
+That's it. START.bat regenerates context.xml, syncs workspace, starts server.
 
-Issue: "localhost refused to connect" in browser
-  -> Wait longer for Tomcat to start (can take 30+ seconds)
+If the React portal looks outdated after a pull:
+  The portal build at web_portal/tomcat/webapps/iw-portal/ is tracked in git
+  and will be updated by the pull. Restart Tomcat (STOP.bat then START.bat)
+  to pick up the new build.
+
+
+================================================================================
+AVAILABLE SCRIPTS
+================================================================================
+
+Root directory:
+  START.bat             Start everything (web portal + IDE + sync bridge)
+  STOP.bat              Stop everything
+  CHANGE_DATABASE.bat   Switch database (Supabase / InterWeave / Offline)
+
+scripts\:
+  start_webportal.bat   Start Tomcat only
+  stop_webportal.bat    Stop Tomcat only
+  start_ide.bat         Start IDE only
+  quickstart_tunnel.bat Start Cloudflare tunnel (exposes local server externally)
+  system_check.bat      Verify all components are installed correctly
+
+scripts\setup\:
+  install_tomcat.bat    Download + install Tomcat 9.0.83 (one-time setup)
+  setup_tomcat.bat      Re-run Tomcat post-install configuration
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+"[ERROR] Java runtime not found"
+  -> Install JRE 8 x86 into jre\ (see Step 2 above)
+  -> Must be 32-bit (x86 / i586), NOT 64-bit
+
+"[ERROR] Web server not found"
+  -> Run scripts\setup\install_tomcat.bat (see Step 1 above)
+
+"[ERROR] Supabase password placeholder detected"
+  -> .env.example has team credentials pre-filled, this should not happen
+  -> If it does: open .env, set SUPABASE_DB_PASSWORD to the shared team password
+
+"Database error" on portal pages
+  -> Usually a transient Supabase connection issue; refresh the page
+  -> If persistent: STOP.bat, START.bat (pool resets on Tomcat restart)
+
+Tomcat crashes immediately (START.bat shows 60/60 then closes)
+  -> Check web_portal\tomcat\logs\catalina.*.log for SEVERE messages
+  -> Common causes: port 9090 in use, or bad endorsed JAR configuration
+
+"localhost refused to connect" in browser
+  -> Wait up to 90 seconds; Tomcat startup can be slow on first run
   -> Check if java.exe is running in Task Manager
-  -> Check Windows Firewall isn't blocking port 9090
 
-Issue: IDE won't start
-  -> Ensure 'jre' folder exists in IW_Launcher directory
-  -> Check that jre\bin\javaw.exe exists
+"Failed to fetch dynamically imported module" on Vercel
+  -> Hard-refresh: Ctrl+Shift+R
+  -> The app will auto-reload once to fix chunk hash mismatches
 
-Issue: "Java not found" errors
-  -> The bundled JRE should be used automatically
-  -> If problems persist, verify jre folder wasn't deleted
+IDE won't start (iw_ide.exe)
+  -> jre\bin\javaw.exe must exist
+  -> Must be 32-bit JRE (see Step 2)
 
-================================================================================
-                        FILE LOCATIONS
-================================================================================
-
-Logs:          web_portal\tomcat\logs\
-  - catalina.log     (main Tomcat log)
-  - localhost.log    (webapp errors)
-
-Configuration: web_portal\tomcat\webapps\iw-business-daemon\WEB-INF\
-  - config.xml       (database and server settings)
-  - web.xml          (servlet configuration)
-
-JRE:           jre\
-  - Bundled Eclipse Adoptium JRE 8 (32-bit)
 
 ================================================================================
-                     ADDITIONAL DOCUMENTATION
+LOG FILES
 ================================================================================
 
-docs\authentication\README.txt              - Authentication options overview
-docs\authentication\ADMIN_CREDENTIALS.txt   - Admin account passwords
-docs\authentication\HOSTED_DATABASE_SETUP.txt - InterWeave server setup
+web_portal\tomcat\logs\catalina.YYYY-MM-DD.log    Main Tomcat log (check for SEVERE)
+web_portal\tomcat\logs\localhost.YYYY-MM-DD.log   Webapp errors
+logs\cloudflare_tunnel.log                        Tunnel output (if running)
+logs\sync_bridge.log                              IDE <-> Portal sync bridge log
+
 
 ================================================================================
-                        DIRECTORY STRUCTURE
+ADDITIONAL DOCUMENTATION
 ================================================================================
 
-IW_Launcher\
-  |-- start_all.bat          # Start everything
-  |-- start_ide.bat          # Start IDE only
-  |-- start_webportal.bat    # Start web portal only
-  |-- stop_webportal.bat     # Stop web portal
-  |-- iw_ide.exe             # IDE executable
-  |
-  |-- jre\                   # Bundled Java Runtime
-  |   |-- bin\               # Java executables
-  |   +-- lib\               # Java libraries
-  |
-  |-- web_portal\
-  |   +-- tomcat\            # Tomcat 9.0.83
-  |       |-- bin\           # Startup scripts
-  |       |-- conf\          # Server configuration
-  |       |-- logs\          # Log files
-  |       +-- webapps\       # Web applications
-  |           +-- iw-business-daemon\  # IW_IDE web app
-  |
-  +-- docs\                  # Documentation
-      +-- authentication\    # Authentication guides
+docs\development\DEVELOPER_ONBOARDING.md    Full developer setup guide
+docs\setup\TOMCAT_INSTALLATION.md           Detailed Tomcat install steps
+docs\ai\AI_WORKFLOW.md                      AI agent operating instructions
 
 ================================================================================

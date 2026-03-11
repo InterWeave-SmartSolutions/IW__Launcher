@@ -17,33 +17,18 @@ Welcome to the InterWeave IDE project. This guide walks you through setting up y
 
 ## 1. Prerequisites
 
-Before you begin, ensure you have the following installed:
+| Tool        | Version   | Required for                                     | Notes |
+|-------------|-----------|--------------------------------------------------|-------|
+| Git         | 2.30+     | Version control                                  | |
+| Git LFS     | any       | Pulling legacy `.doc` files                      | Only 2 files use LFS; not needed for binaries |
+| JDK 8 (x86) | 1.8       | Compiling Java servlets / running IDE            | Must be 32-bit for `iw_ide.exe` |
+| Maven       | 3.6+      | Building the error/validation framework          | Optional for most contributors |
+| Node.js     | 18+       | React portal development                         | Optional — build output is tracked in git |
+| Windows 10+ | --        | Running the application natively                 | WSL2 can edit files but cannot run Tomcat |
 
-| Tool        | Version   | Purpose                                         |
-|-------------|-----------|--------------------------------------------------|
-| Git         | 2.30+     | Version control                                  |
-| Git LFS     | 3.0+      | Large file storage (required for binary artifacts)|
-| JDK         | 8         | Java development (must be Java 8, not newer)     |
-| Maven       | 3.6+      | Build automation                                 |
-| Windows 10+ | --        | Primary supported OS (Windows native runtime path) |
+**Why 32-bit JRE?** `iw_ide.exe` is a 32-bit Eclipse 3.1 launcher. It requires a 32-bit (x86) JRE. A 64-bit JRE will fail silently or crash.
 
-**Why Java 8?** The Eclipse 3.1 runtime and the InterWeave SDK plugin (`iw_sdk_1.0.0`) are compiled for Java 8. Newer Java versions may introduce class format or API incompatibilities.
-
-**Git LFS is mandatory.** The repository stores binary files (`.exe`, `.jar`, `.war`, `.class`) via Git LFS. Without it, you will get small text pointer files instead of the actual binaries.
-
-### Installing Git LFS
-
-```bash
-# Ubuntu/WSL2
-sudo apt install git-lfs
-
-# macOS
-brew install git-lfs
-
-# Windows (included with Git for Windows 2.x+)
-# Verify with:
-git lfs version
-```
+**Git LFS clarification:** Only two legacy `.doc` files use Git LFS. Application binaries (`.exe`, compiled `.class`, `.jar`) are stored directly in git or must be installed via setup scripts. You do NOT need `git lfs pull` to get the application working — just the setup steps below.
 
 ---
 
@@ -56,51 +41,40 @@ git clone <repository-url> IW_Launcher
 cd IW_Launcher
 ```
 
-### Initialize Git LFS and pull binary files
+### Step A — Install Tomcat (one-time)
 
-```bash
-git lfs install
-git lfs pull
+Tomcat binaries are not in git. Run the install script:
+
+```cmd
+scripts\setup\install_tomcat.bat
 ```
 
-### Verify binaries were pulled correctly
+This downloads Apache Tomcat 9.0.83 (~25 MB) from the official Apache archive and installs it into `web_portal\tomcat\bin\` and `web_portal\tomcat\lib\`.
 
-Run these checks to confirm LFS files are real binaries (not text pointer files):
+### Step B — Install the JRE (one-time)
 
-```bash
-# Each of these should be several KB or MB, NOT a ~130-byte text file
-ls -la jre/bin/java.exe
-ls -la web_portal/tomcat/lib/catalina.jar
-ls -la startup.jar
-```
+The JRE is not in git (90 MB, gitignored). Download and install manually:
 
-If any of these files are very small (under 200 bytes), Git LFS did not pull correctly. Run `git lfs pull` again.
+1. Go to: https://adoptium.net/temurin/releases/?version=8&arch=x86&os=windows&package=jre
+2. Download the **Windows x86** (32-bit) JRE 8 ZIP
+3. Extract it so that `jre\bin\java.exe` exists in the repository root
 
-### Create your environment file
+> **Must be 32-bit (x86).** The IDE launcher (`iw_ide.exe`) is a 32-bit Eclipse binary.
 
-```bash
-# Option A: Run START.bat (auto-creates .env from .env.example)
-./START.bat
+### Step C — Verify the environment file
 
-# Option B: Copy manually
-cp .env.example .env
-```
-
-Edit `.env` to set your database credentials. The default team mode is
-`DB_MODE=supabase` with `TS_MODE=local`:
+`START.bat` auto-creates `.env` from `.env.example` on first run. The team Supabase credentials are pre-filled in `.env.example`, so no manual editing is required. If you need to inspect or override:
 
 ```bash
-DB_MODE=supabase
-TS_MODE=local
-SUPABASE_DB_HOST=your-host-here
-SUPABASE_DB_PORT=5432
-SUPABASE_DB_NAME=your-db-name
-SUPABASE_DB_USER=your-db-user
-SUPABASE_DB_PASSWORD=your-db-password
+# .env is auto-created — check it if something seems wrong
+cat .env
 ```
 
-Use the shared team Supabase password. `START.bat` will not complete the first
-successful startup until `SUPABASE_DB_PASSWORD` is replaced in `.env`.
+The important settings:
+```
+DB_MODE=supabase       # Use shared Supabase database
+TS_MODE=local          # Use bundled local transformation server
+```
 
 ---
 
@@ -123,7 +97,7 @@ This script:
 
 ### Log in
 
-Open `http://localhost:9090/iw-business-daemon/IWLogin.jsp` and use:
+Open `http://localhost:9090/iw-portal/` (React portal) or `http://localhost:9090/iw-business-daemon/IWLogin.jsp` (classic JSP) and use:
 
 | Field    | Value          |
 |----------|----------------|
@@ -308,11 +282,27 @@ Switch `DB_MODE` in `.env` and re-run `CHANGE_DATABASE.bat` to verify your chang
 
 ## 8. Common Pitfalls
 
-### Git LFS not pulled
+### JRE or Tomcat missing after clone
 
-**Symptom:** The IDE does not start, Tomcat fails, or JAR files appear to be tiny text files.
+**Symptom:** `START.bat` exits immediately with "[ERROR] Java runtime not found" or "[ERROR] Web server not found".
 
-**Fix:** Run `git lfs install && git lfs pull` and verify binary file sizes as described in the setup section.
+**Fix:**
+- Tomcat: Run `scripts\setup\install_tomcat.bat` (auto-downloads, one-time).
+- JRE: Download Eclipse Adoptium JRE 8 x86 and extract to `jre\`. See Step B in Section 2 above.
+
+These are not in git (too large). The install scripts handle Tomcat automatically; the JRE is a one-time manual download.
+
+### React portal not loading at /iw-portal/
+
+**Symptom:** `http://localhost:9090/iw-portal/` shows 404 or blank page after a fresh clone.
+
+**Fix:** The build output is tracked in git. If it's missing, someone may have cleaned it. Rebuild:
+```bash
+cd frontends/iw-portal
+npm install
+node node_modules/vite/bin/vite.js build
+```
+Then commit the result: `git add web_portal/tomcat/webapps/iw-portal/ && git commit`
 
 ### Wrong DB_MODE
 

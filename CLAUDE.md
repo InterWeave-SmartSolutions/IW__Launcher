@@ -102,6 +102,28 @@ This:
 
 **⚠️ WARNING (AI agents):** Do NOT set `$env:CATALINA_HOME` / `$env:JRE_HOME` and call Tomcat `.bat` scripts inline from PowerShell — this hangs the terminal. Always use the wrapper scripts above.
 
+### Fresh Clone — What Is and Isn't in Git
+
+**In git (works immediately after clone):**
+- `iw_ide.exe`, `startup.jar`, `plugins/`
+- `web_portal/tomcat/webapps/iw-business-daemon/` — all compiled Java servlets + JSPs
+- `web_portal/tomcat/webapps/iwtransformationserver/` — transformation engine + vendor JARs
+- `web_portal/tomcat/webapps/iw-portal/` — React portal build output (tracked as of 2026-03-11)
+- `web_portal/tomcat/conf/*.xml` templates + JDBC drivers
+- `.env.example` with team Supabase credentials pre-filled
+
+**NOT in git (must be installed once):**
+- `jre/` — 90 MB JRE not in git. Users must download Eclipse Adoptium JRE 8 x86 (32-bit) and extract to `jre/`. START.bat checks for this and shows a clear error.
+- `web_portal/tomcat/bin/` + `lib/` — Tomcat binaries. Run `scripts\setup\install_tomcat.bat` once. START.bat checks for this and shows a clear error pointing to the script.
+
+**AI agent instructions when modifying the React portal:**
+After any production build (`node node_modules/vite/bin/vite.js build`), commit the output:
+```bash
+git add web_portal/tomcat/webapps/iw-portal/
+git commit -m "build: update portal"
+```
+This keeps the build in sync for all users who pull.
+
 ### Change Database Connection
 ```bash
 ./CHANGE_DATABASE.bat
@@ -276,8 +298,11 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - **Classic View**: Every React route maps to its JSP equivalent. "Switch to Classic" banner on every page. Users can set "always classic" preference.
 - **Hook Page Pattern**: Pages not yet rebuilt in React redirect to the corresponding JSP page. Both apps share Tomcat session cookies (same origin).
 - **Dev**: `cd frontends/iw-portal && npm run dev` → Vite on :5173, proxies `/iw-business-daemon` to Tomcat :9090
-- **Build**: `npm run build` → outputs to `web_portal/tomcat/webapps/iw-portal/`
-- **TypeScript**: strict mode, zero errors required before commit
+- **Build**: `node node_modules/vite/bin/vite.js build` → outputs to `web_portal/tomcat/webapps/iw-portal/`
+  - **IMPORTANT**: The build output at `web_portal/tomcat/webapps/iw-portal/` IS tracked in git. After any production build, commit it: `git add web_portal/tomcat/webapps/iw-portal/ && git commit`
+  - Fresh clones get the React portal working immediately (no npm install needed for users)
+  - `npm` / `tsc` / `vite` are not on PATH — use `node node_modules/...` paths instead
+- **TypeScript**: strict mode, zero errors required before commit (`node node_modules/typescript/bin/tsc -b --noEmit`)
 
 **Route → Classic JSP mapping**:
 - `/login` → `IWLogin.jsp`

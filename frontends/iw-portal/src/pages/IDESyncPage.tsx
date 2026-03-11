@@ -84,12 +84,12 @@ function ProfileCard({ profile, onPush, onPull, pushing, pulling }: ProfileCardP
       {/* Timestamps grid */}
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="space-y-0.5">
-          <div className="text-muted-foreground">Portal (DB)</div>
+          <div className="text-muted-foreground">Portal saved</div>
           <div className="text-foreground font-mono">{fmtDate(profile.dbUpdatedAt)}</div>
         </div>
         <div className="space-y-0.5">
-          <div className="text-muted-foreground">Workspace file</div>
-          <div className="text-foreground font-mono">{fmtDate(profile.workspaceXmlModified)}</div>
+          <div className="text-muted-foreground">Last pushed to IDE</div>
+          <div className="text-foreground font-mono">{fmtDate(profile.workspaceXmlModified) || "Never"}</div>
         </div>
       </div>
 

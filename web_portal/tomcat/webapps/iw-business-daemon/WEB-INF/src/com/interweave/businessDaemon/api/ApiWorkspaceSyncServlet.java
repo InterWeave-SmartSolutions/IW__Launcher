@@ -4,10 +4,13 @@ import com.interweave.businessDaemon.config.WorkspaceProfileCompiler;
 import com.interweave.businessDaemon.config.WorkspaceProfileSyncSupport;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,7 +42,7 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    /** Profiles whose DB and workspace timestamps differ by less than this are "in_sync". */
+    /** Profiles whose push epoch and DB updated_at differ by less than this are "in_sync". */
     private static final long SKEW_MS = 60_000L;
 
     /**
@@ -47,6 +50,13 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
      * The bridge polls every 1 s, so 2 minutes provides comfortable leeway.
      */
     private static final long BRIDGE_ACTIVE_WINDOW_MS = 120_000L;
+
+    /**
+     * Sidecar file written next to company_configuration.xml when a portal push is performed.
+     * Contains the epoch milliseconds (as a plain long) of when the push happened.
+     * Used instead of File.lastModified() to avoid a 32-bit JVM timezone offset bug on Windows.
+     */
+    private static final String PUSH_EPOCH_FILE = ".push_epoch";
 
     private static final int DEFAULT_LOG_LINES = 60;
 
@@ -159,20 +169,25 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
                     String safeProfile = WorkspaceProfileSyncSupport.sanitizeProfileKey(profileName);
 
                     // IW_Runtime_Sync mirror
-                    File syncXml = new File(
-                        new File(new File(new File(workspaceRoot, "IW_Runtime_Sync"), "profiles"), safeProfile),
-                        "company_configuration.xml");
+                    File profileDir = new File(
+                        new File(new File(workspaceRoot, "IW_Runtime_Sync"), "profiles"), safeProfile);
+                    File syncXml = new File(profileDir, "company_configuration.xml");
                     boolean wsExists = syncXml.isFile();
-                    long wsMs = wsExists ? syncXml.lastModified() : 0L;
+
+                    // Read the push epoch sidecar (written when portal last pushed to IDE).
+                    // We use this instead of File.lastModified() to avoid a 32-bit JVM
+                    // timezone-offset bug on Windows where lastModified() returns
+                    // epoch_ms - timezone_offset_ms instead of the true epoch ms.
+                    File pushEpochFile = new File(profileDir, PUSH_EPOCH_FILE);
+                    long pushMs = readEpochFile(pushEpochFile);
 
                     // GeneratedProfiles overlay
                     File genIm = new File(
                         new File(new File(new File(new File(workspaceRoot, "GeneratedProfiles"), safeProfile),
                             "configuration"), "im"), "config.xml");
                     boolean genExists = genIm.isFile();
-                    long genMs = genExists ? genIm.lastModified() : 0L;
 
-                    String syncStatus = computeSyncStatus(dbMs, wsMs, wsExists);
+                    String syncStatus = computeSyncStatus(dbMs, pushMs, wsExists);
 
                     if (!firstProfile) profiles.append(",");
                     firstProfile = false;
@@ -181,9 +196,9 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
                     profiles.append("\"solutionType\":\"").append(escJson(safe(solutionType))).append("\",");
                     profiles.append("\"dbUpdatedAt\":").append(isoOrNull(dbMs)).append(",");
                     profiles.append("\"workspaceXmlExists\":").append(wsExists).append(",");
-                    profiles.append("\"workspaceXmlModified\":").append(isoOrNull(wsMs)).append(",");
+                    profiles.append("\"workspaceXmlModified\":").append(isoOrNull(pushMs)).append(",");
                     profiles.append("\"generatedProfileExists\":").append(genExists).append(",");
-                    profiles.append("\"generatedProfileModified\":").append(isoOrNull(genMs)).append(",");
+                    profiles.append("\"generatedProfileModified\":").append(isoOrNull(0L)).append(",");
                     profiles.append("\"syncStatus\":\"").append(syncStatus).append("\"");
                     profiles.append("}");
                 }
@@ -217,6 +232,7 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
         int pushed = 0;
         int failed = 0;
         StringBuilder errors = new StringBuilder();
+        List<String> pushedNames = new ArrayList<String>();
 
         try (Connection conn = dataSource.getConnection()) {
             String sql = targetProfile.isEmpty()
@@ -233,6 +249,7 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
                         try {
                             WorkspaceProfileSyncSupport.exportProfile(getServletContext(), pName, sType, cXml);
                             WorkspaceProfileCompiler.compileProfile(getServletContext(), pName, sType, cXml);
+                            pushedNames.add(pName);
                             pushed++;
                         } catch (Exception ex) {
                             failed++;
@@ -240,6 +257,42 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
                             errors.append(pName).append(": ").append(ex.getMessage());
                             log("push failed for " + pName, ex);
                         }
+                    }
+                }
+            }
+
+            // After a successful push: (a) align updated_at in DB to NOW, then
+            // (b) read back the stored timestamp via SELECT so we get the exact
+            // epoch ms that JDBC will return on future status checks. Write that
+            // value to the .push_epoch sidecar so the comparison is consistent.
+            // (System.currentTimeMillis() cannot be used here because on a 32-bit
+            //  Windows JVM it returns local-time-as-epoch, not the true UTC epoch.)
+            File repoRoot = WorkspaceProfileSyncSupport.resolveRepoRoot(getServletContext());
+            File workspaceRoot = new File(repoRoot, "workspace");
+            for (String pName : pushedNames) {
+                try (PreparedStatement upd = conn.prepareStatement(
+                        "UPDATE company_configurations SET updated_at = CURRENT_TIMESTAMP WHERE profile_name = ?")) {
+                    upd.setString(1, pName);
+                    upd.executeUpdate();
+                }
+                // Read back the timestamp Postgres actually stored
+                long storedMs = 0L;
+                try (PreparedStatement sel = conn.prepareStatement(
+                        "SELECT updated_at FROM company_configurations WHERE profile_name = ?")) {
+                    sel.setString(1, pName);
+                    try (ResultSet rs2 = sel.executeQuery()) {
+                        if (rs2.next()) {
+                            Timestamp ts = rs2.getTimestamp(1);
+                            if (ts != null) storedMs = ts.getTime();
+                        }
+                    }
+                }
+                if (storedMs > 0) {
+                    String safeProfile = WorkspaceProfileSyncSupport.sanitizeProfileKey(pName);
+                    File profileDir = new File(
+                        new File(new File(workspaceRoot, "IW_Runtime_Sync"), "profiles"), safeProfile);
+                    if (profileDir.isDirectory()) {
+                        writeEpochFile(new File(profileDir, PUSH_EPOCH_FILE), storedMs);
                     }
                 }
             }
@@ -380,12 +433,43 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
 
     // ── Utilities ────────────────────────────────────────────────────────────
 
-    private String computeSyncStatus(long dbMs, long wsMs, boolean wsExists) {
-        if (!wsExists || wsMs == 0) return "not_synced";
-        if (dbMs == 0) return "workspace_ahead";
-        long diff = wsMs - dbMs;
+    /**
+     * Reads epoch ms from a sidecar file (plain-text long). Returns 0 if missing.
+     * Using file content avoids File.lastModified() timezone bugs on 32-bit Windows.
+     */
+    private long readEpochFile(File f) {
+        if (!f.isFile()) return 0L;
+        BufferedReader r = null;
+        try {
+            r = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            String line = r.readLine();
+            return line != null ? Long.parseLong(line.trim()) : 0L;
+        } catch (Exception e) {
+            return 0L;
+        } finally {
+            if (r != null) { try { r.close(); } catch (Exception ignored) {} }
+        }
+    }
+
+    /** Writes epoch ms to a sidecar file as a plain-text long. */
+    private void writeEpochFile(File f, long epochMs) {
+        BufferedWriter w = null;
+        try {
+            w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8"));
+            w.write(String.valueOf(epochMs));
+        } catch (Exception e) {
+            log("Failed to write epoch sidecar " + f.getAbsolutePath(), e);
+        } finally {
+            if (w != null) { try { w.close(); } catch (Exception ignored) {} }
+        }
+    }
+
+    private String computeSyncStatus(long dbMs, long pushMs, boolean wsExists) {
+        if (!wsExists) return "not_synced";
+        if (pushMs == 0) return "db_ahead";      // workspace exists but never been pushed from portal
+        long diff = dbMs - pushMs;
         if (Math.abs(diff) <= SKEW_MS) return "in_sync";
-        return diff > 0 ? "workspace_ahead" : "db_ahead";
+        return diff > 0 ? "db_ahead" : "workspace_ahead"; // db newer = needs push; push newer = IDE may have changed
     }
 
     private int resolveCompanyId(Connection conn, String profileName) throws SQLException {

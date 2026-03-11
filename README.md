@@ -31,20 +31,47 @@ That's it! Just double-click `START.bat` to begin.
 
 ---
 
-## First Time?
+## First Time? (External / Demo users)
 
-1. Double-click `START.bat`
-2. Wait for browser to open
-3. Login with:
-   - **Username:** `__iw_admin__`
-   - **Password:** `%iwps%`
+Just visit **https://iw-portal.vercel.app** — no install needed.
 
-The first time you run `START.bat`, it automatically configures everything for you.
-It also prepares the legacy InterWeave transformation runtime and defaults the first
-generated `.env` file to `DB_MODE=supabase` and `TS_MODE=local` so team members
-land on the shared Supabase database while keeping flow/log traffic on the local
-bundled runtime. On a brand-new checkout, replace the `SUPABASE_DB_PASSWORD`
-placeholder in `.env` after the first launch creates it, then re-run `START.bat`.
+Log in with `demo@sample.com` / `demo123` to explore the portal.
+
+---
+
+## First Time? (Running locally after git clone)
+
+Two one-time installs are required because large binaries are not stored in git:
+
+**Step 1 — Install Tomcat** (auto-download, ~25 MB):
+```
+scripts\setup\install_tomcat.bat
+```
+
+**Step 2 — Install the JRE** (manual download):
+
+Download **Eclipse Adoptium JRE 8, 32-bit (x86)** from:
+https://adoptium.net/temurin/releases/?version=8&arch=x86&os=windows&package=jre
+
+Extract it so that `jre\bin\java.exe` exists in this repository folder.
+
+> **Important:** Must be 32-bit (x86). `iw_ide.exe` is a 32-bit Eclipse app and will not launch with a 64-bit JRE.
+
+**Step 3 — Start:**
+```
+START.bat
+```
+
+`START.bat` handles everything else automatically:
+- Creates `.env` from the template (Supabase credentials are pre-filled)
+- Generates `context.xml` with the correct database connection
+- Prepares the legacy transformation runtime
+- Starts Tomcat on port 9090
+- Opens your browser to `http://localhost:9090/iw-portal/`
+
+Login with `__iw_admin__` / `%iwps%`.
+
+> **Note:** The React portal build is tracked in git — no `npm install` or `npm run build` needed after cloning.
 
 ---
 
@@ -164,19 +191,29 @@ mvn -Dmaven.test.skip=true package
 
 ## React Portal (iw-portal)
 
-The modern React UI is at `frontends/iw-portal/`. Its build output (`web_portal/tomcat/webapps/iw-portal/`) is **gitignored**, so after cloning you must build it:
+The modern React UI is at `frontends/iw-portal/`. The build output (`web_portal/tomcat/webapps/iw-portal/`) **is tracked in git** — no build step needed after cloning. `START.bat` serves it immediately at `http://localhost:9090/iw-portal/`.
+
+Also available at the public Vercel deployment: **https://iw-portal.vercel.app**
+
+### Local development with hot-reload
 
 ```bash
 cd frontends/iw-portal
 npm install
-npm run build
+npm run dev   # Vite dev server on :5173, proxies /iw-business-daemon to Tomcat :9090
 ```
 
-This outputs static files to Tomcat's `webapps/iw-portal/`, served at `http://localhost:9090/iw-portal/`. For development with hot-reload:
+### Building and deploying locally
 
 ```bash
-npm run dev   # Vite dev server on :5173, proxies API to Tomcat :9090
+cd frontends/iw-portal
+node node_modules/vite/bin/vite.js build
+# Outputs to web_portal/tomcat/webapps/iw-portal/ (tracked in git)
+# Commit the build output after making production changes:
+# git add web_portal/tomcat/webapps/iw-portal/ && git commit -m "build: update portal"
 ```
+
+> **Note:** `tsc` and `npm run build` may fail if the tools aren't on PATH. Use the node module paths above.
 
 Both React and classic JSP pages share the same Tomcat session — users can switch freely between them.
 

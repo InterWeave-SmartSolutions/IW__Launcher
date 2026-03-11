@@ -5,6 +5,7 @@ export interface ProfileSyncState {
   solutionType: string;
   dbUpdatedAt: string | null;
   workspaceXmlExists: boolean;
+  /** Timestamp of the last successful portal → IDE push (from .push_epoch sidecar). */
   workspaceXmlModified: string | null;
   generatedProfileExists: boolean;
   generatedProfileModified: string | null;
