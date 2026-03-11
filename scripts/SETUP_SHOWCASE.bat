@@ -8,7 +8,7 @@ REM    2. Tomcat (Scheduled Task, AtStartup, auto-restart)
 REM  Requires admin rights - auto-elevates via UAC if needed.
 REM ============================================================
 
-set "REPO_ROOT=C:\IW_IDE\IW_Launcher"
+for %%i in ("%~dp0..") do set "REPO_ROOT=%%~fi"
 set "JAVA_EXE=%REPO_ROOT%\jre\bin\java.exe"
 set "CATALINA_HOME=%REPO_ROOT%\web_portal\tomcat"
 set "LOGS_DIR=%REPO_ROOT%\logs"
@@ -122,9 +122,9 @@ set "JAVA_ARGS=%JAVA_ARGS% org.apache.catalina.startup.Bootstrap start"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
     "$ErrorActionPreference = 'Stop';" ^
     "try {" ^
-    "  $javaExe  = 'C:\IW_IDE\IW_Launcher\jre\bin\java.exe';" ^
-    "  $catHome  = 'C:\IW_IDE\IW_Launcher\web_portal\tomcat';" ^
-    "  $logDir   = 'C:\IW_IDE\IW_Launcher\logs';" ^
+    "  $javaExe  = '%REPO_ROOT%\jre\bin\java.exe';" ^
+    "  $catHome  = '%REPO_ROOT%\web_portal\tomcat';" ^
+    "  $logDir   = '%REPO_ROOT%\logs';" ^
     "  $javaArgs = @(" ^
     "    '-Xverify:none', '-Xms256m', '-Xmx512m'," ^
     "    ('-Djava.util.logging.config.file=' + $catHome + '\conf\logging.properties')," ^

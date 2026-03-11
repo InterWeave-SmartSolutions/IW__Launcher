@@ -23,6 +23,11 @@ data/exports/*
 !data/projects/.gitkeep
 !data/exports/.gitkeep
 
+# ===== Eclipse Runtime State =====
+# Generated on each IDE launch — machine-specific, not portable
+configuration/org.eclipse.core.runtime/
+configuration/org.eclipse.osgi/
+
 # ===== Workspace =====
 # User-specific workspace data
 workspace/.metadata/

@@ -8,7 +8,7 @@ REM    2. IWPortal-Tomcat Scheduled Task
 REM  Requires admin rights - auto-elevates via UAC if needed.
 REM ============================================================
 
-set "REPO_ROOT=C:\IW_IDE\IW_Launcher"
+for %%i in ("%~dp0..") do set "REPO_ROOT=%%~fi"
 set "TASK_NAME=IWPortal-Tomcat"
 
 echo.

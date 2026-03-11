@@ -1,7 +1,8 @@
 @echo off
-set "JAVA_HOME=C:\IW_IDE\IW_Launcher\jre"
-set "JRE_HOME=C:\IW_IDE\IW_Launcher\jre"
-set "CATALINA_HOME=C:\IW_IDE\IW_Launcher\web_portal\tomcat"
+for %%i in ("%~dp0..") do set "IW_ROOT=%%~fi"
+set "JAVA_HOME=%IW_ROOT%\jre"
+set "JRE_HOME=%IW_ROOT%\jre"
+set "CATALINA_HOME=%IW_ROOT%\web_portal\tomcat"
 set "CATALINA_OUT=%CATALINA_HOME%\logs\catalina.out"
 
 echo Starting Tomcat (foreground)...

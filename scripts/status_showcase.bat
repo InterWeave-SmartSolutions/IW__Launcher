@@ -6,7 +6,8 @@ REM  Quick health check for IW Portal demo showcase.
 REM  No admin rights required.
 REM ============================================================
 
-set "LOGS_DIR=C:\IW_IDE\IW_Launcher\logs"
+for %%i in ("%~dp0..") do set "REPO_ROOT=%%~fi"
+set "LOGS_DIR=%REPO_ROOT%\logs"
 set "TASK_NAME=IWPortal-Tomcat"
 
 echo.
