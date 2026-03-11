@@ -4673,3 +4673,71 @@ Follow-ups / known issues:
 1. **Cloudflare Tunnel**: Run `scripts\setup_cloudflare_tunnel.bat` to authenticate + create tunnel + auto-patch vercel.json, then push + redeploy to point Vercel at Cloudflare instead of loca.lt
 2. **Tomcat restart needed**: webhook_endpoints rows are in DB but WebhookNotificationService reads them at startup. Restart Tomcat to activate webhook delivery
 3. **vercel.json still points to loca.lt**: Will be auto-patched by setup_cloudflare_tunnel.bat after tunnel is created
+
+---
+
+## 2026-03-11 17:00 (EST)
+Agent/tool: Claude Code (Sonnet 4.6)
+User request: Fix quickstart_tunnel.ps1 (opens in editor instead of running), investigate Tomcat 60/60 timeout + shutdown, and run a full directory audit with consolidation
+
+Actions taken:
+
+**Issue 1 — quickstart_tunnel.bat opens in editor:**
+- Root cause: Windows defaults to opening .ps1 files in an editor, not executing them
+- `quickstart_tunnel.bat` had been reverted to a simple PS1 launcher in commit `8556269` (already fixed from prior session); confirmed correct content on disk
+- The user just needs to double-click the .bat, which calls `powershell -ExecutionPolicy Bypass -File "%~dp0quickstart_tunnel.ps1"`
+
+**Issue 2 — Tomcat 60/60 timeout + immediate shutdown (FIXED):**
+- Root cause: `web_portal/tomcat/endorsed/jaxb-rt-1.0-ea.jar` (full JAXB 1.0-ea JAR from 2001) contains `org/w3c/dom/` classes (DOM Level 1, no `normalize()` method)
+- `-Djava.endorsed.dirs=tomcat/endorsed/` causes Java to load these old DOM classes instead of Java 8's standard DOM
+- Result: `JreMemoryLeakPreventionListener.init()` calls `Document.normalize()` → `NoSuchMethodError` → Catalina aborts init → server starts anyway but self-destructs 5ms later
+- This explains every failed START.bat run (60/60 counter, then close)
+- Fix: deleted `jaxb-rt-1.0-ea.jar` from `tomcat/endorsed/`, replaced with `jaxb-1.0-ea-trimmed.jar` (already in `jre/lib/endorsed/`, has JAXB API classes without DOM/SAX overrides)
+- Added `.gitignore` exception `!web_portal/tomcat/endorsed/**` so fix is tracked in git
+- Verified: Tomcat starts in 82s, `GET /api/auth/session → HTTP 200`, stays running
+
+**Issue 3 — Cloudflare tunnel + Vercel live (DONE):**
+- Started `cloudflared tunnel --url http://localhost:9090` via bash background process
+- Captured URL: `https://genetics-paso-enable-mechanical.trycloudflare.com`
+- Patched `frontends/iw-portal/vercel.json` destination, committed + pushed → Vercel rebuilt
+- Verified end-to-end: `Tunnel direct → HTTP 200`, `Vercel proxy → HTTP 200`
+
+**Issue 4 — Directory audit (DONE, Tier 1 cleanup executed):**
+- Ran Explore agent audit across entire `C:\IW_IDE\IW_Launcher` directory
+- Findings: 8 garbage dirs (empty, created from failed PowerShell command expansions), stale Tomcat logs, root screenshot artifact
+- Tier 1 cleanup executed:
+  - Deleted: `cd/`, `echo/`, `ls/`, `xf/`, `javax/`, `JAVA_HOME=C:/`, `JAXB_SRC=C:/`, `Extracted. javax/` (all empty garbage dirs)
+  - Archived: pre-March Tomcat logs (`catalina.2026-01-12.log` through `catalina.2026-02-28.log`) → `logs/archive/`
+  - Deleted: `login-page-fixed.png` (leftover Playwright screenshot from prior session)
+- Added `docs/ui-ux/` prototypes and `.serena/` config to git
+- Tier 2/3 items deferred (see follow-ups)
+
+Files changed:
+- `web_portal/tomcat/endorsed/jaxb-rt-1.0-ea.jar` → deleted
+- `web_portal/tomcat/endorsed/jaxb-1.0-ea-trimmed.jar` → added (trimmed, no DOM)
+- `web_portal/tomcat/endorsed/jaxb-xjc-1.0-ea.jar` → now tracked in git
+- `.gitignore` → added `!web_portal/tomcat/endorsed/**`
+- `frontends/iw-portal/vercel.json` → Cloudflare tunnel URL
+- `scripts/quickstart_tunnel.ps1` → committed (was untracked)
+- `docs/ui-ux/` → UI prototypes + architecture docs committed
+- `.serena/` → project config committed
+
+Commands run:
+- `unzip -l *.jar | grep org/w3c/dom` (JAR inspection)
+- `cp jre/lib/endorsed/jaxb-1.0-ea-trimmed.jar web_portal/tomcat/endorsed/`
+- `rm web_portal/tomcat/endorsed/jaxb-rt-1.0-ea.jar`
+- `cloudflared tunnel --url http://localhost:9090 &` (background)
+- `git add/commit/push` (multiple commits on main)
+
+Verification:
+- Tomcat: `Server startup in [81953] milliseconds` (no SEVERE, no self-destruct)
+- `curl http://localhost:9090/iw-business-daemon/api/auth/session → HTTP 200`
+- `curl https://genetics-paso-enable-mechanical.trycloudflare.com/... → HTTP 200`
+- `curl https://iw-portal.vercel.app/iw-business-daemon/api/auth/session → HTTP 200`
+
+Follow-ups / Tier 2+ audit items:
+1. **SETUP_SHOWCASE.bat has hardcoded `C:\IW_IDE\IW_Launcher` paths** — breaks on other machines
+2. **root `node_modules/` (supabase CLI)** — consider moving to a dedicated `tools/` area or document purpose
+3. **`scripts/full_startup.bat`, `START_HERE.bat`, `run_start_debug.bat`** — review for consolidation with root `START.bat`
+4. **`web_portal/start_web_portal.bat` + `.sh`** — thin wrappers; consider removing and pointing users to `scripts/` directly
+5. **Tunnel URL changes on each restart** — for permanent showcase use `SETUP_SHOWCASE.bat` (cloudflared service + Tomcat scheduled task)
