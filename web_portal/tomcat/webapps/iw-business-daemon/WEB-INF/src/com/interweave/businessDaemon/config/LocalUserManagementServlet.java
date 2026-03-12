@@ -103,36 +103,62 @@ public abstract class LocalUserManagementServlet extends HttpServlet {
     }
 
     /**
-     * The closing root-tag that CompanyConfiguration.jsp appends before parsing.
-     * The "configuration" TransactionThread parameter must NEVER contain this tag
-     * because the JSP adds it (see CompanyConfiguration.jsp line 101).
+     * The legacy closing root-tag (kept for backward compatibility with JSPs).
      */
     protected static final String CONFIG_CLOSE_TAG = "</SF2QBConfiguration>";
 
     /**
-     * Removes ALL occurrences of {@code </SF2QBConfiguration>} from the XML.
-     * <p>
-     * The compiled intermediate servlets (CompanyConfigurationSetvletDT, DTT,
-     * etc.) APPEND new tags at the end of the StringBuffer rather than inserting
-     * before the closing tag. If the "configuration" parameter ever contains a
-     * closing tag, those appended elements end up OUTSIDE the root element,
-     * producing malformed XML that DOMParser rejects.  By stripping ALL
-     * occurrences (not just the trailing one) we guarantee the parameter stays
-     * clean regardless of how many save cycles have occurred.
-     * </p>
+     * Detects the root element name from configuration XML.  The root element
+     * varies by solution type (SF2QBConfiguration, SF2NSConfiguration,
+     * CRM2MG2Configuration, etc.).  Returns the tag name or "SF2QBConfiguration"
+     * as fallback.
      */
-    protected static String sanitizeConfig(String xml) {
-        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration>";
-        return xml.replace(CONFIG_CLOSE_TAG, "");
+    private static String detectRootElement(String xml) {
+        if (xml == null) return "SF2QBConfiguration";
+        int open = xml.indexOf('<');
+        if (open < 0) return "SF2QBConfiguration";
+        // Skip XML declaration <?xml ... ?>
+        if (xml.length() > open + 1 && xml.charAt(open + 1) == '?') {
+            open = xml.indexOf('<', xml.indexOf("?>", open) + 2);
+            if (open < 0) return "SF2QBConfiguration";
+        }
+        int end = open + 1;
+        while (end < xml.length() && xml.charAt(end) != '>' && xml.charAt(end) != ' '
+                && xml.charAt(end) != '/' && xml.charAt(end) != '\n') {
+            end++;
+        }
+        String tag = xml.substring(open + 1, end).trim();
+        return tag.isEmpty() ? "SF2QBConfiguration" : tag;
     }
 
     /**
-     * Produces valid, complete XML for storage in the database.
-     * Strips every {@code </SF2QBConfiguration>} and appends exactly one.
+     * Removes ALL closing root-tags from the XML (solution-type-aware).
+     * Handles both the detected root element and the legacy SF2QBConfiguration.
+     */
+    protected static String sanitizeConfig(String xml) {
+        if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration>";
+        String root = detectRootElement(xml);
+        String result = xml.replace("</" + root + ">", "");
+        if (!"SF2QBConfiguration".equals(root)) {
+            result = result.replace(CONFIG_CLOSE_TAG, "");
+        }
+        return result;
+    }
+
+    /**
+     * Produces valid, complete XML for storage/parsing.  Strips all closing
+     * root-tags and appends exactly one matching the detected root element.
+     * Works with any solution type (SF2QB, SF2NS, CRM2MG2, etc.).
      */
     protected static String sanitizeFullConfig(String xml) {
         if (xml == null || xml.isEmpty()) return "<SF2QBConfiguration></SF2QBConfiguration>";
-        return xml.replace(CONFIG_CLOSE_TAG, "") + CONFIG_CLOSE_TAG;
+        String root = detectRootElement(xml);
+        String closeTag = "</" + root + ">";
+        String result = xml.replace(closeTag, "");
+        if (!"SF2QBConfiguration".equals(root)) {
+            result = result.replace(CONFIG_CLOSE_TAG, "");
+        }
+        return result + closeTag;
     }
 
     /**
