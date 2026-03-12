@@ -18,7 +18,7 @@
   "rewrites": [
     {
       "source": "/iw-business-daemon/:path*",
-      "destination": "https://genetics-paso-enable-mechanical.trycloudflare.com/iw-business-daemon/:path*"
+      "destination": "https://played-sequence-birthday-continued.trycloudflare.com/iw-business-daemon/:path*"
     },
     {
       "source": "/(.*)",
