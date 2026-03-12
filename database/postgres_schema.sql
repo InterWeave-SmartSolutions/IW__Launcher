@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(100),
     title VARCHAR(255),
     phone VARCHAR(50),
-    role VARCHAR(50) DEFAULT 'user',
+    role VARCHAR(50) DEFAULT 'operator' CHECK (role IN ('operator', 'associate', 'admin')),
     is_active BOOLEAN DEFAULT TRUE,
     last_login TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -359,7 +359,7 @@ ON CONFLICT (id) DO NOTHING;
 -- demo@sample.com / demo123
 INSERT INTO users (id, company_id, email, password, first_name, last_name, phone, role, is_active) VALUES
     (2, 2, 'demo@sample.com', encode(digest('demo123', 'sha256'), 'hex'),
-     'Demo', 'User', '555-0101', 'user', TRUE)
+     'Demo', 'User', '555-0101', 'operator', TRUE)
 ON CONFLICT (id) DO NOTHING;
 
 -- admin@sample.com / admin123

@@ -1,3 +1,5 @@
+export type UserRole = "operator" | "associate" | "admin";
+
 export interface User {
   userId: string;
   userName: string;
@@ -5,6 +7,7 @@ export interface User {
   companyId: number | null;
   companyName: string | null;
   isAdmin: boolean;
+  role: UserRole;
 }
 
 export interface LoginRequest {

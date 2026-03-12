@@ -6508,3 +6508,213 @@ Fix:
 
 ### What I did (this response)
 Fixed OSGI registry cache corruption, committed AutoImportStartup plugin to git, updating worklog + NEXT_STEPS, preparing commit + push + Vercel redeploy.
+
+---
+
+## 2026-03-12 20:42 (UTC) — Session: IW Portal Web Application Testing
+Agent/tool: Claude Code (Opus 4.6)
+User request: Comprehensive testing of IW Portal at both dev (Vite :5173) and production (Tomcat :9090) endpoints
+
+### Actions taken
+Ran 7 categories of HTTP tests against both endpoints using curl:
+1. Page Loading — verified HTML served with React mount point (`<div id="root">`)
+2. Auth API — POST login with demo credentials, verified JSON response with success/token/user
+3. Session API — verified both cookie-based and Bearer token session retrieval
+4. Static Assets — verified all JS/CSS chunks load (main 516KB, radix-ui 113KB, CSS 63KB)
+5. API Proxying — verified Vite dev server proxies /iw-business-daemon to Tomcat
+6. Security Headers — audited headers on all endpoints
+7. Error Pages — verified custom error.html served (no stack traces)
+
+Also tested: SPA deep-route fallback, invalid login rejection, asset inventory
+
+### Files changed/created
+- `docs/ai/AI_WORKLOG.md` — this entry (no code changes, read-only testing)
+
+### Verification
+All 7 test categories executed. Results documented in conversation response.
+
+### What I did (this response)
+Ran comprehensive HTTP testing of the IW Portal web application across both dev and production endpoints. All tests detailed in the final report below.
+
+---
+
+## 2026-03-12 (continued) — Sync Limitation Solution Architecture
+Agent/tool: Claude Code (Opus 4.6)
+User request: "we need to investigate how to solve [4 sync limitations]. use any agents, /skills, mcps, ralph-loop, or any other tools or resources needed to figure this out"
+
+### Actions Taken
+Launched 3 parallel exploration agents to deeply analyze: (1) XML schema differences, (2) WebSocket/SSE feasibility + current constraints, (3) DB versioning and conflict patterns. Synthesized findings into a 4-phase solution architecture with ADR.
+
+### Key Findings
+
+**Critical discovery: Wizard XML and IDE XML are fundamentally different documents.**
+- Wizard XML (`SF2QBConfiguration`): flat key-value (16-18 fields) — configuration options
+- IDE XML (`BusinessDaemonConfiguration`): hierarchical with 19 root attrs + TransactionDescription (22 attrs) + Query (16 attrs) + Parameter children — flow execution plans
+- No transformation layer exists between them. They serve different purposes and are consumed by different systems.
+- **Implication**: Schema "normalization" means normalizing within wizard variants only (SF2QB, SF2NS, CRM2MG2), not unifying wizard + IDE formats.
+
+**SSE is the right choice over WebSocket:**
+- Tomcat 9 has `tomcat-websocket.jar` + `websocket-api.jar` present (WebSocket possible)
+- But SSE is simpler: unidirectional, HTTP-based, auto-reconnect, works through Vercel/Cloudflare proxies
+- No Vite proxy changes needed (SSE is just HTTP)
+- Java 8 `AsyncContext` (Servlet 3.0+) is all that's needed
+
+**No version column exists in DB:**
+- `company_configurations` has `updated_at` TIMESTAMP but no `version` integer
+- Last-write-wins on all save paths (wizard, bridge, importProfile)
+- No `last_modified_by` tracking — can't tell if IDE or portal made a change
+
+### Solution Architecture (4 Phases)
+
+| Phase | Solution | Effort | Key Files |
+|-------|---------|--------|-----------|
+| **1** | **SSE real-time push** — `SyncEventServlet` using AsyncContext, React `useSyncSSE()` hook with EventSource + polling fallback | Small | 1 new servlet, 3 modified servlets, 1 new React hook, vite.config.ts |
+| **2** | **Optimistic locking** — `version` + `last_modified_by` + `last_modified_source` columns, 409 Conflict on stale writes, React conflict dialog | Medium | 1 SQL migration, 4 servlet mods, conflict dialog component |
+| **3** | **XML field diff** — `XmlConfigDiffer` utility parses flat wizard XML to Map, computes added/modified/removed fields | Medium | 1 new utility class, 2 servlet mods |
+| **4** | **Canonical JSON normalization** — `WizardConfigNormalizer` converts solution-specific XML wrappers to/from canonical JSON for React consumption | Medium | 1 new normalizer class, ApiConfigurationServlet |
+
+Latency improvement: **13s → <1s** (Phase 1 alone)
+
+### Files Created
+- `docs/adr/004-sync-improvements.md` — Architecture Decision Record with full analysis, alternatives considered, implementation priority
+
+### Files Read (Investigation)
+- `ApiWorkspaceSyncServlet.java` (590 lines) — sync status, push, pull, epoch tracking
+- `ApiConfigurationServlet.java` — company_configurations DDL, wizard save
+- `WorkspaceProfileSyncServlet.java` — text API for scripts
+- `sync_bridge.ps1` (~300 lines) — polling loop, debounce, import/compile calls
+- `useSync.ts` (83 lines) — React Query hooks, cache invalidation
+- `IDESyncPage.tsx` (407 lines) — profile cards, log panel
+- `vite.config.ts` — proxy config (HTTP only, no WebSocket/SSE)
+- `postgres_schema.sql` — no version columns on any table
+- `workspace-profile-map.properties` — 3 solution type mappings
+- Workspace profile files (SF2AuthNet, Creatio_Magento2, Creatio_QuickBooks)
+
+### Commands Run
+- `ls tomcat/lib/ | grep websocket` — confirmed tomcat-websocket.jar + websocket-api.jar present
+
+### Verification
+- All three exploration agents returned comprehensive findings
+- XML schema comparison completed with exact field enumerations
+- SSE feasibility confirmed (Tomcat 9 + Java 8 + AsyncContext)
+- Optimistic locking design validated against existing DB schema
+
+### Follow-ups / Known Issues
+- Phase 1 (SSE) is ready to implement — no blockers
+- Phase 2 requires DB migration (additive ALTER TABLE, safe for Supabase)
+- PowerShell bridge cannot be SSE client — keeps its 1s HTTP polling (acceptable)
+- Three-way merge deferred — requires base version storage not yet designed
+- IDE `BusinessDaemonConfiguration` remains outside sync scope (consumed directly by engine)
+
+### What I did (this response)
+1. Launched 3 parallel exploration agents (XML schema, sync constraints, conflict/versioning)
+2. Read 10+ source files to fill investigation gaps
+3. Designed 4-phase solution architecture with concrete implementation details
+4. Created ADR 004 (`docs/adr/004-sync-improvements.md`)
+5. Logged comprehensive findings to AI_WORKLOG.md
+
+---
+
+## 2026-03-12 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: CRITICAL-4 — Fix password toggle keyboard accessibility across the IW Portal React app
+
+Actions taken:
+- Audited all 7 page files for password toggle buttons with `tabIndex={-1}`
+- Removed `tabIndex={-1}` from 7 password toggle buttons across 6 files (ChangePasswordPage has 2)
+- Added dynamic `aria-label` to each button matching its state variable (e.g., `showPassword`, `showOld`, `showNew`, `showDisablePassword`)
+- ProfilePage.tsx password toggles already had no `tabIndex={-1}` — no change needed
+- Verified zero remaining `tabIndex={-1}` in `src/pages/` and all 7 `aria-label` attributes confirmed present
+
+Files changed:
+- `frontends/iw-portal/src/pages/LoginPage.tsx` — 1 toggle fixed
+- `frontends/iw-portal/src/pages/RegisterPage.tsx` — 1 toggle fixed
+- `frontends/iw-portal/src/pages/CompanyRegisterPage.tsx` — 1 toggle fixed
+- `frontends/iw-portal/src/pages/MfaSetupPage.tsx` — 1 toggle fixed (showDisablePassword)
+- `frontends/iw-portal/src/pages/ChangePasswordPage.tsx` — 2 toggles fixed (showOld, showNew)
+- `frontends/iw-portal/src/pages/ForgotPasswordPage.tsx` — 1 toggle fixed
+
+Commands run: None (edit-only changes)
+Verification performed: Grep confirmed 0 remaining `tabIndex={-1}` in pages dir, 7 `aria-label` attributes present
+Follow-ups / known issues: None
+
+### What I did (this response)
+1. Read all 7 candidate page files in parallel
+2. Identified 7 password toggle buttons with `tabIndex={-1}` across 6 files
+3. Applied 7 edits: removed `tabIndex={-1}`, added `aria-label` with correct state variable per button
+4. Verified no remaining `tabIndex={-1}` and all 7 `aria-label` attributes present
+5. Logged session to AI_WORKLOG.md
+
+---
+
+## 2026-03-12 (UTC)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Add role="alert" to all form error message divs in the IW Portal React app for screen-reader accessibility
+Actions taken:
+- Read all 8 candidate page files (LoginPage, RegisterPage, CompanyRegisterPage, MfaVerifyPage, ChangePasswordPage, ForgotPasswordPage, MfaSetupPage, ProfilePage)
+- Identified 10 conditional error rendering divs across 7 files (ProfilePage uses toast-based errors, no inline error divs)
+- Added `role="alert"` to each error display div — no other changes made
+Files changed/created:
+- `frontends/iw-portal/src/pages/LoginPage.tsx` — 1 error div updated
+- `frontends/iw-portal/src/pages/RegisterPage.tsx` — 1 error div updated
+- `frontends/iw-portal/src/pages/CompanyRegisterPage.tsx` — 1 error div updated
+- `frontends/iw-portal/src/pages/MfaVerifyPage.tsx` — 1 error div updated
+- `frontends/iw-portal/src/pages/ChangePasswordPage.tsx` — 1 error div updated
+- `frontends/iw-portal/src/pages/ForgotPasswordPage.tsx` — 2 error divs updated (request step + reset step)
+- `frontends/iw-portal/src/pages/MfaSetupPage.tsx` — 3 error divs updated (disable step + setup/verify step + status overview)
+- `docs/ai/AI_WORKLOG.md` — this entry
+Commands run: None (edit-only changes)
+Verification performed: Grep confirmed 10 `role="alert"` attributes across 7 page files
+Follow-ups / known issues:
+- DashboardPage.tsx has a similar error div pattern without `role="alert"` but was not in scope for this task
+
+### What I did (this response)
+1. Read all 8 specified page files in parallel
+2. Identified 10 conditional error display divs across 7 files (ProfilePage uses toasts, not inline errors)
+3. Applied `role="alert"` to all 10 error divs — minimal, targeted changes only
+4. Verified all 10 instances via grep
+5. Logged session to AI_WORKLOG.md
+
+---
+
+## 2026-03-12 Session 20 (UTC) — RBAC Implementation
+Agent/tool: Claude Code (Opus 4.6)
+User request: Implement Role-Based Access Control (RBAC) as #1 production priority
+
+Actions taken:
+- **Database**: Executed migration on Supabase — renamed role 'user' → 'operator', added CHECK constraint (operator/associate/admin), updated default, added index
+- **Backend**: Created `RoleAuthorizationFilter.java` — server-side RBAC enforcement in Tomcat filter chain (after ApiTokenAuth). Maps URL prefixes to required roles. Admin bypasses all checks. Returns 403 JSON for unauthorized access
+- **Frontend**: Created `RoleGuard.tsx` (inline route guard), `RoleRedirect.tsx` (role-aware index redirect). Updated `ProtectedRoute.tsx` with allowedRoles prop + ForbiddenPage. Updated `routes.tsx` with role gates on associate/master routes
+- **Portal hooks**: Added `getAllowedPortals()` and `getRoleHome()` to `usePortal.ts`. Updated Sidebar + Topbar to filter portals by role. Updated LoginPage to redirect by role
+- **Schema**: Updated `postgres_schema.sql` seed data and column definition to match new role values
+- **web.xml**: Added RoleAuthorizationFilter after ApiTokenAuthFilter in filter chain
+- **Migration SQL**: Created `database/migration_rbac_roles.sql` (idempotent, verified on Supabase)
+
+Files changed/created:
+- `database/migration_rbac_roles.sql` — NEW, migration script (executed on Supabase)
+- `database/postgres_schema.sql` — role column updated to operator/associate/admin
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/web/RoleAuthorizationFilter.java` — NEW
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/web/RoleAuthorizationFilter.class` — NEW (compiled)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml` — filter chain updated
+- `frontends/iw-portal/src/types/auth.ts` — UserRole = operator | associate | admin
+- `frontends/iw-portal/src/components/ProtectedRoute.tsx` — allowedRoles + ForbiddenPage
+- `frontends/iw-portal/src/components/RoleGuard.tsx` — NEW
+- `frontends/iw-portal/src/components/RoleRedirect.tsx` — NEW
+- `frontends/iw-portal/src/hooks/usePortal.ts` — getAllowedPortals, getRoleHome
+- `frontends/iw-portal/src/routes.tsx` — RoleGuard wrappers on associate/master routes
+- `frontends/iw-portal/src/components/layout/Sidebar.tsx` — role-based portal filtering
+- `frontends/iw-portal/src/components/layout/Topbar.tsx` — portal switcher role filtering
+- `frontends/iw-portal/src/pages/LoginPage.tsx` — role-aware redirect
+- `web_portal/tomcat/webapps/iw-portal/` — rebuilt portal assets
+- `docs/ai/AI_WORKLOG.md` — this entry
+
+Verification performed:
+- DB migration verified: 5 admins, 2 operators, 0 'user' role remaining
+- TypeScript check passes (only pre-existing useSyncSSE error)
+- Vite production build succeeds
+- Filter compiles with javac -source 1.8
+
+### What I did (this response)
+1. Ran RBAC migration on Supabase (user→operator rename, CHECK constraint, index)
+2. Updated AI_WORKLOG.md
+3. Committing all RBAC changes + build output

@@ -6,7 +6,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useDevMode } from "@/providers/DevModeProvider";
 import { useAlertRules } from "@/hooks/useMonitoring";
 import { useUnreadCount } from "@/hooks/useNotifications";
-import { usePortal, usePortalSwitch, usePortalVisibility, PORTAL_LABELS, type Portal } from "@/hooks/usePortal";
+import { usePortal, usePortalSwitch, usePortalVisibility, getAllowedPortals, PORTAL_LABELS, type Portal } from "@/hooks/usePortal";
 import { cn } from "@/lib/utils";
 
 interface SearchItem {
@@ -131,18 +131,25 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
       {/* Mobile menu toggle */}
       <button
         onClick={onMenuToggle}
+        aria-label="Open navigation menu"
         className="md:hidden p-1.5 rounded-lg border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground cursor-pointer"
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="w-5 h-5" aria-hidden="true" />
       </button>
 
-      {/* Search bar */}
+      {/* Search bar — ARIA combobox (WCAG 4.1.2) */}
       <div className="flex-1 relative" ref={searchRef}>
         <div className="flex items-center gap-2 px-3 py-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]">
-          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Search className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
           <input
             ref={inputRef}
             type="text"
+            role="combobox"
+            aria-expanded={showResults && filtered.length > 0}
+            aria-controls="search-listbox"
+            aria-activedescendant={showResults && filtered.length > 0 ? `search-option-${selectedIndex}` : undefined}
+            aria-autocomplete="list"
+            aria-label="Search all portals"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setShowResults(true); }}
             onFocus={() => query.trim() && setShowResults(true)}
@@ -151,16 +158,19 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
             className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
           />
           {!query && (
-            <kbd className="hidden sm:inline text-[10px] text-muted-foreground/60 bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] rounded px-1.5 py-0.5 font-mono">
+            <kbd className="hidden sm:inline text-[10px] text-muted-foreground/60 bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] rounded px-1.5 py-0.5 font-mono" aria-hidden="true">
               /
             </kbd>
           )}
         </div>
         {showResults && filtered.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 rounded-[14px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-lg overflow-hidden z-50">
+          <div id="search-listbox" role="listbox" aria-label="Search results" className="absolute top-full left-0 right-0 mt-1 rounded-[14px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-lg overflow-hidden z-50">
             {filtered.map((item, i) => (
               <button
                 key={item.path}
+                id={`search-option-${i}`}
+                role="option"
+                aria-selected={i === selectedIndex}
                 onClick={() => navigateTo(item.path)}
                 className={cn(
                   "w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer",
@@ -181,7 +191,7 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
       {/* Portal switcher + Dev toggle (grouped) */}
       <div className="hidden sm:flex items-center gap-1 p-1 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.2)]">
         {(["associate", "operator", "master"] as Portal[])
-          .filter((p) => visiblePortals.includes(p))
+          .filter((p) => visiblePortals.includes(p) && getAllowedPortals(user?.role ?? "operator").includes(p))
           .map((portal) => {
             const Icon = PORTAL_ICONS[portal];
             const isActive = portal === currentPortal;
@@ -189,6 +199,8 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
               <button
                 key={portal}
                 onClick={() => switchPortal(portal)}
+                aria-label={PORTAL_LABELS[portal]}
+                aria-pressed={isActive}
                 title={PORTAL_LABELS[portal]}
                 className={cn(
                   "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all cursor-pointer",
@@ -206,6 +218,8 @@ export function Topbar({ onMenuToggle }: TopbarProps) {
         <span className="w-px h-4 bg-[hsl(var(--border))] mx-0.5" />
         <button
           onClick={toggleDevMode}
+          aria-label={devMode ? "Developer Mode: ON — click to disable" : "Developer Mode: OFF — click to enable"}
+          aria-pressed={devMode}
           title={devMode ? "Developer Mode: ON — click to disable" : "Developer Mode: OFF — click to enable"}
           className={cn(
             "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-all cursor-pointer",
@@ -270,17 +284,17 @@ function NotificationBadge() {
   return (
     <Link
       to="/notifications"
+      aria-label={count > 0 ? `Notifications, ${count} unread` : "Notifications"}
       className={cn(
         "relative p-1.5 rounded-full border transition-colors cursor-pointer",
         count > 0
           ? "border-[hsl(var(--primary)/0.4)] bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.15)]"
           : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] text-muted-foreground hover:text-foreground"
       )}
-      title={`${count} unread notifications`}
     >
-      <Bell className="w-3.5 h-3.5" />
+      <Bell className="w-3.5 h-3.5" aria-hidden="true" />
       {count > 0 && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--primary))] text-white text-[9px] font-bold grid place-items-center">
+        <span aria-hidden="true" className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--primary))] text-white text-[11px] font-bold grid place-items-center">
           {count > 9 ? "9+" : count}
         </span>
       )}
@@ -295,17 +309,17 @@ function AlertBadge() {
   return (
     <Link
       to="/monitoring/alerts"
+      aria-label={`Alert rules, ${activeCount} active${hasTriggered ? ", alerts triggered" : ""}`}
       className={cn(
         "relative p-1.5 rounded-full border transition-colors cursor-pointer",
         hasTriggered
           ? "border-[hsl(var(--warning)/0.4)] bg-[hsl(var(--warning)/0.08)] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.15)]"
           : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] text-muted-foreground hover:text-foreground"
       )}
-      title={`${activeCount} active alert rules`}
     >
-      <AlertTriangle className="w-3.5 h-3.5" />
+      <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
       {activeCount > 0 && (
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--warning))] text-white text-[9px] font-bold grid place-items-center">
+        <span aria-hidden="true" className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[hsl(var(--warning))] text-white text-[11px] font-bold grid place-items-center">
           {activeCount > 9 ? "9+" : activeCount}
         </span>
       )}

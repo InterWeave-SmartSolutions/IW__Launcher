@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Activity, User, Building2, Settings, FileText, Monitor,
@@ -6,7 +7,8 @@ import {
   Plug, Lock, SlidersHorizontal, PanelLeftClose, PanelLeftOpen, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePortal, PORTAL_SUBTITLES, type Portal } from "@/hooks/usePortal";
+import { usePortal, PORTAL_SUBTITLES, type Portal, getAllowedPortals } from "@/hooks/usePortal";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface NavItem {
   to: string;
@@ -83,10 +85,36 @@ interface SidebarProps {
 
 export function Sidebar({ mobile, collapsed, onClose, onToggleCollapse }: SidebarProps) {
   const portal = usePortal();
-  const { items, groups } = NAV_CONFIG[portal];
-  const navGroups = [...new Set(items.map((i) => i.group))];
+  const { user } = useAuth();
+  const allowed = getAllowedPortals(user?.role ?? "operator");
+  // If the user navigated to a portal they don't have access to, fall back
+  const effectivePortal: Portal = allowed.includes(portal) ? portal : (allowed[0] ?? "operator");
+  const { items, groups } = NAV_CONFIG[effectivePortal];
+  const navGroups = [...new Set(items.map((i: NavItem) => i.group))];
   const subtitle = PORTAL_SUBTITLES[portal];
   const c = collapsed && !mobile;
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
+
+  // Focus trap + Escape close for mobile sidebar (WCAG 2.4.3)
+  useEffect(() => {
+    if (!mobile) return;
+    closeRef.current?.focus();
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { onClose?.(); return; }
+      if (e.key !== "Tab" || !asideRef.current) return;
+      const focusable = asideRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [mobile, onClose]);
 
   const nav = (
     <>
@@ -96,17 +124,19 @@ export function Sidebar({ mobile, collapsed, onClose, onToggleCollapse }: Sideba
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00e5a0] to-[#00b8ff] shadow-lg shadow-[#00b8ff40] shrink-0" />
           {!c && (
             <div>
-              <h1 className="text-sm font-semibold tracking-tight text-white">InterWeave</h1>
+              <span className="text-sm font-semibold tracking-tight text-white">InterWeave</span>
               <p className="text-xs text-[hsl(var(--sidebar-foreground)/0.6)]">{subtitle}</p>
             </div>
           )}
         </div>
         {mobile && (
           <button
+            ref={closeRef}
             onClick={onClose}
+            aria-label="Close navigation menu"
             className="p-1.5 rounded-lg text-[hsl(var(--sidebar-foreground)/0.75)] hover:text-white cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -123,9 +153,9 @@ export function Sidebar({ mobile, collapsed, onClose, onToggleCollapse }: Sideba
       )}
 
       {/* Navigation */}
-      <nav className={cn("flex-1 overflow-y-auto pb-4", c ? "px-1.5" : "px-3")}>
+      <nav aria-label="Main navigation" className={cn("flex-1 overflow-y-auto pb-4", c ? "px-1.5" : "px-3")}>
         {navGroups.map((group) => (
-          <div key={group} className={cn(c ? "mb-2" : "mb-4")}>
+          <div key={group} role="group" aria-label={groups[group]} className={cn(c ? "mb-2" : "mb-4")}>
             {!c && (
               <p className="text-[11px] font-medium text-[hsl(var(--sidebar-foreground)/0.6)] uppercase tracking-wider px-3 mb-1.5">
                 {groups[group]}
@@ -141,6 +171,8 @@ export function Sidebar({ mobile, collapsed, onClose, onToggleCollapse }: Sideba
                   to={item.to}
                   onClick={onClose}
                   title={c ? item.label : undefined}
+                  aria-label={c ? item.label : undefined}
+                  end={item.to === "/dashboard"}
                   className={({ isActive }) =>
                     cn(
                       "flex items-center rounded-lg transition-colors",
@@ -194,7 +226,7 @@ export function Sidebar({ mobile, collapsed, onClose, onToggleCollapse }: Sideba
 
   if (!mobile) {
     return (
-      <aside className={cn(
+      <aside aria-label="Application navigation" className={cn(
         "glass-sidebar sticky top-0 h-screen flex flex-col max-md:hidden transition-all duration-200 overflow-hidden",
         c ? "w-16" : "w-[280px]"
       )}>
@@ -205,8 +237,8 @@ export function Sidebar({ mobile, collapsed, onClose, onToggleCollapse }: Sideba
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} />
-      <aside className="fixed inset-y-0 left-0 w-[280px] glass-sidebar flex flex-col z-50 md:hidden shadow-2xl">
+      <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} aria-hidden="true" />
+      <aside ref={asideRef} role="dialog" aria-modal="true" aria-label="Navigation menu" className="fixed inset-y-0 left-0 w-[280px] glass-sidebar flex flex-col z-50 md:hidden shadow-2xl">
         {nav}
       </aside>
     </>

@@ -77,6 +77,8 @@ import { ChangePasswordPage } from "@/pages/ChangePasswordPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { MfaVerifyPage } from "@/pages/MfaVerifyPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RoleGuard } from "@/components/RoleGuard";
+import { RoleRedirect } from "@/components/RoleRedirect";
 import { Loader2 } from "lucide-react";
 
 /* Lazy-load new feature pages */
@@ -147,7 +149,7 @@ export const router = createBrowserRouter(
         </ProtectedRoute>
       ),
       children: [
-        { index: true, element: <Navigate to="/dashboard" replace /> },
+        { index: true, element: <RoleRedirect /> },
         { path: "dashboard", element: <DashboardPage /> },
         {
           path: "monitoring",
@@ -247,76 +249,76 @@ export const router = createBrowserRouter(
         { path: "admin/field-mapping", element: <Navigate to="/company/config/wizard" replace /> },
         { path: "admin/sync", element: <Navigate to="/admin/configurator" replace /> },
 
-        /* ── Associate portal routes ── */
+        /* ── Associate portal routes (associate + admin only) ── */
         {
           path: "associate/home",
-          element: <Suspense fallback={<LazyFallback />}><AssociateHomePage /></Suspense>,
+          element: <RoleGuard roles={["associate", "admin"]}><Suspense fallback={<LazyFallback />}><AssociateHomePage /></Suspense></RoleGuard>,
         },
         {
           path: "associate/resources",
-          element: <Suspense fallback={<LazyFallback />}><ResourceLibraryPage /></Suspense>,
+          element: <RoleGuard roles={["associate", "admin"]}><Suspense fallback={<LazyFallback />}><ResourceLibraryPage /></Suspense></RoleGuard>,
         },
         {
           path: "associate/webinars",
-          element: <Suspense fallback={<LazyFallback />}><WebinarsPage /></Suspense>,
+          element: <RoleGuard roles={["associate", "admin"]}><Suspense fallback={<LazyFallback />}><WebinarsPage /></Suspense></RoleGuard>,
         },
         {
           path: "associate/intake",
-          element: <Suspense fallback={<LazyFallback />}><BusinessIntakePage /></Suspense>,
+          element: <RoleGuard roles={["associate", "admin"]}><Suspense fallback={<LazyFallback />}><BusinessIntakePage /></Suspense></RoleGuard>,
         },
         {
           path: "associate/support",
-          element: <Suspense fallback={<LazyFallback />}><AssociateSupportPage /></Suspense>,
+          element: <RoleGuard roles={["associate", "admin"]}><Suspense fallback={<LazyFallback />}><AssociateSupportPage /></Suspense></RoleGuard>,
         },
         {
           path: "associate/billing",
-          element: <Suspense fallback={<LazyFallback />}><BillingPage /></Suspense>,
+          element: <RoleGuard roles={["associate", "admin"]}><Suspense fallback={<LazyFallback />}><BillingPage /></Suspense></RoleGuard>,
         },
         {
           path: "associate/search",
-          element: <Suspense fallback={<LazyFallback />}><SearchPage /></Suspense>,
+          element: <RoleGuard roles={["associate", "admin"]}><Suspense fallback={<LazyFallback />}><SearchPage /></Suspense></RoleGuard>,
         },
 
-        /* ── Master console routes ── */
+        /* ── Master console routes (admin only) ── */
         {
           path: "master/dashboard",
-          element: <Suspense fallback={<LazyFallback />}><MasterDashboardPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><MasterDashboardPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/users",
-          element: <Suspense fallback={<LazyFallback />}><UserManagementPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><UserManagementPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/content",
-          element: <Suspense fallback={<LazyFallback />}><ContentManagementPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><ContentManagementPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/subscriptions",
-          element: <Suspense fallback={<LazyFallback />}><SubscriptionsPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><SubscriptionsPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/integrations",
-          element: <Suspense fallback={<LazyFallback />}><ConnectorManagementPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><ConnectorManagementPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/analytics",
-          element: <Suspense fallback={<LazyFallback />}><ProgramAnalyticsPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><ProgramAnalyticsPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/audit",
-          element: <Suspense fallback={<LazyFallback />}><AuditSecurityPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><AuditSecurityPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/notifications",
-          element: <Suspense fallback={<LazyFallback />}><NotificationTemplatesPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><NotificationTemplatesPage /></Suspense></RoleGuard>,
         },
         {
           path: "master/support",
-          element: <Suspense fallback={<LazyFallback />}><SupportQueuePage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><SupportQueuePage /></Suspense></RoleGuard>,
         },
         {
           path: "master/settings",
-          element: <Suspense fallback={<LazyFallback />}><TenantSettingsPage /></Suspense>,
+          element: <RoleGuard roles={["admin"]}><Suspense fallback={<LazyFallback />}><TenantSettingsPage /></Suspense></RoleGuard>,
         },
 
         { path: "*", element: <NotFoundPage /> },

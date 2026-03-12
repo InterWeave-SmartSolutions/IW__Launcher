@@ -25,6 +25,7 @@
 	<filter>
 		<filter-name>SecurityHeadersFilter</filter-name>
 		<filter-class>com.interweave.web.SecurityHeadersFilter</filter-class>
+		<async-supported>true</async-supported>
 	</filter>
 	<filter-mapping>
 		<filter-name>SecurityHeadersFilter</filter-name>
@@ -35,6 +36,7 @@
 	<filter>
 		<filter-name>ErrorHandlingFilter</filter-name>
 		<filter-class>com.interweave.web.ErrorHandlingFilter</filter-class>
+		<async-supported>true</async-supported>
 		<description>
 		Global error handling filter that catches uncaught exceptions and
 		transforms them into structured error responses with proper logging
@@ -49,6 +51,7 @@
 	<filter>
 		<filter-name>CsrfFilter</filter-name>
 		<filter-class>com.interweave.web.CsrfFilter</filter-class>
+		<async-supported>true</async-supported>
 	</filter>
 	<filter-mapping>
 		<filter-name>CsrfFilter</filter-name>
@@ -59,6 +62,7 @@
 	<filter>
 		<filter-name>RateLimitFilter</filter-name>
 		<filter-class>com.interweave.web.RateLimitFilter</filter-class>
+		<async-supported>true</async-supported>
 		<init-param>
 			<param-name>maxRequests</param-name>
 			<param-value>100</param-value>
@@ -77,9 +81,21 @@
 	<filter>
 		<filter-name>ApiTokenAuthFilter</filter-name>
 		<filter-class>com.interweave.businessDaemon.api.ApiTokenAuthFilter</filter-class>
+		<async-supported>true</async-supported>
 	</filter>
 	<filter-mapping>
 		<filter-name>ApiTokenAuthFilter</filter-name>
+		<url-pattern>/api/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Role Authorization Filter - RBAC enforcement per URL pattern -->
+	<filter>
+		<filter-name>RoleAuthorizationFilter</filter-name>
+		<filter-class>com.interweave.web.RoleAuthorizationFilter</filter-class>
+		<async-supported>true</async-supported>
+	</filter>
+	<filter-mapping>
+		<filter-name>RoleAuthorizationFilter</filter-name>
 		<url-pattern>/api/*</url-pattern>
 	</filter-mapping>
 
@@ -676,6 +692,17 @@
         <servlet-mapping>
         	<servlet-name>ApiWorkspaceSyncServlet</servlet-name>
         	<url-pattern>/api/sync/*</url-pattern>
+        </servlet-mapping>
+
+        <!-- SSE Sync Events (real-time push notifications) -->
+        <servlet>
+        	<servlet-name>SyncEventServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.SyncEventServlet</servlet-class>
+        	<async-supported>true</async-supported>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>SyncEventServlet</servlet-name>
+        	<url-pattern>/api/sync/events</url-pattern>
         </servlet-mapping>
 
         <!-- Associate Portal API -->

@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import type { UserRole } from "@/types/auth";
 
 export type Portal = "operator" | "associate" | "master";
 
@@ -70,4 +71,23 @@ export function usePortalVisibility() {
   return { visible, toggle, all: ALL_PORTALS };
 }
 
-export { PORTAL_HOMES, PORTAL_LABELS, PORTAL_SUBTITLES, ALL_PORTALS };
+/** Returns portals a role is allowed to access. Admin gets all. */
+function getAllowedPortals(role: UserRole): Portal[] {
+  switch (role) {
+    case "admin":
+      return ALL_PORTALS;
+    case "associate":
+      return ["associate"];
+    case "operator":
+    default:
+      return ["operator"];
+  }
+}
+
+/** Returns the default home path for a given role. */
+function getRoleHome(role: UserRole): string {
+  const portals = getAllowedPortals(role);
+  return PORTAL_HOMES[portals[0] ?? "operator"];
+}
+
+export { PORTAL_HOMES, PORTAL_LABELS, PORTAL_SUBTITLES, ALL_PORTALS, getAllowedPortals, getRoleHome };
