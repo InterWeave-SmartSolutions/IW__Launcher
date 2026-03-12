@@ -2,6 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%@ page import="com.interweave.help.*" %>
 <%@ page import="com.interweave.error.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%
 // Parse request parameters
 String contextParam = request.getParameter("context");
@@ -67,7 +68,7 @@ if (fullDocUrl == null && helpTopic != null) {
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-  <title><% if (helpTopic != null) { %><%= helpTopic.getTitle() %><% } else { %>Help<% } %> - InterWeave IDE</title>
+  <title><% if (helpTopic != null) { %><%= HtmlEncoder.encode(helpTopic.getTitle()) %><% } else { %>Help<% } %> - InterWeave IDE</title>
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
@@ -273,7 +274,7 @@ if (fullDocUrl == null && helpTopic != null) {
   <script>
     function openFullDocs() {
       <% if (fullDocUrl != null) { %>
-      window.open('<%= fullDocUrl %>', '_blank');
+      window.open('<%= HtmlEncoder.encode(fullDocUrl) %>', '_blank');
       <% } %>
     }
 
@@ -293,14 +294,14 @@ if (fullDocUrl == null && helpTopic != null) {
       <div class="help-title">
         <span class="help-icon">&#9432;</span>
         <% if (helpTopic != null) { %>
-          <%= helpTopic.getTitle() %>
+          <%= HtmlEncoder.encode(helpTopic.getTitle()) %>
         <% } else { %>
           Help
         <% } %>
       </div>
       <% if (helpTopic != null && helpTopic.getDescription() != null) { %>
       <div class="help-description">
-        <%= helpTopic.getDescription() %>
+        <%= HtmlEncoder.encode(helpTopic.getDescription()) %>
       </div>
       <% } %>
     </div>
@@ -309,8 +310,8 @@ if (fullDocUrl == null && helpTopic != null) {
     <% if (errorCode != null) { %>
     <div class="error-code-display">
       <div class="error-code-label">Error Code:</div>
-      <div class="error-code-value"><%= errorCode.getCode() %></div>
-      <div class="error-message"><%= errorCode.getDefaultMessage() %></div>
+      <div class="error-code-value"><%= HtmlEncoder.encode(errorCode.getCode()) %></div>
+      <div class="error-message"><%= HtmlEncoder.encode(errorCode.getDefaultMessage()) %></div>
     </div>
 
     <!-- Resolution Steps for Error -->
@@ -328,7 +329,7 @@ if (fullDocUrl == null && helpTopic != null) {
           step = step.replaceAll("^\\d+\\.\\s*", "");
           if (step.length() > 0) {
         %>
-          <li><%= step %></li>
+          <li><%= HtmlEncoder.encode(step) %></li>
         <%
           }
         }
@@ -352,7 +353,7 @@ if (fullDocUrl == null && helpTopic != null) {
       </div>
       <ul class="examples-list">
         <% for (String example : helpTopic.getExamples()) { %>
-        <li class="example-item"><%= example %></li>
+        <li class="example-item"><%= HtmlEncoder.encode(example) %></li>
         <% } %>
       </ul>
     </div>
@@ -362,7 +363,7 @@ if (fullDocUrl == null && helpTopic != null) {
     <% if (errorCode != null) { %>
     <div class="info-box">
       <span class="info-box-icon">&#9432;</span>
-      <strong>Need More Help?</strong> Reference this error code (<strong><%= errorCode.getCode() %></strong>) when contacting support for faster assistance.
+      <strong>Need More Help?</strong> Reference this error code (<strong><%= HtmlEncoder.encode(errorCode.getCode()) %></strong>) when contacting support for faster assistance.
     </div>
     <% } else if (context != null && context != HelpLinkService.HelpContext.GENERAL) { %>
     <div class="info-box">
@@ -377,7 +378,7 @@ if (fullDocUrl == null && helpTopic != null) {
       <div class="related-topics-title">Related Topics:</div>
       <ul class="related-links">
         <% for (String topic : helpTopic.getRelatedTopics()) { %>
-        <li class="related-link"><a href="javascript:void(0)"><%= topic %></a></li>
+        <li class="related-link"><a href="javascript:void(0)"><%= HtmlEncoder.encode(topic) %></a></li>
         <% } %>
       </ul>
     </div>

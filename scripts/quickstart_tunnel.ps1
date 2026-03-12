@@ -2,6 +2,16 @@
 # Starts Cloudflare Quick Tunnel (no auth needed), captures the
 # trycloudflare.com URL, patches vercel.json, commits + pushes.
 # Also starts Tomcat if not already running on port 9090.
+#
+# Usage:
+#   powershell -ExecutionPolicy Bypass -File scripts\quickstart_tunnel.ps1
+#   powershell -ExecutionPolicy Bypass -File scripts\quickstart_tunnel.ps1 -Stop
+#   powershell -ExecutionPolicy Bypass -File scripts\quickstart_tunnel.ps1 -SkipPush
+
+param(
+    [switch]$Stop,
+    [switch]$SkipPush
+)
 
 $repoRoot   = Split-Path -Parent $PSScriptRoot
 $javaExe    = "$repoRoot\jre\bin\java.exe"
@@ -9,8 +19,44 @@ $catHome    = "$repoRoot\web_portal\tomcat"
 $logsDir    = "$repoRoot\logs"
 $vercelJson = "$repoRoot\frontends\iw-portal\vercel.json"
 $tunnelLog  = "$logsDir\quick_tunnel.log"
+$pidFile    = "$logsDir\quick_tunnel.pid"
 
 if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir | Out-Null }
+
+# =============================================================================
+# STOP mode: kill existing tunnel + keepalive process
+# =============================================================================
+if ($Stop) {
+    # Kill cloudflared
+    Get-Process cloudflared -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    # Kill keepalive PS process
+    if (Test-Path $pidFile) {
+        $savedPid = Get-Content $pidFile -ErrorAction SilentlyContinue
+        if ($savedPid) {
+            try {
+                Stop-Process -Id $savedPid -Force -ErrorAction SilentlyContinue
+                Write-Host "  [OK] Tunnel keepalive stopped (PID $savedPid)"
+            } catch {
+                Write-Host "  [OK] Tunnel keepalive was not running"
+            }
+        }
+        Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "  [OK] Tunnel was not running"
+    }
+    exit 0
+}
+
+# Kill any existing tunnel before starting fresh
+if (Test-Path $pidFile) {
+    $oldPid = Get-Content $pidFile -ErrorAction SilentlyContinue
+    if ($oldPid) { Stop-Process -Id $oldPid -Force -ErrorAction SilentlyContinue 2>$null }
+    Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
+}
+Get-Process cloudflared -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
+# Write our PID so STOP.bat / -Stop can find us
+$PID | Out-File $pidFile -Force
 
 Write-Host ""
 Write-Host "============================================================"
@@ -89,14 +135,18 @@ $vj.rewrites[0].destination = "$tunnelUrl/iw-business-daemon/:path*"
 $vj | ConvertTo-Json -Depth 10 | Set-Content $vercelJson -Encoding utf8 -Force
 Write-Host "  vercel.json patched."
 
-Push-Location $repoRoot
-try {
-    git add "frontends/iw-portal/vercel.json"
-    git commit -m "chore: update Vercel proxy to active quick tunnel"
-    git push origin main
-    Write-Host "  Pushed to main. Vercel will rebuild in ~30s."
-} finally {
-    Pop-Location
+if (-not $SkipPush) {
+    Push-Location $repoRoot
+    try {
+        git add "frontends/iw-portal/vercel.json"
+        git commit -m "chore: update Vercel proxy to active quick tunnel"
+        git push origin main
+        Write-Host "  Pushed to main. Vercel will rebuild in ~30s."
+    } finally {
+        Pop-Location
+    }
+} else {
+    Write-Host "  Skipped git push (-SkipPush flag set). vercel.json updated locally only."
 }
 Write-Host ""
 

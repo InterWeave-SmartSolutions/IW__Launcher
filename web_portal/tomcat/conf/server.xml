@@ -70,6 +70,7 @@
                connectionTimeout="20000"
                redirectPort="8443"
                maxParameterCount="1000"
+               server="InterWeave"
                />
     <!-- A "Connector" using the shared thread pool-->
     <!--
@@ -80,12 +81,14 @@
                maxParameterCount="1000"
                />
     -->
-    <!-- Define an SSL/TLS HTTP/1.1 Connector on port 8443
-         This connector uses the NIO implementation. The default
-         SSLImplementation will depend on the presence of the APR/native
-         library and the useOpenSSL attribute of the AprLifecycleListener.
-         Either JSSE or OpenSSL style configuration may be used regardless of
-         the SSLImplementation selected. JSSE style configuration is used below.
+    <!-- ═══ TLS/HTTPS (SECURITY: uncomment after generating a certificate) ═══
+         To enable TLS:
+         1. Generate a self-signed keystore:
+            keytool -genkeypair -alias tomcat -keyalg RSA -keysize 2048 \
+                    -keystore conf/keystore.jks -storepass changeit -validity 365
+         2. Uncomment the Connector below
+         3. Update web.xml cookie-config to set <secure>true</secure>
+         4. Restart Tomcat
     -->
     <!--
     <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
@@ -93,7 +96,8 @@
                maxParameterCount="1000"
                >
         <SSLHostConfig>
-            <Certificate certificateKeystoreFile="conf/localhost-rsa.jks"
+            <Certificate certificateKeystoreFile="conf/keystore.jks"
+                         certificateKeystorePassword="changeit"
                          type="RSA" />
         </SSLHostConfig>
     </Connector>

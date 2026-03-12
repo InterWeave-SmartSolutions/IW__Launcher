@@ -12,23 +12,23 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String env2Con = request.getParameter("Env2Con");
 if(env2Con==null){
 env2Con="COM";
 }
-String e2C = "&Env2Con=" + env2Con;
+String e2C = "&Env2Con=" + java.net.URLEncoder.encode(env2Con, "UTF-8");
 String currentProfileName = request.getParameter("CurrentProfile");
    String refreshValue = request.getParameter("RefreshValue");%>
 <html>
@@ -38,7 +38,7 @@ String currentProfileName = request.getParameter("CurrentProfile");
 </head>
 <%if(ConfigContext.isAdminLoggedIn() && (!ConfigContext.isHosted() || (currentProfileName!=null))){%>
 <FRAMESET ROWS="70%,30%">
-<frame src='<%= "BDConfigurator.jsp" + (ConfigContext.isHosted()?("?CurrentProfile=" + currentProfileName + brandSol + e2C):brandSol1)%>' name="main">
+<frame src='<%= "BDConfigurator.jsp" + (ConfigContext.isHosted()?("?CurrentProfile=" + java.net.URLEncoder.encode(currentProfileName, "UTF-8") + brandSol + e2C):brandSol1)%>' name="main">
 <frame name="data">
 <%}else{%>
 <jsp:forward page="/ErrorMessage.jsp">

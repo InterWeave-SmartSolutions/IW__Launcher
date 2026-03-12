@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%@ page import="java.util.*" %>
 <%
 int lnmbr = 1;
@@ -14,17 +15,17 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String currentProfileName = request.getParameter("CurrentProfile");
 String currentUser = "";
@@ -180,18 +181,19 @@ if(ConfigContext.isHosted()){
 	<tr>
 		<td class="labels"><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">Please
 		set configuration parameters for your solution.
-		</span><br/>Customer<%if(!aV.equals("None")){%>/Vendor<%}%> Configuration Details</td><td align="right" class="labels">User: <%= currentUser%></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Logout</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
+		</span><br/>Customer<%if(!aV.equals("None")){%>/Vendor<%}%> Configuration Details</td><td align="right" class="labels">User: <%= HtmlEncoder.encode(currentUser)%></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Logout</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
 	</tr>
 </table>
-<!--<%= currentProfileName%> <%= oldProfileName%> <%= solutionType%> <%= crm%> <%= navigation%>-->
+<!--<%= HtmlEncoder.encode(currentProfileName)%> <%= HtmlEncoder.encode(oldProfileName)%> <%= HtmlEncoder.encode(solutionType)%> <%= HtmlEncoder.encode(crm)%> <%= HtmlEncoder.encode(navigation)%>-->
 <form action="CompanyConfigurationSetvletDT" method="post">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
-  <input type="hidden" name="CurrentProfile" value="<%= currentProfileName %>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
+  <input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName) %>"/>
   <%if(oldProfileName!=null){%>
-  <input type="hidden" name="OldProfile" value="<%= oldProfileName %>"/>
+  <input type="hidden" name="OldProfile" value="<%= HtmlEncoder.encode(oldProfileName) %>"/>
   <%}%>
-  <input type="hidden" name="Solution" value="<%= solutionType %>"/>
+  <input type="hidden" name="Solution" value="<%= HtmlEncoder.encode(solutionType) %>"/>
 <p>
 	<input type="submit" name="submit" value="Previous" class="labels"/>
 	<input type="submit" name="submit" value="Next" class="labels"/>
@@ -211,7 +213,7 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table">Binding <%= crm%> Custom Field with <%= fs%> ListID/Custom Binding Mapping</span></td>
 			<td>
-				<input type="text" name="BSFQBLID" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "BSFQBLID") +"\""):""%>/>
+				<input type="text" name="BSFQBLID" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"BSFQBLID")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -236,7 +238,7 @@ if(ConfigContext.isHosted()){
 			<td><span class="table">Binding <%= crm%> Custom Field with <%= fs%> Full/Normalized
 			Name</span></td>
 			<td>
-				<input type="text" name="BSFQBFN" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "BSFQBFN") +"\""):""%>/>
+				<input type="text" name="BSFQBFN" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"BSFQBFN")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -255,21 +257,21 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Object to create/update <%= fs%> Customer</span></td>
 			<td>
-				<input type="text" name="SFQBCustObj" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFQBCustObj") +"\""):""%>/>
+				<input type="text" name="SFQBCustObj" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFQBCustObj")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field with <%= fs%> Customer Name</span></td>
 			<td>
-				<input type="text" name="SFQBCustNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFQBCustNm") +"\""):""%>/>
+				<input type="text" name="SFQBCustNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFQBCustNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field with <%= fs%> Company Name</span></td>
 			<td>
-				<input type="text" name="SFQBCompNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFQBCompNm") +"\""):""%>/>
+				<input type="text" name="SFQBCompNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFQBCompNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -292,7 +294,7 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table">Default Primary Role Name/<%= crmtran%>/Object Primary Contact</span></td>
 			<td>
-				<input type="text" name="DefPrimRole" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefPrimRole") +"\""):""%>/>
+				<input type="text" name="DefPrimRole" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefPrimRole")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -350,56 +352,56 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table">Hierarchy Level to create <%= fs%> Job</span></td>
 			<td>
-				<input type="text" name="HJobLevel" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "HJobLevel") +"\""):""%>/>
+				<input type="text" name="HJobLevel" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"HJobLevel")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Object Name to create <%= fs%> Job/Address</span></td>
 			<td>
-				<input type="text" name="CONJob" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CONJob") +"\""):""%>/>
+				<input type="text" name="CONJob" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CONJob")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field for Customer Terms</span></td>
 			<td>
-				<input type="text" name="CustTerm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CustTerm") +"\""):""%>/>
+				<input type="text" name="CustTerm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CustTerm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field for Customer Type</span></td>
 			<td>
-				<input type="text" name="CustTypeSt" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CustTypeSt") +"\""):""%>/>
+				<input type="text" name="CustTypeSt" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CustTypeSt")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field for Customer Tax Code</span></td>
 			<td>
-				<input type="text" name="CustTaxCodeSt" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CustTaxCodeSt") +"\""):""%>/>
+				<input type="text" name="CustTaxCodeSt" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CustTaxCodeSt")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field for Customer Tax Item/Taxable</span></td>
 			<td>
-				<input type="text" name="CustTaxItemSt" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CustTaxItemSt") +"\""):""%>/>
+				<input type="text" name="CustTaxItemSt" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CustTaxItemSt")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Account Custom field for Total Balance</span></td>
 			<td>
-				<input type="text" name="SustRemBal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SustRemBal") +"\""):""%>/>
+				<input type="text" name="SustRemBal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SustRemBal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Contact Custom field for Middle Name</span></td>
 			<td>
-				<input type="text" name="MIddleName" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "MIddleName") +"\""):""%>/>
+				<input type="text" name="MIddleName" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"MIddleName")) +"\""):""%>/>
 			</td>
 		</tr><%}%>
 		<%if((aC.equals("SFQB"))||(aC.equals("SF2QB"))){%>
@@ -528,13 +530,13 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom Field Name to create new <%= fs%> Customer</span></td>
 			<td>
-				<input type="text" name="SFCrCusF" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusF") +"\""):""%>/>
+				<input type="text" name="SFCrCusF" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusF")) +"\""):""%>/>
 			</td>
 		</tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom Field Value to create new <%= fs%> Customer</span></td>
 			<td>
-				<input type="text" name="SFCrCusFVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusFVal") +"\""):""%>/>
+				<input type="text" name="SFCrCusFVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusFVal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -633,14 +635,14 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field Name to create/update <%= crm%> Account</span></td>
 			<td>
-				<input type="text" name="QBCrAccF" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBCrAccF") +"\""):""%>/>
+				<input type="text" name="QBCrAccF" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBCrAccF")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field Value to create/update <%= crm%> Account</span></td>
 			<td>
-				<input type="text" name="QBCrAccFVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBCrAccFVal") +"\""):""%>/>
+				<input type="text" name="QBCrAccFVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBCrAccFVal")) +"\""):""%>/>
 			</td>
 		</tr><%}%>	
 		<tr>
@@ -802,7 +804,7 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field for <%= crm%> User Id</span></td>
 			<td>
-				<input type="text" name="NSFldArId" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "NSFldArId") +"\""):""%>/>
+				<input type="text" name="NSFldArId" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"NSFldArId")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -827,14 +829,14 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Notify Method Code</span></td>
 			<td>
-				<input type="text" name="ArNotMetCode" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ArNotMetCode") +"\""):""%>/>
+				<input type="text" name="ArNotMetCode" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ArNotMetCode")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Status Code</span></td>
 			<td>
-				<input type="text" name="ArStCode" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ArStCode") +"\""):""%>/>
+				<input type="text" name="ArStCode" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ArStCode")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -854,7 +856,7 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> <%= crmcust%> to <%= fs%> Customer custom	mapping 1</span></td>
 			<td>
-				<input type="text" name="AccSFQBCMap" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "AccSFQBCMap") +"\""):""%>/>
+				<input type="text" name="AccSFQBCMap" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"AccSFQBCMap")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -862,7 +864,7 @@ if(ConfigContext.isHosted()){
 			<td><span class="table"><%= crm%> <%= crmcust%> to <%= fs%> Customer custom	mapping 2
 			(<a href='<%= "MoreCustomMappings.jsp" + "?CurrentProfile=" + currentProfileName + ((oldProfileName==null)?"":("&OldProfile=" + oldProfileName)) + "&ObjectType=Acc" + "&Solution=" + solutionType%>'	target="_blank">more mappings</a>)</span></td>
 			<td>
-				<input type="text" name="AccSFQBCMap1" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "AccSFQBCMap1") +"\""):""%>/>
+				<input type="text" name="AccSFQBCMap1" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"AccSFQBCMap1")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%for (int imp=2; imp<10; imp++){
@@ -1084,7 +1086,7 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table">Person Account Record Type ID</span></td>
 			<td>
-				<input type="text" name="PAcctRTID" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PAcctRTID") +"\""):""%>/>
+				<input type="text" name="PAcctRTID" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PAcctRTID")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}%>
@@ -1103,14 +1105,14 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Object Name for <%= fs%> Vendor</span></td>
 			<td>
-				<input type="text" name="VendorObject" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "VendorObject") +"\""):""%>/>
+				<input type="text" name="VendorObject" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"VendorObject")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table">Binding <%= crm%> Custom Field with <%= fs%> ListID</span></td>
 			<td>
-				<input type="text" name="BSFQBLIDV" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "BSFQBLIDV") +"\""):""%>/>
+				<input type="text" name="BSFQBLIDV" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"BSFQBLIDV")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -1132,7 +1134,7 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table">Binding <%= crm%> Custom Field with <%= fs%> Name</span></td>
 			<td>
-				<input type="text" name="BSFQBFNV" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "BSFQBFNV") +"\""):""%>/>
+				<input type="text" name="BSFQBFNV" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"BSFQBFNV")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -1151,14 +1153,14 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field with <%= fs%> Vendor Name</span></td>
 			<td>
-				<input type="text" name="SFQBVendNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFQBVendNm") +"\""):""%>/>
+				<input type="text" name="SFQBVendNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFQBVendNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field with <%= fs%> Company Name</span></td>
 			<td>
-				<input type="text" name="SFQBCompNmV" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFQBCompNmV") +"\""):""%>/>
+				<input type="text" name="SFQBCompNmV" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFQBCompNmV")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -1180,7 +1182,7 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table">Default Primary Role Name</span></td>
 			<td>
-				<input type="text" name="DefPrimRoleV" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefPrimRoleV") +"\""):""%>/>
+				<input type="text" name="DefPrimRoleV" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefPrimRoleV")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -1200,21 +1202,21 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom field for Vendor Terms</span></td>
 			<td>
-				<input type="text" name="VendTerm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "VendTerm") +"\""):""%>/>
+				<input type="text" name="VendTerm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"VendTerm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Account/Contact/Object Field for Total Balance</span></td>
 			<td>
-				<input type="text" name="VendRemBal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "VendRemBal") +"\""):""%>/>
+				<input type="text" name="VendRemBal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"VendRemBal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Contact/Object Field for Middle Name</span></td>
 			<td>
-				<input type="text" name="MIddleNameV" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "MIddleNameV") +"\""):""%>/>
+				<input type="text" name="MIddleNameV" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"MIddleNameV")) +"\""):""%>/>
 			</td>
 		</tr><%}%>
 		<%if((aV.equals("SFQB"))||(aV.equals("SF2QB"))){%>
@@ -1276,13 +1278,13 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom Field Name to create new <%= fs%> Vendor</span></td>
 			<td>
-				<input type="text" name="SFCrVenF" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrVenF") +"\""):""%>/>
+				<input type="text" name="SFCrVenF" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrVenF")) +"\""):""%>/>
 			</td>
 		</tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom Field Value to create new <%= fs%> Vendor</span></td>
 			<td>
-				<input type="text" name="SFCrVenFVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrVenFVal") +"\""):""%>/>
+				<input type="text" name="SFCrVenFVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrVenFVal")) +"\""):""%>/>
 			</td>
 		</tr><%}%>
 		<tr>
@@ -1382,14 +1384,14 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field Name to create/update <%= crm%> Account/Contact/Object</span></td>
 			<td>
-				<input type="text" name="QBCrAccFV" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBCrAccFV") +"\""):""%>/>
+				<input type="text" name="QBCrAccFV" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBCrAccFV")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field Value to create/update <%= crm%> Account/Contact/Object</span></td>
 			<td>
-				<input type="text" name="QBCrAccFVVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBCrAccFVVal") +"\""):""%>/>
+				<input type="text" name="QBCrAccFVVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBCrAccFVVal")) +"\""):""%>/>
 			</td>
 		</tr><%}%>
 		<tr>
@@ -1473,7 +1475,7 @@ if(ConfigContext.isHosted()){
 			<td><span class="table"><%= crm%> Account/Contact/Object to <%= fs%> Vendor custom
 			mapping 1</span></td>
 			<td>
-				<input type="text" name="AccVSFQBCMap" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "AccVSFQBCMap") +"\""):""%>/>
+				<input type="text" name="AccVSFQBCMap" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"AccVSFQBCMap")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
@@ -1481,7 +1483,7 @@ if(ConfigContext.isHosted()){
 			<td><span class="table"><%= crm%> Account/Contact/Object to <%= fs%> Vendor custom
 			mapping 2 (<a href='<%= "MoreCustomMappings.jsp" + "?CurrentProfile=" + currentProfileName + ((oldProfileName==null)?"":("&OldProfile=" + oldProfileName)) + "&ObjectType=AccV" + "&Solution=" + solutionType%>' target="_blank">more mappings</a>)</span></td>
 			<td>
-				<input type="text" name="AccVSFQBCMap1" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "AccVSFQBCMap1") +"\""):""%>/>
+				<input type="text" name="AccVSFQBCMap1" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"AccVSFQBCMap1")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%for (int imp=2; imp<10; imp++){
@@ -1504,21 +1506,21 @@ if(ConfigContext.isHosted()){
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Account/Contact Field to select Customer or Vendor</span></td>
 			<td>
-				<input type="text" name="CustVendSelFN" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CustVendSelFN") +"\""):""%>/>
+				<input type="text" name="CustVendSelFN" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CustVendSelFN")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Account/Contact Field Value(s) to select Customer</span></td>
 			<td>
-				<input type="text" name="CustVendSelFVC" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CustVendSelFVC") +"\""):""%>/>
+				<input type="text" name="CustVendSelFVC" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CustVendSelFVC")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr>
 			<td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Account/Contact Field Value(s) to select Vendor</span></td>
 			<td>
-				<input type="text" name="CustVendSelFVV" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CustVendSelFVV") +"\""):""%>/>
+				<input type="text" name="CustVendSelFVV" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CustVendSelFVV")) +"\""):""%>/>
 			</td>
 		</tr>
 	</table>

@@ -6054,3 +6054,307 @@ All 4 memory files updated with current state:
 9. Verified admin login no longer triggers compiler error
 10. Cleaned up stale Vite build assets, committed everything
 11. Updated all 4 memory files with comprehensive audit
+
+---
+
+## Session 17 — 2026-03-12 — Full orchestration: START.bat launches everything
+
+### Context
+START.bat was missing Cloudflare tunnel + Vercel proxy integration. User wanted single-click startup for the entire stack: IDE, Tomcat, database, sync bridge, Cloudflare tunnel, and Vercel deployment.
+
+### Changes
+1. **`scripts/quickstart_tunnel.ps1`** — Added PID file management (`logs/quick_tunnel.pid`), `-Stop` flag for clean shutdown, `-SkipPush` flag for local-only mode. Kills stale tunnel/PID on fresh start. Matches sync_bridge.ps1 pattern.
+2. **`START.bat`** — Added Cloudflare tunnel launch after sync bridge: `start "IW Cloudflare Tunnel" /min powershell ... quickstart_tunnel.ps1`. Updated status banner to show tunnel info.
+3. **`STOP.bat`** — Added tunnel shutdown FIRST (before sync bridge and Tomcat): calls `quickstart_tunnel.ps1 -Stop` which kills cloudflared + keepalive process via PID file.
+4. Pushed collapsible sidebar commit + tunnel URL update to GitHub/Vercel.
+
+### Startup sequence (complete)
+1. .env setup + DB config
+2. JRE + Tomcat verification
+3. Legacy runtime preparation
+4. Tomcat start + health-check wait
+5. Workspace profile sync + compile
+6. Browser → React portal
+7. Eclipse IDE launch
+8. Sync bridge (minimized)
+9. Cloudflare quick tunnel → vercel.json patch → git push → keepalive (minimized)
+
+### Files modified
+- `START.bat` — tunnel launch added
+- `STOP.bat` — tunnel stop added
+- `scripts/quickstart_tunnel.ps1` — PID file, -Stop, -SkipPush, stale cleanup
+
+### What I did (this response)
+1. Pushed collapsible sidebar commit + fresh tunnel URL to GitHub
+2. Added PID file lifecycle to quickstart_tunnel.ps1 (matching sync_bridge pattern)
+3. Integrated tunnel launch into START.bat after sync bridge
+4. Added tunnel shutdown to STOP.bat (first in teardown order)
+5. Added -SkipPush flag for local-only tunnel usage
+
+---
+
+## Session 18 — Full UI Audit & Bug Fixes (2026-03-12)
+
+### Context
+Comprehensive UI audit of all 41 React pages (24 operator + 7 associate + 10 master), all integration components, hooks, types, and utility files.
+
+### Bugs found and fixed
+
+**Bug 1 (CRITICAL): MfaSetupPage.tsx — broken navigation**
+- Line 571: `navigate("/change-password")` pointed to a route that doesn't exist
+- **Fixed**: Changed to `navigate("/profile/password")` (the correct route)
+
+**Bug 2 (CRITICAL): classic-routes.ts — mismatched route keys**
+- Lines 21-22: Keys `/registration` and `/company/registration` didn't match actual React routes `/register` and `/register/company`
+- The "Switch to Classic" banner would link to generic IWLogin.jsp fallback instead of correct Registration.jsp / CompanyRegistration.jsp
+- **Fixed**: Changed keys to `/register` and `/register/company`
+
+**Bug 3 (MODERATE): IDESyncPage.tsx — `<a href>` instead of `<Link>`**
+- Line 344: `<a href="/company/config/wizard">` caused full browser navigation, wiping React state (auth, query cache, sidebar preferences)
+- **Fixed**: Added `import { Link } from "react-router-dom"`, changed to `<Link to="/company/config/wizard">`
+
+### Other issues documented (not fixed — design-level)
+- UserManagementPage.tsx: "+Add User" / "Manage Roles" buttons have no onClick (dead buttons, need feature routing)
+- SupportQueuePage.tsx: Message thread placeholder (TODO at line 142)
+- useSync.ts: Query keys missing companyId (all other hooks include it)
+- 10 mutations across 4 hooks missing onError handlers (errors still propagate via caller try/catch)
+- 6 associate pages use mock data with TODO comments for backend wiring
+
+### Files modified
+- `frontends/iw-portal/src/pages/MfaSetupPage.tsx` — fixed navigate path
+- `frontends/iw-portal/src/lib/classic-routes.ts` — fixed route key mismatches
+- `frontends/iw-portal/src/pages/IDESyncPage.tsx` — added Link import, replaced `<a href>` with `<Link>`
+
+### Phase 2 — Functional Testing: Buttons, Save Chains, Navigation
+
+**Bug 4 (CRITICAL): AlertConfigPage.tsx — stale cache after toggle**
+- Line 46: invalidation key `["monitoring", "alerts"]` didn't match actual query key `["monitoring", companyId, "alerts"]`
+- TanStack Query prefix matching fails at position 1 — cache never cleared
+- **Fixed**: Changed to `["monitoring"]` to match all monitoring queries
+
+**Issue 5 (MODERATE): useFlows.ts:84 — raw fetch() bypasses token auth**
+- `useSaveFlowProperties()` uses raw `fetch()` to POST to legacy `/FlowProperiesServlet`
+- Works locally, breaks through Vercel proxy (no Bearer token, outside `/api/*`)
+- Not fixed: requires architectural decision
+
+**Refresh buttons**: 10/11 properly implemented (1 dead button on mock MasterDashboard page)
+**Save/submit chains**: All operator portal saves correct (profile, company, password, flows, schedule, wizard, notifications)
+**Navigation**: All back/forward patterns correct (replace:true on auth, loaded flag resets, nested route tabs)
+
+### Files modified (Phase 2)
+- `frontends/iw-portal/src/pages/AlertConfigPage.tsx` — fixed cache invalidation key
+
+### What I did (this response)
+1. Audited all 41 React pages, integration components, hooks, types, and utilities across the three-portal system
+2. Found and fixed 4 bugs: MfaSetupPage navigate path, classic-routes key mismatch, IDESyncPage `<a>` vs `<Link>`, AlertConfigPage stale cache
+3. Documented 1 moderate architectural issue (raw fetch bypassing token auth)
+4. Verified all refresh buttons, save chains, and back/forward navigation
+5. Zero TypeScript errors after all fixes
+
+---
+
+## 2026-03-12 (Session — Threat Mitigation Mapping)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Run /security-scanning:threat-mitigation-mapping skill against IW_Launcher
+
+### Actions taken
+1. Explored entire codebase for existing security controls: authentication, input validation, encryption, access control, logging, network security
+2. Identified 24 threats across STRIDE categories with risk ratings
+3. Cataloged 14 implemented controls, 5 partial, 12 missing
+4. Created comprehensive mitigation matrix mapping threats → controls → gaps
+5. Designed 4-phase implementation roadmap (Critical → High → Medium → Hardening)
+6. Added compliance mapping (OWASP Top 10, PCI-DSS 4.0, SOC 2)
+7. Included quick-win implementation code for secure cookies, security headers filter, and account lockout
+
+### Key findings
+- **Overall coverage: ~42%** (23.6/56.0 weighted score)
+- **5 Critical gaps**: No TLS, pervasive XSS in 37+ JSPs (100+ vulnerable lines), no CSRF, unsalted SHA-256, no account lockout
+- **Strong area**: SQL injection prevention — 651 PreparedStatement usages across 41 files
+- **Strong area**: Audit logging wired into all 7 API servlets
+- **Accepted risks**: Hardcoded admin password (needs vendor SDK source to change), legacy bytecode (253 classes)
+
+### Files created
+- `docs/security/THREAT_MITIGATION_MAPPING.md` — full threat-to-control mapping with roadmap
+
+### What I did (this response)
+1. Analyzed the full security posture of IW_Launcher across all layers (network, application, data, process)
+2. Created STRIDE-based threat inventory with 24 threats
+3. Mapped existing controls (14 implemented, 5 partial) against each threat
+4. Identified 12 missing controls with prioritized implementation roadmap
+5. Generated the complete threat mitigation mapping document at `docs/security/THREAT_MITIGATION_MAPPING.md`
+
+---
+
+## 2026-03-12 (Session: XSS/CSRF hardening of CompanyConfigurationDetail JSPs)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Fix XSS vulnerabilities and add CSRF protection in 5 CompanyConfigurationDetail JSP files.
+
+### Actions taken
+Applied 7 categories of security fixes to each of the 5 JSP files:
+1. **A. HtmlEncoder import** — added `<%@ page import="com.interweave.web.HtmlEncoder" %>` to all 5 files
+2. **B. URL-encode brandSol/brandSol1** — replaced raw `brand` and `solutions` concatenation with `java.net.URLEncoder.encode(value, "UTF-8")` (4 per file, 20 total)
+3. **C. Encode currentUser text output** — `<%= currentUser%>` to `<%= HtmlEncoder.encode(currentUser)%>` (1 per file, 5 total)
+4. **D. Encode HTML comment outputs** — `currentProfileName`, `oldProfileName`, `solutionType`, `crm`, `navigation` all wrapped with `HtmlEncoder.encode()` in debug comments (5 per file, 25 total)
+5. **E. Encode hidden form field values** — `brand`, `solutions`, `currentProfileName`, `oldProfileName`, `solutionType` wrapped with `HtmlEncoder.encode()` (5 per file, 25 total)
+6. **F. CSRF token** — added `<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>` after each `<form>` tag (1 per file, 5 total)
+7. **G. Encode ConfigContext.getConfigurationValue() in value attributes** — 603 total occurrences across all 5 files wrapped with `HtmlEncoder.encode()`
+
+### Files changed
+- `web_portal/tomcat/webapps/iw-business-daemon/CompanyConfigurationDetail.jsp` (42 getConfigurationValue encodings)
+- `web_portal/tomcat/webapps/iw-business-daemon/CompanyConfigurationDetailP.jsp` (116 getConfigurationValue encodings)
+- `web_portal/tomcat/webapps/iw-business-daemon/CompanyConfigurationDetailT.jsp` (145 getConfigurationValue encodings)
+- `web_portal/tomcat/webapps/iw-business-daemon/CompanyConfigurationDetailT1.jsp` (128 getConfigurationValue encodings)
+- `web_portal/tomcat/webapps/iw-business-daemon/CompanyConfigurationDetailT2.jsp` (172 getConfigurationValue encodings)
+
+### Verification performed
+- Confirmed 0 remaining unencoded `ConfigContext.getConfigurationValue` in value= attributes across all 5 files
+- Confirmed 0 unclosed `HtmlEncoder.encode()` calls (all parentheses properly nested)
+- Confirmed 603 correctly encoded value-attribute outputs
+- Confirmed 5 HtmlEncoder imports, 5 CSRF tokens, 5 currentUser encodings, 20 URLEncoder calls, 10 currentProfileName encodings
+
+### Follow-ups / known issues
+- None. All changes are encoding-only; no structural or logic changes were made.
+
+---
+
+## Session 19 — 2026-03-12 — IDE Navigator fix + Portal recovery + START.bat full orchestration
+
+### Context
+User reported: (1) workspace projects not appearing in IDE Navigator, (2) profiles not showing on portal.
+
+### Root causes found
+1. **IDE Navigator empty**: `iw_workspace_init_1.0.0` plugin had source code but NO compiled `.class` files. The `AutoImportStartup` IStartup extension — responsible for programmatically importing workspace projects via `ResourcesPlugin` API — never loaded. Confirmed by decompiling `NavigationView.class` that it uses `ResourcesPlugin.getWorkspace().getRoot().getProjects()` (standard Eclipse workspace registry, not filesystem scanning).
+2. **Portal 404/502**: `SecurityHeadersFilter` ClassNotFoundException during a Tomcat hot-reload caused `iw-business-daemon` context startup failure. All API endpoints returned 404.
+
+### Fixes
+1. Compiled `AutoImportStartup.java` against Eclipse 3.1 platform JARs → `plugins/iw_workspace_init_1.0.0/bin/com/interweave/workspace/AutoImportStartup.class`
+2. Cleared stale OSGI cache (`.bundledata.*`, `.state.*`, `.lazy.*`, `.mainData.*`) so Eclipse re-resolves the now-compiled plugin
+3. Updated `scripts/setup/ensure_workspace_projects.bat` to also clear OSGI cache when new projects need registering, and added plugin compilation warning
+4. Restarted Tomcat — all filters + servlets initialized successfully
+5. Verified: login works, token auth works, 24 flows + 46 queries returned for SF2NS profile
+
+### Also completed (START.bat orchestration)
+6. Added Cloudflare tunnel launch to START.bat (after sync bridge)
+7. Added tunnel shutdown to STOP.bat (first in teardown order)
+8. Added PID file + -Stop flag to quickstart_tunnel.ps1 (matching sync_bridge pattern)
+9. Pushed collapsible sidebar + tunnel URL to GitHub
+
+### Files modified
+- `plugins/iw_workspace_init_1.0.0/bin/com/interweave/workspace/AutoImportStartup.class` (new — compiled)
+- `scripts/setup/ensure_workspace_projects.bat` (rewritten — OSGI cache clearing)
+- `START.bat` (tunnel launch added)
+- `STOP.bat` (tunnel stop added)
+- `scripts/quickstart_tunnel.ps1` (PID file, -Stop, -SkipPush)
+
+### What I did (this response)
+1. Decompiled `NavigationView.class` — confirmed standard Eclipse ResourcesPlugin project discovery
+2. Found and fixed root cause: uncompiled AutoImportStartup plugin
+3. Compiled plugin against Eclipse 3.1 JARs, cleared OSGI cache
+4. Diagnosed portal failure: SecurityHeadersFilter hot-reload crash → restarted Tomcat
+5. Verified full API chain working (login → token → initialize → 70 flows/queries)
+6. Updated ensure_workspace_projects.bat with OSGI cache awareness
+
+---
+
+## 2026-03-12 (Session 18) — Comprehensive Security Hardening
+
+Agent/tool: Claude Opus 4.6 (Claude Code)
+User request: Tackle ALL threats from STRIDE threat mitigation mapping while preserving existing functionality.
+
+### Summary
+Implemented defense-in-depth security controls across all 5 STRIDE categories. Created 5 new security Java classes, hardened 26+ JSP files, fixed session management, added rate limiting, CSRF protection, and information disclosure prevention.
+
+### Phase 1 — Infrastructure (Previous Session, Compiled & Deployed)
+- **SecurityHeadersFilter** (`WEB-INF/src/com/interweave/web/SecurityHeadersFilter.java`) — X-Frame-Options: SAMEORIGIN (not DENY — IMConfig.jsp uses FRAMESET), X-Content-Type-Options: nosniff, X-XSS-Protection, Referrer-Policy, Permissions-Policy
+- **CsrfFilter** (`WEB-INF/src/com/interweave/web/CsrfFilter.java`) — per-session token via SecureRandom + Base64, validates on POST/PUT/DELETE/PATCH, excludes /api/* (Bearer token auth), accepts `_csrf` param or `X-CSRF-Token` header
+- **RateLimitFilter** (`WEB-INF/src/com/interweave/web/RateLimitFilter.java`) — token-bucket per IP on /api/*, 100 req/60s, returns 429 + Retry-After header
+- **LoginRateLimiter** (`WEB-INF/src/com/interweave/web/LoginRateLimiter.java`) — 5 failed attempts → 15 min lockout, ConcurrentHashMap-based, used by both login servlets
+- **HtmlEncoder** (`WEB-INF/src/com/interweave/web/HtmlEncoder.java`) — encodes &<>"' for XSS prevention, null-safe
+- **web.xml** — filter chain: SecurityHeaders → ErrorHandling → CSRF → RateLimit → ApiTokenAuth; HttpOnly cookies; 30m session timeout
+
+### Phase 2 — XSS Encoding (26 JSP Files)
+All JSPs with user-controlled output now use `HtmlEncoder.encode()`:
+- **Login/Registration**: IWLogin.jsp, Registration.jsp, CompanyRegistration.jsp
+- **Profile/Password**: EditProfile.jsp, EditCompanyProfile.jsp, ChangePassword.jsp, ChangeCompanyPassword.jsp
+- **Configuration**: CompanyConfiguration.jsp, CompanyConfigurationDetail.jsp, CompanyConfigurationDetailP.jsp, CompanyConfigurationDetailT.jsp, CompanyConfigurationDetailT1.jsp, CompanyConfigurationDetailT2.jsp, CompanyCredentials.jsp
+- **Admin/Engine**: BDConfigurator.jsp, BDConfiguratorA.jsp, BDConfiguratorB.jsp, FlowProperties.jsp
+- **Monitoring**: monitoring/Dashboard.jsp, monitoring/AlertConfig.jsp, monitoring/TransactionDetail.jsp
+- **Other**: ErrorMessage.jsp, Logging.jsp, ViewLog.jsp, BDMinitor.jsp, AssignLead.jsp, MoreCustomMappings.jsp
+- **Help**: help/help-popup.jsp
+
+### Phase 3 — CSRF Tokens (19 JSP Forms)
+Added `<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>` to all forms that POST data.
+
+### Phase 4 — URL Parameter Encoding
+All `brandSol`/`brandSol1` URL construction patterns across JSPs now use `java.net.URLEncoder.encode()` to prevent query parameter injection. Fixed in: CompanyConfiguration.jsp, ChangeCompanyPassword.jsp, FlowProperties.jsp, BDConfiguratorA.jsp, BDConfiguratorB.jsp, IMConfig.jsp, IMConfigA.jsp, IMConfigB.jsp, AlertConfig.jsp, TransactionDetail.jsp, BDMinitor.jsp.
+
+### Phase 5 — Session Fixation Prevention
+- **LocalLoginServlet.java** — invalidates old session before creating new one on successful auth
+- **ApiLoginServlet.java** — same session fixation fix
+- CsrfFilter auto-generates new token for new sessions (no change needed)
+
+### Phase 6 — Information Disclosure Prevention
+- **db_test.jsp** — added admin-only authentication check (was previously accessible without any auth)
+- **server.xml** — added `server="InterWeave"` to Connector to suppress Tomcat version in Server header
+- **web.xml** — added custom error pages (400, 403, 404, 500, Throwable) → error.html to prevent stack trace leakage
+- **error.html** — created minimal error page with no server info
+
+### Phase 7 — Open Redirect Prevention
+- **Logging.jsp** — validates redirect URL: blocks `://`, `//`, `javascript:` patterns
+
+### Files Created
+- `WEB-INF/src/com/interweave/web/SecurityHeadersFilter.java`
+- `WEB-INF/src/com/interweave/web/CsrfFilter.java`
+- `WEB-INF/src/com/interweave/web/RateLimitFilter.java`
+- `WEB-INF/src/com/interweave/web/LoginRateLimiter.java`
+- `WEB-INF/src/com/interweave/web/HtmlEncoder.java`
+- `error.html`
+
+### Files Modified
+- 26 JSP files (XSS + CSRF — listed above)
+- `WEB-INF/web.xml` (filters, cookie config, error pages)
+- `LocalLoginServlet.java` (lockout + session fixation)
+- `ApiLoginServlet.java` (lockout + session fixation)
+- `web_portal/tomcat/conf/server.xml` (Server header suppression)
+
+### Commands Run
+- `javac` — compiled all 5 security filter classes + both login servlets (Java 8 target)
+- All compiled to `WEB-INF/classes/`
+
+### Verification
+- All compilations successful (warnings only, no errors)
+- HtmlEncoder confirmed present in 26 JSPs
+- CSRF tokens confirmed in 19 JSPs
+- Session fixation fix in both login paths
+- Directory listing already disabled
+- X-Powered-By already disabled
+
+### Security Controls Summary (STRIDE Coverage)
+| Threat Category | Controls Implemented |
+|---|---|
+| **Spoofing** | Account lockout (5 attempts/15 min), session fixation prevention, session timeout (30 min) |
+| **Tampering** | CSRF tokens on all forms, input validation via URL encoding |
+| **Repudiation** | AuditService (previous session) wired to 7 API servlets |
+| **Information Disclosure** | XSS encoding (26 JSPs), custom error pages, Server header suppression, db_test.jsp auth gate, HttpOnly cookies |
+| **Denial of Service** | API rate limiting (100 req/60s per IP) |
+| **Elevation of Privilege** | Admin-only checks on diagnostic pages |
+
+### Follow-ups / Known Issues
+- **bcrypt migration**: SHA-256 unsalted hashing still in use. Requires adding jBCrypt JAR and migration strategy
+- **RBAC middleware**: Per-role access filter not yet implemented (admin pages rely on individual checks)
+- **Credential encryption at rest**: DB connection passwords in config files are plaintext
+- **Vendor JAR audit**: 133 JARs in iwtransformationserver not scanned for CVEs
+- **TLS**: Secure cookie flag deferred until HTTPS is enabled
+- **Content Security Policy**: Not added (would need audit of all inline scripts/styles across JSPs)
+
+### What I did (this response)
+1. Fixed XSS in monitoring/TransactionDetail.jsp (critical: JS config block injection)
+2. Fixed XSS in help/help-popup.jsp (title, description, error codes, resolution steps, examples, topics, fullDocUrl in JS)
+3. Fixed XSS in BDConfiguratorA.jsp (URL encoding, hidden fields, ConfigContext values, CSRF on 7 forms)
+4. Fixed XSS in BDConfiguratorB.jsp (URL encoding, currentUser display, hidden fields, CSRF)
+5. Fixed session fixation in both LocalLoginServlet and ApiLoginServlet (invalidate + recreate)
+6. Added admin-only auth gate to db_test.jsp (was previously accessible without auth)
+7. Added Server header suppression in server.xml
+8. Added custom error pages in web.xml + created error.html
+9. Compiled both login servlets with session fixation fix
+10. Verified: 26 JSPs with HtmlEncoder, 19 with CSRF tokens, background agents completed CompanyCredentials.jsp + 5 Detail JSPs

@@ -2,6 +2,7 @@
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <% String refreshValue = request.getParameter("RefreshValue");%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -22,22 +23,22 @@ env2Con="COM";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
-brandSol += "&Env2Con=" + env2Con;
+brandSol += "&Env2Con=" + java.net.URLEncoder.encode(env2Con, "UTF-8");
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
-} 
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
+}
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 brandSol1 += (((brand != null && brand.length() > 0) || (solutions != null && solutions
 				.length() > 0)) ? "&" : "?")
-				+ "Env2Con=" + env2Con;
+				+ "Env2Con=" + java.net.URLEncoder.encode(env2Con, "UTF-8");
 String currentProfileName = request.getParameter("CurrentProfile");
 String currentUser = "";
 if(currentProfileName!=null){
@@ -45,8 +46,8 @@ int clps = currentProfileName.indexOf(":");
 currentUser = currentProfileName.substring(clps + 1);
 long rr = ConfigContext.getProfileDescriptors().get(currentProfileName).getProfileRefresh();
 if(rr > 0L){ 
-String rv = "10;url=BDConfigurator.jsp?RefreshValue=" + rr + "&CurrentProfile=" + currentProfileName + brandSol;%>
-<meta http-equiv="Refresh" content="<%= rv%>"><%}}%>
+String rv = "10;url=BDConfigurator.jsp?RefreshValue=" + rr + "&CurrentProfile=" + java.net.URLEncoder.encode(currentProfileName, "UTF-8") + brandSol;%>
+<meta http-equiv="Refresh" content="<%= HtmlEncoder.encode(rv)%>"><%}}%>
 <title>IM Configurator Page</title>
 <style>
 <!--
@@ -94,7 +95,7 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 		<td align="left"><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">InterWeave
 		Integration Manager</span><br/>
 		</td>
-					<td align="right" class="labels">User: <%= currentUser%></td>
+					<td align="right" class="labels">User: <%= HtmlEncoder.encode(currentUser)%></td>
 					<td align="right"><a href='<%= "monitoring/Dashboard.jsp" + brandSol1%>' target="_top" class="labels">Monitoring Dashboard</a></td>
 					<td align="right"><a href='<%= "LogoutServlet?ProfileId=" + currentProfileName + brandSol%>' target="_top" class="labels">Logout</a></td>
 					<td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
@@ -103,9 +104,10 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 
 </table>
 <form action="ProductDemoServlet" method="POST" target="_top">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
-<input type="hidden" name="Env2Con" value="<%= env2Con%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
+<input type="hidden" name="Env2Con" value="<%= HtmlEncoder.encode(env2Con)%>"/>
 
 <p><img src="images/dots.gif" align="middle" width="100%"/></p>
 	<table border="0" cellpadding="0" class="labels" cellspacing="0" width="100%">
@@ -143,7 +145,7 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 		<%
 		if(ConfigContext.isHosted()){
 		%>
-		<input type="hidden" name="CurrentProfile" value="<%= currentProfileName %>"/>
+		<input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName) %>"/>
 		<%}
 		for(int i = 0; i< ConfigContext.getTransactionList().size(); i++){
 		TransactionContext tc = (TransactionContext)(ConfigContext.getTransactionList().get(i)); 
@@ -189,13 +191,13 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 		tt.setRestoredRunning(false);
 		%>
 		<tr bgcolor=<%=running?(executing?"deeppink":"aqua"):(executing?"yellow":"white")%>>
-			<td><span class="tableitalic"><a href='<%= "FlowProperties.jsp?CurrentFlowId=" + tid + "&CurrentProfile=" + profileName + "&IsAdmin=false&IsFlow=1" + brandSol%>' target="data"><%= tid%></a></span></td>
+			<td><span class="tableitalic"><a href='<%= "FlowProperties.jsp?CurrentFlowId=" + java.net.URLEncoder.encode(tid, "UTF-8") + "&CurrentProfile=" + java.net.URLEncoder.encode(profileName, "UTF-8") + "&IsAdmin=false&IsFlow=1" + brandSol%>' target="data"><%= HtmlEncoder.encode(tid)%></a></span></td>
 			<td>
 				<span class="table">
-				<input type="checkbox" name='<%= "TS:" + i + "=" + profileName%>' <%= restoreRunning?"checked":""%> value="<%= ctm%>"/><%= command%>
+				<input type="checkbox" name='<%= "TS:" + i + "=" + profileName%>' <%= restoreRunning?"checked":""%> value="<%= ctm%>"/><%= HtmlEncoder.encode(command)%>
 				</span>
 			</td>
-			<td><span class="table"><%= state%></span></td>
+			<td><span class="table"><%= HtmlEncoder.encode(state)%></span></td>
 			<td>
 				<span class="table">
 				<input type="radio" name='<%= "MS:" + i + "=" + profileName%>' value="1" <%= (trInt>0L || trShift<0L)?"checked":""%> <%= (runningEx || (trInt==0L && trShift>=0L))?"disabled":""%> />
@@ -216,14 +218,14 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 			<td><span class="table">
 				<input type="text" name='<%= "TC:" + i + "=" + profileName%>' maxlength="11" value='<%= trCnt%>' class="table" <%= runningEx?"disabled":""%> size="11"/>
 				</span></td>
-			<td><span class="table"><a href='<%= "Logging.jsp?TCURL=" + tc.getPrimaryTSURL4Log(tt.getMode(), tt.getModec(), tt.getPrimaryDedicatedURL(), tt.getPrimaryDedicatedURLc()) + "&__LOG_QUERY_ID__=" + tid + "&CurrentProfile=" + profileName + brandSol%>' target="_blank"><%= sfr%></a></span></td>
+			<td><span class="table"><a href='<%= "Logging.jsp?TCURL=" + java.net.URLEncoder.encode(tc.getPrimaryTSURL4Log(tt.getMode(), tt.getModec(), tt.getPrimaryDedicatedURL(), tt.getPrimaryDedicatedURLc()), "UTF-8") + "&__LOG_QUERY_ID__=" + java.net.URLEncoder.encode(tid, "UTF-8") + "&CurrentProfile=" + java.net.URLEncoder.encode(profileName, "UTF-8") + brandSol%>' target="_blank"><%= HtmlEncoder.encode(sfr)%></a></span></td>
 		</tr>
 		<% }}}%>
 		<tr class="tablelabels"><td colspan="11">Utility Transaction Flows</td></tr>
 		<%
 		if(ConfigContext.isHosted()){
 		%>
-		<input type="hidden" name="CurrentProfile" value="<%= currentProfileName %>"/>
+		<input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName) %>"/>
 		<%}
 		for(int i = 0; i< ConfigContext.getTransactionList().size(); i++){
 		TransactionContext tc = (TransactionContext)(ConfigContext.getTransactionList().get(i)); 

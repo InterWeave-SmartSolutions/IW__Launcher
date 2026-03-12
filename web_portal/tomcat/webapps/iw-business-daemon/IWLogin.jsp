@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
+    pageEncoding="ISO-8859-1"
+    import="com.interweave.web.HtmlEncoder"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
@@ -41,17 +42,17 @@ if(solutions==null){
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-    brandSol += "&PortalBrand=" + brand;
+    brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-    brandSol += "&PortalSolutions=" + solutions;
+    brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-    brandSol1 += "?PortalBrand=" + brand;
+    brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-    brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+    brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 %>
 
@@ -90,8 +91,9 @@ String getErrorHelp(String code) {
 String errorHelp = errorCode != null ? getErrorHelp(errorCode) : null;
 %>
 <form action="LoginServlet" method="post">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <center>
   <p>&nbsp;</p>
   <table width="535" border="0" cellspacing="0" cellpadding="10">
@@ -103,10 +105,10 @@ String errorHelp = errorCode != null ? getErrorHelp(errorCode) : null;
     <td>
       <div class="error-msg">
         <% if(errorCode != null && !errorCode.isEmpty()) { %>
-          <span class="error-code">[<%= errorCode %>]</span>
+          <span class="error-code">[<%= HtmlEncoder.encode(errorCode) %>]</span>
         <% } %>
         <div class="error-msg-title">&#9888; Login Error</div>
-        <div class="error-msg-text"><%= errorMsg %></div>
+        <div class="error-msg-text"><%= HtmlEncoder.encode(errorMsg) %></div>
         <% if(errorHelp != null) { %>
         <div class="error-msg-help">
           <strong>What to do next:</strong><br>
@@ -119,7 +121,7 @@ String errorHelp = errorCode != null ? getErrorHelp(errorCode) : null;
   <% } %>
   <% if(successMsg != null && !successMsg.isEmpty()) { %>
   <tr>
-    <td><div class="success-msg"><%= successMsg %></div></td>
+    <td><div class="success-msg"><%= HtmlEncoder.encode(successMsg) %></div></td>
   </tr>
   <% } %>
   <tr>
@@ -143,7 +145,7 @@ String errorHelp = errorCode != null ? getErrorHelp(errorCode) : null;
     <td width="533" height="250" background="images/bg.jpg" style="border-left:1px solid #B2B2B2; border-right:1px solid #B2B2B2"><table width="100%"  border="0" cellspacing="0" cellpadding="24">
       <tr>
         <td class="verdana10" align="left"><p>Username<br>
-              <input name="Email" type="text" maxlength="255" class="input-box" value='<%= email%>'/>
+              <input name="Email" type="text" maxlength="255" class="input-box" value='<%= HtmlEncoder.encode(email)%>'/>
               <br>
               <br>
             Password<br>

@@ -1,5 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
+<%@ page language="java" contentType="text/html; charset=iso-8859-1"
+    import="com.interweave.web.HtmlEncoder" %>
 <%
 String brand = request.getParameter("PortalBrand");
 if(brand==null){
@@ -11,10 +12,10 @@ solutions="";
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 %>
 <html>
@@ -44,8 +45,9 @@ if (solutions != null && solutions.length() > 0) {
 	</tr>
 </table>
 <form action="ChangeCompanyPasswordServlet" method="post">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 
 <table border="0" cellpadding="5" width="100%" class="labels">
 	<tr>

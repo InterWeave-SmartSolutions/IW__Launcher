@@ -2,6 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%
 String brand = request.getParameter("PortalBrand");
 if(brand==null){
@@ -13,17 +14,17 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 } 
 boolean li = ConfigContext.isUserLoggedIn();
 ConfigContext.setUserLoggedIn(false);
@@ -72,7 +73,7 @@ email = oldEmail;
 <body>
 <table border="0" cellpadding="5" width="100%">
 	<tr>
-		<td colspan="4"><img src="<%= "images" + ((brand==null || brand.equals(""))?"":("/" + brand)) + "/IT Banner.png"%>" alt="Title" align="left" width="100%" height="94"/></td>
+		<td colspan="4"><img src="<%= HtmlEncoder.encode("images" + ((brand==null || brand.equals(""))?"":("/" + brand)) + "/IT Banner.png")%>" alt="Title" align="left" width="100%" height="94"/></td>
 	</tr>
 	<tr>
 		<td><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">Edit
@@ -83,14 +84,15 @@ email = oldEmail;
 	</tr>
 </table>
 <form action="EditProfileServlet" method="post">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 
 <table border="0" cellpadding="5" width="100%" class="labels">
 	<tr>
 		<td width="25%"><span class="table">E-mail </span></td>
 		<td>
-			<span class="table"><input type="text" name="Email" maxlength="255" class="table" value='<%= oldEmail%>' <%= li?"disabled":""%>/></span>
+			<span class="table"><input type="text" name="Email" maxlength="255" class="table" value='<%= HtmlEncoder.encode(oldEmail)%>' <%= li?"disabled":""%>/></span>
 		</td>
 	</tr>
 	<tr>
@@ -106,35 +108,36 @@ email = oldEmail;
 	</p>
 	</form>
 <form action="SaveProfileServlet" method="post">
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
 <table border="0" cellpadding="5" width="100%" class="labels">
 	<tr align="left" valign="middle">
 		<td width="25%"><span class="table">First Name</span></td>
 		<td>
-			<span class="table"><input type="text" name="FirstName" maxlength="45" class="table" value='<%= firstName%>' <%= (!li)?"disabled":""%>/>
+			<span class="table"><input type="text" name="FirstName" maxlength="45" class="table" value='<%= HtmlEncoder.encode(firstName)%>' <%= (!li)?"disabled":""%>/>
 		</span></td>
 	</tr>
 	<tr>
 		<td><span class="table">Last Name</span></td>
 		<td>
-			<span class="table"><input type="text" name="LastName" maxlength="45" class="table" value='<%= lastName%>' <%= (!li)?"disabled":""%>/>
+			<span class="table"><input type="text" name="LastName" maxlength="45" class="table" value='<%= HtmlEncoder.encode(lastName)%>' <%= (!li)?"disabled":""%>/>
 		</span></td>
 	</tr>
 	<tr>
 		<td><span class="table">Company/Organization</span></td>
 		<td>
-			<span class="table"><input type="text" name="CompanyOrganization" maxlength="255" class="table" value='<%= company%>' <%= (!li)?"disabled":""%>/>
+			<span class="table"><input type="text" name="CompanyOrganization" maxlength="255" class="table" value='<%= HtmlEncoder.encode(company)%>' <%= (!li)?"disabled":""%>/>
 		</span></td>
 	</tr>
 	<tr>
 		<td><span class="table">Title</span></td>
 		<td>
-			<span class="table"><input type="text" name="Title" maxlength="255" class="table" value='<%= title%>' <%= (!li)?"disabled":""%>/>
+			<span class="table"><input type="text" name="Title" maxlength="255" class="table" value='<%= HtmlEncoder.encode(title)%>' <%= (!li)?"disabled":""%>/>
 		</span></td>
 	</tr>
 	<tr>
 		<td><span class="table">E-mail </span></td>
 		<td>
-			<span class="table"><input type="text" name="Email" maxlength="255" class="table" value='<%= email%>' <%= (!li)?"disabled":""%>/></span>
+			<span class="table"><input type="text" name="Email" maxlength="255" class="table" value='<%= HtmlEncoder.encode(email)%>' <%= (!li)?"disabled":""%>/></span>
 		</td>
 	</tr>
 </table>

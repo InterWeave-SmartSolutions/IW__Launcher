@@ -2,6 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 
 <html>
 <head>
@@ -47,7 +48,7 @@ String[] log = ConfigContext.getLogFile(profileId);
 <%for(int i=0; i<log.length; i++){ 
 boolean err = (log[i].indexOf("Error")>=0) || (log[i].indexOf("error")>=0) || (log[i].indexOf("ERROR")>=0) || (log[i].indexOf("Exception")>=0) || (log[i].indexOf("exception")>=0) || (log[i].indexOf("EXCEPTION")>=0) || (log[i].indexOf("Failure")>=0) || (log[i].indexOf("failure")>=0) || (log[i].indexOf("FAILURE")>=0);%>
 		<tr color=<%= err?"white":"black"%> bgcolor=<%= err?"red":"white"%>>
-			<td><%= log[i]%></td>
+			<td><%= HtmlEncoder.encode(log[i])%></td>
 		</tr>
 <%}%>
 	</table>

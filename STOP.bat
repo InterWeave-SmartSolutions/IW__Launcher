@@ -28,6 +28,9 @@ if not exist "%CATALINA_HOME%\bin\shutdown.bat" (
     exit /b 1
 )
 
+echo  Stopping Cloudflare tunnel...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\quickstart_tunnel.ps1" -Stop 2>nul
+
 echo  Stopping sync bridge...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\sync_bridge.ps1" -Stop 2>nul
 

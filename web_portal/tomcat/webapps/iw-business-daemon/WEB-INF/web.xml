@@ -21,6 +21,16 @@
 		</description>
 	</listener>
 
+	<!-- Security Headers Filter - adds X-Frame-Options, X-Content-Type-Options, etc. -->
+	<filter>
+		<filter-name>SecurityHeadersFilter</filter-name>
+		<filter-class>com.interweave.web.SecurityHeadersFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>SecurityHeadersFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
 	<!-- Error Handling Filter - catches uncaught exceptions -->
 	<filter>
 		<filter-name>ErrorHandlingFilter</filter-name>
@@ -33,6 +43,34 @@
 	<filter-mapping>
 		<filter-name>ErrorHandlingFilter</filter-name>
 		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- CSRF Filter - protects JSP form submissions (excludes /api/* which uses Bearer tokens) -->
+	<filter>
+		<filter-name>CsrfFilter</filter-name>
+		<filter-class>com.interweave.web.CsrfFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>CsrfFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Rate Limit Filter - prevents API abuse (100 requests per minute per IP) -->
+	<filter>
+		<filter-name>RateLimitFilter</filter-name>
+		<filter-class>com.interweave.web.RateLimitFilter</filter-class>
+		<init-param>
+			<param-name>maxRequests</param-name>
+			<param-value>100</param-value>
+		</init-param>
+		<init-param>
+			<param-name>windowMs</param-name>
+			<param-value>60000</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>RateLimitFilter</filter-name>
+		<url-pattern>/api/*</url-pattern>
 	</filter-mapping>
 
 	<!-- Token Auth Filter - bridges Bearer tokens to Tomcat sessions for proxy deployments -->
@@ -662,6 +700,33 @@
 
 	<session-config>
 		<session-timeout>30</session-timeout>
+		<cookie-config>
+			<http-only>true</http-only>
+			<!-- NOTE: Do NOT set <secure>true</secure> until TLS is enabled.
+			     Setting Secure on cookies over plain HTTP would prevent login entirely. -->
+		</cookie-config>
 	</session-config>
-	
+
+	<!-- Custom error pages to prevent information leakage via stack traces -->
+	<error-page>
+		<error-code>400</error-code>
+		<location>/error.html</location>
+	</error-page>
+	<error-page>
+		<error-code>403</error-code>
+		<location>/error.html</location>
+	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/error.html</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/error.html</location>
+	</error-page>
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type>
+		<location>/error.html</location>
+	</error-page>
+
 </web-app>

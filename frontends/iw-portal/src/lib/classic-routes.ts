@@ -18,8 +18,8 @@ export const CLASSIC_ROUTES: Record<string, string> = {
   "/profile/security": "/iw-business-daemon/EditProfile.jsp",
   "/forgot-password": "/iw-business-daemon/ChangePassword.jsp",
   "/mfa/verify": "/iw-business-daemon/IWLogin.jsp",
-  "/registration": "/iw-business-daemon/Registration.jsp",
-  "/company/registration": "/iw-business-daemon/CompanyRegistration.jsp",
+  "/register": "/iw-business-daemon/Registration.jsp",
+  "/register/company": "/iw-business-daemon/CompanyRegistration.jsp",
 };
 
 export function getClassicUrl(reactPath: string): string {

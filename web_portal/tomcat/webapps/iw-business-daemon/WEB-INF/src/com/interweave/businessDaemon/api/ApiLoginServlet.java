@@ -26,6 +26,7 @@ import com.interweave.businessDaemon.QueryContext;
 import com.interweave.businessDaemon.TransactionContext;
 import com.interweave.businessDaemon.TransactionThread;
 import com.interweave.businessDaemon.config.WorkspaceProfileCompiler;
+import com.interweave.web.LoginRateLimiter;
 
 /**
  * ApiLoginServlet - JSON API endpoint for user authentication.
@@ -86,6 +87,18 @@ public class ApiLoginServlet extends HttpServlet {
 
         email = email.trim().toLowerCase();
 
+        // Check account lockout before hitting the database
+        if (LoginRateLimiter.isLockedOut(email)) {
+            long remaining = LoginRateLimiter.getRemainingLockoutSeconds(email);
+            AuditService.record(dataSource, null, null, email,
+                "login_locked", "Account temporarily locked due to too many failed attempts",
+                "user", null, request, null);
+            sendJson(response, 429,
+                "{\"success\":false,\"error\":\"Too many failed attempts. Please try again in " +
+                remaining + " seconds.\"}");
+            return;
+        }
+
         try (Connection conn = dataSource.getConnection()) {
             // Same authentication query as LocalLoginServlet
             String sql = "SELECT u.id, u.email, u.password, u.first_name, u.last_name, " +
@@ -99,6 +112,7 @@ public class ApiLoginServlet extends HttpServlet {
 
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (!rs.next()) {
+                        LoginRateLimiter.recordFailure(email);
                         AuditService.record(dataSource, null, null, email,
                             "login_failed", "Invalid email or password",
                             "user", null, request, null);
@@ -113,6 +127,7 @@ public class ApiLoginServlet extends HttpServlet {
 
                     // Verify password (SHA-256 or plain text for testing)
                     if (!verifyPassword(password, storedHash)) {
+                        LoginRateLimiter.recordFailure(email);
                         AuditService.record(dataSource, rs.getInt("id"), rs.getInt("company_id"), email,
                             "login_failed", "Invalid password",
                             "user", String.valueOf(rs.getInt("id")), request, null);
@@ -133,7 +148,10 @@ public class ApiLoginServlet extends HttpServlet {
                         return;
                     }
 
-                    // All checks passed - build user info
+                    // All checks passed - clear lockout counter
+                    LoginRateLimiter.clearFailures(email);
+
+                    // Build user info
                     int userId = rs.getInt("id");
                     String userEmail = rs.getString("email");
                     String firstName = rs.getString("first_name");
@@ -145,6 +163,11 @@ public class ApiLoginServlet extends HttpServlet {
                     String solutionType = rs.getString("solution_type");
                     String userName = firstName + " " + lastName;
 
+                    // Prevent session fixation: invalidate old session and create new one
+                    HttpSession oldSession = request.getSession(false);
+                    if (oldSession != null) {
+                        oldSession.invalidate();
+                    }
                     // Set session attributes (identical to LocalLoginServlet)
                     HttpSession session = request.getSession(true);
                     session.setAttribute("userId", userId);

@@ -2,6 +2,7 @@
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%
 String brand = request.getParameter("PortalBrand");
 if(brand==null){
@@ -56,7 +57,7 @@ email = currentProfileName.substring(pzc).trim();
 long rfInt = ConfigContext.getRefreshInterval();
 %>
 <applet height="0" width="0" code="TransState2.class" name="AP20">
-	<param name="ProfileName" value='<%= ((currentProfileName==null)?"__default_profile__":currentProfileName)%>'/>
+	<param name="ProfileName" value='<%= ((currentProfileName==null)?"__default_profile__":HtmlEncoder.encode(currentProfileName))%>'/>
 	<param name="RefreshInterval" value='<%= rfInt%>'/>
 </applet>
 <p><b><font size="4"><span style="color: black; font-family: Verdana; font-size: 14pt; font-style: normal; font-weight: bold">Running Transaction Flows</span></font></b></p>
@@ -115,7 +116,7 @@ long rfInt = ConfigContext.getRefreshInterval();
 					<param name="RefreshInterval" value='<%= rfInt%>'/>
 				</applet><%}%>
 		<tr>
-			<td><span class="table"><a href='<%= "FlowProperties.jsp?FromMonitor=1&CurrentFlowId=" + tid + "&CurrentProfile=" + profileName + "&IsFlow=1"%>' target="_blank"><%= tid%></a></span></td>
+			<td><span class="table"><a href='<%= "FlowProperties.jsp?FromMonitor=1&CurrentFlowId=" + java.net.URLEncoder.encode(tid, "UTF-8") + "&CurrentProfile=" + java.net.URLEncoder.encode(profileName, "UTF-8") + "&IsFlow=1"%>' target="_blank"><%= HtmlEncoder.encode(tid)%></a></span></td>
 			<td><span class="table"><%if(stopped){%><%= state%><%}else{%> 
 				<applet height="20" width="70" code="TransState1.class" class="table" name='<%= "AP10:" + i + "=" + profileName%>'>
 <!--					<param name="Index" value='<%= "" + i%>'/>
@@ -159,7 +160,7 @@ long rfInt = ConfigContext.getRefreshInterval();
 				</applet><%}%></span>
 			</td>
 			<%if(ConfigContext.isHosted()&&(currentProfileName==null)){%>
-			<td><span class="table"><%= profileName%></span></td>
+			<td><span class="table"><%= HtmlEncoder.encode(profileName)%></span></td>
 			<% }%>
 		</tr>
 		<% }}%>

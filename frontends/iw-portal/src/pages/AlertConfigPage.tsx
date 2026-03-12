@@ -43,7 +43,9 @@ export function AlertConfigPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["monitoring", "alerts"] });
+      // Key must match useAlertRules() prefix: ["monitoring", companyId, "alerts"]
+      // Using just ["monitoring"] invalidates all monitoring queries (dashboard, transactions, etc.)
+      queryClient.invalidateQueries({ queryKey: ["monitoring"] });
     },
   });
 

@@ -2,6 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%
 String brand = request.getParameter("PortalBrand");
 if(brand==null){
@@ -13,17 +14,17 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 } 
 boolean li = ConfigContext.isUserLoggedIn();
 ConfigContext.setUserLoggedIn(false);
@@ -76,7 +77,7 @@ email = oldEmail;
 <body>
 <table border="0" cellpadding="5" width="100%">
 	<tr>
-		<td colspan="4"><img src="<%= "images" + ((brand==null || brand.equals(""))?"":("/" + brand)) + "/IT Banner.png"%>" alt="Title" align="left" width="100%" height="94"/></td>
+		<td colspan="4"><img src="<%= HtmlEncoder.encode("images" + ((brand==null || brand.equals(""))?"":("/" + brand)) + "/IT Banner.png")%>" alt="Title" align="left" width="100%" height="94"/></td>
 	</tr>
 	<tr>
 		<td><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">Edit
@@ -87,14 +88,15 @@ email = oldEmail;
 	</tr>
 </table>
 <form action="EditCompanyProfileServlet" method="post">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 
 <table border="0" cellpadding="5" width="100%" class="labels">
 	<tr>
 		<td width="25%"><span class="table">Company</span></td>
 		<td>
-			<span class="table"><input type="text" name="Company" maxlength="255" class="table" value='<%= oldCompany%>' <%= li?"disabled":""%>/></span>
+			<span class="table"><input type="text" name="Company" maxlength="255" class="table" value='<%= HtmlEncoder.encode(oldCompany)%>' <%= li?"disabled":""%>/></span>
 		</td>
 	</tr>
 	<tr>

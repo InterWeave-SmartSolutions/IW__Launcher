@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="javax.servlet.http.HttpSession"%>
+<%@ page import="javax.servlet.http.HttpSession, com.interweave.web.HtmlEncoder"%>
 <%
     // Session authentication check
     HttpSession userSession = request.getSession(false);
@@ -32,6 +32,9 @@
     if (brand == null) brand = "";
     String solutions = request.getParameter("PortalSolutions");
     if (solutions == null) solutions = "";
+    // URL-encode for safe use in href attributes
+    String brandEnc = java.net.URLEncoder.encode(brand, "UTF-8");
+    String solEnc = java.net.URLEncoder.encode(solutions, "UTF-8");
 
     // Prevent caching
     response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -70,20 +73,20 @@
                 <p class="header-subtitle">Real-time integration status and performance metrics</p>
             </div>
             <div class="header-user-info">
-                <span class="user-name"><strong>User:</strong> <%= userName %></span>
+                <span class="user-name"><strong>User:</strong> <%= HtmlEncoder.encode(userName) %></span>
                 <% if (companyName != null && !companyName.equals("Unknown Company")) { %>
-                <span class="company-name"><strong>Company:</strong> <%= companyName %></span>
+                <span class="company-name"><strong>Company:</strong> <%= HtmlEncoder.encode(companyName) %></span>
                 <% } %>
                 <% if (isAdmin) { %>
                 <span class="admin-badge">Admin</span>
                 <% } %>
             </div>
             <div class="header-actions">
-                <a href="../BDConfigurator.jsp?PortalBrand=<%= brand %>&PortalSolutions=<%= solutions %>"
+                <a href="../BDConfigurator.jsp?PortalBrand=<%= brandEnc %>&PortalSolutions=<%= solEnc %>"
                    class="btn btn-secondary">
                     ← Back to Portal
                 </a>
-                <a href="../LogoutServlet?PortalBrand=<%= brand %>"
+                <a href="../LogoutServlet?PortalBrand=<%= brandEnc %>"
                    class="btn btn-secondary">
                     Logout
                 </a>
@@ -308,7 +311,7 @@
         <div class="footer-content">
             <p>&copy; 2026 InterWeave Integration Manager. All rights reserved.</p>
             <p>
-                <a href="AlertConfig.jsp?PortalBrand=<%= brand %>&PortalSolutions=<%= solutions %>">Alert Configuration</a> |
+                <a href="AlertConfig.jsp?PortalBrand=<%= brandEnc %>&PortalSolutions=<%= solEnc %>">Alert Configuration</a> |
                 <a href="http://www.interweave.biz" target="_blank">InterWeave Home</a> |
                 <a href="mailto:support@interweave.biz">Support</a>
             </p>
@@ -319,7 +322,7 @@
     <script>
         // Configuration
         window.dashboardConfig = {
-            userId: '<%= userId %>',
+            userId: '<%= HtmlEncoder.encode(userId) %>',
             companyId: <%= companyId != null ? companyId : "null" %>,
             isAdmin: <%= isAdmin %>,
             refreshInterval: 10000, // 10 seconds

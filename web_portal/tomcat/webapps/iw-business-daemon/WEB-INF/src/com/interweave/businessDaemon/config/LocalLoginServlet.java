@@ -23,8 +23,7 @@ import com.interweave.businessDaemon.HostedTransactionBase;
 import com.interweave.businessDaemon.QueryContext;
 import com.interweave.businessDaemon.TransactionContext;
 import com.interweave.businessDaemon.TransactionThread;
-// Error framework imports removed - IWError constructor is not visible from this package.
-// Use servlet log() instead for error reporting.
+import com.interweave.web.LoginRateLimiter;
 
 /**
  * LocalLoginServlet - Authenticates users against the local MySQL database
@@ -76,13 +75,28 @@ public class LocalLoginServlet extends HttpServlet {
 
         email = email.trim().toLowerCase();
 
+        // Check account lockout before hitting the database
+        if (LoginRateLimiter.isLockedOut(email)) {
+            long remaining = LoginRateLimiter.getRemainingLockoutSeconds(email);
+            redirectToLogin(request, response, "AUTH005",
+                "Too many failed attempts. Please try again in " + remaining + " seconds.",
+                email, portalBrand, portalSolutions);
+            return;
+        }
+
         try (Connection conn = dataSource.getConnection()) {
             // Authenticate user and get detailed result
             AuthenticationResult authResult = authenticateUser(conn, email, password);
 
             if (authResult.success) {
-                // Authentication successful
+                // Authentication successful — clear lockout counter
+                LoginRateLimiter.clearFailures(email);
                 UserInfo userInfo = authResult.userInfo;
+                // Prevent session fixation: invalidate old session and create new one
+                HttpSession oldSession = request.getSession(false);
+                if (oldSession != null) {
+                    oldSession.invalidate();
+                }
                 HttpSession session = request.getSession(true);
                 session.setAttribute("userId", userInfo.userId);
                 session.setAttribute("userEmail", userInfo.email);
@@ -156,7 +170,8 @@ public class LocalLoginServlet extends HttpServlet {
 
                 response.sendRedirect(redirectUrl);
             } else {
-                // Authentication failed - log and redirect
+                // Authentication failed — record for lockout tracking
+                LoginRateLimiter.recordFailure(email);
                 if ("AUTH001".equals(authResult.errorCode)) {
                     log("Authentication failed: Invalid credentials");
                 } else {

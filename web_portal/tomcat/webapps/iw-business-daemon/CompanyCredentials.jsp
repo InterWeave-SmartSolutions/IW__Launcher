@@ -2,6 +2,7 @@
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%
 int lnmbr = 1;
 String brand = request.getParameter("PortalBrand");
@@ -14,17 +15,17 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String currentProfileName = request.getParameter("CurrentProfile");
 String currentUser = "";
@@ -146,18 +147,19 @@ if(ConfigContext.isHosted()){
 	</tr>
 	<tr>
 		<td class="labels"><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">Please
-		set credentials for your solution.</span></td><td align="right" class="labels">User: <%= currentUser%></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Logout</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
+		set credentials for your solution.</span></td><td align="right" class="labels">User: <%= HtmlEncoder.encode(currentUser)%></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Logout</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
 	</tr>
 </table>
-<!--<%= currentProfileName%> <%= oldProfileName%> <%= solutionType%> <%= crm%> <%= navigation%>-->
+<!--<%= HtmlEncoder.encode(currentProfileName)%> <%= HtmlEncoder.encode(oldProfileName)%> <%= HtmlEncoder.encode(solutionType)%> <%= HtmlEncoder.encode(crm)%> <%= HtmlEncoder.encode(navigation)%>-->
 <form action="CompanyCredentialsServlet" method="post">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
-  <input type="hidden" name="CurrentProfile" value="<%= currentProfileName%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
+  <input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName)%>"/>
   <input type="hidden" name="QBCompFilNum" value="<%= "" + cmpNum%>"/>
   <%if(oldProfileName!=null){%>
-  <input type="hidden" name="OldProfile" value="<%= oldProfileName %>"/><%}%>
-  <input type="hidden" name="Solution" value="<%= solutionType %>"/>
+  <input type="hidden" name="OldProfile" value="<%= HtmlEncoder.encode(oldProfileName) %>"/><%}%>
+  <input type="hidden" name="Solution" value="<%= HtmlEncoder.encode(solutionType) %>"/>
   <p><%if(srName0.equals("QB") || solutionType.endsWith("OMC") || crm.equals("Aria") || fs.equals("Payment Gateway") || (fs.equals("Accpac") && crm.equals("OMS")) || (fs.equals("Sage") && crm.equals("CRM"))){%>
 	<input type="submit" name="submit" value="Previous" class="labels"/><%}%>
 	<input type="submit" name="submit" value="Save and Finish" class="labels"/>
@@ -173,14 +175,14 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= (crm.equals("Sugar") || crm.equals("SF") || crm.equals("Fusion") || crm.equals("MSDCRM") || crm.equals("Aria") || crm.equals("DB") || crm.equals("CRM") || (crm.equals("OMS") && fs.equals("QB")))?crm:"Accpac"%> <%= (crm.equals("SF") || crm.equals("Fusion") || crm.equals("MSDCRM"))?"Personal Domain/Profile":"Integration URI"%></span></td>
 			<td>
-				<input type="text" name="AccIntURL" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "AccIntURL") +"\""):""%>/>
+				<input type="text" name="AccIntURL" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "AccIntURL")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}if((fs.equals("Accpac") && crm.equals("OMS")) || (crm.equals("Aria")) || (crm.equals("PPOL"))){%>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%=  (crm.equals("Aria"))?"Aria Client Number":((crm.equals("PPOL"))?"PPOL Company Name":"Accpac Integration Company")%></span></td>
 			<td>
-				<input type="text" name="AccIntComp" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "AccIntComp") +"\""):""%>/>
+				<input type="text" name="AccIntComp" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "AccIntComp")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}%>
@@ -188,26 +190,26 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Aria authorization key</span></td>
 			<td>
-				<input type="password" name="ArAuthKey" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ArAuthKey") +"\""):""%>/>
+				<input type="password" name="ArAuthKey" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "ArAuthKey")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}}%>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= sfName%> Integration <%= sfUser%></span></td>
 			<td>
-				<input type="text" name="SFIntUsr" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFIntUsr") +"\""):""%>/>
+				<input type="text" name="SFIntUsr" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "SFIntUsr")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= sfName%> Integration <%= sfPassword%></span></td>
 			<td>
-				<input type="password" name="SFPswd" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFPswd") +"\""):""%>/>
+				<input type="password" name="SFPswd" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "SFPswd")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Confirm <%= sfName%> Integration <%= sfPassword%></span></td>
 			<td>
-				<input type="password" name="SFPswdCfrm" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFPswd") +"\""):""%>/>
+				<input type="password" name="SFPswdCfrm" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "SFPswd")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -233,26 +235,26 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Name of <%= sfName%> Account Field with <%= qbSrName%> Selection Criterion</span></td>
 			<td>
-				<input type="text" name="AcctQBCompFlSelNm" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "AcctQBCompFlSelNm") +"\""):""%>/>
+				<input type="text" name="AcctQBCompFlSelNm" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "AcctQBCompFlSelNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Name of <%= sfName%> Contact Field with <%= qbSrName%> Selection
 			Criterion</span></td>
 			<td>
-				<input type="text" name="ContSFQBCompFlSelNm" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ContSFQBCompFlSelNm") +"\""):""%>/>
+				<input type="text" name="ContSFQBCompFlSelNm" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "ContSFQBCompFlSelNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Name of <%= sfName%> Opportunity Field with <%= qbSrName%> Selection Criterion</span></td>
 			<td>
-				<input type="text" name="OppSFQBCompFlSelNm" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "OppSFQBCompFlSelNm") +"\""):""%>/>
+				<input type="text" name="OppSFQBCompFlSelNm" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "OppSFQBCompFlSelNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Name of <%= sfName%> Product Field with <%= qbSrName%> Selection Criterion</span></td>
 			<td>
-				<input type="text" name="PrdSFQBCompFlSelNm" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdSFQBCompFlSelNm") +"\""):""%>/>
+				<input type="text" name="PrdSFQBCompFlSelNm" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "PrdSFQBCompFlSelNm")) +"\""):""%>/>
 			</td>
 		</tr>
 	</table>
@@ -288,7 +290,7 @@ if((cmpNum>1) && (srName1==null || qbLabel!=null)){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= srName%> <%= (fs.equals("Accpac") && crm.equals("OMS"))?"Prefix":"Selection Criterion"%><%= (cmpNum>1)?(" " + i):""%></span></td>
 			<td>
-				<input type="text" name='<%= "SFQBCompFlSelVl" + i%>' <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFQBCompFlSelVl" + i) +"\""):""%>/>
+				<input type="text" name='<%= "SFQBCompFlSelVl" + i%>' <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "SFQBCompFlSelVl" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 <%}%>
@@ -296,63 +298,63 @@ if((cmpNum>1) && (srName1==null || qbLabel!=null)){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Inventory Location</span></td>
 			<td>
-				<input type="text" name='<%= "DefInvLoc" + i%>'<%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefInvLoc" + i) +"\""):""%>/>
+				<input type="text" name='<%= "DefInvLoc" + i%>'<%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "DefInvLoc" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Miscellaneous Freight Code</span></td>
 			<td>
-				<input type="text" name='<%= "MiscFrCode" + i%>'<%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "MiscFrCode" + i) +"\""):""%>/>
+				<input type="text" name='<%= "MiscFrCode" + i%>'<%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "MiscFrCode" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Miscellaneous Discount Code</span></td>
 			<td>
-				<input type="text" name='<%= "MiscDiscCode" + i%>'<%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "MiscDiscCode" + i) +"\""):""%>/>
+				<input type="text" name='<%= "MiscDiscCode" + i%>'<%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "MiscDiscCode" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 <%}%>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= srName%> Integration URI<%= (cmpNum>1)?(" " + i):""%></span></td>
 			<td>
-				<input type="text" name='<%= "QDSN" + i%>'<%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QDSN" + i) +"\""):""%>/>
+				<input type="text" name='<%= "QDSN" + i%>'<%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "QDSN" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= srName%> Integration User/Id<%= (cmpNum>1)?(" " + i):""%></span></td>
 			<td>
-				<input type="text" name='<%= "QBIntUsr" + i%>' <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBIntUsr" + i) +"\""):""%>/>
+				<input type="text" name='<%= "QBIntUsr" + i%>' <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "QBIntUsr" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= srName%> Integration Password/Token<%= (cmpNum>1)?(" " + i):""%></span></td>
 			<td>
-				<input type="password" name='<%= "QBPswd" + i%>' <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPswd" + i) +"\""):""%>/>
+				<input type="password" name='<%= "QBPswd" + i%>' <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "QBPswd" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Confirm <%= srName%> Integration Password/Token<%= (cmpNum>1)?(" " + i):""%></span></td>
 			<td>
-				<input type="password" name='<%= "QBPswdCfrm" + i%>' <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPswd" + i) +"\""):""%>/>
+				<input type="password" name='<%= "QBPswdCfrm" + i%>' <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "QBPswd" + i)) +"\""):""%>/>
 			</td>
 		</tr><%if(cmpNum>1){%>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Time Zone Shift <%= " " + i%></span></td>
 			<td>
-				<input type="text" name='<%= "TimeZone" + i%>' class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "TimeZone" + i) +"\""):"0"%>/>
+				<input type="text" name='<%= "TimeZone" + i%>' class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "TimeZone" + i)) +"\""):"0"%>/>
 			</td>
 		</tr><%}%>
 		<%if(fs.equals("NetSuite")){%>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= srName%> Subsidiary Name</span></td>
 			<td>
-				<input type="text" name='<%= "NSSubsNm" + i%>' <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "NSSubsNm" + i) +"\""):""%>/>
+				<input type="text" name='<%= "NSSubsNm" + i%>' <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "NSSubsNm" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= srName%> Subsidiary Internal ID</span></td>
 			<td>
-				<input type="text" name='<%= "NSSubsID" + i%>' <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "NSSubsID" + i) +"\""):""%>/>
+				<input type="text" name='<%= "NSSubsID" + i%>' <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "NSSubsID" + i)) +"\""):""%>/>
 			</td>
 		</tr>
 <%}}%>
@@ -455,25 +457,25 @@ if((cmpNum>1) && (srName1==null || qbLabel!=null)){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Primary Additional/Dedicated Server DNS/IP</span></td>
 			<td>
-				<input type="text" name="DdctdSrvr0" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr0") +"\""):""%>/>
+				<input type="text" name="DdctdSrvr0" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr0")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Secondary Additional/Dedicated Server DNS/IP</span></td>
 			<td>
-				<input type="text" name="DdctdSrvr1" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr1") +"\""):""%>/>
+				<input type="text" name="DdctdSrvr1" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr1")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Custom Primary Additional/Dedicated Server DNS/IP</span></td>
 			<td>
-				<input type="text" name="DdctdSrvr0C" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr0C") +"\""):""%>/>
+				<input type="text" name="DdctdSrvr0C" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr0C")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Custom Secondary Additional/Dedicated Server DNS/IP</span></td>
 			<td>
-				<input type="text" name="DdctdSrvr1C" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr1C") +"\""):""%>/>
+				<input type="text" name="DdctdSrvr1C" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "DdctdSrvr1C")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -491,7 +493,7 @@ if((cmpNum>1) && (srName1==null || qbLabel!=null)){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= (fs.equals("Payment Gateway"))?"Object to pay from":"Number of decimal characters for Currency format (default 2)"%></span></td>
 			<td>
-				<input type="text" name="DecCharCur" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DecCharCur") +"\""):""%>/>
+				<input type="text" name="DecCharCur" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "DecCharCur")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -539,7 +541,7 @@ if((cmpNum>1) && (srName1==null || qbLabel!=null)){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Starting time/date for Objects to integrate</span></td>
 			<td>
-				<input type="text" name="StDtTmInt" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "StDtTmInt") +"\""):""%>/>
+				<input type="text" name="StDtTmInt" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "StDtTmInt")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -573,19 +575,19 @@ if((cmpNum>1) && (srName1==null || qbLabel!=null)){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">CC Email Notification Addresses</span></td>
 			<td>
-				<input type="text" name="CCEmail" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CCEmail") +"\""):""%>/>
+				<input type="text" name="CCEmail" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "CCEmail")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">BCC Email Notification Addresses</span></td>
 			<td>
-				<input type="text" name="BCCEmail" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "BCCEmail") +"\""):""%>/>
+				<input type="text" name="BCCEmail" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "BCCEmail")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Hosting Provider Email Notification Addresses</span></td>
 			<td>
-				<input type="text" name="HPNEmail" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "HPNEmail") +"\""):""%>/>
+				<input type="text" name="HPNEmail" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "HPNEmail")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -603,19 +605,19 @@ if((cmpNum>1) && (srName1==null || qbLabel!=null)){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Start time of sleep window</span></td>
 			<td>
-				<input type="text" name="SleepStart" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SleepStart") +"\""):""%>/>
+				<input type="text" name="SleepStart" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "SleepStart")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">End time of sleep window</span></td>
 			<td>
-				<input type="text" name="SleepEnd" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SleepEnd") +"\""):""%>/>
+				<input type="text" name="SleepEnd" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "SleepEnd")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Time Zone Shift</span></td>
 			<td>
-				<input type="text" name="TimeZone" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "TimeZone") +"\""):"0"%>/>
+				<input type="text" name="TimeZone" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr, "TimeZone")) +"\""):"0"%>/>
 			</td>
 		</tr>
 	</table>

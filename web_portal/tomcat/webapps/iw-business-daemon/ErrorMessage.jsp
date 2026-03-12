@@ -1,6 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <%@ page import="java.util.*" %>
 <%@ page import="com.interweave.error.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%
 // Parse request parameters
@@ -23,10 +24,10 @@ if(env2Con==null){
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "?PortalBrand=" + brand;
+	brandSol += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 
 // Parse error details - support both legacy text errors and new structured IWError
@@ -271,28 +272,28 @@ if (transactionId == null || transactionId.trim().length() == 0) {
 			<div class="error-title">
 				<h1>Error Occurred</h1>
 				<% if (errorCode != null && errorCode.trim().length() > 0) { %>
-					<span class="error-code">Error Code: <%= errorCode %></span>
+					<span class="error-code">Error Code: <%= HtmlEncoder.encode(errorCode) %></span>
 				<% } %>
 			</div>
 		</div>
 
 		<!-- Error Message -->
 		<div class="error-message">
-			<%= errorText %>
+			<%= HtmlEncoder.encode(errorText) %>
 		</div>
 
 		<!-- Error Details Sections -->
 		<% if (errorComponent != null && errorComponent.trim().length() > 0) { %>
 		<div class="error-section">
 			<div class="error-section-title">Affected Component</div>
-			<div class="error-section-content"><%= errorComponent %></div>
+			<div class="error-section-content"><%= HtmlEncoder.encode(errorComponent) %></div>
 		</div>
 		<% } %>
 
 		<% if (errorCause != null && errorCause.trim().length() > 0) { %>
 		<div class="error-section">
 			<div class="error-section-title">Cause</div>
-			<div class="error-section-content"><%= errorCause %></div>
+			<div class="error-section-content"><%= HtmlEncoder.encode(errorCause) %></div>
 		</div>
 		<% } %>
 
@@ -312,13 +313,13 @@ if (transactionId == null || transactionId.trim().length() == 0) {
 						if (step.trim().length() > 0) {
 							// Remove leading numbers/bullets if present
 							String cleanStep = step.trim().replaceAll("^[0-9]+\\.\\s*", "").replaceAll("^[-*]\\s*", "");
-							out.println("<li>" + cleanStep + "</li>");
+							out.println("<li>" + HtmlEncoder.encode(cleanStep) + "</li>");
 						}
 					}
 					out.println("</ul>");
 				} else {
 					// Already formatted or single line
-					out.println(formattedResolution);
+					out.println(HtmlEncoder.encode(formattedResolution));
 				}
 				%>
 			</div>
@@ -328,7 +329,7 @@ if (transactionId == null || transactionId.trim().length() == 0) {
 		<!-- Documentation Link -->
 		<% if (errorDocLink != null && errorDocLink.trim().length() > 0) { %>
 		<div style="text-align: center;">
-			<a href="<%= errorDocLink %>" class="doc-link" target="_blank">&#128214; View Documentation</a>
+			<a href="<%= HtmlEncoder.encode(errorDocLink) %>" class="doc-link" target="_blank">&#128214; View Documentation</a>
 		</div>
 		<% } %>
 
@@ -337,14 +338,14 @@ if (transactionId == null || transactionId.trim().length() == 0) {
 			<div class="support-section-title">&#128172; Need Help?</div>
 			<div class="support-section-content">
 				If you continue to experience issues, please contact support and provide this transaction ID:
-				<span class="transaction-id"><%= transactionId %></span>
+				<span class="transaction-id"><%= HtmlEncoder.encode(transactionId) %></span>
 			</div>
 		</div>
 
 		<!-- Return Button -->
-		<form <%= (target==null)?"":("target=\"" + target + "\"")%> method="post" action='<%= request.getParameter("ErrorMessageReturn") + brandSol%>'>
+		<form <%= (target==null)?"":("target=\"" + HtmlEncoder.encode(target) + "\"")%> method="post" action='<%= HtmlEncoder.encode(request.getParameter("ErrorMessageReturn")) + brandSol%>'>
 			<div class="button-container">
-				<input type="submit" name="submit" value="<%= button%>" class="submit-button"/>
+				<input type="submit" name="submit" value="<%= HtmlEncoder.encode(button)%>" class="submit-button"/>
 			</div>
 		</form>
 

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="javax.servlet.http.HttpSession"%>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%
     // Session authentication check
     HttpSession userSession = request.getSession(false);
@@ -38,6 +39,8 @@
     if (brand == null) brand = "";
     String solutions = request.getParameter("PortalSolutions");
     if (solutions == null) solutions = "";
+    String brandEnc = java.net.URLEncoder.encode(brand, "UTF-8");
+    String solEnc = java.net.URLEncoder.encode(solutions, "UTF-8");
 
     // Prevent caching
     response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -63,7 +66,7 @@
     <!-- Header Banner -->
     <header class="dashboard-header">
         <div class="header-banner">
-            <img src="../images<%= (brand.equals("") ? "" : ("/" + brand)) %>/IT Banner.png"
+            <img src="../images<%= (brand.equals("") ? "" : ("/" + HtmlEncoder.encode(brand))) %>/IT Banner.png"
                  alt="InterWeave Banner"
                  class="header-banner-img"
                  onerror="this.style.display='none'">
@@ -74,20 +77,20 @@
                 <p class="header-subtitle">Detailed execution information and payload data</p>
             </div>
             <div class="header-user-info">
-                <span class="user-name"><strong>User:</strong> <%= userName %></span>
+                <span class="user-name"><strong>User:</strong> <%= HtmlEncoder.encode(userName) %></span>
                 <% if (companyName != null && !companyName.equals("Unknown Company")) { %>
-                <span class="company-name"><strong>Company:</strong> <%= companyName %></span>
+                <span class="company-name"><strong>Company:</strong> <%= HtmlEncoder.encode(companyName) %></span>
                 <% } %>
                 <% if (isAdmin) { %>
                 <span class="admin-badge">Admin</span>
                 <% } %>
             </div>
             <div class="header-actions">
-                <a href="Dashboard.jsp?PortalBrand=<%= brand %>&PortalSolutions=<%= solutions %>"
+                <a href="Dashboard.jsp?PortalBrand=<%= brandEnc %>&PortalSolutions=<%= solEnc %>"
                    class="btn btn-secondary">
                     ← Back to Dashboard
                 </a>
-                <a href="../LogoutServlet?PortalBrand=<%= brand %>"
+                <a href="../LogoutServlet?PortalBrand=<%= brandEnc %>"
                    class="btn btn-secondary">
                     Logout
                 </a>
@@ -108,7 +111,7 @@
                 <h3>Error Loading Transaction</h3>
                 <p id="error-message-text"></p>
                 <button id="retry-btn" class="btn btn-primary">Retry</button>
-                <a href="Dashboard.jsp?PortalBrand=<%= brand %>&PortalSolutions=<%= solutions %>"
+                <a href="Dashboard.jsp?PortalBrand=<%= brandEnc %>&PortalSolutions=<%= solEnc %>"
                    class="btn btn-secondary">
                     Back to Dashboard
                 </a>
@@ -263,7 +266,7 @@
         <div class="footer-content">
             <p>&copy; 2026 InterWeave Integration Manager. All rights reserved.</p>
             <p>
-                <a href="Dashboard.jsp?PortalBrand=<%= brand %>&PortalSolutions=<%= solutions %>">Dashboard</a> |
+                <a href="Dashboard.jsp?PortalBrand=<%= brandEnc %>&PortalSolutions=<%= solEnc %>">Dashboard</a> |
                 <a href="http://www.interweave.biz" target="_blank">InterWeave Home</a> |
                 <a href="mailto:support@interweave.biz">Support</a>
             </p>
@@ -274,13 +277,13 @@
     <script>
         // Configuration
         window.transactionConfig = {
-            transactionId: '<%= transactionId %>',
-            userId: '<%= userId %>',
+            transactionId: '<%= HtmlEncoder.encode(transactionId) %>',
+            userId: '<%= HtmlEncoder.encode(userId) %>',
             companyId: <%= companyId != null ? companyId : "null" %>,
             isAdmin: <%= isAdmin %>,
             apiBaseUrl: '../api/monitoring',
-            brand: '<%= brand %>',
-            solutions: '<%= solutions %>'
+            brand: '<%= HtmlEncoder.encode(brand) %>',
+            solutions: '<%= HtmlEncoder.encode(solutions) %>'
         };
     </script>
 

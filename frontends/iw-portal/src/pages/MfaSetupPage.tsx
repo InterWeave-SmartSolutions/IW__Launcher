@@ -568,7 +568,7 @@ export function MfaSetupPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/change-password")}
+          onClick={() => navigate("/profile/password")}
           className="w-full text-muted-foreground"
         >
           <Lock className="w-3.5 h-3.5" />

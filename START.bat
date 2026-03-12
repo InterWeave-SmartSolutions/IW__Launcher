@@ -154,6 +154,12 @@ REM Start bidirectional sync bridge (IDE <-> Web Portal)
 echo  Starting sync bridge...
 start "IW Sync Bridge" /min powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\sync_bridge.ps1" -Quiet
 
+REM Start Cloudflare Quick Tunnel (Vercel proxy -> local Tomcat)
+REM Runs in its own window: starts tunnel, patches vercel.json, pushes to GitHub,
+REM then monitors tunnel health with auto-restart. Window must stay open.
+echo  Starting Cloudflare tunnel for Vercel proxy...
+start "IW Cloudflare Tunnel" /min powershell -NoProfile -ExecutionPolicy Bypass -File "%IW_HOME%\scripts\quickstart_tunnel.ps1"
+
 echo  ==================================================================
 echo.
 echo       IW_IDE IS RUNNING
@@ -167,8 +173,9 @@ echo      Username: __iw_admin__
 echo      Password: %%iwps%%
 echo.
 echo  ------------------------------------------------------------------
-echo   Sync bridge: IDE changes auto-sync to portal
-echo   To stop: Run STOP.bat
+echo   Sync bridge : IDE changes auto-sync to portal
+echo   Tunnel      : Vercel proxy via Cloudflare quick tunnel
+echo   To stop     : Run STOP.bat
 echo  ==================================================================
 echo.
 echo  Launcher complete. This window can be closed.

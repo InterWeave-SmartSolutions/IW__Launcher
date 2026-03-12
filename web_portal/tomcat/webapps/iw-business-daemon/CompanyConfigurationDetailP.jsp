@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%@ page import="java.util.*" %>
 <%
 int lnmbr = 1;
@@ -14,17 +15,17 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String currentProfileName = request.getParameter("CurrentProfile");
 String currentUser = "";
@@ -152,18 +153,19 @@ if(ConfigContext.isHosted()){
 	<tr>
 		<td class="labels"><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">Please
 		set configuration parameters for your solution.
-		</span><br/>Products<%if(!scr.equals("None")){%>/Statement Charges<%}%> Configuration Details</td><td align="right" class="labels">User: <%= currentUser%></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Logout</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
+		</span><br/>Products<%if(!scr.equals("None")){%>/Statement Charges<%}%> Configuration Details</td><td align="right" class="labels">User: <%= HtmlEncoder.encode(currentUser)%></td><td align="right"><a href='<%= "IWLogin.jsp" + brandSol1%>' target="_top" class="labels">Logout</a></td><td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
 	</tr>
 </table>
-<!--<%= currentProfileName%> <%= oldProfileName%> <%= solutionType%> <%= crm%> <%= navigation%>-->
+<!--<%= HtmlEncoder.encode(currentProfileName)%> <%= HtmlEncoder.encode(oldProfileName)%> <%= HtmlEncoder.encode(solutionType)%> <%= HtmlEncoder.encode(crm)%> <%= HtmlEncoder.encode(navigation)%>-->
 <form action="CompanyConfigurationServletDTP" method="post">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
-  <input type="hidden" name="CurrentProfile" value="<%= currentProfileName %>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
+  <input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName) %>"/>
   <%if(oldProfileName!=null){%>
-  <input type="hidden" name="OldProfile" value="<%= oldProfileName %>"/>
+  <input type="hidden" name="OldProfile" value="<%= HtmlEncoder.encode(oldProfileName) %>"/>
   <%}%>
-  <input type="hidden" name="Solution" value="<%= solutionType %>"/>
+  <input type="hidden" name="Solution" value="<%= HtmlEncoder.encode(solutionType) %>"/>
 <p>
 	<%if(!(fs.equals("Payment Gateway"))){%><input type="submit" name="submit" value="Previous" class="labels"/><%}%>
 	<input type="submit" name="submit" value="Next" class="labels"/>
@@ -196,43 +198,43 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field containing Item Name</span></td>
 			<td>
-				<input type="text" name="SFFldPNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFFldPNm") +"\""):""%>/>
+				<input type="text" name="SFFldPNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFFldPNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Item/Product Name Truncating Mode</span></td>
 			<td>
-				<input type="text" name="ItmPrdNmTrMd" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ItmPrdNmTrMd") +"\""):""%>/>
+				<input type="text" name="ItmPrdNmTrMd" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ItmPrdNmTrMd")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Custom Object Name to create <%= fs%> Item</span></td>
 			<td>
-				<input type="text" name="CONItem" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CONItem") +"\""):""%>/>
+				<input type="text" name="CONItem" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CONItem")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name For Sales Price</span></td>
 			<td>
-				<input type="text" name="SFPrdSPrcCstm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFPrdSPrcCstm") +"\""):""%>/>
+				<input type="text" name="SFPrdSPrcCstm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFPrdSPrcCstm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field containing Product Group/Assembly Name</span></td>
 			<td>
-				<input type="text" name="PrdGrpNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdGrpNm") +"\""):""%>/>
+				<input type="text" name="PrdGrpNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdGrpNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field containing Product Group/Assembly Quantity</span></td>
 			<td>
-				<input type="text" name="PrdGrpQt" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdGrpQt") +"\""):""%>/>
+				<input type="text" name="PrdGrpQt" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdGrpQt")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field containing Parent Item Name for sub-items</span></td>
 			<td>
-				<input type="text" name="PrdItmNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdItmNm") +"\""):""%>/>
+				<input type="text" name="PrdItmNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdItmNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -308,19 +310,19 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field containing Purchase Description</span></td>
 			<td>
-				<input type="text" name="PrdPDescNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdPDescNm") +"\""):""%>/>
+				<input type="text" name="PrdPDescNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdPDescNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field containing Quantity on Hand</span></td>
 			<td>
-				<input type="text" name="PrdQOnHand" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdQOnHand") +"\""):""%>/>
+				<input type="text" name="PrdQOnHand" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdQOnHand")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field containing Manufacturer Part Number</span></td>
 			<td>
-				<input type="text" name="PrdManPNum" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdManPNum") +"\""):""%>/>
+				<input type="text" name="PrdManPNum" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdManPNum")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%} if((prd.equals("SFQB"))||(prd.equals("SF2QB"))){%>
@@ -354,32 +356,32 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Default Tax Schedule Internal Id</span></td>
 			<td>
-				<input type="text" name="NSTaxId" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "NSTaxId") +"\""):""%>/>
+				<input type="text" name="NSTaxId" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"NSTaxId")) +"\""):""%>/>
 			</td>
 		</tr> 
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Default Purchase Tax Code Internal Id</span></td>
 			<td>
-				<input type="text" name="NSTaxPCId" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "NSTaxPCId") +"\""):""%>/>
+				<input type="text" name="NSTaxPCId" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"NSTaxPCId")) +"\""):""%>/>
 			</td>
 		</tr> 
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Default Sales Tax Code Internal Id</span></td>
 			<td>
-				<input type="text" name="NSTaxSCId" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "NSTaxSCId") +"\""):""%>/>
+				<input type="text" name="NSTaxSCId" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"NSTaxSCId")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Default Income Account Internal Id</span></td>
 			<td>
-				<input type="text" name="NSIncAccId" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "NSIncAccId") +"\""):""%>/>
+				<input type="text" name="NSIncAccId" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"NSIncAccId")) +"\""):""%>/>
 			</td>
 		</tr><%}%>
 <%if(crm.equals("CRM") || crm.equals("SF") || crm.equals("Sugar") || crm.equals("Fusion") || crm.equals("MSDCRM")  || crm.equals("PPOL") || crm.equals("OMS")){%> 
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field to select <%= fs%> Item Type</span></td>
 			<td>
-				<input type="text" name="QBItmTp" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmTp") +"\""):""%>/>
+				<input type="text" name="QBItmTp" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmTp")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -396,61 +398,61 @@ if(ConfigContext.isHosted()){
 		<!--<tr><td></td>
 			<td><span class="table"><%= crm%> Product field to select <%= fs%> Item Account</span></td>
 			<td>
-				<input type="text" name="QBItmAcct" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmAcct") +"\""):""%>/>
+				<input type="text" name="QBItmAcct" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmAcct")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td></td>
 			<td><span class="table"><%= crm%> Product field to select <%= fs%> Inventory Item COGS Account</span></td>
 			<td>
-				<input type="text" name="QBItmCAcct" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmCAcct") +"\""):""%>/>
+				<input type="text" name="QBItmCAcct" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmCAcct")) +"\""):""%>/>
 			</td>
 		</tr>-->
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field value for Inventory Item Type</span></td>
 			<td>
-				<input type="text" name="QBItmTpI" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmTpI") +"\""):""%>/>
+				<input type="text" name="QBItmTpI" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmTpI")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field value for Inventory Assembly Item Type</span></td>
 			<td>
-				<input type="text" name="QBItmTpA" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmTpA") +"\""):""%>/>
+				<input type="text" name="QBItmTpA" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmTpA")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Income Account for Inventory/Inventory Assembly Item Type</span></td>
 			<td>
-				<input type="text" name="DIAItmTpI" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DIAItmTpI") +"\""):""%>/>
+				<input type="text" name="DIAItmTpI" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DIAItmTpI")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default COGS Account for Inventory/Inventory Assembly Item Type</span></td>
 			<td>
-				<input type="text" name="DCAItmTpI" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DCAItmTpI") +"\""):"Cost of Goods Sold"%>/>
+				<input type="text" name="DCAItmTpI" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DCAItmTpI")) +"\""):"Cost of Goods Sold"%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Asset Account for Inventory/Inventory Assembly Item Type</span></td>
 			<td>
-				<input type="text" name="DAAItmTpI" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DAAItmTpI") +"\""):"Inventory Asset"%>/>
+				<input type="text" name="DAAItmTpI" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DAAItmTpI")) +"\""):"Inventory Asset"%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Transactional <%= crm%> Field for Inventory/Inventory Assembly Item Site</span></td>
 			<td>
-				<input type="text" name="InvItemSite" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "InvItemSite") +"\""):""%>/>
+				<input type="text" name="InvItemSite" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"InvItemSite")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field value for Non-Inventory Item Type</span></td>
 			<td>
-				<input type="text" name="QBItmTpN" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmTpN") +"\""):""%>/>
+				<input type="text" name="QBItmTpN" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmTpN")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Account (Income) for Non-Inventory Item Type</span></td>
 			<td>
-				<input type="text" name="DAItmTpN" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DAItmTpN") +"\""):""%>/>
+				<input type="text" name="DAItmTpN" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DAItmTpN")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -468,31 +470,31 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for Reimbursable Non-Inventory Item Selection</span></td>
 			<td>
-				<input type="text" name="ReimNmNISel" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ReimNmNISel") +"\""):""%>/>
+				<input type="text" name="ReimNmNISel" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ReimNmNISel")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Value for Reimbursable Non-Inventory Item Selection </span></td>
 			<td>
-				<input type="text" name="ReimValNISel" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ReimValNISel") +"\""):""%>/>
+				<input type="text" name="ReimValNISel" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ReimValNISel")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Expense Account for Reimbursable Non-Inventory Item Type</span></td>
 			<td>
-				<input type="text" name="DEAItmTpN" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DEAItmTpN") +"\""):""%>/>
+				<input type="text" name="DEAItmTpN" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DEAItmTpN")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field value for Service Item Type</span></td>
 			<td>
-				<input type="text" name="QBItmTpS" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmTpS") +"\""):""%>/>
+				<input type="text" name="QBItmTpS" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmTpS")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Account (Income) for Service Item Type</span></td>
 			<td>
-				<input type="text" name="DAItmTpS" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DAItmTpS") +"\""):""%>/>
+				<input type="text" name="DAItmTpS" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DAItmTpS")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -510,31 +512,31 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for Reimbursable Service Item Selection</span></td>
 			<td>
-				<input type="text" name="ReimNmServSel" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ReimNmServSel") +"\""):""%>/>
+				<input type="text" name="ReimNmServSel" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ReimNmServSel")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Value for Reimbursable Service Item Selection </span></td>
 			<td>
-				<input type="text" name="ReimValServSel" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ReimValServSel") +"\""):""%>/>
+				<input type="text" name="ReimValServSel" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ReimValServSel")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Expense Account for Service Item Type with Cost Support</span></td>
 			<td>
-				<input type="text" name="DEAItmTpS" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DEAItmTpS") +"\""):""%>/>
+				<input type="text" name="DEAItmTpS" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DEAItmTpS")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field value for Other Charge Item Type</span></td>
 			<td>
-				<input type="text" name="QBItmTpO" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmTpO") +"\""):""%>/>
+				<input type="text" name="QBItmTpO" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmTpO")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Account (Income) for Other Charge Item Type</span></td>
 			<td>
-				<input type="text" name="DAItmTpO" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DAItmTpO") +"\""):""%>/>
+				<input type="text" name="DAItmTpO" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DAItmTpO")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -552,43 +554,43 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for Reimbursable Other Charge Item Selection</span></td>
 			<td>
-				<input type="text" name="ReimNmOCSel" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ReimNmOCSel") +"\""):""%>/>
+				<input type="text" name="ReimNmOCSel" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ReimNmOCSel")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Value for Reimbursable Other Charge Item Selection </span></td>
 			<td>
-				<input type="text" name="ReimValOCSel" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ReimValOCSel") +"\""):""%>/>
+				<input type="text" name="ReimValOCSel" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ReimValOCSel")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Expense Account for Other Charge Item Type with Cost Support</span></td>
 			<td>
-				<input type="text" name="DEAItmTpO" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DEAItmTpO") +"\""):""%>/>
+				<input type="text" name="DEAItmTpO" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DEAItmTpO")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Product field value for Discount Item Type</span></td>
 			<td>
-				<input type="text" name="QBItmTpD" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBItmTpD") +"\""):""%>/>
+				<input type="text" name="QBItmTpD" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBItmTpD")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Account for Discount Item Type</span></td>
 			<td>
-				<input type="text" name="DAItmTpD" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DAItmTpD") +"\""):""%>/>
+				<input type="text" name="DAItmTpD" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DAItmTpD")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name to Define Margin</span></td>
 			<td>
-				<input type="text" name="SFMargFldNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFMargFldNm") +"\""):""%>/>
+				<input type="text" name="SFMargFldNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFMargFldNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name For Sales Price with Margin</span></td>
 			<td>
-				<input type="text" name="SFSPMargFldNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFSPMargFldNm") +"\""):""%>/>
+				<input type="text" name="SFSPMargFldNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFSPMargFldNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -607,13 +609,13 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default <%= fs%> Tax Code for Taxable Items</span></td>
 			<td>
-				<input type="text" name="DefTaxCode" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefTaxCode") +"\""):""%>/>
+				<input type="text" name="DefTaxCode" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefTaxCode")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default <%= fs%> Tax Code for Non-Taxable Items</span></td>
 			<td>
-				<input type="text" name="DefNoTaxCode" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefNoTaxCode") +"\""):""%>/>
+				<input type="text" name="DefNoTaxCode" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefNoTaxCode")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}}}%>
@@ -649,37 +651,37 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field Name to Define Margin</span></td>
 			<td>
-				<input type="text" name="MargFldNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "MargFldNm") +"\""):""%>/>
+				<input type="text" name="MargFldNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"MargFldNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Field Values to Define Margins</span></td>
 			<td>
-				<input type="text" name="MargFldVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "MargFldVal") +"\""):""%>/>
+				<input type="text" name="MargFldVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"MargFldVal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Standard Price Margin Values</span></td>
 			<td>
-				<input type="text" name="MargVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "MargVal") +"\""):""%>/>
+				<input type="text" name="MargVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"MargVal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">List of Default Currencies</span></td>
 			<td>
-				<input type="text" name="DefCurList" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefCurList") +"\""):""%>/>
+				<input type="text" name="DefCurList" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefCurList")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field for <%= crm%> Product Family</span></td>
 			<td>
-				<input type="text" name="PrdFamily" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdFamily") +"\""):""%>/>
+				<input type="text" name="PrdFamily" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdFamily")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Custom Field to Suppress Transaction</span></td>
 			<td>
-				<input type="text" name="PrdNoLoad" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrdNoLoad") +"\""):""%>/>
+				<input type="text" name="PrdNoLoad" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrdNoLoad")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -700,7 +702,7 @@ if(ConfigContext.isHosted()){
 			<td><span class="table"><%= crm%> Product to <%= fs%> Item custom
 			mapping 1</span></td>
 			<td>
-				<input type="text" name="ProdSFQBCMap" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ProdSFQBCMap") +"\""):""%>/>
+				<input type="text" name="ProdSFQBCMap" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ProdSFQBCMap")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -708,7 +710,7 @@ if(ConfigContext.isHosted()){
 			mapping 2
 			(<a href='<%= "MoreCustomMappings.jsp" + "?CurrentProfile=" + currentProfileName + ((oldProfileName==null)?"":("&OldProfile=" + oldProfileName)) + "&ObjectType=Prod" + "&Solution=" + solutionType%>'	target="_blank">more mappings</a>)</span></td>
 			<td>
-				<input type="text" name="ProdSFQBCMap1" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "ProdSFQBCMap1") +"\""):""%>/>
+				<input type="text" name="ProdSFQBCMap1" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"ProdSFQBCMap1")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%for (int imp=2; imp<10; imp++){
@@ -731,19 +733,19 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Inventory Adjustment Object</span></td>
 			<td>
-				<input type="text" name="IAObject" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IAObject") +"\""):""%>/>
+				<input type="text" name="IAObject" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IAObject")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Inventory Adjustment Line Object</span></td>
 			<td>
-				<input type="text" name="IAObjectL" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IAObjectL") +"\""):""%>/>
+				<input type="text" name="IAObjectL" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IAObjectL")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field with <%= fs%> Inventory Adjustment #</span></td>
 			<td>
-				<input type="text" name="IANumber" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IANumber") +"\""):""%>/>
+				<input type="text" name="IANumber" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IANumber")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -774,13 +776,13 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name to create new <%= fs%> Inventory Adjustment</span></td>
 			<td>
-				<input type="text" name="SFCrCusFIA" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusFIA") +"\""):""%>/>
+				<input type="text" name="SFCrCusFIA" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusFIA")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Value to create new <%= fs%> Inventory Adjustment</span></td>
 			<td>
-				<input type="text" name="SFCrCusFIAVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusFIAVal") +"\""):""%>/>
+				<input type="text" name="SFCrCusFIAVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusFIAVal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -799,44 +801,44 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field with <%= fs%> Inventory Adjustment Item Name</span></td>
 			<td>
-				<input type="text" name="IAItem" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IAItem") +"\""):""%>/>
+				<input type="text" name="IAItem" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IAItem")) +"\""):""%>/>
 			</td>
 		</tr>		
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field with <%= fs%> Inventory Adjustment Account</span></td>
 			<td>
-				<input type="text" name="IAAccnt" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IAAccnt") +"\""):""%>/>
+				<input type="text" name="IAAccnt" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IAAccnt")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field with <%= fs%> Inventory Adjustment Date</span></td>
 			<td>
-				<input type="text" name="IADate" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IADate") +"\""):""%>/>
+				<input type="text" name="IADate" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IADate")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field with <%= fs%> Inventory Adjustment Memo</span></td>
 			<td>
-				<input type="text" name="IAMemo" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IAMemo") +"\""):""%>/>
+				<input type="text" name="IAMemo" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IAMemo")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field with <%= fs%> Inventory Adjustment Quantity Difference</span></td>
 			<td>
-				<input type="text" name="IAQttyDif" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IAQttyDif") +"\""):""%>/>
+				<input type="text" name="IAQttyDif" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IAQttyDif")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> field with <%= fs%> Inventory Adjustment Value Difference</span></td>
 			<td>
-				<input type="text" name="IAValDif" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IAValDif") +"\""):""%>/>
+				<input type="text" name="IAValDif" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IAValDif")) +"\""):""%>/>
 			</td>
 		</tr>		
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Object to <%= fs%> Inventory Adjustment custom
 			mapping 1</span></td>
 			<td>
-				<input type="text" name="IASFQBCMap" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IASFQBCMap") +"\""):""%>/>
+				<input type="text" name="IASFQBCMap" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IASFQBCMap")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -844,7 +846,7 @@ if(ConfigContext.isHosted()){
 			mapping 2
 			(<a href='<%= "MoreCustomMappings.jsp" + "?CurrentProfile=" + currentProfileName + ((oldProfileName==null)?"":("&OldProfile=" + oldProfileName)) + "&ObjectType=IA" + "&Solution=" + solutionType%>'	target="_blank">more mappings</a>)</span></td>
 			<td>
-				<input type="text" name="IASFQBCMap1" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "IASFQBCMap1") +"\""):""%>/>
+				<input type="text" name="IASFQBCMap1" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"IASFQBCMap1")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%for (int imp=2; imp<10; imp++){
@@ -867,13 +869,13 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Object for <%= fs%> Statement Charges</span></td>
 			<td>
-				<input type="text" name="SCCObject" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCCObject") +"\""):""%>/>
+				<input type="text" name="SCCObject" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCCObject")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field with <%= fs%> Statement Charges Number</span></td>
 			<td>
-				<input type="text" name="SCNumber" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCNumber") +"\""):""%>/>
+				<input type="text" name="SCNumber" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCNumber")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -891,67 +893,67 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field(s) with <%= fs%> Statement Charges Customer/Job</span></td>
 			<td>
-				<input type="text" name="QBCust4SC" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBCust4SC") +"\""):""%>/>
+				<input type="text" name="QBCust4SC" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBCust4SC")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field with <%= fs%> Statement Charges Date</span></td>
 			<td>
-				<input type="text" name="SCDate" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCDate") +"\""):""%>/>
+				<input type="text" name="SCDate" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCDate")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field(s) for <%= fs%> Statement Charges Item Full Name</span></td>
 			<td>
-				<input type="text" name="SCItem" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCItem") +"\""):""%>/>
+				<input type="text" name="SCItem" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCItem")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field(s) for <%= fs%> Statement Charges Rate</span></td>
 			<td>
-				<input type="text" name="SCRate" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCRate") +"\""):""%>/>
+				<input type="text" name="SCRate" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCRate")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field(s) for <%= fs%> Statement Charges Quantity</span></td>
 			<td>
-				<input type="text" name="SCQtty" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCQtty") +"\""):""%>/>
+				<input type="text" name="SCQtty" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCQtty")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field(s) for <%= fs%> Statement Charges Amount</span></td>
 			<td>
-				<input type="text" name="SCAmount" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCAmount") +"\""):""%>/>
+				<input type="text" name="SCAmount" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCAmount")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for <%= fs%> Statement Charges AR Account Full Name</span></td>
 			<td>
-				<input type="text" name="SCARAccount" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCARAccount") +"\""):""%>/>
+				<input type="text" name="SCARAccount" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCARAccount")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for <%= fs%> Statement Charges Class</span></td>
 			<td>
-				<input type="text" name="SCClass" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCClass") +"\""):""%>/>
+				<input type="text" name="SCClass" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCClass")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for <%= fs%> Statement Charges Description</span></td>
 			<td>
-				<input type="text" name="SCDesc" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCDesc") +"\""):""%>/>
+				<input type="text" name="SCDesc" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCDesc")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for <%= fs%> Statement Charges Billed Date</span></td>
 			<td>
-				<input type="text" name="SCBDate" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCBDate") +"\""):""%>/>
+				<input type="text" name="SCBDate" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCBDate")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name for <%= fs%> Statement Charges Due Date</span></td>
 			<td>
-				<input type="text" name="SCDDate" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCDDate") +"\""):""%>/>
+				<input type="text" name="SCDDate" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCDDate")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -970,13 +972,13 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name to create new <%= fs%> Statement Charges</span></td>
 			<td>
-				<input type="text" name="SFCrCusFSC" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusFSC") +"\""):""%>/>
+				<input type="text" name="SFCrCusFSC" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusFSC")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Value to create new <%= fs%> Statement Charges</span></td>
 			<td>
-				<input type="text" name="SFCrCusFSCVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusFSCVal") +"\""):""%>/>
+				<input type="text" name="SFCrCusFSCVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusFSCVal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -995,13 +997,13 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> <%= crmtran%> to <%= fs%> Statement Charges custom mapping 1</span></td>
 			<td>
-				<input type="text" name="SCSFQBCMap" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCSFQBCMap") +"\""):""%>/>
+				<input type="text" name="SCSFQBCMap" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCSFQBCMap")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> <%= crmtran%> to <%= fs%> Statement Charges custom mapping 2 (<a href='<%= "MoreCustomMappings.jsp" + "?CurrentProfile=" + currentProfileName  + ((oldProfileName==null)?"":("&OldProfile=" + oldProfileName)) + "&ObjectType=SC" + "&Solution=" + solutionType%>'	target="_blank">more mappings</a>)</span></td>
 			<td>
-				<input type="text" name="SCSFQBCMap1" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCSFQBCMap1") +"\""):""%>/>
+				<input type="text" name="SCSFQBCMap1" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCSFQBCMap1")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%for (int imp=2; imp<10; imp++){
@@ -1013,7 +1015,7 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom field for Created Statement Charges</span></td>
 			<td>
-				<input type="text" name="SCRflct" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SCRflct") +"\""):""%>/>
+				<input type="text" name="SCRflct" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SCRflct")) +"\""):""%>/>
 			</td>
 		</tr><%}%>
 	</table>
@@ -1042,7 +1044,7 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Item field containing Item Name for sub-items</span></td>
 			<td>
-				<input type="text" name="PItmItmNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PItmItmNm") +"\""):""%>/>
+				<input type="text" name="PItmItmNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PItmItmNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%if((pI.equals("SFQB"))||(pI.equals("SF2QB"))){%>
@@ -1075,37 +1077,37 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Item field to select <%= fs%> Item Type</span></td>
 			<td>
-				<input type="text" name="QBPItmTp" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPItmTp") +"\""):""%>/>
+				<input type="text" name="QBPItmTp" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBPItmTp")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Item field value for Inventory Item Type</span></td>
 			<td>
-				<input type="text" name="QBPItmTpI" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPItmTpI") +"\""):""%>/>
+				<input type="text" name="QBPItmTpI" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBPItmTpI")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Item field value for Non-Inventory Item Type</span></td>
 			<td>
-				<input type="text" name="QBPItmTpN" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPItmTpN") +"\""):""%>/>
+				<input type="text" name="QBPItmTpN" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBPItmTpN")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Item field value for Service Item Type</span></td>
 			<td>
-				<input type="text" name="QBPItmTpS" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPItmTpS") +"\""):""%>/>
+				<input type="text" name="QBPItmTpS" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBPItmTpS")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Item field value for Other Charge Item Type</span></td>
 			<td>
-				<input type="text" name="QBPItmTpO" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPItmTpO") +"\""):""%>/>
+				<input type="text" name="QBPItmTpO" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBPItmTpO")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Item field value for Discount Item Type</span></td>
 			<td>
-				<input type="text" name="QBPItmTpD" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBPItmTpD") +"\""):""%>/>
+				<input type="text" name="QBPItmTpD" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBPItmTpD")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}%>
@@ -1140,25 +1142,25 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Location</span></td>
 			<td>
-				<input type="text" name="DefaultLoc" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefaultLoc") +"\""):""%>/>
+				<input type="text" name="DefaultLoc" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefaultLoc")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Item Group</span></td>
 			<td>
-				<input type="text" name="DefaultGrp" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefaultGrp") +"\""):""%>/>
+				<input type="text" name="DefaultGrp" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefaultGrp")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Unit of Measure</span></td>
 			<td>
-				<input type="text" name="DefaultUnit" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DefaultUnit") +"\""):""%>/>
+				<input type="text" name="DefaultUnit" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DefaultUnit")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Custom Field to Suppress Transaction</span></td>
 			<td>
-				<input type="text" name="PItmNoLoad" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PItmNoLoad") +"\""):""%>/>
+				<input type="text" name="PItmNoLoad" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PItmNoLoad")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -1186,7 +1188,7 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Price Book Name</span></td>
 			<td>
-				<input type="text" name="PrBookNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PrBookNm") +"\""):""%>/>
+				<input type="text" name="PrBookNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PrBookNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		</table><br/><%}}%><%if(solutionType.endsWith("PGG")){%>
@@ -1303,25 +1305,25 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name to create new <%= fs%> Sales Order</span></td>
 			<td>
-				<input type="text" name="SFCrCusFPSO" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusFPSO") +"\""):""%>/>
+				<input type="text" name="SFCrCusFPSO" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusFPSO")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Value to create new <%= fs%> Sales Order</span></td>
 			<td>
-				<input type="text" name="SFCrCusFPSOVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFCrCusFPSOVal") +"\""):""%>/>
+				<input type="text" name="SFCrCusFPSOVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFCrCusFPSOVal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Shipping and Handling <%= fs%> Sales Order Item Name</span></td>
 			<td>
-				<input type="text" name="DummyPSOSHNm" size="31" maxlength="31" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DummyPSOSHNm") +"\""):""%>/>
+				<input type="text" name="DummyPSOSHNm" size="31" maxlength="31" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DummyPSOSHNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field for Default Shipping and Handling Price</span></td>
 			<td>
-				<input type="text" name="DummyPSOSHPrc" size="31" maxlength="31" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "DummyPSOSHPrc") +"\""):""%>/>
+				<input type="text" name="DummyPSOSHPrc" size="31" maxlength="31" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"DummyPSOSHPrc")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -1396,25 +1398,25 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Filtering <%= crm%> Field Name for Sales Order Operations</span></td>
 			<td>
-				<input type="text" name="PSOPREmNm" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSOPREmNm") +"\""):""%>/>
+				<input type="text" name="PSOPREmNm" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSOPREmNm")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Filtering Value(s) for Sales Order to be Printed</span></td>
 			<td>
-				<input type="text" name="PSOToBePrt" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSOToBePrt") +"\""):""%>/>
+				<input type="text" name="PSOToBePrt" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSOToBePrt")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Filtering Value(s) for Sales Order to be Emailed</span></td>
 			<td>
-				<input type="text" name="PSOToBeEml" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSOToBeEml") +"\""):""%>/>
+				<input type="text" name="PSOToBeEml" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSOToBeEml")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default Template for Sales Order</span></td>
 			<td>
-				<input type="text" name="PSODefTemp" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSODefTemp") +"\""):""%>/>
+				<input type="text" name="PSODefTemp" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSODefTemp")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}}%>
@@ -1461,19 +1463,19 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field Name to create/update IMS Sales Order</span></td>
 			<td>
-				<input type="text" name="QBCrOppPSOF" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBCrOppPSOF") +"\""):""%>/>
+				<input type="text" name="QBCrOppPSOF" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBCrOppPSOF")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= fs%> Field Value to create/update IMS Sales Order</span></td>
 			<td>
-				<input type="text" name="QBCrOppPSOFVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "QBCrOppPSOFVal") +"\""):""%>/>
+				<input type="text" name="QBCrOppPSOFVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"QBCrOppPSOFVal")) +"\""):""%>/>
 			</td>	
 		</tr><%}%>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">New <%= crm%> Sales Order Status</span></td>
 			<td>
-				<input type="text" name="SFOppStagePSO" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "SFOppStagePSO") +"\""):""%>/>
+				<input type="text" name="SFOppStagePSO" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"SFOppStagePSO")) +"\""):""%>/>
 			</td>	
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -1517,13 +1519,13 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Name to create Group Type Sales Order</span></td>
 			<td>
-				<input type="text" name="CreateGoupPSO" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CreateGoupPSO") +"\""):""%>/>
+				<input type="text" name="CreateGoupPSO" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CreateGoupPSO")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Field Value to create Group Type Sales Order</span></td>
 			<td>
-				<input type="text" name="CreateGoupPSOVal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "CreateGoupPSOVal") +"\""):""%>/>
+				<input type="text" name="CreateGoupPSOVal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"CreateGoupPSOVal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -1551,20 +1553,20 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">IMS Sales Order Custom field with Remaining Balance</span></td>
 			<td>
-				<input type="text" name="PSORemBal" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSORemBal") +"\""):""%>/>
+				<input type="text" name="PSORemBal" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSORemBal")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%}}%>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= (crm.equals("SF") || crm.equals("Fusion") || crm.equals("MSDCRM")  || crm.equals("PPOL"))?"IMS Sales Order to " + fs + " Sales Order custom mapping 1":("Aria Write-Off to " + fs + " custom mapping 1")%></span></td>
 			<td>
-				<input type="text" name="PSOSFQBCMap" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSOSFQBCMap") +"\""):""%>/>
+				<input type="text" name="PSOSFQBCMap" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSOSFQBCMap")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><%= (crm.equals("SF") || crm.equals("Fusion") || crm.equals("MSDCRM")  || crm.equals("PPOL"))?"IMS Sales Order to " + fs + " Sales Order custom mapping 2":("Aria Write-Off to " + fs + " custom mapping 2")%> (<a href='<%= "MoreCustomMappings.jsp" + "?CurrentProfile=" + currentProfileName  + ((oldProfileName==null)?"":("&OldProfile=" + oldProfileName)) + "&ObjectType=PSO" + "&Solution=" + solutionType%>'	target="_blank">more mappings</a>)</span></td>
 			<td>
-				<input type="text" name="PSOSFQBCMap1" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSOSFQBCMap1") +"\""):""%>/>
+				<input type="text" name="PSOSFQBCMap1" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSOSFQBCMap1")) +"\""):""%>/>
 			</td>
 		</tr>
 		<%for (int imp=2; imp<10; imp++){
@@ -1589,19 +1591,19 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom field for Class</span></td>
 			<td>
-				<input type="text" name="PSOClass" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSOClass") +"\""):""%>/>
+				<input type="text" name="PSOClass" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSOClass")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Custom field for Created SO Number</span></td>
 			<td>
-				<input type="text" name="PSORflct" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSORflct") +"\""):""%>/>
+				<input type="text" name="PSORflct" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSORflct")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table"><%= crm%> Duplicate Prevention Field</span></td>
 			<td>
-				<input type="text" name="PSODplct" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "PSODplct") +"\""):""%>/>
+				<input type="text" name="PSODplct" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"PSODplct")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
@@ -1632,13 +1634,13 @@ if(ConfigContext.isHosted()){
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default <%= fs%> Credit Account (Account Receivable)</span></td>
 			<td>
-				<input type="text" name="pSOAccRcv" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "pSOAccRcv") +"\""):""%>/>
+				<input type="text" name="pSOAccRcv" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"pSOAccRcv")) +"\""):""%>/>
 			</td>
 		</tr>
 		<tr><td><%= lnmbr++%></td>
 			<td><span class="table">Default <%= fs%> Expense Account used for Write-Offs</span></td>
 			<td>
-				<input type="text" name="pSOAccRcvC" class="table" <%= edit?("value=\"" + ConfigContext.getConfigurationValue(cfrn, cfr, "pSOAccRcvC") +"\""):""%>/>
+				<input type="text" name="pSOAccRcvC" class="table" <%= edit?("value=\"" + HtmlEncoder.encode(ConfigContext.getConfigurationValue(cfrn, cfr,"pSOAccRcvC")) +"\""):""%>/>
 			</td>
 		</tr><%}%>
 	</table>

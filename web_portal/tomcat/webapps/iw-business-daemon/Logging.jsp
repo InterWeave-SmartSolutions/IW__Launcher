@@ -13,7 +13,14 @@ String profile = request.getParameter("CurrentProfile");
 if(profile==null){
 profile="";
 }
-String hv = String.valueOf((query + profile).hashCode());%>
+// URL-encode parameters to prevent XSS in onload handler
+String encodedQuery = java.net.URLEncoder.encode(query, "UTF-8");
+String encodedProfile = java.net.URLEncoder.encode(profile, "UTF-8");
+String hv = String.valueOf((query + profile).hashCode());
+// Whitelist url to prevent open redirect - must start with expected path or be relative
+if(url.contains("://") || url.startsWith("//") || url.contains("javascript:")) {
+url = "";
+}%>
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
@@ -30,5 +37,5 @@ String hv = String.valueOf((query + profile).hashCode());%>
 -->
 </style>
 </head>
-<body onload="top.location.href='<%= url + "?__LOG_QUERY_ID__=" + query + "&CurrentProfile=" + profile + "&HV=" + hv%>'"/>
+<body onload="top.location.href='<%= url + "?__LOG_QUERY_ID__=" + encodedQuery + "&CurrentProfile=" + encodedProfile + "&HV=" + hv%>'"/>
 </html>

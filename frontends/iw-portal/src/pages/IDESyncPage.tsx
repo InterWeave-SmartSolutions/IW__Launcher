@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   RefreshCw,
   Upload,
@@ -341,9 +342,9 @@ export function WorkspaceSyncPanel() {
       ) : profiles.length === 0 ? (
         <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm p-8 text-center text-muted-foreground text-sm">
           No saved configurations found.{" "}
-          <a href="/company/config/wizard" className="text-[hsl(var(--primary))] underline">
+          <Link to="/company/config/wizard" className="text-[hsl(var(--primary))] underline">
             Run the setup wizard
-          </a>{" "}
+          </Link>{" "}
           to create a profile.
         </div>
       ) : (

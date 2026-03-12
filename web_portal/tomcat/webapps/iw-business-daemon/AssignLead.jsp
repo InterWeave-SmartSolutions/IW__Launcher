@@ -2,11 +2,14 @@
 <%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <% 
 boolean li = ConfigContext.isUserLoggedIn();
 ConfigContext.setUserLoggedIn(false);
 String currentProfileName = request.getParameter("CurrentProfile");
 String UID = request.getParameter("UID");
+if(UID == null) UID = "";
+String encodedUID = java.net.URLEncoder.encode(UID, "UTF-8");
 boolean showLeads = (currentProfileName!=null)?(currentProfileName.equalsIgnoreCase("show")):false;
 String getNewLead = request.getParameter("GetLead");
 boolean getLead = (getNewLead!=null)?(getNewLead.equalsIgnoreCase("show")):false;
@@ -52,7 +55,7 @@ oldCompany = "";
 </style>
 </head>
 <body>
-<input type="hidden" name="OldProfile" value='<%= currentProfileName%>'/>
+<input type="hidden" name="OldProfile" value='<%= HtmlEncoder.encode(currentProfileName)%>'/>
 <p class="labels">Lead Detail</p>
 	<table border="0" cellpadding="0" class="tablesmall" width="100%">
 	<tr>
@@ -174,9 +177,9 @@ oldCompany = "";
 	</tr>
 	<%}%>	
 </table>
-		<a href='<%= "http://72.3.142.149:8080/ProsperCMS2SF/transform?__QUERY_ID__=GetNextLeadUI&applicationname=iwtransformationserver&CMSDriver=com.mysql.jdbc.Driver&CMSURL=jdbc:mysql://dcms.prosperlearning.com:3306/tele?zeroDateTimeBehavior=convertToNull&ReturnString=&CMSPassword=DevData1&QueryStartTime=2007-01-10 23:32:02.515&UserId=" + UID + "&CMSUser=dmytro&tranname=GetNextLeadeFromTank"%>' style="text-align: left" class="linkbutton">New Lead</a>
-		<a href='<%= "http://72.3.142.149:8080/ProsperCMS2SF/transform?__QUERY_ID__=AcceptNextLeadUI&applicationname=iwtransformationserver&CMSDriver=com.mysql.jdbc.Driver&CMSURL=jdbc:mysql://dcms.prosperlearning.com:3306/tele?zeroDateTimeBehavior=convertToNull&ReturnString=&CMSPassword=DevData1&QueryStartTime=2007-01-10 23:32:02.515&UserId=" + UID + "&CMSUser=dmytro&tranname=GetNextLeadeFromTank"%>' style="text-align: center" class="linkbutton">Contacted (keep)</a>
-		<a href='<%= "http://72.3.142.149:8080/ProsperCMS2SF/transform?__QUERY_ID__=DeclineNextLeadUI&applicationname=iwtransformationserver&CMSDriver=com.mysql.jdbc.Driver&CMSURL=jdbc:mysql://dcms.prosperlearning.com:3306/tele?zeroDateTimeBehavior=convertToNull&ReturnString=&CMSPassword=DevData1&QueryStartTime=2007-01-10 23:32:02.515&UserId=" + UID + "&CMSUser=dmytro&tranname=GetNextLeadeFromTank"%>'  style="text-align: right;" class="linkbutton">Return to Lead Pool</a>
+		<a href='<%= "http://72.3.142.149:8080/ProsperCMS2SF/transform?__QUERY_ID__=GetNextLeadUI&applicationname=iwtransformationserver&CMSDriver=com.mysql.jdbc.Driver&CMSURL=jdbc:mysql://dcms.prosperlearning.com:3306/tele?zeroDateTimeBehavior=convertToNull&ReturnString=&CMSPassword=DevData1&QueryStartTime=2007-01-10 23:32:02.515&UserId=" + encodedUID + "&CMSUser=dmytro&tranname=GetNextLeadeFromTank"%>' style="text-align: left" class="linkbutton">New Lead</a>
+		<a href='<%= "http://72.3.142.149:8080/ProsperCMS2SF/transform?__QUERY_ID__=AcceptNextLeadUI&applicationname=iwtransformationserver&CMSDriver=com.mysql.jdbc.Driver&CMSURL=jdbc:mysql://dcms.prosperlearning.com:3306/tele?zeroDateTimeBehavior=convertToNull&ReturnString=&CMSPassword=DevData1&QueryStartTime=2007-01-10 23:32:02.515&UserId=" + encodedUID + "&CMSUser=dmytro&tranname=GetNextLeadeFromTank"%>' style="text-align: center" class="linkbutton">Contacted (keep)</a>
+		<a href='<%= "http://72.3.142.149:8080/ProsperCMS2SF/transform?__QUERY_ID__=DeclineNextLeadUI&applicationname=iwtransformationserver&CMSDriver=com.mysql.jdbc.Driver&CMSURL=jdbc:mysql://dcms.prosperlearning.com:3306/tele?zeroDateTimeBehavior=convertToNull&ReturnString=&CMSPassword=DevData1&QueryStartTime=2007-01-10 23:32:02.515&UserId=" + encodedUID + "&CMSUser=dmytro&tranname=GetNextLeadeFromTank"%>'  style="text-align: right;" class="linkbutton">Return to Lead Pool</a>
 	</p></td>
 		<td>
 			<table border="1" cellpadding="1" width="100%" class="tablesmall">

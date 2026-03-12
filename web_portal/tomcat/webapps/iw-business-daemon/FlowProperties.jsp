@@ -2,6 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=iso-8859-1" %>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 
 <html>
 <head>
@@ -40,17 +41,17 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String whoAmI = request.getParameter("WhoAmI");
 if(whoAmI==null){
@@ -74,7 +75,7 @@ if(tc == null){
 %>
 <table border="0" cellpadding="5" class="table" width="100%">
 	<tr>
-		<td class="tablelabels"><%= (isFlow?"Transaction Flow: ":"Query: ") + flowId%></td>
+		<td class="tablelabels"><%= (isFlow?"Transaction Flow: ":"Query: ") + HtmlEncoder.encode(flowId)%></td>
 	</tr>
 	<tr>
 		<td class="tablesmall" style="color:red">Flow context not loaded. Initialize the engine via BDConfigurator first, or use the <a href="/iw-portal/#/integrations">modern portal</a>.</td>
@@ -83,24 +84,25 @@ if(tc == null){
 <%} else {%>
 <table border="0" cellpadding="5" class="table" width="100%">
 	<tr>
-		<td class="tablelabels"><%= (isFlow?"Transaction Flow: ":"Query: ") + flowId%></td>
+		<td class="tablelabels"><%= (isFlow?"Transaction Flow: ":"Query: ") + HtmlEncoder.encode(flowId)%></td>
 	</tr>
 	<tr>
-		<td class="tablesmall"><%= tc.getDescription()%></td>
+		<td class="tablesmall"><%= HtmlEncoder.encode(tc.getDescription())%></td>
 	</tr>
 </table>
 <p>
 	<form action="FlowProperiesServlet" method="post" target="_top">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>	
-		<input type="hidden" name="FlowId" value="<%= flowId %>"/>	
-		<input type="hidden" name="IsAdmin" value="<%= adm %>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
+		<input type="hidden" name="FlowId" value="<%= HtmlEncoder.encode(flowId) %>"/>
+		<input type="hidden" name="IsAdmin" value="<%= HtmlEncoder.encode(adm) %>"/>
 		<%if(profileId!=null){%>
-		<input type="hidden" name="ProfileId" value="<%= profileId %>"/>
-		<%}%>	
-		<input type="hidden" name="IsFlow" value="<%= tf %>"/>	
-		<input type="hidden" name="WhoAmI" value="<%= whoAmI %>"/>
-		<input type="hidden" name="Env2Con" value="<%= env2Con%>"/>
+		<input type="hidden" name="ProfileId" value="<%= HtmlEncoder.encode(profileId) %>"/>
+		<%}%>
+		<input type="hidden" name="IsFlow" value="<%= HtmlEncoder.encode(tf) %>"/>
+		<input type="hidden" name="WhoAmI" value="<%= HtmlEncoder.encode(whoAmI) %>"/>
+		<input type="hidden" name="Env2Con" value="<%= HtmlEncoder.encode(env2Con)%>"/>
 	<table border="1" cellpadding="0" width="100%" cellspacing="0">
 		<tr class="tablelabels">
 			<td>Property Name</td>
@@ -125,10 +127,10 @@ nm = nm.substring(7);
 if(!up){
 %>		
 		<tr>
-			<td><span class="table"><%= nm%></span></td>
+			<td><span class="table"><%= HtmlEncoder.encode(nm)%></span></td>
 			<td>
 				<span class="table">
-				<input type=<%= ps?"password":"text"%> name='<%= "PV:" + nm%>' value="<%= cp%>" <%= running?"disabled":""%> size="100%"/>
+				<input type=<%= ps?"password":"text"%> name='<%= "PV:" + HtmlEncoder.encode(nm)%>' value="<%= HtmlEncoder.encode(cp)%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 		</tr>
@@ -138,7 +140,7 @@ if(!up){
 			<td><span class="table">Primary TS URL PA</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U1:' value="<%= tc.getPrimaryTransformationServerURL()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U1:' value="<%= HtmlEncoder.encode(tc.getPrimaryTransformationServerURL())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -147,7 +149,7 @@ if(!up){
 			<td><span class="table">Secondary TS URL PA</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U2:' value="<%= tc.getSecondaryTransformationServerURL()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U2:' value="<%= HtmlEncoder.encode(tc.getSecondaryTransformationServerURL())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -156,7 +158,7 @@ if(!up){
 			<td><span class="table">Primary TS URL PB</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U1T:' value="<%= tc.getPrimaryTransformationServerURLT()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U1T:' value="<%= HtmlEncoder.encode(tc.getPrimaryTransformationServerURLT())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -165,7 +167,7 @@ if(!up){
 			<td><span class="table">Secondary TS URL PB</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U2T:' value="<%= tc.getSecondaryTransformationServerURLT()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U2T:' value="<%= HtmlEncoder.encode(tc.getSecondaryTransformationServerURLT())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -174,7 +176,7 @@ if(!up){
 			<td><span class="table">Primary TS URL PC</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U11:' value="<%= tc.getPrimaryTransformationServerURL1()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U11:' value="<%= HtmlEncoder.encode(tc.getPrimaryTransformationServerURL1())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -183,7 +185,7 @@ if(!up){
 			<td><span class="table">Secondary TS URL PC</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U21:' value="<%= tc.getSecondaryTransformationServerURL1()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U21:' value="<%= HtmlEncoder.encode(tc.getSecondaryTransformationServerURL1())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -192,7 +194,7 @@ if(!up){
 			<td><span class="table">Primary TS URL PD</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U1T1:' value="<%= tc.getPrimaryTransformationServerURLT1()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U1T1:' value="<%= HtmlEncoder.encode(tc.getPrimaryTransformationServerURLT1())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -201,7 +203,7 @@ if(!up){
 			<td><span class="table">Secondary TS URL PD</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U2T1:' value="<%= tc.getSecondaryTransformationServerURLT1()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U2T1:' value="<%= HtmlEncoder.encode(tc.getSecondaryTransformationServerURLT1())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -210,7 +212,7 @@ if(!up){
 			<td><span class="table">Primary TS URL D</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U1D:' value="<%= tc.getPrimaryTransformationServerURLD()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U1D:' value="<%= HtmlEncoder.encode(tc.getPrimaryTransformationServerURLD())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -219,7 +221,7 @@ if(!up){
 			<td><span class="table">Secondary TS URL D</span></td>
 			<td>
 				<span class="table">
-				<input type="text" name='U2D:' value="<%= tc.getSecondaryTransformationServerURLD()%>" <%= running?"disabled":""%> size="100%"/>
+				<input type="text" name='U2D:' value="<%= HtmlEncoder.encode(tc.getSecondaryTransformationServerURLD())%>" <%= running?"disabled":""%> size="100%"/>
 				</span>
 			</td>
 			<td></td>
@@ -230,14 +232,15 @@ if(!up){
 			<input type="submit" name="submit" value=<%= running?"OK":"Submit"%> class="labels"/>
 		</p>
 	</form><%if(uploads && (!running)){%>
-	<form action="FileUploadServlet" method="post" enctype="multipart/form-data">	
-		<input type="hidden" name="FlowId" value="<%= flowId %>"/>
+	<form action="FileUploadServlet" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+		<input type="hidden" name="FlowId" value="<%= HtmlEncoder.encode(flowId) %>"/>
 		<%if(profileId!=null){%>
-		<input type="hidden" name="ProfileId" value="<%= profileId %>"/>
-		<%}%>	
-		<input type="hidden" name="IsFlow" value="<%= tf %>"/>	
-		<input type="hidden" name="WhoAmI" value="<%= whoAmI %>"/>
-		<input type="hidden" name="Env2Con" value="<%= env2Con%>"/>
+		<input type="hidden" name="ProfileId" value="<%= HtmlEncoder.encode(profileId) %>"/>
+		<%}%>
+		<input type="hidden" name="IsFlow" value="<%= HtmlEncoder.encode(tf) %>"/>
+		<input type="hidden" name="WhoAmI" value="<%= HtmlEncoder.encode(whoAmI) %>"/>
+		<input type="hidden" name="Env2Con" value="<%= HtmlEncoder.encode(env2Con)%>"/>
 	<table border="1" cellpadding="0" width="100%" cellspacing="0">
 		<%
 if(params!=null){
@@ -249,10 +252,10 @@ if(nm.startsWith("__%u%__")){
 nm = nm.substring(7);
 %>		
 		<tr>
-			<td><span class="table"><%= nm%></span></td>
+			<td><span class="table"><%= HtmlEncoder.encode(nm)%></span></td>
 			<td>
 				<span class="table">
-					<input type="file" name='<%= "PV:" + nm%>' value="<%= cp%>" size="100%"/>
+					<input type="file" name='<%= "PV:" + HtmlEncoder.encode(nm)%>' value="<%= HtmlEncoder.encode(cp)%>" size="100%"/>
 				</span>
 			</td>
 		</tr>

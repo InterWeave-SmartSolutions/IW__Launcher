@@ -2,6 +2,7 @@
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <% String refreshValue = request.getParameter("RefreshValue");%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -22,22 +23,22 @@ env2Con="COM";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
-brandSol += "&Env2Con=" + env2Con;
+brandSol += "&Env2Con=" + java.net.URLEncoder.encode(env2Con, "UTF-8");
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 brandSol1 += (((brand != null && brand.length() > 0) || (solutions != null && solutions
 				.length() > 0)) ? "&" : "?")
-				+ "Env2Con=" + env2Con;
+				+ "Env2Con=" + java.net.URLEncoder.encode(env2Con, "UTF-8");
 String currentProfileName = request.getParameter("CurrentProfile");
 String currentUser = "";
 if(currentProfileName!=null){
@@ -86,7 +87,7 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 <%}%>
 <table border="0" cellpadding="0" width="100%" cellspacing="0">
 	<tr>
-		<td><img src="<%= "images" + ((brand==null || brand.equals(""))?"":("/" + brand)) + "/IT Banner.png"%>" alt="Title" align="left" width="100%" height="94"/></td>
+		<td><img src="<%= "images" + ((brand==null || brand.equals(""))?"":("/" + HtmlEncoder.encode(brand))) + "/IT Banner.png"%>" alt="Title" align="left" width="100%" height="94"/></td>
 	</tr>
 </table>
 <table border="0" cellpadding="3" width="100%" cellspacing="0">
@@ -94,7 +95,7 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 		<td align="left"><span style="color: black; font-family: Verdana; font-size: 15pt; font-style: normal; font-weight: bold">InterWeave
 		Integration Manager</span><br/>
 		</td>
-					<td align="right" class="labels">User: <%= currentUser%></td>
+					<td align="right" class="labels">User: <%= HtmlEncoder.encode(currentUser)%></td>
 					<td align="right"><a href='<%= "LogoutServlet?ProfileId=" + currentProfileName + brandSol%>' target="_top" class="labels">Logout</a></td>
 					<td align="right"><a href='http://interweave.biz' class="labels" target="_blank">InterWeave</a></td>
 				
@@ -102,10 +103,11 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 
 </table>
 <form action="ProductDemoServlet" method="POST" target="_top">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <input type="hidden" name="WhoAmI" value="B"/>
-<input type="hidden" name="Env2Con" value="<%= env2Con%>"/>
+<input type="hidden" name="Env2Con" value="<%= HtmlEncoder.encode(env2Con)%>"/>
 
 <p><img src="images/dots.gif" align="middle" width="100%"/></p>
 	<table border="0" cellpadding="0" class="labels" cellspacing="0" width="100%">
@@ -145,7 +147,7 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 		<%
 		if(ConfigContext.isHosted()){
 		%>
-		<input type="hidden" name="CurrentProfile" value="<%= currentProfileName %>"/>
+		<input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName) %>"/>
 		<%}
 		for(int i = 0; i< ConfigContext.getTransactionList().size(); i++){
 		TransactionContext tc = (TransactionContext)(ConfigContext.getTransactionList().get(i)); 
@@ -227,7 +229,7 @@ if(currentProfileName==null || currentProfileName.trim().length()==0){
 		<%
 		if(ConfigContext.isHosted()){
 		%>
-		<input type="hidden" name="CurrentProfile" value="<%= currentProfileName %>"/>
+		<input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName) %>"/>
 		<%}
 		for(int i = 0; i< ConfigContext.getTransactionList().size(); i++){
 		TransactionContext tc = (TransactionContext)(ConfigContext.getTransactionList().get(i)); 

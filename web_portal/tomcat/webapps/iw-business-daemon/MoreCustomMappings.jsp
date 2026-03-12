@@ -2,6 +2,7 @@
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <%
 String currentProfileName = request.getParameter("CurrentProfile");
 String oldProfileName = request.getParameter("OldProfile");
@@ -90,12 +91,13 @@ edit = true;
 
 <p><b><font size="4"><span style="color: black; font-family: Verdana; font-size: 14pt; font-style: normal; font-weight: bold">Custom Mappings</span></font></b></p>
 <form action="CustomMappings" method="post">
-  <input type="hidden" name="CurrentProfile" value="<%= currentProfileName %>"/>
+  <input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+  <input type="hidden" name="CurrentProfile" value="<%= HtmlEncoder.encode(currentProfileName) %>"/>
   <%if(oldProfileName!=null){%>
-  <input type="hidden" name="OldProfile" value="<%= oldProfileName %>"/>
-  <%}%>	
-  <input type="hidden" name="Solution" value="<%= solutionType %>"/>
-  <input type="hidden" name="ObjectType" value="<%= objectType %>"/>
+  <input type="hidden" name="OldProfile" value="<%= HtmlEncoder.encode(oldProfileName) %>"/>
+  <%}%>
+  <input type="hidden" name="Solution" value="<%= HtmlEncoder.encode(solutionType) %>"/>
+  <input type="hidden" name="ObjectType" value="<%= HtmlEncoder.encode(objectType) %>"/>
 	<table border="1" cellpadding="5" width="100%">
 		<tr>
 			<td><span class="tablelabels">Property Name</span></td>

@@ -2,6 +2,7 @@
     pageEncoding="ISO-8859-1"%>
 <%@ page import="com.interweave.businessDaemon.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.interweave.web.HtmlEncoder" %>
 <% String refreshValue = request.getParameter("RefreshValue");%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -18,17 +19,17 @@ solutions="";
 }
 String brandSol = "";
 if (brand != null && brand.length() > 0) {
-	brandSol += "&PortalBrand=" + brand;
+	brandSol += "&PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol += "&PortalSolutions=" + solutions;
+	brandSol += "&PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 String brandSol1 = "";
 if (brand != null && brand.length() > 0) {
-	brandSol1 += "?PortalBrand=" + brand;
+	brandSol1 += "?PortalBrand=" + java.net.URLEncoder.encode(brand, "UTF-8");
 }
 if (solutions != null && solutions.length() > 0) {
-	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + solutions;
+	brandSol1 += ((brand != null && brand.length() > 0)?"&":"?") + "PortalSolutions=" + java.net.URLEncoder.encode(solutions, "UTF-8");
 }
 if(ConfigContext.getRefresh() > 0L){ 
 String rv = "10;url=BDConfiguratorA.jsp?RefreshValue=" + ConfigContext.getRefresh()+ brandSol;%>
@@ -62,7 +63,7 @@ ConfigContext.setAdminLoggedIn(false);
 %>
 <table border="0" cellpadding="0" width="100%" cellspacing="0">
 	<tr>
-		<td><img src="<%= "images" + ((brand==null || brand.equals(""))?"":("/" + brand)) + "/IT Banner.png"%>" alt="Title" align="left" width="100%" height="94"/></td>
+		<td><img src="<%= "images" + ((brand==null || brand.equals(""))?"":("/" + HtmlEncoder.encode(brand))) + "/IT Banner.png"%>" alt="Title" align="left" width="100%" height="94"/></td>
 	</tr>
 </table>
 <table border="0" cellpadding="3" width="100%" cellspacing="0">
@@ -78,41 +79,46 @@ ConfigContext.setAdminLoggedIn(false);
 <%if(ConfigContext.isHosted() && (!ConfigContext.isSupportLoggedIn())){ %>
 	<tr bgcolor="#eeeeee" align="right">
 		<td><form action="ProductDemoServlet" method="post" target="_top">
+				<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
 				<input type="submit" name="command" value="Flow Assignment" class="labels"/>
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <input type="hidden" name="WhoAmI" value="A"/>
 			</form>
 		</td>
 		<td>
 			<form action="ProductDemoServlet" method="post" target="_top">
+				<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
 				<input type="submit" name="command" value="List Users" class="labels" disabled="disabled"/>
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <input type="hidden" name="WhoAmI" value="A"/>
 			</form>
 		</td>
 		<td>
 			<form action="ProductDemoServlet" method="post" target="_top">
+				<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
 				<input type="submit" name="command" value="Stop and Save" class="labels"/>
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <input type="hidden" name="WhoAmI" value="A"/>
 			</form>
 		</td>
 		<td>
 			<form action="ProductDemoServlet" method="post" target="_top">
+				<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
 				<input type="submit" name="command" value="Save" class="labels"/>
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <input type="hidden" name="WhoAmI" value="A"/>
 			</form>
 		</td>
 		<td>
 			<form action="ProductDemoServlet" method="post" target="_top">
+				<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
 				<input type="submit" name="command" value="Restore" class="labels"/>
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <input type="hidden" name="WhoAmI" value="A"/>
 			</form>
 		</td>
@@ -120,8 +126,9 @@ ConfigContext.setAdminLoggedIn(false);
 <%}%>
 </table>
 <form action="ProductDemoServlet" method="post" target="_top">
-<input type="hidden" name="PortalBrand" value="<%= brand%>"/>
-<input type="hidden" name="PortalSolutions" value="<%= solutions%>"/>
+<input type="hidden" name="_csrf" value="<%= session.getAttribute("_csrf") %>"/>
+<input type="hidden" name="PortalBrand" value="<%= HtmlEncoder.encode(brand)%>"/>
+<input type="hidden" name="PortalSolutions" value="<%= HtmlEncoder.encode(solutions)%>"/>
 <input type="hidden" name="WhoAmI" value="A"/>
 <%
 if(ConfigContext.isHosted() && ((ConfigContext.getLoggedUserType()=='A') || (ConfigContext.getLoggedUserType()=='S')) && (!ConfigContext.isSupportLoggedIn())){ %>
@@ -130,25 +137,25 @@ if(ConfigContext.isHosted() && ((ConfigContext.getLoggedUserType()=='A') || (Con
 		<tr>
 			<td>DB Driver</td>
 			<td>
-				<input type="text" name="LocalDBDriver" value='<%= ConfigContext.getHostedDriver()%>' size="60" maxlength="80"/>
+				<input type="text" name="LocalDBDriver" value='<%= HtmlEncoder.encode(ConfigContext.getHostedDriver())%>' size="60" maxlength="80"/>
 			</td>
 		</tr>
 		<tr>
 			<td>DB DSN</td>
 			<td>
-				<input type="text" name="LocalDBDSN" value='<%= ConfigContext.getHostedURL()%>' size="60" maxlength="80"/>
+				<input type="text" name="LocalDBDSN" value='<%= HtmlEncoder.encode(ConfigContext.getHostedURL())%>' size="60" maxlength="80"/>
 			</td>
 		</tr>
 		<tr>
 			<td>DB User</td>
 			<td>
-				<input type="text" name="LocalDBUser" value='<%= ConfigContext.getHostedUser()%>' size="20" maxlength="80"/>
+				<input type="text" name="LocalDBUser" value='<%= HtmlEncoder.encode(ConfigContext.getHostedUser())%>' size="20" maxlength="80"/>
 			</td>
 		</tr>
 		<tr>
 			<td>DB Password</td>
 			<td>
-				<input type="password" name="LocalDBPassword" value='<%= ConfigContext.getHostedPassword()%>' size="20" maxlength="20"/>
+				<input type="password" name="LocalDBPassword" value='<%= HtmlEncoder.encode(ConfigContext.getHostedPassword())%>' size="20" maxlength="20"/>
 			</td>
 		</tr>
 	</table>
