@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-11 (Session 14h — filtering/pagination, light mode fixes, toggleable log panel)
+**Last Updated:** 2026-03-12 (Session 19 — IDE Navigator fix, OSGI recovery, security hardening, quick wins)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -49,6 +49,8 @@ These items from the original roadmap are now DONE:
 - Code-split all new pages via React.lazy() — main chunk under 500kB
 - Config Wizard expansion: schema-driven object detail panels (~80 properties matching original JSP UI), categorized review sections with human-readable labels
 - Session 14: Filtering/pagination on all listing pages, light mode blending fixes (LoggingPage, IDESyncPage), toggleable Live Engine Log panel (bottom/side/collapsed modes)
+- Session 16-18: Full integration test, XML sanitizer fix, IDE project visibility, STRIDE threat mitigation, comprehensive security hardening (5 filters, 26 JSPs, CSRF, rate limiting, session fixation)
+- Session 19: AutoImportStartup plugin compiled (IDE Navigator shows workspace projects), OSGI cache recovery, START/STOP.bat tunnel orchestration
 
 ---
 
@@ -214,6 +216,11 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | ~~Notifications inbox~~ | Notification system with bell badge | 4-6 hrs | DONE (page, servlet, NotificationService, DB schema) |
 | ~~Audit log~~ | Admin audit trail with filters | 6-8 hrs | DONE (page, servlet, AuditService, DB schema) |
 | InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs | STARTED (FieldMappingPage prototype) |
+| RBAC middleware | Per-role access filter (operator/associate/admin) | 3-5 hrs | Open |
+| Content Security Policy | Audit inline scripts/styles in 37+ JSPs, add CSP headers | 2-4 hrs | Open |
+| bcrypt migration | Replace SHA-256 with bcrypt, add jBCrypt JAR | 2-3 hrs | Blocked (migration strategy) |
+| Credential encryption | Encrypt DB passwords in config files at rest | 2-3 hrs | Open |
+| Vendor JAR CVE audit | OWASP dependency-check on 133 iwtransformationserver JARs | 1-2 hrs | Open |
 
 ### Transformation Server Status: OPERATIONAL (2026-03-09)
 

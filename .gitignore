@@ -60,6 +60,8 @@ tatus
 .classpath
 .settings/
 bin/
+!plugins/iw_workspace_init_1.0.0/bin/
+!plugins/iw_workspace_init_1.0.0/bin/**
 target/
 out/
 
