@@ -295,14 +295,15 @@ export function ProfilePage() {
             ) : (
               <form onSubmit={handleChangePassword} className="space-y-3">
                 {[
-                  { label: "Current Password", value: oldPassword, set: setOldPassword },
-                  { label: "New Password", value: newPassword, set: setNewPassword },
-                  { label: "Confirm Password", value: confirmPassword, set: setConfirmPassword },
-                ].map(({ label, value, set }) => (
+                  { id: "pw-current", label: "Current Password", value: oldPassword, set: setOldPassword },
+                  { id: "pw-new", label: "New Password", value: newPassword, set: setNewPassword },
+                  { id: "pw-confirm", label: "Confirm Password", value: confirmPassword, set: setConfirmPassword },
+                ].map(({ id, label, value, set }) => (
                   <div key={label} className="space-y-1">
-                    <Label>{label}</Label>
+                    <Label htmlFor={id}>{label}</Label>
                     <div className="relative">
                       <Input
+                        id={id}
                         type={showPasswords ? "text" : "password"}
                         value={value}
                         onChange={(e) => set(e.target.value)}

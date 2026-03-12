@@ -33,8 +33,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {/* Toast container — fixed top-right */}
-      <div className="fixed top-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none">
+      {/* Toast container — fixed top-right, aria-live for screen readers (WCAG 4.1.3) */}
+      <div className="fixed top-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none" aria-live="polite" aria-atomic="true">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onDismiss={() => dismiss(t.id)} />
         ))}
@@ -51,6 +51,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
 
   return (
     <div
+      role={toast.type === "error" ? "alert" : "status"}
       className={cn(
         "pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-in slide-in-from-top-2 min-w-[280px]",
         toast.type === "success"
@@ -59,13 +60,13 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       )}
     >
       {toast.type === "success" ? (
-        <CheckCircle className="w-4 h-4 shrink-0" />
+        <CheckCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
       ) : (
-        <AlertTriangle className="w-4 h-4 shrink-0" />
+        <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
       )}
       <span className="flex-1">{toast.message}</span>
-      <button onClick={onDismiss} className="shrink-0 hover:opacity-70 cursor-pointer">
-        <X className="w-3.5 h-3.5" />
+      <button onClick={onDismiss} aria-label="Dismiss notification" className="shrink-0 hover:opacity-70 cursor-pointer">
+        <X className="w-3.5 h-3.5" aria-hidden="true" />
       </button>
     </div>
   );

@@ -22,10 +22,37 @@ export interface WizardConfigResponse {
   data?: {
     solutionType: string;
     profileName: string | null;
+    version: number;
+    lastModifiedBy: string | null;
+    lastModifiedSource: string | null;
     hasConfiguration: boolean;
     syncMappings: Record<string, string>;
   };
   error?: string;
+}
+
+/** Field-level diff returned in 409 conflict responses */
+export interface ConfigFieldDiff {
+  added: Record<string, string>;
+  modified: Record<string, [string, string]>;
+  removed: string[];
+  unchanged: string[];
+}
+
+/** Conflict response from PUT /api/config/wizard when version mismatch */
+export interface WizardConfigConflictResponse {
+  success: false;
+  error: string;
+  conflict: true;
+  current: {
+    solutionType: string;
+    version: number;
+    lastModifiedBy: string;
+    lastModifiedSource: string;
+    updatedAt: string;
+    configurationXml: string;
+  };
+  diff: ConfigFieldDiff | null;
 }
 
 /** Request body for PUT /api/config/wizard */
@@ -33,6 +60,8 @@ export interface WizardConfigSaveRequest {
   solutionType: string;
   syncMappings: Record<string, string>;
   profileName?: string;
+  /** Current version for optimistic locking — omit for first save */
+  version?: number;
 }
 
 /** A single company credential entry */

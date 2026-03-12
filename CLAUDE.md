@@ -358,6 +358,8 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 
 - **Stack**: Vite 7 + React 19 + TypeScript (strict) + Tailwind CSS 4 + shadcn/ui + TanStack Query v5 + React Router v7 + Recharts 3
 - **Theme**: ASSA dark palette (default) + light mode, toggle in topbar, persisted to localStorage
+- **Accessibility (WCAG 2.2 AA)**: Skip nav, route announcer, ARIA combobox search, focus traps on mobile sidebar, aria-live toast notifications, label bindings, `prefers-reduced-motion` support. Color contrast verified: `--primary` 5:1 on white (light), `--muted-foreground` 4.7:1 on dark bg. All Button/Input/Select components have `focus-visible:ring-2`.
+- **Security Headers**: `iw-portal/WEB-INF/web.xml` has Tomcat `HttpHeaderSecurityFilter` (X-Frame-Options: DENY, X-Content-Type-Options: nosniff, X-XSS-Protection). HSTS disabled until HTTPS.
 - **Classic View**: Every React route maps to its JSP equivalent. "Switch to Classic" banner on every page. Users can set "always classic" preference.
 - **Hook Page Pattern**: Pages not yet rebuilt in React redirect to the corresponding JSP page. Both apps share Tomcat session cookies (same origin).
 - **Dev**: `cd frontends/iw-portal && npm run dev` → Vite on :5173, proxies `/iw-business-daemon` to Tomcat :9090
@@ -366,6 +368,8 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
   - Fresh clones get the React portal working immediately (no npm install needed for users)
   - `npm` / `tsc` / `vite` are not on PATH — use `node node_modules/...` paths instead
 - **TypeScript**: strict mode, zero errors required before commit (`node node_modules/typescript/bin/tsc -b --noEmit`)
+
+**SPA route mappings** in `iw-portal/WEB-INF/web.xml` — all 41 routes mapped via `spa-fallback` servlet (returns HTTP 200 with `index.html`): `/login`, `/dashboard`, `/monitoring/*`, `/profile/*`, `/company/*`, `/admin/*`, `/register`, `/register/*`, `/forgot-password`, `/mfa/*`, `/notifications`, `/associate/*`, `/master/*`. Unknown routes fall through to 404→`index.html` error-page.
 
 **Route → Classic JSP mapping** (22 operator routes + 9 associate + 10 master):
 - `/login` → `IWLogin.jsp`

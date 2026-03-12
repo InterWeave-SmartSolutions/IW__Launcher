@@ -11,6 +11,10 @@ import type {
  * Poll sync status and auto-invalidate config/flow queries when IDE
  * pushes changes (i.e. a profile transitions to "in_sync" from another state,
  * meaning the sync bridge just imported an IDE change into the DB).
+ *
+ * When SSE is active (useSyncSSE), consider passing autoRefresh=false or
+ * reducing poll frequency — SSE handles real-time invalidation, so polling
+ * becomes a fallback rather than the primary mechanism.
  */
 export function useSyncStatus(autoRefresh = true) {
   const qc = useQueryClient();

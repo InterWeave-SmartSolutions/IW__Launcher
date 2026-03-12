@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/AuthProvider";
 import type {
   WizardConfigResponse,
   WizardConfigSaveRequest,
+  WizardConfigConflictResponse,
   CredentialsResponse,
   CredentialSaveRequest,
   CredentialTestRequest,
@@ -12,6 +13,13 @@ import type {
 } from "@/types/configuration";
 import type { ApiMessageResponse } from "@/types/profile";
 import type { SyncActionResponse } from "@/types/sync";
+
+/** Check if an error is a 409 config conflict with diff data */
+export function isConfigConflict(
+  error: unknown
+): error is ApiError & { body: WizardConfigConflictResponse } {
+  return error instanceof ApiError && error.status === 409 && error.body?.conflict === true;
+}
 
 export function useWizardConfig() {
   const { user } = useAuth();

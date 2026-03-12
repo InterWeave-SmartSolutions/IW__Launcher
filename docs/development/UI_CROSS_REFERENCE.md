@@ -1,7 +1,8 @@
 # UI Cross-Reference: Classic JSP → React iw-portal Migration Map
 
-> Generated 2026-03-06, updated 2026-03-08.
+> Generated 2026-03-06, updated 2026-03-12.
 > Source: 7 parallel deep-dive agents analyzing 31 JSPs, 26 React files, 20 ASSA pages, 47 InterWoven components, 30 Java servlets, full IDE sync bridge, and platform training docs.
+> **Accessibility (2026-03-12):** All React pages target WCAG 2.2 AA. Layout components (AppShell, Sidebar, Topbar) have skip nav, route announcer, ARIA combobox, focus traps. All forms have label bindings and error alerts. See `docs/ui-ux/UI_UX_DESIGN_APPROACH.md` for the full accessibility baseline table.
 
 ---
 

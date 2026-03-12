@@ -106,13 +106,16 @@ export function FlowPropertiesDialog({ flowId, isFlow, open, onOpenChange }: Flo
                   Variable Parameters
                 </h4>
                 <div className="space-y-2">
-                  {(flowData.properties ?? []).filter(p => p.type !== "upload").map((prop) => (
+                  {(flowData.properties ?? []).filter(p => p.type !== "upload").map((prop) => {
+                    const inputId = `prop-${prop.name.replace(/\s+/g, "-").toLowerCase()}`;
+                    return (
                     <div key={prop.name} className="grid grid-cols-[1fr_2fr] gap-3 items-center">
-                      <Label className="text-xs truncate" title={prop.name}>
+                      <Label htmlFor={inputId} className="text-xs truncate" title={prop.name}>
                         {prop.name}
                       </Label>
                       <div className="flex items-center gap-1">
                         <Input
+                          id={inputId}
                           type={prop.type === "password" && !revealedPasswords.has(prop.name) ? "password" : "text"}
                           value={values[prop.name] ?? prop.value}
                           onChange={(e) => setValues((v) => ({ ...v, [prop.name]: e.target.value }))}
@@ -135,7 +138,8 @@ export function FlowPropertiesDialog({ flowId, isFlow, open, onOpenChange }: Flo
                         )}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -151,16 +155,20 @@ export function FlowPropertiesDialog({ flowId, isFlow, open, onOpenChange }: Flo
                   Transformation Server URLs
                 </h4>
                 <div className="space-y-2">
-                  {TS_URL_LABELS.map(([key, label]) => (
+                  {TS_URL_LABELS.map(([key, label]) => {
+                    const urlInputId = `ts-url-${key.toLowerCase()}`;
+                    return (
                     <div key={key} className="grid grid-cols-[1fr_2fr] gap-3 items-center">
-                      <Label className="text-xs">{label}</Label>
+                      <Label htmlFor={urlInputId} className="text-xs">{label}</Label>
                       <Input
+                        id={urlInputId}
                         value={flowData.tsUrls?.[key] ?? ""}
                         disabled
                         className="text-xs h-8 font-mono"
                       />
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

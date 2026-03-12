@@ -16,6 +16,13 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      // SSE endpoint — must come before the general proxy to match first.
+      // headers: disable compression so events stream in real-time.
+      "/iw-business-daemon/api/sync/events": {
+        target: backendProxy,
+        changeOrigin: true,
+        headers: { "Accept-Encoding": "identity" },
+      },
       "/iw-business-daemon": {
         target: backendProxy,
         changeOrigin: true,

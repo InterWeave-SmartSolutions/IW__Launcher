@@ -135,7 +135,7 @@ export function MfaVerifyPage() {
 
             {/* Error */}
             {error && (
-              <div className="text-xs text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.08)] border border-[hsl(var(--destructive)/0.2)] rounded-[10px] px-3 py-2">
+              <div role="alert" className="text-xs text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.08)] border border-[hsl(var(--destructive)/0.2)] rounded-[10px] px-3 py-2">
                 {error}
               </div>
             )}

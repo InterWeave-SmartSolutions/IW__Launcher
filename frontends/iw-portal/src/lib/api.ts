@@ -17,9 +17,13 @@ export function clearAuthToken(): void {
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  /** Full parsed JSON body from the error response (if available). */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public body?: any;
+  constructor(public status: number, message: string, body?: unknown) {
     super(message);
     this.name = "ApiError";
+    this.body = body;
   }
 }
 
@@ -54,7 +58,7 @@ export async function apiFetch<T>(
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: res.statusText }));
     const msg = typeof body.error === "string" ? body.error : body.error?.message ?? body.message ?? res.statusText;
-    throw new ApiError(res.status, msg);
+    throw new ApiError(res.status, msg, body);
   }
 
   return res.json();

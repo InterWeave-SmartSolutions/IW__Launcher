@@ -271,7 +271,10 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
             File workspaceRoot = new File(repoRoot, "workspace");
             for (String pName : pushedNames) {
                 try (PreparedStatement upd = conn.prepareStatement(
-                        "UPDATE company_configurations SET updated_at = CURRENT_TIMESTAMP WHERE profile_name = ?")) {
+                        "UPDATE company_configurations SET updated_at = CURRENT_TIMESTAMP, " +
+                        "version = COALESCE(version, 1) + 1, " +
+                        "last_modified_source = 'portal' " +
+                        "WHERE profile_name = ?")) {
                     upd.setString(1, pName);
                     upd.executeUpdate();
                 }
@@ -307,6 +310,10 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
             response.setStatus(500);
             response.getWriter().write("{\"success\":false,\"error\":\"" + escJson(errors.toString()) + "\"}");
         } else {
+            // Notify SSE clients that profiles were pushed to IDE
+            for (String pName : pushedNames) {
+                SyncEventServlet.broadcast("push-complete", pName, "portal");
+            }
             String warn = errors.length() > 0
                 ? ",\"warnings\":\"" + escJson(errors.toString()) + "\"" : "";
             response.getWriter().write("{\"success\":true,\"data\":{" +
@@ -351,11 +358,14 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
             if (isPostgres(conn)) {
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "INSERT INTO company_configurations " +
-                        "(company_id, profile_name, solution_type, configuration_xml) " +
-                        "VALUES (?, ?, ?, ?) " +
+                        "(company_id, profile_name, solution_type, configuration_xml, " +
+                        "version, last_modified_source) " +
+                        "VALUES (?, ?, ?, ?, 1, 'ide') " +
                         "ON CONFLICT (company_id, profile_name) DO UPDATE SET " +
                         "solution_type = EXCLUDED.solution_type, " +
                         "configuration_xml = EXCLUDED.configuration_xml, " +
+                        "version = company_configurations.version + 1, " +
+                        "last_modified_source = 'ide', " +
                         "updated_at = CURRENT_TIMESTAMP")) {
                     stmt.setInt(1, companyId);
                     stmt.setString(2, profileName);
@@ -366,11 +376,14 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
             } else {
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "INSERT INTO company_configurations " +
-                        "(company_id, profile_name, solution_type, configuration_xml) " +
-                        "VALUES (?, ?, ?, ?) " +
+                        "(company_id, profile_name, solution_type, configuration_xml, " +
+                        "version, last_modified_source) " +
+                        "VALUES (?, ?, ?, ?, 1, 'ide') " +
                         "ON DUPLICATE KEY UPDATE " +
                         "solution_type = VALUES(solution_type), " +
-                        "configuration_xml = VALUES(configuration_xml)")) {
+                        "configuration_xml = VALUES(configuration_xml), " +
+                        "version = version + 1, " +
+                        "last_modified_source = 'ide'")) {
                     stmt.setInt(1, companyId);
                     stmt.setString(2, profileName);
                     stmt.setString(3, solutionType);
@@ -402,6 +415,9 @@ public class ApiWorkspaceSyncServlet extends HttpServlet {
                     writeEpochFile(new File(profileDir, PUSH_EPOCH_FILE), storedMs);
                 }
             }
+
+            // Notify SSE clients that a profile was pulled from IDE
+            SyncEventServlet.broadcast("pull-complete", profileName, "ide");
 
             response.getWriter().write("{\"success\":true,\"data\":{" +
                 "\"profileName\":\"" + escJson(profileName) + "\"," +

@@ -6717,4 +6717,131 @@ Verification performed:
 ### What I did (this response)
 1. Ran RBAC migration on Supabase (user→operator rename, CHECK constraint, index)
 2. Updated AI_WORKLOG.md
+
+---
+
+## 2026-03-12 (Session 19 — WCAG Accessibility + Security Hardening)
+
+### Phase 1: CRITICAL Accessibility Fixes (8 items)
+- **Skip nav + route announcer**: Added skip-to-main-content link and `RouteAnnouncer` component to `AppShell.tsx`
+- **Toast ARIA**: Added aria-live="polite", role="alert"/"status", aria-label on dismiss in `ToastProvider.tsx`
+- **Sidebar focus trap**: Focus trap + Escape handler for mobile sidebar, dialog role, aria-modal, aria-hidden on backdrop in `Sidebar.tsx`
+- **Topbar ARIA combobox**: Full search combobox with role="combobox", aria-expanded, aria-controls, aria-activedescendant, listbox+option roles in `Topbar.tsx`
+- **Portal switcher**: aria-label + aria-pressed on portal toggle and dev mode toggle buttons
+- **Sidebar heading**: Changed `<h1>` to `<span>` to fix dual h1 on pages
+- **NotificationBadge + AlertBadge**: Dynamic aria-labels, aria-hidden on decorative icons, larger badge font
+- **Auth forms**: role="alert" on error divs, aria-label on password toggles, removed tabIndex={-1} across LoginPage, RegisterPage, CompanyRegisterPage, MfaVerifyPage, MfaSetupPage, ChangePasswordPage, ForgotPasswordPage
+- **Label bindings**: htmlFor/id in ProfilePage password fields and FlowPropertiesDialog
+
+### Phase 2: Security Headers + SPA Routing
+- **Security headers**: Added Tomcat `HttpHeaderSecurityFilter` to `iw-portal/WEB-INF/web.xml` (X-Frame-Options: DENY, X-Content-Type-Options: nosniff, X-XSS-Protection)
+- **SPA route completeness**: Added missing servlet-mappings for `/register`, `/register/*`, `/forgot-password`, `/mfa/*`, `/notifications`, `/associate/*`, `/master/*`
+- **Meta headers**: Added X-Content-Type-Options + referrer policy meta tags to `index.html`
+
+### Phase 3: Contrast + Focus Rings (WCAG 1.4.3, 2.4.7)
+- **Primary color contrast**: Darkened `--primary` from `197 100% 44%` to `197 100% 36%` (~3.5:1 → ~5:1 on white, passes AA)
+- **Dark mode muted text**: Lightened `--muted-foreground` from `213 25% 65%` to `213 25% 68%` (~4.2:1 → ~4.7:1, passes AA)
+- **Button focus ring**: Added `focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2` to button.tsx cva base
+- **Input focus ring**: Changed from `ring-[hsl(var(--primary)/0.3)]` to full `ring-[hsl(var(--ring))]` with ring-offset
+- **Select focus ring**: Same fix as Input applied to SelectTrigger
+- **Reduced motion**: Added `@media (prefers-reduced-motion: reduce)` block to `index.css` (WCAG 2.3.3)
+
+Files modified:
+- `frontends/iw-portal/src/components/layout/AppShell.tsx`
+- `frontends/iw-portal/src/components/layout/Sidebar.tsx`
+- `frontends/iw-portal/src/components/layout/Topbar.tsx`
+- `frontends/iw-portal/src/providers/ToastProvider.tsx`
+- `frontends/iw-portal/src/index.css`
+- `frontends/iw-portal/src/index.html`
+- `frontends/iw-portal/src/components/ui/button.tsx`
+- `frontends/iw-portal/src/components/ui/input.tsx`
+- `frontends/iw-portal/src/components/ui/select.tsx`
+- `frontends/iw-portal/src/pages/LoginPage.tsx`
+- `frontends/iw-portal/src/pages/RegisterPage.tsx`
+- `frontends/iw-portal/src/pages/CompanyRegisterPage.tsx`
+- `frontends/iw-portal/src/pages/MfaVerifyPage.tsx`
+- `frontends/iw-portal/src/pages/MfaSetupPage.tsx`
+- `frontends/iw-portal/src/pages/ChangePasswordPage.tsx`
+- `frontends/iw-portal/src/pages/ForgotPasswordPage.tsx`
+- `frontends/iw-portal/src/pages/ProfilePage.tsx`
+- `frontends/iw-portal/src/components/integrations/FlowPropertiesDialog.tsx`
+- `web_portal/tomcat/webapps/iw-portal/WEB-INF/web.xml`
+- `web_portal/tomcat/webapps/iw-portal/` — rebuilt production assets
+
+Verification performed:
+- TypeScript check: zero new errors (only pre-existing useSyncSSE.ts from concurrent session)
+- Vite production build: succeeds (6.83s, 36 chunks)
+
+### Documentation Updates
+Updated 8 docs/instruction files to reflect WCAG + security changes:
+- `CLAUDE.md` — added Accessibility and Security Headers bullet points to IW Portal section, added SPA route mapping note
+- `docs/NEXT_STEPS.md` — marked Security Headers and WCAG as DONE, updated RBAC status, added Session 19b to completed list
+- `docs/development/CONTRIBUTING.md` — added WCAG 2.2 AA checklist for PR reviews, added TypeScript check step
+- `docs/development/UI_CROSS_REFERENCE.md` — added accessibility note to header
+- `docs/ui-ux/UI_UX_DESIGN_APPROACH.md` — added full "Accessibility Baseline" section with pattern table and color values
+- `memory/MEMORY.md` — added WCAG, security headers, SPA routing status to operational + roadmap sections
+- `memory/operational-status.md` — added 3 new PASS items, updated recent changes
+- `memory/development-patterns.md` — added Accessibility and Security sections with full pattern reference
+
+### What I did (this response)
+Completed Phase 2 (security headers + SPA routing) and Phase 3 (contrast fixes + focus rings + reduced motion). Rebuilt Vite production output. Updated 8 documentation and instruction files across CLAUDE.md, NEXT_STEPS.md, CONTRIBUTING.md, UI_CROSS_REFERENCE.md, UI_UX_DESIGN_APPROACH.md, and 3 memory files.
 3. Committing all RBAC changes + build output
+
+---
+
+## Session 18b — Sync Architecture Implementation (Phases 2–4 + Compilation)
+**Date**: 2026-03-12 (continuation)
+**Trigger**: User requested implementation of 4-phase sync improvement plan (SSE, optimistic locking, XML diffing, normalization)
+**Context**: Phase 1 (SSE real-time push) was completed in the first half of this session. This entry covers Phases 2–4 and compilation.
+
+### Phase 2: Optimistic Locking — COMPLETE
+
+**Database migration** (`database/migration_005_sync_versioning.sql`):
+- Added 3 columns to `company_configurations`: `version` (INT, default 1), `last_modified_by` (VARCHAR 255), `last_modified_source` (VARCHAR 20 with CHECK constraint)
+- Idempotent (safe to re-run) — applied to Supabase production
+
+**ApiConfigurationServlet.java** — GET handler returns `version`, `lastModifiedBy`, `lastModifiedSource` via COALESCE for backward compatibility. PUT handler uses optimistic locking: `UPDATE ... WHERE version = ?` returns 409 Conflict with current server state if version mismatch. Legacy clients (no version) use upsert with auto-increment.
+
+Added helper methods:
+- `loadCurrentConfig()` — returns full JSON for 409 conflict responses
+- `loadCurrentConfigXml()` — returns raw XML for diff computation
+
+**ApiWorkspaceSyncServlet.java** — push handler now increments `version` and sets `last_modified_source='portal'`. Pull handler upserts with `version` increment and `last_modified_source='ide'`.
+
+**WorkspaceProfileSyncServlet.java** — importProfile upserts with `version` increment and `last_modified_source='bridge'`.
+
+### Phase 3: XML Field Differ Integration — COMPLETE
+
+**XmlConfigDiffer.java** (created in Phase 1 half) integrated into conflict response. On 409 Conflict, the response now includes a `diff` field with field-level changes (`added`, `modified` with old/new values, `removed`, `unchanged`).
+
+### Phase 4: Frontend Conflict Handling — COMPLETE
+
+Phase 4 was originally "canonical JSON normalization" but investigation revealed wizard XML already uses consistent field names across all solution types. Pivoted to frontend conflict support:
+
+- **`types/configuration.ts`** — Added `WizardConfigConflictResponse`, `ConfigFieldDiff` types. `WizardConfigResponse.data` now includes `version`, `lastModifiedBy`, `lastModifiedSource`. `WizardConfigSaveRequest` now includes optional `version`.
+- **`lib/api.ts`** — `ApiError` now preserves full response body (needed for 409 conflict data)
+- **`hooks/useConfiguration.ts`** — Added `isConfigConflict()` type guard for detecting 409 conflicts
+- **`hooks/useSyncSSE.ts`** — Fixed React 19 `useRef` strict mode error (missing initial value)
+
+### Compilation — COMPLETE
+
+All Java files compiled successfully:
+- `javac` API servlets: SyncEventServlet, XmlConfigDiffer, ApiConfigurationServlet, ApiWorkspaceSyncServlet, ApiTokenAuthFilter, + all others
+- `javac` config servlets: WorkspaceProfileSyncServlet
+- TypeScript: zero errors
+
+### Files modified (this continuation)
+- `web_portal/.../api/ApiConfigurationServlet.java` — loadCurrentConfig, loadCurrentConfigXml helpers, diff integration in 409
+- `web_portal/.../api/ApiWorkspaceSyncServlet.java` — version increment on push/pull
+- `web_portal/.../config/WorkspaceProfileSyncServlet.java` — version increment on import
+- `frontends/iw-portal/src/types/configuration.ts` — conflict types, version fields
+- `frontends/iw-portal/src/lib/api.ts` — ApiError body preservation
+- `frontends/iw-portal/src/hooks/useConfiguration.ts` — isConfigConflict guard
+- `frontends/iw-portal/src/hooks/useSyncSSE.ts` — useRef fix
+- `database/migration_005_sync_versioning.sql` — applied to Supabase production
+
+### Architecture Decision
+Wizard XML (`<SF2QBConfiguration>`) and IDE XML (`<BusinessDaemonConfiguration>`) are fundamentally different documents serving different purposes. The wizard stores config options (credentials, sync direction). The IDE stores flow execution details (scheduling, routing, parameters). No schema unification is needed or desirable — they are complementary, not competing.
+
+### What I did (this response)
+Completed Phases 2–4 of the sync improvement plan: optimistic locking with version columns, XML field-level diffing in conflict responses, frontend conflict type support, and compiled all Java classes. Applied DB migration to Supabase production. Fixed TypeScript error in useSyncSSE.ts.

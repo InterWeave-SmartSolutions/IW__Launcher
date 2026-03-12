@@ -125,11 +125,17 @@ public class ApiConfigurationServlet extends HttpServlet {
                 }
             }
 
-            // Get latest configuration
+            // Get latest configuration (including version for optimistic locking)
             String configXml = null;
             String profileName = null;
+            int version = 0;
+            String lastModifiedBy = null;
+            String lastModifiedSource = null;
             try (PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT profile_name, solution_type, configuration_xml " +
+                    "SELECT profile_name, solution_type, configuration_xml, " +
+                    "COALESCE(version, 1) AS version, " +
+                    "COALESCE(last_modified_by, 'system') AS last_modified_by, " +
+                    "COALESCE(last_modified_source, 'portal') AS last_modified_source " +
                     "FROM company_configurations WHERE company_id = ? " +
                     "ORDER BY updated_at DESC LIMIT 1")) {
                 stmt.setInt(1, companyId);
@@ -139,6 +145,9 @@ public class ApiConfigurationServlet extends HttpServlet {
                         String st = rs.getString("solution_type");
                         if (st != null && !st.isEmpty()) solutionType = st;
                         configXml = rs.getString("configuration_xml");
+                        version = rs.getInt("version");
+                        lastModifiedBy = rs.getString("last_modified_by");
+                        lastModifiedSource = rs.getString("last_modified_source");
                     }
                 }
             }
@@ -152,6 +161,9 @@ public class ApiConfigurationServlet extends HttpServlet {
             String json = "{\"success\":true,\"data\":{" +
                     "\"solutionType\":\"" + escapeJson(solutionType) + "\"," +
                     "\"profileName\":" + (profileName != null ? "\"" + escapeJson(profileName) + "\"" : "null") + "," +
+                    "\"version\":" + version + "," +
+                    "\"lastModifiedBy\":" + (lastModifiedBy != null ? "\"" + escapeJson(lastModifiedBy) + "\"" : "null") + "," +
+                    "\"lastModifiedSource\":" + (lastModifiedSource != null ? "\"" + escapeJson(lastModifiedSource) + "\"" : "null") + "," +
                     "\"hasConfiguration\":" + (configXml != null) + "," +
                     "\"syncMappings\":{" + syncFields.toString() + "}" +
                     "}}";
@@ -331,20 +343,82 @@ public class ApiConfigurationServlet extends HttpServlet {
                     stmt.executeUpdate();
                 }
 
-                // Upsert configuration
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO company_configurations (company_id, profile_name, solution_type, configuration_xml) " +
-                        "VALUES (?, ?, ?, ?) " +
-                        "ON CONFLICT (company_id, profile_name) DO UPDATE SET " +
-                        "solution_type = EXCLUDED.solution_type, " +
-                        "configuration_xml = EXCLUDED.configuration_xml, " +
-                        "updated_at = NOW()")) {
-                    stmt.setInt(1, companyId);
-                    stmt.setString(2, profileName);
-                    stmt.setString(3, solutionType.trim());
-                    stmt.setString(4, xml.toString());
-                    stmt.executeUpdate();
+                // Upsert configuration with optimistic locking
+                // If the client sent a version, check it matches before overwriting.
+                int clientVersion = 0;
+                try {
+                    String vStr = extractJsonString(body, "version");
+                    if (!vStr.isEmpty()) clientVersion = Integer.parseInt(vStr);
+                } catch (NumberFormatException ignored) {}
+
+                String userEmail = (String) session.getAttribute("userEmail");
+                if (userEmail == null) userEmail = "system";
+
+                if (clientVersion > 0) {
+                    // Optimistic locking: only update if version matches
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "UPDATE company_configurations SET " +
+                            "solution_type = ?, configuration_xml = ?, " +
+                            "version = version + 1, " +
+                            "last_modified_by = ?, last_modified_source = 'portal', " +
+                            "updated_at = NOW() " +
+                            "WHERE company_id = ? AND profile_name = ? AND version = ?")) {
+                        stmt.setString(1, solutionType.trim());
+                        stmt.setString(2, xml.toString());
+                        stmt.setString(3, userEmail);
+                        stmt.setInt(4, companyId);
+                        stmt.setString(5, profileName);
+                        stmt.setInt(6, clientVersion);
+                        int updated = stmt.executeUpdate();
+                        if (updated == 0) {
+                            conn.rollback();
+                            // Version conflict — return current state + field-level diff
+                            String currentData = loadCurrentConfig(conn, companyId, profileName);
+                            // Compute field-level diff between client's XML and server's current XML
+                            String diffJson = "null";
+                            try {
+                                String serverXml = loadCurrentConfigXml(conn, companyId, profileName);
+                                java.util.Map<String, String> clientFields =
+                                    XmlConfigDiffer.parseConfigFields(xml.toString());
+                                java.util.Map<String, String> serverFields =
+                                    XmlConfigDiffer.parseConfigFields(serverXml);
+                                XmlConfigDiffer.DiffResult dr =
+                                    XmlConfigDiffer.diff(serverFields, clientFields);
+                                diffJson = XmlConfigDiffer.toJson(dr);
+                            } catch (Exception diffEx) {
+                                log("Could not compute config diff", diffEx);
+                            }
+                            sendJson(response, 409,
+                                "{\"success\":false,\"error\":\"Conflict: configuration was modified since you loaded it\"," +
+                                "\"conflict\":true,\"current\":" + currentData +
+                                ",\"diff\":" + diffJson + "}");
+                            return;
+                        }
+                    }
+                } else {
+                    // No version sent (first save or legacy client) — upsert without lock check
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "INSERT INTO company_configurations (company_id, profile_name, solution_type, configuration_xml, " +
+                            "version, last_modified_by, last_modified_source) " +
+                            "VALUES (?, ?, ?, ?, 1, ?, 'portal') " +
+                            "ON CONFLICT (company_id, profile_name) DO UPDATE SET " +
+                            "solution_type = EXCLUDED.solution_type, " +
+                            "configuration_xml = EXCLUDED.configuration_xml, " +
+                            "version = company_configurations.version + 1, " +
+                            "last_modified_by = EXCLUDED.last_modified_by, " +
+                            "last_modified_source = 'portal', " +
+                            "updated_at = NOW()")) {
+                        stmt.setInt(1, companyId);
+                        stmt.setString(2, profileName);
+                        stmt.setString(3, solutionType.trim());
+                        stmt.setString(4, xml.toString());
+                        stmt.setString(5, userEmail);
+                        stmt.executeUpdate();
+                    }
                 }
+
+                // Broadcast SSE sync event
+                SyncEventServlet.broadcast("sync-update", profileName, "portal");
 
                 conn.commit();
 
@@ -826,6 +900,61 @@ public class ApiConfigurationServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         out.print(json);
         out.flush();
+    }
+
+    /**
+     * Loads the current config row for a profile and returns it as a JSON string.
+     * Used in 409 Conflict responses so the client can see what changed.
+     */
+    private String loadCurrentConfig(Connection conn, int companyId, String profileName)
+            throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT solution_type, configuration_xml, " +
+                "COALESCE(version, 1) AS version, " +
+                "COALESCE(last_modified_by, 'system') AS last_modified_by, " +
+                "COALESCE(last_modified_source, 'portal') AS last_modified_source, " +
+                "updated_at " +
+                "FROM company_configurations " +
+                "WHERE company_id = ? AND profile_name = ?")) {
+            stmt.setInt(1, companyId);
+            stmt.setString(2, profileName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String st = rs.getString("solution_type");
+                    String xml = rs.getString("configuration_xml");
+                    int ver = rs.getInt("version");
+                    String modBy = rs.getString("last_modified_by");
+                    String modSrc = rs.getString("last_modified_source");
+                    String updatedAt = rs.getString("updated_at");
+                    return "{" +
+                        "\"solutionType\":\"" + escapeJson(st) + "\"," +
+                        "\"version\":" + ver + "," +
+                        "\"lastModifiedBy\":\"" + escapeJson(modBy) + "\"," +
+                        "\"lastModifiedSource\":\"" + escapeJson(modSrc) + "\"," +
+                        "\"updatedAt\":\"" + escapeJson(updatedAt) + "\"," +
+                        "\"configurationXml\":\"" + escapeJson(xml) + "\"" +
+                        "}";
+                }
+            }
+        }
+        return "null";
+    }
+
+    /** Returns just the raw configuration_xml for a profile (for diff computation). */
+    private String loadCurrentConfigXml(Connection conn, int companyId, String profileName)
+            throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT configuration_xml FROM company_configurations " +
+                "WHERE company_id = ? AND profile_name = ?")) {
+            stmt.setInt(1, companyId);
+            stmt.setString(2, profileName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
+            }
+        }
+        return "";
     }
 
     private String escapeJson(String str) {

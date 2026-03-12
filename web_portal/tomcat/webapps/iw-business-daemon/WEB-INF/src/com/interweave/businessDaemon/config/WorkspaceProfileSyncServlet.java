@@ -165,11 +165,14 @@ public class WorkspaceProfileSyncServlet extends LocalUserManagementServlet {
 
             if (isPostgres(conn)) {
                 try (PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO company_configurations (company_id, profile_name, solution_type, configuration_xml) " +
-                        "VALUES (?, ?, ?, ?) " +
+                        "INSERT INTO company_configurations (company_id, profile_name, solution_type, configuration_xml, " +
+                        "version, last_modified_source) " +
+                        "VALUES (?, ?, ?, ?, 1, 'bridge') " +
                         "ON CONFLICT (company_id, profile_name) DO UPDATE SET " +
                         "solution_type = EXCLUDED.solution_type, " +
                         "configuration_xml = EXCLUDED.configuration_xml, " +
+                        "version = company_configurations.version + 1, " +
+                        "last_modified_source = 'bridge', " +
                         "updated_at = CURRENT_TIMESTAMP")) {
                     stmt.setInt(1, companyId);
                     stmt.setString(2, profileName);
@@ -179,11 +182,14 @@ public class WorkspaceProfileSyncServlet extends LocalUserManagementServlet {
                 }
             } else {
                 try (PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO company_configurations (company_id, profile_name, solution_type, configuration_xml) " +
-                        "VALUES (?, ?, ?, ?) " +
+                        "INSERT INTO company_configurations (company_id, profile_name, solution_type, configuration_xml, " +
+                        "version, last_modified_source) " +
+                        "VALUES (?, ?, ?, ?, 1, 'bridge') " +
                         "ON DUPLICATE KEY UPDATE " +
                         "solution_type = VALUES(solution_type), " +
-                        "configuration_xml = VALUES(configuration_xml)")) {
+                        "configuration_xml = VALUES(configuration_xml), " +
+                        "version = version + 1, " +
+                        "last_modified_source = 'bridge'")) {
                     stmt.setInt(1, companyId);
                     stmt.setString(2, profileName);
                     stmt.setString(3, solutionType);
@@ -225,6 +231,10 @@ public class WorkspaceProfileSyncServlet extends LocalUserManagementServlet {
                     log("Failed to write .push_epoch after import for " + profileName, epochErr);
                 }
             }
+
+            // Notify SSE clients that a profile was imported from IDE workspace
+            com.interweave.businessDaemon.api.SyncEventServlet.broadcast(
+                "pull-complete", profileName, "bridge");
 
             out.println("IMPORTED " + profileName);
             out.println("SOURCE " + payload.sourcePath);

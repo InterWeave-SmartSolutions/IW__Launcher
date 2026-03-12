@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSyncStatus, useSyncLog, usePushToIDE, usePullFromIDE } from "@/hooks/useSync";
+import { useSyncSSE } from "@/hooks/useSyncSSE";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useToast } from "@/providers/ToastProvider";
 import { Button } from "@/components/ui/button";
@@ -191,6 +192,15 @@ function LogPanel() {
 
 export function WorkspaceSyncPanel() {
   const { showToast } = useToast();
+
+  // SSE for real-time sync — supplements polling with sub-second push notifications
+  useSyncSSE({
+    onEvent: (_type, evt) => {
+      if (evt.profileName) {
+        showToast(`Sync: ${evt.profileName} updated via ${evt.source}`, "success");
+      }
+    },
+  });
 
   const { data, isLoading, refetch, isFetching } = useSyncStatus();
   const push = usePushToIDE();

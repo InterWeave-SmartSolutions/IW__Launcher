@@ -118,15 +118,27 @@ After any web portal change:
 4. Verify the affected pages load without errors
 5. Check `web_portal/tomcat/logs/catalina*.log` for exceptions
 
+## Accessibility (WCAG 2.2 AA) Checklist
+
+The React portal targets WCAG 2.2 Level AA. When modifying `frontends/iw-portal/`, verify:
+
+- [ ] **Keyboard navigation**: All interactive elements reachable via Tab, operable via Enter/Space, dismissible via Escape
+- [ ] **Focus visible**: `focus-visible:ring-2` on all interactive elements (Button, Input, Select already have it)
+- [ ] **ARIA attributes**: Forms have `htmlFor`/`id` label bindings, errors use `role="alert"`, modals use `role="dialog"` + `aria-modal`
+- [ ] **Color contrast**: Text meets 4.5:1 on background (use `--primary` at `197 100% 36%` in light mode, not lighter)
+- [ ] **Reduced motion**: Animations wrapped in `prefers-reduced-motion` check (global CSS rule in `index.css`)
+- [ ] **Screen readers**: Decorative icons have `aria-hidden="true"`, status updates use `aria-live="polite"`
+
 ## Pull Request Process
 
 1. Create a feature branch from `main`.
 2. Make small, focused changes. One concern per PR.
 3. Ensure `mvn clean verify` passes.
 4. Verify manually if the change touches web portal or startup scripts.
-5. Fill in the PR template (summary, test plan, known limitations).
-6. CI must pass before merge.
-7. At least one reviewer must approve.
+5. Run `node node_modules/typescript/bin/tsc -b --noEmit` for React portal changes.
+6. Fill in the PR template (summary, test plan, known limitations).
+7. CI must pass before merge.
+8. At least one reviewer must approve.
 
 ## AI-Assisted Development
 

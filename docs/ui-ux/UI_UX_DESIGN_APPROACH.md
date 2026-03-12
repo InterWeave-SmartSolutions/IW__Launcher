@@ -1,10 +1,31 @@
 # InterWeave IW-Portal: Unified UI/UX Design Approach
 
-**Updated:** March 9, 2026
+**Updated:** March 12, 2026
 **Status:** Living document — the single source of truth for all UI/UX decisions
 **Synthesizes:** `UI_UX_ANALYSIS.md`, `COMPETITIVE_LANDSCAPE_EXPANDED.md`, `IMPLEMENTATION_PLAN.md`
 
 > This document consolidates every research finding, competitive insight, and implementation constraint into one actionable reference. Every new page, component, or feature should be evaluated against this approach.
+
+### Accessibility Baseline (WCAG 2.2 Level AA — Implemented March 2026)
+
+The portal targets WCAG 2.2 Level AA compliance. The following patterns are established and must be maintained in all new development:
+
+| Pattern | Implementation | WCAG Criterion |
+|---|---|---|
+| Skip navigation | `<a href="#main-content">` in AppShell, sr-only visible on focus | 2.4.1 |
+| Route announcer | `<div aria-live="polite">` announces SPA page transitions | 4.1.3 |
+| ARIA combobox | Topbar search: role="combobox", listbox, option, aria-activedescendant | 4.1.2 |
+| Focus trap | Mobile sidebar: Tab cycling, Escape to close, auto-focus on open | 2.4.3 |
+| Toast notifications | aria-live="polite" container, role="alert" (errors), role="status" (success) | 4.1.3 |
+| Form labels | All inputs have `htmlFor`/`id` bindings, errors use `role="alert"` | 1.3.1, 3.3.1 |
+| Color contrast | `--primary` 5:1 on white (light), `--muted-foreground` 4.7:1 on dark bg | 1.4.3 |
+| Focus indicators | Button/Input/Select: `focus-visible:ring-2 ring-[hsl(var(--ring))]` with ring-offset | 2.4.7 |
+| Reduced motion | Global `@media (prefers-reduced-motion: reduce)` disables all animations | 2.3.3 |
+| Decorative icons | All Lucide icons adjacent to text labels: `aria-hidden="true"` | 1.1.1 |
+
+**Color values (do not lighten):**
+- Light mode `--primary`: `197 100% 36%` (#007ab8) — must maintain 4.5:1 on white
+- Dark mode `--muted-foreground`: `213 25% 68%` (#8fa6c2) — must maintain 4.5:1 on `222 68% 6%` bg
 
 ---
 

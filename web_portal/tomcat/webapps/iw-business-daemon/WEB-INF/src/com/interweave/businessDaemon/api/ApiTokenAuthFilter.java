@@ -39,12 +39,20 @@ public class ApiTokenAuthFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) request;
         HttpServletResponse httpRes = (HttpServletResponse) response;
 
-        // Check for Bearer token
+        // Check for Bearer token in Authorization header
+        String token = null;
         String authHeader = httpReq.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7).trim();
-            ApiTokenStore.TokenEntry entry = ApiTokenStore.getToken(token);
+            token = authHeader.substring(7).trim();
+        }
 
+        // Fallback: check query parameter (for SSE/EventSource which can't set headers)
+        if (token == null || token.isEmpty()) {
+            token = httpReq.getParameter("token");
+        }
+
+        if (token != null && !token.isEmpty()) {
+            ApiTokenStore.TokenEntry entry = ApiTokenStore.getToken(token);
             if (entry != null) {
                 // Token is valid — populate session with stored user attributes
                 HttpSession session = httpReq.getSession(true);
