@@ -3,7 +3,7 @@
 # trycloudflare.com URL, patches vercel.json, commits + pushes.
 # Also starts Tomcat if not already running on port 9090.
 
-$repoRoot   = "C:\IW_IDE\IW_Launcher"
+$repoRoot   = Split-Path -Parent $PSScriptRoot
 $javaExe    = "$repoRoot\jre\bin\java.exe"
 $catHome    = "$repoRoot\web_portal\tomcat"
 $logsDir    = "$repoRoot\logs"
@@ -55,8 +55,8 @@ $stdoutLog = "$logsDir\quick_tunnel_stdout.log"
 if (Test-Path $stdoutLog) { Remove-Item $stdoutLog -Force }
 
 # cloudflared logs the URL to stderr
-$cfProc = Start-Process -FilePath "cloudflared" `
-    -ArgumentList "tunnel", "--url", "http://localhost:9090" `
+$cfProc = Start-Process -FilePath "npx" `
+    -ArgumentList "cloudflared", "tunnel", "--url", "http://localhost:9090" `
     -RedirectStandardError  $tunnelLog `
     -RedirectStandardOutput $stdoutLog `
     -WindowStyle Hidden -PassThru
@@ -133,8 +133,8 @@ while ($true) {
     if ($cfProc.HasExited) {
         Write-Host "  Tunnel exited — restarting..."
         Remove-Item $tunnelLog -Force -ErrorAction SilentlyContinue
-        $cfProc = Start-Process -FilePath "cloudflared" `
-            -ArgumentList "tunnel", "--url", "http://localhost:9090" `
+        $cfProc = Start-Process -FilePath "npx" `
+            -ArgumentList "cloudflared", "tunnel", "--url", "http://localhost:9090" `
             -RedirectStandardError  $tunnelLog `
             -RedirectStandardOutput $stdoutLog `
             -WindowStyle Hidden -PassThru
