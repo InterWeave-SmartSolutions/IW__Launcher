@@ -318,17 +318,13 @@
         </div>
     </footer>
 
-    <!-- Dashboard JavaScript Configuration -->
-    <script>
-        // Configuration
-        window.dashboardConfig = {
-            userId: '<%= HtmlEncoder.encode(userId) %>',
-            companyId: <%= companyId != null ? companyId : "null" %>,
-            isAdmin: <%= isAdmin %>,
-            refreshInterval: 10000, // 10 seconds
-            apiBaseUrl: '../api/monitoring'
-        };
-    </script>
+    <!-- Dashboard JavaScript Configuration (data attributes for CSP compliance) -->
+    <div id="dashboard-config" style="display:none"
+         data-user-id="<%= HtmlEncoder.encode(userId) %>"
+         data-company-id="<%= companyId != null ? companyId : "" %>"
+         data-is-admin="<%= isAdmin %>"
+         data-refresh-interval="10000"
+         data-api-base-url="../api/monitoring"></div>
 
     <!-- Dashboard Real-time Status Display -->
     <script src="js/dashboard-status.js"></script>

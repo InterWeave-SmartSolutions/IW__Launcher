@@ -7175,3 +7175,71 @@ User request: Tackle and combine RBAC middleware, Cloudflare tunnel, Vercel rede
 - Vercel auto-deploys on push to main (GitHub integration) — no manual `vercel deploy` needed
 - Quick tunnel URL changes on restart — for persistent URL, run `scripts/setup_cloudflare_tunnel.bat` (needs Cloudflare account)
 - Vercel CLI login needed for manual deploys: `npx vercel login`
+
+## Session 23 — CSP Refactoring: Eliminate All Inline Scripts (2026-03-13)
+
+**Agent**: Claude Opus 4.6
+**Scope**: Content Security Policy hardening — extract all inline JavaScript from JSP pages to external files
+
+### Problem
+The `SecurityHeadersFilter` CSP directive used `script-src 'self' 'unsafe-inline'`, which allowed inline scripts and weakened XSS protection. Multiple JSP pages had inline `<script>` blocks and `onclick`/`onload` event handlers.
+
+### Changes Made
+
+**JSP pages refactored (7 total):**
+1. `Logging.jsp` — extracted `onload` redirect to `logging.js` via `data-redirect-url` attribute
+2. `MoreCustomMappings.jsp` — extracted `onclick="self.close()"` to `more-custom-mappings.js` via `data-action="close-window"`
+3. `help/help-popup.jsp` — inline script already extracted in prior session; fixed HTTP 500 by deploying missing `HelpLinkService` class
+4. `help/errors/index.jsp` — inline search script already extracted in prior session; verified working
+5. `monitoring/Dashboard.jsp` — converted `window.dashboardConfig` inline `<script>` to `<div id="dashboard-config">` with data attributes
+6. `monitoring/TransactionDetail.jsp` — converted `window.transactionConfig` inline `<script>` to `<div id="transaction-config">` with data attributes
+7. `monitoring/AlertConfig.jsp` — converted `window.alertConfig` inline `<script>` to `<div id="alert-config">` with data attributes
+
+**New external JS files created (2):**
+- `logging.js` — reads `data-redirect-url` from body, performs top-level redirect
+- `more-custom-mappings.js` — event listener for close-window action
+
+**Monitoring JS files updated (5):**
+- `js/dashboard-status.js` — reads config from `#dashboard-config` data attributes instead of `window.dashboardConfig`
+- `js/dashboard-charts.js` — same pattern
+- `js/transaction-history.js` — same pattern + converted retry onclick to `data-action="retry-load"` with event delegation
+- `js/transaction-detail.js` — reads config from `#transaction-config` data attributes
+- `js/alert-config.js` — reads config from `#alert-config` data attributes + converted 6 inline onclick handlers (toggle/edit/delete for alerts and webhooks) to `data-action` attributes with document-level event delegation
+
+**Java classes compiled and deployed:**
+- `HelpLinkService.java` (`src/main/java/com/interweave/help/`) — compiled to `WEB-INF/classes/com/interweave/help/` (4 class files: HelpLinkService, HelpContext enum, HelpTopic inner class, synthetic)
+- `SecurityHeadersFilter.java` — recompiled with updated CSP directive
+
+**SecurityHeadersFilter CSP changes:**
+- `script-src`: `'self' 'unsafe-inline'` → `'self' https://cdn.jsdelivr.net` (removed unsafe-inline, added CDN for Chart.js)
+- `style-src`: unchanged (`'self' 'unsafe-inline'` — still needed for legacy JSP inline styles)
+- Debug header `X-CSP-Debug` removed
+
+### Verification
+- All 7 JSP pages return HTTP 200 (monitoring pages return 302 redirect-to-login as expected)
+- CSP header confirmed in responses: `script-src 'self' https://cdn.jsdelivr.net`
+- Zero inline `<script>` blocks remain in any JSP
+- Zero inline event handlers (`onclick`, `onload`, etc.) remain in any JSP
+- Zero `onclick` attributes remain in monitoring JS files
+
+### Pattern Used
+**Data-attribute bridge pattern** for server→client data transfer:
+```
+JSP: <div id="config" style="display:none" data-user-id="<%= HtmlEncoder.encode(userId) %>">
+JS:  var el = document.getElementById('config');
+     var userId = el.getAttribute('data-user-id');
+```
+**Event delegation pattern** for dynamically generated HTML:
+```
+HTML: <button data-action="edit-alert" data-id="123">Edit</button>
+JS:   document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-action]');
+        if (btn) { /* dispatch by btn.getAttribute('data-action') */ }
+      });
+```
+
+### Commands Run
+- `javac -source 1.8 -target 1.8 ...` (HelpLinkService, SecurityHeadersFilter)
+- `powershell.exe ... Start-Process ... startup.bat` (Tomcat restart x3)
+- `curl` verification of all pages + headers
+- `grep` sweep for remaining inline scripts/handlers

@@ -16,15 +16,16 @@
 (function() {
     'use strict';
 
-    // Configuration from TransactionDetail.jsp
-    var config = window.transactionConfig || {
-        transactionId: '',
-        apiBaseUrl: '../api/monitoring',
-        userId: '',
-        companyId: null,
-        isAdmin: false,
-        brand: '',
-        solutions: ''
+    // Configuration from TransactionDetail.jsp (read from data attributes for CSP compliance)
+    var configEl = document.getElementById('transaction-config');
+    var config = {
+        transactionId: configEl ? configEl.getAttribute('data-transaction-id') : '',
+        apiBaseUrl: configEl ? configEl.getAttribute('data-api-base-url') : '../api/monitoring',
+        userId: configEl ? configEl.getAttribute('data-user-id') : '',
+        companyId: configEl ? configEl.getAttribute('data-company-id') || null : null,
+        isAdmin: configEl ? configEl.getAttribute('data-is-admin') === 'true' : false,
+        brand: configEl ? configEl.getAttribute('data-brand') : '',
+        solutions: configEl ? configEl.getAttribute('data-solutions') : ''
     };
 
     // State

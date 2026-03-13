@@ -11,13 +11,14 @@
 (function() {
     'use strict';
 
-    // Configuration from Dashboard.jsp
-    var config = window.dashboardConfig || {
-        apiBaseUrl: '../api/monitoring',
-        refreshInterval: 10000,
-        userId: '',
-        companyId: null,
-        isAdmin: false
+    // Configuration from Dashboard.jsp (read from data attributes for CSP compliance)
+    var configEl = document.getElementById('dashboard-config');
+    var config = {
+        apiBaseUrl: configEl ? configEl.getAttribute('data-api-base-url') : '../api/monitoring',
+        refreshInterval: configEl ? parseInt(configEl.getAttribute('data-refresh-interval'), 10) || 10000 : 10000,
+        userId: configEl ? configEl.getAttribute('data-user-id') : '',
+        companyId: configEl ? configEl.getAttribute('data-company-id') || null : null,
+        isAdmin: configEl ? configEl.getAttribute('data-is-admin') === 'true' : false
     };
 
     // Refresh timer

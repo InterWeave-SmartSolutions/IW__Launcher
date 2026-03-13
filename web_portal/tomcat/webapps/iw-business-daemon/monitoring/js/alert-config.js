@@ -16,14 +16,15 @@
 (function() {
     'use strict';
 
-    // Configuration from AlertConfig.jsp
-    var config = window.alertConfig || {
-        userId: '',
-        companyId: null,
-        isAdmin: false,
-        apiBaseUrl: '../api/monitoring',
-        brand: '',
-        solutions: ''
+    // Configuration from AlertConfig.jsp (read from data attributes for CSP compliance)
+    var configEl = document.getElementById('alert-config');
+    var config = {
+        userId: configEl ? configEl.getAttribute('data-user-id') : '',
+        companyId: configEl ? configEl.getAttribute('data-company-id') || null : null,
+        isAdmin: configEl ? configEl.getAttribute('data-is-admin') === 'true' : false,
+        apiBaseUrl: configEl ? configEl.getAttribute('data-api-base-url') : '../api/monitoring',
+        brand: configEl ? configEl.getAttribute('data-brand') : '',
+        solutions: configEl ? configEl.getAttribute('data-solutions') : ''
     };
 
     // State management
@@ -373,11 +374,11 @@
             }
             html += '    </div>';
             html += '    <div class="card-actions">';
-            html += '      <button class="btn btn-icon btn-secondary" onclick="window.alertConfigAPI.toggleAlertRule(' + rule.id + ', ' + !isEnabled + ')">';
+            html += '      <button class="btn btn-icon btn-secondary" data-action="toggle-alert" data-id="' + rule.id + '" data-enabled="' + !isEnabled + '">';
             html += isEnabled ? 'Disable' : 'Enable';
             html += '      </button>';
-            html += '      <button class="btn btn-icon btn-secondary" onclick="window.alertConfigAPI.editAlertRule(' + rule.id + ')">Edit</button>';
-            html += '      <button class="btn btn-icon btn-error" onclick="window.alertConfigAPI.deleteAlertRule(' + rule.id + ')">Delete</button>';
+            html += '      <button class="btn btn-icon btn-secondary" data-action="edit-alert" data-id="' + rule.id + '">Edit</button>';
+            html += '      <button class="btn btn-icon btn-error" data-action="delete-alert" data-id="' + rule.id + '">Delete</button>';
             html += '    </div>';
             html += '  </div>';
             html += '  <div class="card-body">';
@@ -536,11 +537,11 @@
             }
             html += '    </div>';
             html += '    <div class="card-actions">';
-            html += '      <button class="btn btn-icon btn-secondary" onclick="window.alertConfigAPI.toggleWebhook(' + webhook.id + ', ' + !isEnabled + ')">';
+            html += '      <button class="btn btn-icon btn-secondary" data-action="toggle-webhook" data-id="' + webhook.id + '" data-enabled="' + !isEnabled + '">';
             html += isEnabled ? 'Disable' : 'Enable';
             html += '      </button>';
-            html += '      <button class="btn btn-icon btn-secondary" onclick="window.alertConfigAPI.editWebhook(' + webhook.id + ')">Edit</button>';
-            html += '      <button class="btn btn-icon btn-error" onclick="window.alertConfigAPI.deleteWebhook(' + webhook.id + ')">Delete</button>';
+            html += '      <button class="btn btn-icon btn-secondary" data-action="edit-webhook" data-id="' + webhook.id + '">Edit</button>';
+            html += '      <button class="btn btn-icon btn-error" data-action="delete-webhook" data-id="' + webhook.id + '">Delete</button>';
             html += '    </div>';
             html += '  </div>';
             html += '  <div class="card-body">';
@@ -1599,21 +1600,23 @@
     }
 
     /**
-     * Public API for window access
+     * Event delegation for dynamically generated buttons (CSP-compliant, no inline onclick)
      */
-    window.alertConfigAPI = {
-        reload: function() {
-            loadAlertRules();
-            loadWebhooks();
-            loadAlertHistory();
-        },
-        editAlertRule: editAlertRule,
-        deleteAlertRule: deleteAlertRule,
-        toggleAlertRule: toggleAlertRule,
-        editWebhook: editWebhook,
-        deleteWebhook: deleteWebhook,
-        toggleWebhook: toggleWebhook
-    };
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        var action = btn.getAttribute('data-action');
+        var id = parseInt(btn.getAttribute('data-id'), 10);
+        var enabled = btn.getAttribute('data-enabled') === 'true';
+        switch (action) {
+            case 'toggle-alert': toggleAlertRule(id, enabled); break;
+            case 'edit-alert': editAlertRule(id); break;
+            case 'delete-alert': deleteAlertRule(id); break;
+            case 'toggle-webhook': toggleWebhook(id, enabled); break;
+            case 'edit-webhook': editWebhook(id); break;
+            case 'delete-webhook': deleteWebhook(id); break;
+        }
+    });
 
     // Initialize on load
     init();

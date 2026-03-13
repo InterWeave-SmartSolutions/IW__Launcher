@@ -429,18 +429,14 @@
         </div>
     </div>
 
-    <!-- JavaScript Configuration -->
-    <script>
-        // Configuration
-        window.alertConfig = {
-            userId: '<%= HtmlEncoder.encode(userId) %>',
-            companyId: <%= companyId != null ? companyId : "null" %>,
-            isAdmin: <%= isAdmin %>,
-            apiBaseUrl: '../api/monitoring',
-            brand: '<%= HtmlEncoder.encode(brand) %>',
-            solutions: '<%= HtmlEncoder.encode(solutions) %>'
-        };
-    </script>
+    <!-- JavaScript Configuration (data attributes for CSP compliance) -->
+    <div id="alert-config" style="display:none"
+         data-user-id="<%= HtmlEncoder.encode(userId) %>"
+         data-company-id="<%= companyId != null ? companyId : "" %>"
+         data-is-admin="<%= isAdmin %>"
+         data-api-base-url="../api/monitoring"
+         data-brand="<%= HtmlEncoder.encode(brand) %>"
+         data-solutions="<%= HtmlEncoder.encode(solutions) %>"></div>
 
     <!-- Alert Configuration JavaScript -->
     <script src="js/alert-config.js"></script>

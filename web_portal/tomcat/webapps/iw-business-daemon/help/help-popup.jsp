@@ -271,21 +271,7 @@ if (fullDocUrl == null && helpTopic != null) {
       }
     }
   </style>
-  <script>
-    function openFullDocs() {
-      <% if (fullDocUrl != null) { %>
-      window.open('<%= HtmlEncoder.encode(fullDocUrl) %>', '_blank');
-      <% } %>
-    }
-
-    function closeHelp() {
-      window.close();
-    }
-
-    function printHelp() {
-      window.print();
-    }
-  </script>
+  <script src="help-popup.js"></script>
 </head>
 <body>
   <div class="help-container">
@@ -387,10 +373,10 @@ if (fullDocUrl == null && helpTopic != null) {
     <!-- Action Buttons -->
     <div class="action-buttons no-print">
       <% if (fullDocUrl != null) { %>
-      <button class="btn btn-primary" onclick="openFullDocs()">View Full Documentation</button>
+      <button class="btn btn-primary" data-action="open-docs" data-docs-url="<%= HtmlEncoder.encode(fullDocUrl) %>">View Full Documentation</button>
       <% } %>
-      <button class="btn btn-secondary" onclick="printHelp()">Print</button>
-      <button class="btn btn-secondary" onclick="closeHelp()">Close</button>
+      <button class="btn btn-secondary" data-action="print">Print</button>
+      <button class="btn btn-secondary" data-action="close">Close</button>
     </div>
   </div>
 </body>

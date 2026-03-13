@@ -70,6 +70,7 @@ edit = true;
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Custom Mappings Page</title>
+<script src="more-custom-mappings.js"></script>
 <style>
 <!--  
 .labels
@@ -155,7 +156,7 @@ edit = true;
 
 
 <p>
-	<input type="submit" name="submit" value="Submit" class="labels"/> <input type="button" name="close" value="Close" class="labels" onclick="self.close()"/>
+	<input type="submit" name="submit" value="Submit" class="labels"/> <input type="button" name="close" value="Close" class="labels" data-action="close-window"/>
 	</p></form>
 </body>
 </html>

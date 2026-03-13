@@ -24,7 +24,9 @@ url = "";
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-  <title>Profile Login Page</title><style>
+  <title>Profile Login Page</title>
+<script src="logging.js"></script>
+<style>
 <!--
 .labels
    {
@@ -37,5 +39,5 @@ url = "";
 -->
 </style>
 </head>
-<body onload="top.location.href='<%= url + "?__LOG_QUERY_ID__=" + encodedQuery + "&CurrentProfile=" + encodedProfile + "&HV=" + hv%>'"/>
+<body data-redirect-url="<%= url + "?__LOG_QUERY_ID__=" + encodedQuery + "&CurrentProfile=" + encodedProfile + "&HV=" + hv%>"></body>
 </html>

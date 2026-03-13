@@ -18,13 +18,14 @@
 (function() {
     'use strict';
 
-    // Configuration from Dashboard.jsp
-    var config = window.dashboardConfig || {
-        apiBaseUrl: '../api/monitoring',
-        refreshInterval: 10000,
-        userId: '',
-        companyId: null,
-        isAdmin: false
+    // Configuration from Dashboard.jsp (read from data attributes for CSP compliance)
+    var configEl = document.getElementById('dashboard-config');
+    var config = {
+        apiBaseUrl: configEl ? configEl.getAttribute('data-api-base-url') : '../api/monitoring',
+        refreshInterval: configEl ? parseInt(configEl.getAttribute('data-refresh-interval'), 10) || 10000 : 10000,
+        userId: configEl ? configEl.getAttribute('data-user-id') : '',
+        companyId: configEl ? configEl.getAttribute('data-company-id') || null : null,
+        isAdmin: configEl ? configEl.getAttribute('data-is-admin') === 'true' : false
     };
 
     // State management
@@ -526,7 +527,7 @@
 
         // Actions
         var actionsCell = document.createElement('td');
-        actionsCell.innerHTML = '<button class="btn-link" onclick="event.stopPropagation()">View Details →</button>';
+        actionsCell.innerHTML = '<button class="btn-link">View Details &rarr;</button>';
         actionsCell.addEventListener('click', function(e) {
             e.stopPropagation();
             openTransactionDetail(transaction.id);
@@ -598,7 +599,7 @@
         if (tableBody) {
             tableBody.innerHTML = '<tr><td colspan="7" class="error-state">' +
                                  'Failed to load transactions: ' + escapeHtml(error.message) +
-                                 '<br><button class="btn btn-primary" onclick="window.dashboardHistory.reload()">Retry</button>' +
+                                 '<br><button class="btn btn-primary" data-action="retry-load">Retry</button>' +
                                  '</td></tr>';
         }
     }
@@ -765,6 +766,12 @@
     // Clean up on page unload
     window.addEventListener('beforeunload', function() {
         stopAutoRefresh();
+    });
+
+    // Event delegation for dynamically generated buttons (CSP-compliant)
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-action="retry-load"]');
+        if (btn) { loadTransactions(); }
     });
 
     // Export functions for external access

@@ -273,19 +273,15 @@
         </div>
     </footer>
 
-    <!-- JavaScript Configuration -->
-    <script>
-        // Configuration
-        window.transactionConfig = {
-            transactionId: '<%= HtmlEncoder.encode(transactionId) %>',
-            userId: '<%= HtmlEncoder.encode(userId) %>',
-            companyId: <%= companyId != null ? companyId : "null" %>,
-            isAdmin: <%= isAdmin %>,
-            apiBaseUrl: '../api/monitoring',
-            brand: '<%= HtmlEncoder.encode(brand) %>',
-            solutions: '<%= HtmlEncoder.encode(solutions) %>'
-        };
-    </script>
+    <!-- JavaScript Configuration (data attributes for CSP compliance) -->
+    <div id="transaction-config" style="display:none"
+         data-transaction-id="<%= HtmlEncoder.encode(transactionId) %>"
+         data-user-id="<%= HtmlEncoder.encode(userId) %>"
+         data-company-id="<%= companyId != null ? companyId : "" %>"
+         data-is-admin="<%= isAdmin %>"
+         data-api-base-url="../api/monitoring"
+         data-brand="<%= HtmlEncoder.encode(brand) %>"
+         data-solutions="<%= HtmlEncoder.encode(solutions) %>"></div>
 
     <!-- Transaction Detail JavaScript -->
     <script src="js/transaction-detail.js"></script>

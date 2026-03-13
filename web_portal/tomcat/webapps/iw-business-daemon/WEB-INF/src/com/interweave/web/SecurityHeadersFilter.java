@@ -18,9 +18,11 @@ import javax.servlet.http.HttpServletResponse;
  * - X-XSS-Protection: 1; mode=block (legacy browser XSS filter)
  * - Referrer-Policy: strict-origin-when-cross-origin
  * - Permissions-Policy: restricts browser features
+ * - Content-Security-Policy: permissive baseline (supports both legacy JSPs with inline scripts
+ *   and modern React portal; allows same-origin iframes, trusted sources for external JS/CSS)
  *
- * Note: Content-Security-Policy is NOT set here because legacy JSPs use inline
- * scripts and eval(). Enable CSP only after auditing all inline JS usage.
+ * Note: CSP uses 'unsafe-inline' for script-src to support legacy JSP inline scripts.
+ * The React portal (iw-portal) can add stricter meta CSP directives if needed.
  */
 public class SecurityHeadersFilter implements Filter {
 
@@ -51,6 +53,22 @@ public class SecurityHeadersFilter implements Filter {
             // Restrict browser features the app doesn't need
             httpResponse.setHeader("Permissions-Policy",
                 "geolocation=(), camera=(), microphone=(), payment=()");
+
+            // Content Security Policy — now that inline scripts are extracted to external .js files,
+            // we can use a strict policy without 'unsafe-inline' for script-src.
+            // style-src still needs 'unsafe-inline' for legacy JSP inline styles.
+            // cdn.jsdelivr.net is needed for Chart.js on monitoring Dashboard.jsp.
+            String csp = "default-src 'self'; "
+                + "script-src 'self' https://cdn.jsdelivr.net; "
+                + "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                + "font-src 'self' https://fonts.gstatic.com; "
+                + "img-src 'self' data: https:; "
+                + "frame-src 'self'; "
+                + "connect-src 'self'; "
+                + "object-src 'none'; "
+                + "base-uri 'self'; "
+                + "form-action 'self'";
+            httpResponse.setHeader("Content-Security-Policy", csp);
 
             // Cache control for authenticated pages — don't cache sensitive data
             // (static assets like CSS/JS/images are served by Tomcat's DefaultServlet
