@@ -109,7 +109,7 @@ export function DashboardPage() {
   useDocumentTitle("Dashboard");
   const { user } = useAuth();
   const { data: dashRes, isLoading, error, refetch, isFetching } = useDashboard();
-  const { data: txRes } = useTransactions(1, 50);
+  const { data: txRes } = useTransactions(1, 8);
   const { data: engineRes, isLoading: engineLoading } = useEngineStatus();
 
   const summary = dashRes?.data?.summary;
@@ -316,8 +316,8 @@ export function DashboardPage() {
                   </td>
                 </tr>
               ) : (
-                transactions.map((tx: Transaction, idx: number) => (
-                  <tr key={tx.execution_id} className={cn("border-t border-[hsl(var(--border))]", idx % 2 === 1 && "bg-muted/40")}>
+                transactions.map((tx: Transaction) => (
+                  <tr key={tx.execution_id} className="border-t border-[hsl(var(--border))]">
                     <td className="px-3 py-2 text-xs">{fmtTime(tx.started_at)}</td>
                     <td className="px-3 py-2 text-xs font-medium">{tx.flow_name}</td>
                     <td className="px-3 py-2">{statusBadge(tx.status)}</td>

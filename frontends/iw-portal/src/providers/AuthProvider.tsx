@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiFetch, setAuthToken, clearAuthToken } from "@/lib/api";
+import { apiFetch, getAuthToken, setAuthToken, clearAuthToken } from "@/lib/api";
 import type { User, LoginRequest, LoginResponse, SessionResponse } from "@/types/auth";
 
 interface AuthState {
@@ -27,6 +27,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Prevent concurrent checks (e.g. rapid tab switches)
     if (checkingRef.current) return;
     checkingRef.current = true;
+
+    // Gate on Bearer token: if there's no token in localStorage, the user
+    // hasn't logged in via the React UI. Don't inherit JSP-only sessions —
+    // classic UI login sets a JSESSIONID but never stores a Bearer token.
+    const token = getAuthToken();
+    if (!token) {
+      queryClient.clear();
+      setUser(null);
+      checkingRef.current = false;
+      setIsLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
     try {

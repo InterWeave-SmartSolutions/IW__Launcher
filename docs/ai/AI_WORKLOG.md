@@ -7002,3 +7002,53 @@ Conducted comprehensive investigation of the InterWeave Eclipse IDE using 4 para
 
 ### What I did (this response):
 Audited all existing sync infrastructure (6 source files, 2000+ lines), workspace data model, and gap analysis. Designed and documented the complete AI Management Architecture in a 550+ line document covering 5 layers, 28 operations, data flow diagrams, conflict resolution, and 5 phased implementation plan. The architecture enables full AI management while preserving complete IDE GUI compatibility.
+
+Updated 6 project docs with session leak fix references and E2E test instructions. Added model selection policy (§6) to AI_WORKFLOW.md with tier matrix and decision rules. Created persistent memory for model selection preference. Committed and pushed both doc batches.
+
+---
+
+## 2026-03-13 (Session continuation)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Multiple UI polish items — (1) fix classic→React session leak, (2) redesign sidebar scrollbar, (3) shorten dashboard transaction listing, (4) add zebra row coloring to all tables, (5) fix logging page spacing, (6) default Activity Overview to Week
+
+Actions taken:
+
+### 1. Classic→React session leak fix
+- Added token-gate in `AuthProvider.tsx` `checkSession()`: if no Bearer token in localStorage, immediately set user=null (prevents JSP-only JSESSIONID from leaking into React)
+- Verified with 7/7 Playwright tests passing
+
+### 2. Custom scrollbar theming
+- Added global scrollbar CSS in `index.css`: Firefox `scrollbar-width: thin` + WebKit `::-webkit-scrollbar` (6px global, 4px sidebar)
+- Themed for both light/dark modes using CSS variables
+
+### 3. Dashboard transaction cap
+- Changed `useTransactions(1, 50)` → `useTransactions(1, 8)` in DashboardPage.tsx
+
+### 4. Global zebra row striping
+- Added CSS `table tbody tr:nth-child(even)` in index.css for both light/dark
+- Removed manual `idx % 2` zebra logic from DashboardPage, CredentialInventory, LoggingPage
+- FlowTable kept manual zebra (uses div grid, not table) with aligned colors
+
+### 5. Logging page spacing
+- Replaced React fragments with `<div className="space-y-6">` in list/detail views
+- Bumped insights tab from space-y-4 to space-y-6
+
+### 6. Activity Overview default
+- Changed `useState<TimeRange>("all")` → `useState<TimeRange>("1w")` in LoggingPage.tsx
+
+### Files modified
+- `frontends/iw-portal/src/providers/AuthProvider.tsx` — token-gate in checkSession
+- `frontends/iw-portal/src/index.css` — scrollbar CSS + zebra striping CSS
+- `frontends/iw-portal/src/pages/DashboardPage.tsx` — 8-row cap, removed manual zebra
+- `frontends/iw-portal/src/pages/LoggingPage.tsx` — spacing, default Week, removed manual zebra
+- `frontends/iw-portal/src/components/integrations/FlowTable.tsx` — aligned zebra colors
+- `frontends/iw-portal/src/components/integrations/CredentialInventory.tsx` — removed manual zebra
+- `web_portal/tomcat/webapps/iw-portal/` — production build output
+
+### Verification performed
+- TypeScript: zero errors (`tsc -b --noEmit`)
+- Vite production build: successful
+- Playwright tests: 7/7 pass (session leak fix verified)
+
+### What I did (this response)
+Committed all 6 UI improvements: session leak fix (token-gate), scrollbar theming, dashboard 8-row cap, global zebra striping, logging page spacing, and Activity Overview default to Week. Updated build output.

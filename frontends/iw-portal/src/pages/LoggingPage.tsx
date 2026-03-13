@@ -420,8 +420,7 @@ function ActivityLogsTab() {
                 const dur = tx.duration_ms != null ? `${(tx.duration_ms / 1000).toFixed(1)}s` : "—";
                 return (
                   <tr key={tx.execution_id ?? i}
-                    className={cn("border-b border-[hsl(var(--border)/0.5)] hover:bg-muted/30",
-                      i % 2 === 1 && "bg-muted/40")}>
+                    className="border-b border-[hsl(var(--border)/0.5)] hover:bg-muted/30">
                     <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{ts}</td>
                     <td className="px-3 py-2 font-medium max-w-[180px] truncate">{tx.flow_name ?? "—"}</td>
                     <td className="px-3 py-2">{statusBadge(tx.status)}</td>
@@ -464,7 +463,7 @@ export function LoggingPage() {
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("all");
   const [searchFilter, setSearchFilter] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("date");
-  const [timeRange, setTimeRange] = useState<TimeRange>("all");
+  const [timeRange, setTimeRange] = useState<TimeRange>("1w");
   const [detailLevelFilter, setDetailLevelFilter] = useState<"all" | "error" | "warn">("all");
   const [detailSearch, setDetailSearch] = useState("");
   const [expandedIncidents, setExpandedIncidents] = useState<Set<number>>(new Set());
@@ -747,7 +746,7 @@ export function LoggingPage() {
 
         {/* ━━━━━━━━━━ LIST VIEW ━━━━━━━━━━ */}
         {view === "list" && (
-          <>
+          <div className="space-y-6">
             {summaryLoading ? (
               <div className="flex justify-center py-16">
                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -1018,12 +1017,12 @@ export function LoggingPage() {
                 </div>
               </>
             )}
-          </>
+          </div>
         )}
 
         {/* ━━━━━━━━━━ DETAIL VIEW ━━━━━━━━━━ */}
         {view === "detail" && selectedDate && (
-          <>
+          <div className="space-y-6">
             {/* Log type tabs */}
             <div className="flex gap-2">
               {availableTypes.map((t) => (
@@ -1052,7 +1051,7 @@ export function LoggingPage() {
                 </TabsList>
 
                 {/* ── INSIGHTS TAB ── */}
-                <TabsContent value="insights" className="space-y-4">
+                <TabsContent value="insights" className="space-y-6">
                   {/* Stats cards */}
                   <div className="grid grid-cols-4 gap-3 max-sm:grid-cols-2">
                     <InsightCard icon={Hash} label="Total Lines" value={contentData.totalLines.toLocaleString()} />
@@ -1297,7 +1296,7 @@ export function LoggingPage() {
                 <p className="text-sm">Log file not found for this date and type.</p>
               </div>
             )}
-          </>
+          </div>
         )}
 
           </TabsContent>

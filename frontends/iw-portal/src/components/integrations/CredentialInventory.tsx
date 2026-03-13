@@ -284,7 +284,7 @@ export function CredentialInventory({ credentials, profileCredentials, isLoading
             </tr>
           </thead>
           <tbody>
-            {credentials.map((cred, idx) => {
+            {credentials.map((cred) => {
               const result = testResults[cred.credentialType] ?? null;
               const isTesting = testingId === cred.credentialType;
 
@@ -293,7 +293,7 @@ export function CredentialInventory({ credentials, profileCredentials, isLoading
                   key={cred.id}
                   className={cn(
                     "border-b border-[hsl(var(--border))] last:border-b-0 transition-colors",
-                    isTesting ? "bg-muted/30" : idx % 2 === 1 && "bg-muted/40"
+                    isTesting && "bg-muted/30"
                   )}
                 >
                   {/* Connector */}

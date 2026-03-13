@@ -290,7 +290,7 @@ export function FlowTable({
                 key={flow.flowId}
                 className={cn(
                   "group grid gap-0 px-3 py-2 items-center border-b border-[hsl(var(--border))] last:border-b-0 transition-colors hover:bg-muted/30",
-                  idx % 2 === 1 && "bg-muted/60",
+                  idx % 2 === 1 && "bg-[hsl(var(--muted)/0.3)] dark:bg-[hsl(var(--muted)/0.18)]",
                   gridCols,
                   style.bg,
                   style.border,
