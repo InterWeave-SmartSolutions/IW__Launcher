@@ -108,30 +108,61 @@ Agent(model="opus", prompt="Analyze the cross-UI session lifecycle and propose f
 
 ### Codex CLI as an additional tier
 
-OpenAI Codex CLI (`codex-cli 0.111.0`) is installed at `~/.npm/codex` and can be invoked from Claude Code via Bash for tasks where a different model family may be more token-efficient or offer a useful second opinion.
+OpenAI Codex CLI (`codex-cli 0.111.0`) is installed and authenticated via ChatGPT account. It can be invoked from Claude Code via Bash for tasks where a different model family may be more token-efficient or offer a useful second opinion.
+
+**Available Codex models (GPT-5 family, via ChatGPT account):**
+
+| Model ID | Tier | Best For |
+|---|---|---|
+| `gpt-5-codex-mini` | Mini | Cheapest — simple questions, quick lookups, formatting |
+| `gpt-5.1-codex-mini` | Mini | Slightly better mini — light code explanations |
+| `gpt-5` | Standard | General reasoning, broad world knowledge |
+| `gpt-5.1` | Standard | Improved general reasoning |
+| `gpt-5.2` | Standard | Professional work, long-running agents |
+| `gpt-5-codex` | Codex | Code-optimized — refactors, reviews, generation |
+| `gpt-5.1-codex` | Codex | Improved code-optimized |
+| `gpt-5.2-codex` | Codex | Frontier agentic coding |
+| `gpt-5.3-codex` | Codex | Frontier Codex-optimized agentic coding |
+| `gpt-5.1-codex-max` | Max | Deep and fast reasoning for complex code tasks |
+| `gpt-5.4` | Frontier | Latest frontier agentic coding (current default) |
+
+**Note:** This install uses a ChatGPT account, NOT a separate OpenAI API key. Models like `o4-mini` are API-only and will NOT work. Only the GPT-5 family models listed above are available.
 
 **Usage from Claude Code:**
 ```bash
-# Non-interactive execution (returns result to stdout)
-codex exec -m o4-mini "describe the purpose of ApiTokenStore.java"
+# Non-interactive execution — cheap model for simple questions
+codex exec -m gpt-5-codex-mini "describe the purpose of ApiTokenStore.java"
 
-# Code review
+# Standard code task — code-optimized model
+codex exec -m gpt-5.2-codex "refactor this function to use async/await"
+
+# Code review (uses default model from ~/.codex/config.toml)
 codex review
 
 # With sandbox and auto-approval for safe read-only tasks
-codex exec --sandbox read-only -a never -m o4-mini "list all servlet mappings in web.xml"
+codex exec --sandbox read-only -a never -m gpt-5.1-codex-mini "list all servlet mappings in web.xml"
+
+# Frontier model for complex tasks
+codex exec -m gpt-5.4 "analyze the session lifecycle across JSP and React UIs"
 ```
 
 **When to use Codex CLI vs Claude subagents:**
 | Task | Preferred Tool | Reason |
 |---|---|---|
 | File search / grep / git ops | Claude Agent (haiku) | Native tool access, no API hop |
-| Quick code explanation | Codex (`o4-mini`) | Cheap OpenAI tokens for simple questions |
+| Quick code explanation | Codex (`gpt-5-codex-mini`) | Cheap GPT-5 tokens for simple questions |
 | Code review (second opinion) | `codex review` | Different model perspective |
+| Standard code generation | Codex (`gpt-5.2-codex`) | Code-optimized, good balance |
 | Complex architecture / security | Claude Agent (opus) | Best reasoning for this repo's patterns |
 | Bulk refactoring | Claude Agent (sonnet) or Codex | Either works; pick by token budget |
 
-**Important:** Codex CLI uses OpenAI API tokens (separate billing). Use it when the OpenAI model family offers a cost or capability advantage for the specific task, not as a default.
+**Codex model selection rules:**
+1. Default to `gpt-5-codex-mini` or `gpt-5.1-codex-mini` for simple read-only queries
+2. Use `gpt-5.2-codex` or `gpt-5.3-codex` for standard code generation and refactoring
+3. Use `gpt-5.4` or `gpt-5.1-codex-max` only for complex multi-file analysis
+4. `codex review` (no model flag) uses the default from `~/.codex/config.toml` (`gpt-5.4`)
+
+**Important:** Codex CLI uses ChatGPT account tokens (separate billing from Claude). Use it when the OpenAI model family offers a cost or capability advantage for the specific task, not as a default.
 
 ## 7) Claude Code-specific enhancements (recommended)
 This repo is designed to work well with Claude Code using:
