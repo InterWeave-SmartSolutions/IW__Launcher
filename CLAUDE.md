@@ -236,13 +236,12 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - Email config: copy `monitoring.properties.template` → `monitoring.properties`, fill in SMTP credentials
    - **Phase 1B deferred**: TransactionLogger instrumentation (needs engine class decompilation), email delivery testing (needs SMTP credentials)
 
-2. **ErrorHandlingFilter Disabled**
-   - **Source IS available** at `src/main/java/com/interweave/web/ErrorHandlingFilter.java`
-   - Full error/validation framework also in `src/main/java/com/interweave/error/` and `src/main/java/com/interweave/validation/`
-   - Build: `mvn -DskipTests package` → output at `target/iw-error-framework-1.0.0.jar`
-   - Deploy: `cp -r target/classes/com/interweave/ web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/`
-   - Enable: Uncomment ErrorHandlingFilter block in `web.xml`, then restart Tomcat
-   - Full steps: `docs/development/BUILD.md` and `docs/NEXT_STEPS.md` item 1
+2. **ErrorHandlingFilter — ACTIVE**
+   - Filter is deployed and enabled in `web.xml` (lines 35-50, mapped to `/*`)
+   - Source: `src/main/java/com/interweave/web/ErrorHandlingFilter.java` (300 lines)
+   - Compiled class + 9 error framework classes deployed to `WEB-INF/classes/com/interweave/`
+   - Handles exceptions for both API (JSON 500) and browser (forwards to `ErrorMessage.jsp`) requests
+   - Error classification maps to `ErrorCode` enums (DB001, SYSTEM001, SYSTEM005, XPATH004, CONFIG001, SYSTEM003)
 
 3. **Transformation Server — OPERATIONAL (engine recovered)**
    - `iwtransformationserver` deploys and runs with 133 vendor JARs + `iwengine.jar` (125 engine classes, 15 packages)
@@ -436,7 +435,7 @@ A Maven project at the repo root (`pom.xml`) provides the error handling, valida
 **Source packages** (`src/main/java/com/interweave/`):
 - `error/` — `IWError`, `IWErrorBuilder`, `ErrorCode`, `ErrorCategory`, `ErrorSeverity`, `ErrorLogger`, `ErrorDocumentation`
 - `validation/` — `ConnectionValidator`, `FlowConfigValidator`, `SchemaValidator`, `XPathValidator`, `XSLTValidator`, `ValidationResult`, `ValidationIssue`, `ValidationSeverity`, `ValidationService`
-- `web/` — `ErrorHandlingFilter` (disabled in `web.xml` — deploy to enable, see Known Issues #2)
+- `web/` — `ErrorHandlingFilter` (ACTIVE in `web.xml`, mapped to `/*`)
 - `help/` — `HelpLinkService`
 
 **Tests** (`src/test/java/`): Unit tests for error, validation, and integration scenarios.
@@ -551,7 +550,7 @@ IW_Launcher/
 ├── src/                        # Maven project: error framework, validation, ErrorHandlingFilter
 │   ├── main/java/com/interweave/error/       # IWError, ErrorCode, ErrorLogger
 │   ├── main/java/com/interweave/validation/  # ConnectionValidator, SchemaValidator, etc.
-│   ├── main/java/com/interweave/web/         # ErrorHandlingFilter (deploy to enable)
+│   ├── main/java/com/interweave/web/         # ErrorHandlingFilter (ACTIVE)
 │   └── main/java/com/interweave/help/        # HelpLinkService
 │
 ├── web_portal/                 # Web server
@@ -609,6 +608,7 @@ IW_Launcher/
 ## Roadmap and Next Steps
 
 See `docs/NEXT_STEPS.md` for the current prioritized development queue:
-- **Blocked**: Enable ErrorHandlingFilter (needs Maven install), configure monitoring email (needs SMTP credentials)
-- **Medium term**: Code-split ConfigurationWizardPage (React.lazy), sparklines on dashboard KPIs, ViewLog React page
-- **Future**: InterWoven features (AI mapping, visual workflow, OAuth broker), MFA, audit log
+- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware compiles clean, cloudflared installed
+- **Blocked**: Configure monitoring email (needs SMTP credentials)
+- **Active**: Cloudflare tunnel (cloudflared installed, scripts ready), Vercel redeploy (token auth in frontend, needs `vercel login`)
+- **Future**: CSP for JSP pages, bcrypt migration, vendor JAR CVE audit, AI Management Architecture Phase 1

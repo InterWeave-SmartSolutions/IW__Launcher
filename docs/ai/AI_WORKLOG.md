@@ -7132,3 +7132,46 @@ Actions taken:
 
 ### What I did (this response)
 Implemented 8 improvements to the Log Viewer: virtual scrolling, clickable line refs, copy-to-clipboard, show more/less, live tail tab, keyboard navigation, enhanced all-clear state, and CSV export.
+
+---
+
+## 2026-03-13 Session 22 (RBAC + Cloudflare + Vercel + ErrorHandlingFilter + doc updates)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Tackle and combine RBAC middleware, Cloudflare tunnel, Vercel redeploy, ErrorHandlingFilter deployment, and verify new docs (IDE_DEEP_DIVE.md, AI_MANAGEMENT_ARCHITECTURE.md)
+
+### Findings & verification
+1. **RBAC middleware**: TypeScript compiles clean — no TS error in useSyncSSE (already resolved)
+2. **ErrorHandlingFilter**: Already deployed and ACTIVE in web.xml (lines 35-50, mapped to `/*`) with 9 error framework classes. CLAUDE.md said "Disabled" — corrected to "ACTIVE"
+3. **IDE_DEEP_DIVE.md** (400+ lines): Already committed in fbda82f, merged to main via PR #6
+4. **AI_MANAGEMENT_ARCHITECTURE.md** (550+ lines): Already committed in fbda82f, merged to main via PR #6
+5. **NEXT_STEPS.md**: Already updated with Sessions 20-21 findings, deep dive results
+
+### Actions taken
+- Installed `cloudflared` 2025.8.1 via winget → `C:\Program Files (x86)\cloudflared\cloudflared.exe`
+- Started quick tunnel: `census-linear-lover-somewhere.trycloudflare.com` → localhost:9090 (verified HTTP 200)
+- Updated `frontends/iw-portal/vercel.json` rewrite URL to new tunnel endpoint
+- Updated CLAUDE.md Known Issues #2: "ErrorHandlingFilter Disabled" → "ErrorHandlingFilter — ACTIVE"
+- Fixed 3 additional stale ErrorHandlingFilter references in CLAUDE.md (source packages, directory tree, roadmap)
+- Updated CLAUDE.md roadmap section to reflect current state
+- Updated NEXT_STEPS.md: RBAC → DONE, added Sessions 20/21/22 to completed items
+- Committed untracked `search.js` (CSP refactoring from prior session)
+- Production build: Vite 7 build successful (7.25s, 2605 modules)
+- TypeScript: zero errors
+
+### Files modified
+- `CLAUDE.md` — ErrorHandlingFilter status corrected (5 locations), roadmap updated
+- `docs/NEXT_STEPS.md` — RBAC marked DONE, Sessions 20-22 added to completed items
+- `frontends/iw-portal/vercel.json` — tunnel URL updated
+- `web_portal/tomcat/webapps/iw-portal/` — production build output
+- `web_portal/tomcat/webapps/iw-business-daemon/help/errors/search.js` — CSP refactoring (new, committed)
+
+### Verification performed
+- TypeScript: zero errors (`tsc -b --noEmit`)
+- Vite production build: successful (7.25s)
+- Cloudflare tunnel: HTTP 200 through `https://census-linear-lover-somewhere.trycloudflare.com`
+- Tomcat: running on port 9090 (verified via curl)
+
+### Follow-ups
+- Vercel auto-deploys on push to main (GitHub integration) — no manual `vercel deploy` needed
+- Quick tunnel URL changes on restart — for persistent URL, run `scripts/setup_cloudflare_tunnel.bat` (needs Cloudflare account)
+- Vercel CLI login needed for manual deploys: `npx vercel login`

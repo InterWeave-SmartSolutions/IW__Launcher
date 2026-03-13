@@ -53,6 +53,9 @@ These items from the original roadmap are now DONE:
 - Session 19: AutoImportStartup plugin compiled (IDE Navigator shows workspace projects), OSGI cache recovery, START/STOP.bat tunnel orchestration
 - Session 19b: WCAG 2.2 AA accessibility audit (8 CRITICAL fixes: skip nav, route announcer, ARIA combobox, focus traps, toast ARIA, label bindings, form error alerts). Security headers (HttpHeaderSecurityFilter). SPA route completeness (+7 missing mappings). Contrast fixes (--primary 5:1, --muted-foreground 4.7:1). Focus ring overhaul (Button/Input/Select). prefers-reduced-motion support.
 - Session 14: Cross-UI session leak fix — LocalLogoutServlet replaces broken original (session.invalidate() + Bearer token clearing). ApiLogoutServlet for React UI. E2E test suite (29/29 pass).
+- Session 20: IDE deep dive — all 308 plugin classes analyzed (229 GUI-dependent/74%, 79 GUI-free). ConfigContext, ProjectActions, JAXB model, build pipeline reverse-engineered. Headless verdict: NO. Server-side replication 80%+ complete. Full analysis: `docs/development/IDE_DEEP_DIVE.md`.
+- Session 21: AI Management Architecture — three-party (AI + IDE + Portal) concurrent workspace management. 5-layer architecture, 14 new API endpoints designed, SSE push, change-source tracking, optimistic locking. Full design: `docs/development/AI_MANAGEMENT_ARCHITECTURE.md`.
+- Session 22: Verified RBAC compiles clean, ErrorHandlingFilter already active (updated CLAUDE.md Known Issues #2), installed cloudflared, Vercel + tunnel deployment prep. CSP `search.js` committed.
 
 ---
 
@@ -220,7 +223,7 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | ~~Notifications inbox~~ | Notification system with bell badge | 4-6 hrs | DONE (page, servlet, NotificationService, DB schema) |
 | ~~Audit log~~ | Admin audit trail with filters | 6-8 hrs | DONE (page, servlet, AuditService, DB schema) |
 | InterWoven features | AI field mapping, visual workflow builder, OAuth broker | 16-40 hrs | STARTED (FieldMappingPage prototype) |
-| RBAC middleware | Per-role access filter (operator/associate/admin) | 3-5 hrs | STARTED (RoleGuard, getAllowedPortals) |
+| RBAC middleware | Per-role access filter (operator/associate/admin) | 3-5 hrs | DONE (RoleGuard, getAllowedPortals, TS compiles clean) |
 | ~~Security Headers~~ | ~~HttpHeaderSecurityFilter on iw-portal, meta tags~~ | ~~1 hr~~ | DONE (X-Frame-Options, nosniff, XSS-Protection) |
 | ~~WCAG 2.2 AA Accessibility~~ | ~~Skip nav, ARIA, focus traps, contrast, reduced motion~~ | ~~3-4 hrs~~ | DONE (8 CRITICAL + 4 contrast/focus fixes) |
 | ~~Cross-UI Session Leak~~ | ~~Logout from JSP/React properly invalidates sessions + Bearer tokens~~ | ~~3-4 hrs~~ | DONE (LocalLogoutServlet + ApiLogoutServlet + E2E 29/29) |
