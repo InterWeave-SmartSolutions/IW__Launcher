@@ -181,7 +181,7 @@
 		LogoutServlet</display-name>
 		<servlet-name>LogoutServlet</servlet-name>
 		<servlet-class>
-		com.interweave.businessDaemon.config.LogoutServlet</servlet-class>
+		com.interweave.businessDaemon.config.LocalLogoutServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<description>
@@ -372,6 +372,10 @@
 		<servlet-name>ApiSessionServlet</servlet-name>
 		<servlet-class>com.interweave.businessDaemon.api.ApiSessionServlet</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>ApiLogoutServlet</servlet-name>
+		<servlet-class>com.interweave.businessDaemon.api.ApiLogoutServlet</servlet-class>
+	</servlet>
 	<!-- Registration API servlets (React registration endpoints) -->
 	<servlet>
 		<servlet-name>ApiRegistrationServlet</servlet-name>
@@ -555,6 +559,10 @@
         <servlet-mapping>
         	<servlet-name>ApiSessionServlet</servlet-name>
         	<url-pattern>/api/auth/session</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+        	<servlet-name>ApiLogoutServlet</servlet-name>
+        	<url-pattern>/api/auth/logout</url-pattern>
         </servlet-mapping>
         <servlet-mapping>
         	<servlet-name>ApiChangePasswordServlet</servlet-name>

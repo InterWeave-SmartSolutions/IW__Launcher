@@ -6845,3 +6845,50 @@ Wizard XML (`<SF2QBConfiguration>`) and IDE XML (`<BusinessDaemonConfiguration>`
 
 ### What I did (this response)
 Completed Phases 2–4 of the sync improvement plan: optimistic locking with version columns, XML field-level diffing in conflict responses, frontend conflict type support, and compiled all Java classes. Applied DB migration to Supabase production. Fixed TypeScript error in useSyncSSE.ts.
+
+---
+
+## Session 14 — 2026-03-13 — Cross-UI Session Leak Fix + E2E Testing
+
+### Context
+User reported that logging into the React UI, navigating to the old JSP UI, and returning to the React UI kept the user logged in. This is a session persistence bug that allows unauthorized access after logout.
+
+### Root Cause Analysis
+Three-layer bug:
+1. **Original `LogoutServlet`** (compiled bytecode) does NOT call `session.invalidate()` — only redirects to IWLogin.jsp. Confirmed via bytecode analysis.
+2. **Bearer token persistence** — `ApiTokenStore` keeps tokens alive independently of Tomcat sessions. Even with JSESSIONID invalidation, `ApiTokenAuthFilter` re-creates session attributes from the stored token on the next request.
+3. **Attribute name mismatch** — Session stores email as `"userEmail"` (set by `ApiLoginServlet`), initial fix looked for `"Email"`.
+
+### Fix (3-pronged)
+1. **`LocalLogoutServlet`** (NEW) — replaces the original compiled `LogoutServlet` in web.xml. Properly calls `session.invalidate()` AND clears all Bearer tokens for the user via `ApiTokenStore.removeTokensByAttribute("userEmail", email)`.
+2. **`ApiLogoutServlet`** (NEW) — JSON endpoint at `/api/auth/logout` for React UI logout. Same session invalidation + token clearing logic.
+3. **`ApiTokenStore.removeTokensByAttribute()`** (NEW method) — scans all tokens and removes those matching a key/value pair. Used by both logout servlets to clear multi-device/multi-tab tokens.
+4. **`AuthProvider.tsx`** — Updated logout to call new `/api/auth/logout` via `apiFetch` (includes Bearer token), plus belt-and-suspenders call to legacy `/LogoutServlet`.
+
+### E2E Test Suite
+Created `frontends/iw-portal/tests/e2e_session_and_routing.py` — Playwright-based E2E test suite (7 test groups, 29 assertions):
+- Test 1: Security headers (X-Frame-Options, X-Content-Type-Options, X-XSS-Protection)
+- Test 2: SPA route direct navigation (36 routes return HTTP 200)
+- Test 3: React login/logout round-trip
+- Test 4: **Cross-UI session leak (CRITICAL)** — login React → logout JSP → return React → must redirect to login
+- Test 5: JSP login → React session sharing (expected to work)
+- Test 6: Protected route guards (8 routes redirect to /login when unauthenticated)
+- Test 7: Page refresh preserves auth (F5 on /dashboard, /monitoring, /profile)
+
+**Result: 29/29 PASS, 0 FAIL**
+
+### Files created
+- `web_portal/.../config/LocalLogoutServlet.java` — session.invalidate() + token clearing
+- `web_portal/.../api/ApiLogoutServlet.java` — JSON logout endpoint
+- `frontends/iw-portal/tests/e2e_session_and_routing.py` — E2E test suite
+
+### Files modified
+- `web_portal/.../api/ApiTokenStore.java` — added `removeTokensByAttribute()` method
+- `web_portal/.../WEB-INF/web.xml` — LogoutServlet → LocalLogoutServlet, added ApiLogoutServlet mapping
+- `frontends/iw-portal/src/providers/AuthProvider.tsx` — logout calls new `/api/auth/logout`, visibilitychange listener for cross-tab detection
+
+### Compiled classes
+- `LocalLogoutServlet.class`, `ApiLogoutServlet.class`, `ApiTokenStore.class`
+
+### What I did (this response)
+Fixed the cross-UI session persistence bug. Replaced the original LogoutServlet (which didn't invalidate sessions), created ApiLogoutServlet for the React UI, added token-clearing logic to prevent Bearer tokens from resurrecting invalidated sessions. Built E2E test suite with Playwright — 29/29 pass including the critical cross-UI session leak test.

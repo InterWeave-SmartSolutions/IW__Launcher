@@ -67,6 +67,22 @@ public class ApiTokenStore {
         if (token != null) tokens.remove(token);
     }
 
+    /**
+     * Removes ALL tokens whose stored attributes contain the given key=value.
+     * Used by LogoutServlet to clear all tokens for a user by email.
+     */
+    public static void removeTokensByAttribute(String key, Object value) {
+        if (key == null || value == null) return;
+        Iterator<Map.Entry<String, TokenEntry>> it = tokens.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, TokenEntry> entry = it.next();
+            Object stored = entry.getValue().attributes.get(key);
+            if (value.equals(stored)) {
+                it.remove();
+            }
+        }
+    }
+
     /** Lazily remove expired entries. */
     private static void cleanup() {
         Iterator<Map.Entry<String, TokenEntry>> it = tokens.entrySet().iterator();
