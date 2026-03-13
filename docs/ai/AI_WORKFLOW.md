@@ -106,6 +106,33 @@ Agent(model="sonnet", prompt="Create the NotificationsPage component")
 Agent(model="opus", prompt="Analyze the cross-UI session lifecycle and propose fixes")
 ```
 
+### Codex CLI as an additional tier
+
+OpenAI Codex CLI (`codex-cli 0.111.0`) is installed at `~/.npm/codex` and can be invoked from Claude Code via Bash for tasks where a different model family may be more token-efficient or offer a useful second opinion.
+
+**Usage from Claude Code:**
+```bash
+# Non-interactive execution (returns result to stdout)
+codex exec -m o4-mini "describe the purpose of ApiTokenStore.java"
+
+# Code review
+codex review
+
+# With sandbox and auto-approval for safe read-only tasks
+codex exec --sandbox read-only -a never -m o4-mini "list all servlet mappings in web.xml"
+```
+
+**When to use Codex CLI vs Claude subagents:**
+| Task | Preferred Tool | Reason |
+|---|---|---|
+| File search / grep / git ops | Claude Agent (haiku) | Native tool access, no API hop |
+| Quick code explanation | Codex (`o4-mini`) | Cheap OpenAI tokens for simple questions |
+| Code review (second opinion) | `codex review` | Different model perspective |
+| Complex architecture / security | Claude Agent (opus) | Best reasoning for this repo's patterns |
+| Bulk refactoring | Claude Agent (sonnet) or Codex | Either works; pick by token budget |
+
+**Important:** Codex CLI uses OpenAI API tokens (separate billing). Use it when the OpenAI model family offers a cost or capability advantage for the specific task, not as a default.
+
 ## 7) Claude Code-specific enhancements (recommended)
 This repo is designed to work well with Claude Code using:
 - Project slash commands in `.claude/commands/`
