@@ -682,6 +682,26 @@
         	<url-pattern>/api/engine/*</url-pattern>
         </servlet-mapping>
 
+        <!-- Workspace Management API (AI Management Architecture Phase 1) -->
+        <servlet>
+        	<servlet-name>ApiWorkspaceManagementServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiWorkspaceManagementServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiWorkspaceManagementServlet</servlet-name>
+        	<url-pattern>/api/workspace/*</url-pattern>
+        </servlet-mapping>
+
+        <!-- Build API (AI Management Architecture Phase 1) -->
+        <servlet>
+        	<servlet-name>ApiBuildServlet</servlet-name>
+        	<servlet-class>com.interweave.businessDaemon.api.ApiBuildServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+        	<servlet-name>ApiBuildServlet</servlet-name>
+        	<url-pattern>/api/build/*</url-pattern>
+        </servlet-mapping>
+
         <!-- Webhook Receiver API -->
         <servlet>
         	<servlet-name>ApiWebhookReceiverServlet</servlet-name>

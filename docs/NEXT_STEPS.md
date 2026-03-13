@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-13 (Session 24 — bcrypt migration: PasswordHasher utility, progressive rehash on login, jBCrypt 0.4 deployed, 10+ servlets updated)
+**Last Updated:** 2026-03-13 (Session 25 — AI Management Architecture Phase 1: Workspace Read API + XSLT Build API deployed, --release 8 compilation fix, CVE audit + credential encryption in progress)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -58,6 +58,7 @@ These items from the original roadmap are now DONE:
 - Session 22: Verified RBAC compiles clean, ErrorHandlingFilter already active (updated CLAUDE.md Known Issues #2), installed cloudflared, Vercel + tunnel deployment prep. CSP `search.js` committed.
 - Session 23: CSP hardening — extracted all inline scripts from 7 JSPs to external .js files, converted 8 onclick handlers to event delegation, deployed HelpLinkService (fixed help-popup.jsp 500), SecurityHeadersFilter now sends `script-src 'self' https://cdn.jsdelivr.net` (no unsafe-inline).
 - Session 24: bcrypt migration — centralized PasswordHasher utility (hash/verify/needsRehash/rehashIfNeeded), jBCrypt 0.4 deployed, progressive rehash on login (SHA-256→bcrypt transparent upgrade), 10+ servlets updated (all API + Local config), login verified.
+- Session 25: AI Management Architecture Phase 1 — ApiWorkspaceManagementServlet (3 endpoints: project listing, detail, raw config) + ApiBuildServlet (XSLT compilation + inventory). Fixed cross-compilation bug: `--release 8` required instead of `-source 1.8 -target 1.8` (endorsed JAXB 1.0-ea JAR causes AbstractMethodError). All compile commands updated in CLAUDE.md.
 
 ---
 

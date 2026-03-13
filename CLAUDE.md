@@ -295,12 +295,12 @@ Servlets: `LocalLoginServlet`, `LocalLogoutServlet`, `LocalRegistrationServlet`,
 
 **Compile command (Local servlets)**:
 ```bash
-javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/Local*.java
+javac --release 8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/Local*.java
 ```
 
 **Compile command (Monitoring)**:
 ```bash
-javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/service/*.java web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/api/*.java
+javac --release 8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes:web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*:web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/service/*.java web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/monitoring/api/*.java
 ```
 
 
@@ -433,12 +433,16 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 - **ApiConfigurationServlet** — `GET/PUT /api/config/wizard`, `GET/PUT /api/config/credentials`, `GET /api/config/profiles`, `POST /api/config/credentials/test`
 - **ApiFlowManagementServlet** — `GET /api/flows` (flow listing, filtered by company solution type), `GET /api/flows/properties` (flow variable parameters), `POST /api/flows/start|stop|submit|initialize`, `PUT /api/flows/schedule`
 - **ApiLogViewerServlet** — `GET /api/logs/*`
+- **ApiWorkspaceManagementServlet** — `GET /api/workspace/projects` (list all), `GET /api/workspace/projects/{name}` (detail), `GET /api/workspace/projects/{name}/config` (raw config.xml)
+- **ApiBuildServlet** — `POST /api/build/compile-xslt` (compile XSLT→bytecode), `GET /api/build/inventory/{name}` (transformer inventory with stale detection)
 
 **Compile command (API servlets)**:
 ```bash
-javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar;web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes;web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*;web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/*.java
+javac --release 8 -cp "web_portal/tomcat/lib/servlet-api.jar;web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes;web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/*;web_portal/tomcat/lib/*" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/*.java
 ```
 Note: On Windows, use `;` as classpath separator (not `:`).
+
+**⚠️ CRITICAL**: Always use `--release 8` (NOT `-source 1.8 -target 1.8`) when compiling with JDK 9+. The endorsed `jaxb-1.0-ea-trimmed.jar` in `jre/lib/endorsed/` overrides JAXP factories. Without `--release 8`, the compiler resolves method signatures against the host JDK, causing `AbstractMethodError` at runtime on JRE 8.
 
 ### Maven Source Framework (`src/`)
 
@@ -620,7 +624,7 @@ IW_Launcher/
 ## Roadmap and Next Steps
 
 See `docs/NEXT_STEPS.md` for the current prioritized development queue:
-- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened, bcrypt migration (PasswordHasher + progressive rehash)
+- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened, bcrypt migration (PasswordHasher + progressive rehash), AI Management Architecture Phase 1 (Workspace Read API + XSLT Build API)
 - **Blocked**: Configure monitoring email (needs SMTP credentials)
-- **Active**: Cloudflare tunnel (quick tunnel working, named tunnel needs account setup), Vercel auto-deploy (GitHub integration)
-- **Future**: Credential encryption at rest, vendor JAR CVE audit, AI Management Architecture Phase 1
+- **Active**: Cloudflare tunnel (quick tunnel working, named tunnel needs account setup), Vercel auto-deploy (GitHub integration), credential encryption at rest, vendor JAR CVE audit
+- **Future**: AI Management Architecture Phase 2+ (write operations, connections, change tracking)

@@ -7275,3 +7275,60 @@ Verification performed:
 Follow-ups / known issues:
 - Servlets need recompilation: javac with PasswordHasher.class + jbcrypt.jar on classpath
 - ApiMfaServlet retains hashSha256() for backup code hashing (not password-related, uses SHA-256 intentionally)
+## 2026-03-13 18:30 (EST) — Session 25: AI Management Architecture Phase 1
+
+Agent/tool: Claude Opus 4.6
+User request: Continue tackling ready-now blockers (bcrypt done prev session; now AI Management Architecture Phase 1, CVE audit, credential encryption)
+Actions taken:
+
+### AI Management Architecture Phase 1 — COMPLETED
+- **ApiWorkspaceManagementServlet** (3 endpoints):
+  - `GET /api/workspace/projects` — lists all workspace projects with metadata (transaction/query/XSLT counts, solution type, profiles)
+  - `GET /api/workspace/projects/{name}` — full project detail with parsed config.xml (engine config, transactions with parameters, queries)
+  - `GET /api/workspace/projects/{name}/config` — raw config.xml content
+- **ApiBuildServlet** (2 endpoints):
+  - `POST /api/build/compile-xslt` — compiles XSLT transformers to Java bytecode via Xalan XSLTC (subprocess)
+  - `GET /api/build/inventory/{name}` — transformer inventory with stale detection (source vs class timestamp)
+- Both servlets registered in web.xml, admin-only access
+- All API servlets recompiled with `--release 8` for JRE 8 compatibility
+
+### Cross-compilation fix: --release 8
+- ROOT CAUSE: Using `-source 1.8 -target 1.8` with JDK 24 embeds JDK 24 method signatures in bytecode
+- The endorsed `jaxb-1.0-ea-trimmed.jar` overrides JAXP factories at runtime on JRE 8
+- Without bootstrap classpath correction, `DocumentBuilderFactory.setFeature()` resolves against JDK 24's API surface
+- At runtime on JRE 8, the endorsed factory doesn't have that method → `AbstractMethodError`
+- FIX: `--release 8` sets bootstrap classpath to JDK 8 API surface automatically
+- Updated all 4 compile commands in CLAUDE.md (Local servlets, Monitoring, API servlets, Auth API)
+- Added critical warning note about endorsed JAR interaction
+
+### Documentation updates
+- CLAUDE.md: Added ApiWorkspaceManagementServlet + ApiBuildServlet to API servlet list, updated roadmap
+- NEXT_STEPS.md: Session 25 entry, updated header
+- All compile commands changed from `-source 1.8 -target 1.8` to `--release 8`
+
+### Background work launched
+- CVE audit agent: scanning 133+ vendor JARs across 4 locations
+- Credential encryption architect: designing encryption-at-rest for workspace credentials
+
+Files changed:
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiWorkspaceManagementServlet.java (new)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiBuildServlet.java (new)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/api/*.class (recompiled all with --release 8)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/web.xml (added servlet registrations)
+- CLAUDE.md (compile commands, API servlet list, roadmap)
+- docs/NEXT_STEPS.md (session 25 entry)
+- docs/ai/AI_WORKLOG.md (this entry)
+
+Verification performed:
+- `GET /api/workspace/projects` returns JSON with 3 projects (Creatio_Magento2, Creatio_QuickBooks, SF2AuthNet)
+- `GET /api/workspace/projects/Creatio_Magento2_Integration` returns full detail with 8 transactions, 6 queries, engine config
+- `GET /api/workspace/projects/Creatio_Magento2_Integration/config` returns raw XML
+- `GET /api/build/inventory/Creatio_Magento2_Integration` returns 11 transformers with compile status
+- `POST /api/build/compile-xslt` successfully compiled GetCreatioAccount.xslt → .class (336ms)
+- javap confirmed class file major version 52 (Java 8)
+- No setFeature references in compiled bytecode
+
+Follow-ups / known issues:
+- CVE audit results pending (background agent)
+- Credential encryption design pending (background agent)
+- compiledClassCount shows 0 for all projects in listing (classes dir may not exist or path calculation issue — minor)
