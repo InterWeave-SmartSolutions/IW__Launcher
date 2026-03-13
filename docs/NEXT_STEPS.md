@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-12 (Session 19b — WCAG accessibility audit + security headers + contrast fixes)
+**Last Updated:** 2026-03-13 (Session 14 — Cross-UI session leak fix + E2E testing)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -52,6 +52,7 @@ These items from the original roadmap are now DONE:
 - Session 16-18: Full integration test, XML sanitizer fix, IDE project visibility, STRIDE threat mitigation, comprehensive security hardening (5 filters, 26 JSPs, CSRF, rate limiting, session fixation)
 - Session 19: AutoImportStartup plugin compiled (IDE Navigator shows workspace projects), OSGI cache recovery, START/STOP.bat tunnel orchestration
 - Session 19b: WCAG 2.2 AA accessibility audit (8 CRITICAL fixes: skip nav, route announcer, ARIA combobox, focus traps, toast ARIA, label bindings, form error alerts). Security headers (HttpHeaderSecurityFilter). SPA route completeness (+7 missing mappings). Contrast fixes (--primary 5:1, --muted-foreground 4.7:1). Focus ring overhaul (Button/Input/Select). prefers-reduced-motion support.
+- Session 14: Cross-UI session leak fix — LocalLogoutServlet replaces broken original (session.invalidate() + Bearer token clearing). ApiLogoutServlet for React UI. E2E test suite (29/29 pass).
 
 ---
 
@@ -220,6 +221,7 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | RBAC middleware | Per-role access filter (operator/associate/admin) | 3-5 hrs | STARTED (RoleGuard, getAllowedPortals) |
 | ~~Security Headers~~ | ~~HttpHeaderSecurityFilter on iw-portal, meta tags~~ | ~~1 hr~~ | DONE (X-Frame-Options, nosniff, XSS-Protection) |
 | ~~WCAG 2.2 AA Accessibility~~ | ~~Skip nav, ARIA, focus traps, contrast, reduced motion~~ | ~~3-4 hrs~~ | DONE (8 CRITICAL + 4 contrast/focus fixes) |
+| ~~Cross-UI Session Leak~~ | ~~Logout from JSP/React properly invalidates sessions + Bearer tokens~~ | ~~3-4 hrs~~ | DONE (LocalLogoutServlet + ApiLogoutServlet + E2E 29/29) |
 | Content Security Policy (JSPs) | Audit inline scripts/styles in 37+ JSPs, add CSP headers | 2-4 hrs | Open (iw-portal done, iw-business-daemon pending) |
 | bcrypt migration | Replace SHA-256 with bcrypt, add jBCrypt JAR | 2-3 hrs | Blocked (migration strategy) |
 | Credential encryption | Encrypt DB passwords in config files at rest | 2-3 hrs | Open |
@@ -252,6 +254,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\verify_profile_compiler.ps1
 
 # E2E portal tests (from WSL2)
 bash web_portal/test_portal.sh
+
+# E2E session + routing tests (Playwright, requires Tomcat running)
+python frontends/iw-portal/tests/e2e_session_and_routing.py
 
 # React portal build check
 cd frontends/iw-portal && npx tsc --noEmit && npm run build

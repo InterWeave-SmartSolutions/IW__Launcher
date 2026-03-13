@@ -214,6 +214,7 @@ Edit `web_portal/tomcat/conf/server.xml`:
 ### Verified (2026-02-24)
 
 - **29/29 E2E tests pass** (`web_portal/test_portal.sh`) — pages, registration, login, profiles, password changes, input validation
+- **29/29 session/routing E2E tests pass** (`frontends/iw-portal/tests/e2e_session_and_routing.py`) — security headers, SPA routes, login/logout, cross-UI session leak, route guards, page refresh auth (2026-03-13)
 - Admin login (`__iw_admin__` / `%iwps%`) — verified
 - Demo user login (`demo@sample.com` / `demo123`) — verified
 - Company registration + full config workflow — verified
@@ -228,7 +229,7 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - 11 Java files compiled and deployed: 5 API servlets + 6 services (incl. MonitoringContextListener)
    - All services start on Tomcat boot: MetricsAggregator, AlertService, EmailNotificationService, WebhookNotificationService
    - API endpoints: `/api/monitoring/dashboard`, `/api/monitoring/transactions/*`, `/api/monitoring/metrics`, `/api/monitoring/alerts/*`, `/api/monitoring/webhooks/*`
-   - Auth API endpoints: `POST /api/auth/login`, `GET /api/auth/session` (JSON, shared Tomcat session)
+   - Auth API endpoints: `POST /api/auth/login`, `GET /api/auth/session`, `POST /api/auth/logout` (JSON, shared Tomcat session)
    - Dashboard: `/monitoring/Dashboard.jsp` (requires session)
    - Schema: `database/monitoring_schema_postgres.sql` (6 tables, 3 views, indexes, triggers, RLS)
    - Email config: copy `monitoring.properties.template` → `monitoring.properties`, fill in SMTP credentials
@@ -262,14 +263,16 @@ Edit `web_portal/tomcat/conf/server.xml`:
 
 ### Local Servlet Bridge (User/Company Management)
 
-The original compiled servlets depend on the `iwtransformationserver` webapp (not deployed). All 9 user/company management servlets have been replaced with local SQL-based implementations that query Supabase Postgres directly.
+The original compiled servlets depend on the `iwtransformationserver` webapp (not deployed) or have critical bugs. All 10 user/company management servlets have been replaced with local SQL-based implementations that query Supabase Postgres directly.
 
 - **Source**: `WEB-INF/src/com/interweave/businessDaemon/config/Local*.java`
 - **Base class**: `LocalUserManagementServlet` — DataSource init, SHA-256 hashing, reflection helper
 - **ADR**: `docs/adr/003-local-servlet-bridge.md`
 - **Full reference**: `docs/development/LOCAL_SERVLETS.md`
 
-Servlets: `LocalLoginServlet`, `LocalRegistrationServlet`, `LocalCompanyRegistrationServlet`, `LocalChangePasswordServlet`, `LocalChangeCompanyPasswordServlet`, `LocalEditProfileServlet`, `LocalSaveProfileServlet`, `LocalEditCompanyProfileServlet`, `LocalSaveCompanyProfileServlet`
+Servlets: `LocalLoginServlet`, `LocalLogoutServlet`, `LocalRegistrationServlet`, `LocalCompanyRegistrationServlet`, `LocalChangePasswordServlet`, `LocalChangeCompanyPasswordServlet`, `LocalEditProfileServlet`, `LocalSaveProfileServlet`, `LocalEditCompanyProfileServlet`, `LocalSaveCompanyProfileServlet`
+
+**LocalLogoutServlet** — replaces the original compiled `LogoutServlet` which did NOT call `session.invalidate()`. The local version properly invalidates the Tomcat session AND clears all Bearer tokens for the user from `ApiTokenStore` (prevents cross-UI session leak). Mapped to `/LogoutServlet` in `web.xml`.
 
 **Key gotchas for AI agents**:
 - `TransactionThread` fields (`firstName`, `lastName`, `company`, `title`) have getters but NO setters — must use `setThreadField()` reflection
@@ -292,12 +295,14 @@ javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar:web_por
 
 ### Auth API Servlets (JSON endpoints for React IW Portal)
 
-Two servlets in `com.interweave.businessDaemon.api` provide JSON authentication for the React frontend while sharing the same Tomcat session as the classic JSP login.
+Three servlets in `com.interweave.businessDaemon.api` provide JSON authentication for the React frontend while sharing the same Tomcat session as the classic JSP login.
 
 - **ApiLoginServlet** — `POST /api/auth/login` — accepts `{"email","password"}`, runs same DB auth as LocalLoginServlet, sets identical session attributes, returns `{"success":true,"user":{...}}` or `{"success":false,"error":"..."}`
 - **ApiSessionServlet** — `GET /api/auth/session` — reads session attributes, returns `{"authenticated":true,"user":{...}}` or `{"authenticated":false}`
+- **ApiLogoutServlet** — `POST /api/auth/logout` — invalidates the Tomcat session AND clears all Bearer tokens for the user from `ApiTokenStore`. Returns `{"success":true}`. Used by the React UI logout flow.
 - **Source**: `WEB-INF/src/com/interweave/businessDaemon/api/Api*.java`
 - **Session sharing**: Login via ApiLoginServlet sets the same session attributes as LocalLoginServlet, so users authenticated via React can use classic JSP pages and vice versa.
+- **Logout token clearing**: Both `ApiLogoutServlet` and `LocalLogoutServlet` call `ApiTokenStore.removeTokensByAttribute("userEmail", email)` to clear all Bearer tokens for the user, preventing cross-UI session persistence bugs.
 
 **Compile command (Auth API)**:
 ```bash
@@ -407,6 +412,7 @@ New React-based portal at `frontends/iw-portal/` — replaces JSP pages incremen
 **API Servlets (JSON, `com.interweave.businessDaemon.api`):**
 - **ApiLoginServlet** — `POST /api/auth/login`
 - **ApiSessionServlet** — `GET /api/auth/session`
+- **ApiLogoutServlet** — `POST /api/auth/logout`
 - **ApiProfileServlet** — `GET/PUT /api/profile`
 - **ApiCompanyProfileServlet** — `GET/PUT /api/company/profile`
 - **ApiRegistrationServlet** — `POST /api/register`
