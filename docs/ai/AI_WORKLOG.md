@@ -6892,3 +6892,37 @@ Created `frontends/iw-portal/tests/e2e_session_and_routing.py` — Playwright-ba
 
 ### What I did (this response)
 Fixed the cross-UI session persistence bug. Replaced the original LogoutServlet (which didn't invalidate sessions), created ApiLogoutServlet for the React UI, added token-clearing logic to prevent Bearer tokens from resurrecting invalidated sessions. Built E2E test suite with Playwright — 29/29 pass including the critical cross-UI session leak test.
+
+---
+
+## Session 14 (cont.) — 2026-03-13 — Documentation Updates + Model Selection Policy
+
+### Context
+User requested: (1) update all docs for session leak fix, (2) add model selection policy for token efficiency.
+
+### Documentation updates for session leak fix
+- `CLAUDE.md` — ApiLogoutServlet, LocalLogoutServlet, logout token clearing, 29/29 E2E test result, updated servlet counts
+- `docs/development/LOCAL_SERVLETS.md` — LocalLogoutServlet entry (10th local servlet)
+- `docs/development/API.md` — POST /api/auth/logout endpoint
+- `docs/development/CONTRIBUTING.md` — E2E session/routing test instructions
+- `docs/NEXT_STEPS.md` — Cross-UI session leak marked DONE, E2E test command added
+
+### Model selection policy (new)
+Added §6 to `docs/ai/AI_WORKFLOW.md` — mandatory model tier selection for subagent spawning:
+- **Haiku**: file searches, grep, git ops, test runs, boilerplate
+- **Sonnet**: standard code edits, tests, docs, bug fixes
+- **Opus**: complex architecture, security-sensitive code, cross-system integration
+Decision rules: default to cheapest, escalate only when needed, security always opus, bulk always haiku.
+
+Also added to `CLAUDE.md` (brief reference pointing to §6) and saved as persistent memory (`feedback_model_selection.md`).
+
+### Files modified
+- `docs/ai/AI_WORKFLOW.md` — added §6 (model selection), renumbered §7
+- `CLAUDE.md` — added model selection reference + session fix docs
+- `docs/development/LOCAL_SERVLETS.md` — LocalLogoutServlet entry
+- `docs/development/API.md` — POST /api/auth/logout
+- `docs/development/CONTRIBUTING.md` — E2E test section
+- `docs/NEXT_STEPS.md` — session leak DONE + E2E command
+
+### What I did (this response)
+Updated 6 project docs with session leak fix references and E2E test instructions. Added model selection policy (§6) to AI_WORKFLOW.md with tier matrix and decision rules. Created persistent memory for model selection preference. Committed and pushed both doc batches.

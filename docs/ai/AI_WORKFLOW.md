@@ -76,17 +76,47 @@ Guidance:
 - If multiple AIs worked in parallel on the same task, produce one consolidated entry.
 - If legacy PDF context materially informed the work, list the specific PDF filenames consulted.
 
-## 6) Claude Code-specific enhancements (recommended)
+## 6) Model selection for token efficiency (required for Claude Code)
+
+Claude Code supports multiple model tiers via the `model` parameter on Agent tool calls. **Always use the cheapest model that can handle the task.** This reduces token consumption without sacrificing quality where it matters.
+
+### Available models (as of 2026-03)
+| Model | ID | Use When |
+|---|---|---|
+| **Haiku 4.5** | `haiku` | File searches, grep/glob operations, reading files, simple status checks, formatting, boilerplate generation, running tests, git operations |
+| **Sonnet 4.6** | `sonnet` | Moderate code edits, single-file refactors, writing tests, documentation updates, standard bug fixes, code review of small changes |
+| **Opus 4.6** | `opus` | Complex multi-file architecture, security-sensitive code, intricate debugging, cross-system integration, novel algorithm design |
+
+### Decision rules
+1. **Default to the cheapest viable model.** If the subagent task is "search for X" or "read file Y", use `haiku`.
+2. **Escalate only when needed.** If a `sonnet` agent produces inadequate results, retry with `opus` — don't start at `opus` by default.
+3. **Main conversation model stays as configured by the user** — this guidance applies to *subagent* spawning via the Agent tool's `model` parameter.
+4. **Security-sensitive and architecture work always uses `opus`** — session management, auth flows, cryptographic code, cross-system data flows.
+5. **Bulk operations prefer `haiku`** — searching multiple files, running test suites, compiling, git status/diff/log.
+
+### Examples
+```
+# Searching for a class definition → haiku
+Agent(model="haiku", prompt="Find all files containing 'ApiTokenStore'")
+
+# Writing a new React page → sonnet
+Agent(model="sonnet", prompt="Create the NotificationsPage component")
+
+# Designing auth session invalidation across JSP + React + token store → opus
+Agent(model="opus", prompt="Analyze the cross-UI session lifecycle and propose fixes")
+```
+
+## 7) Claude Code-specific enhancements (recommended)
 This repo is designed to work well with Claude Code using:
 - Project slash commands in `.claude/commands/`
 - Hooks (PreToolUse/PostToolUse/Stop) to improve verification and logging
 - Optional plugin(s) for automated verification loops
 
-### 6.1 Slash commands (project-local)
+### 7.1 Slash commands (project-local)
 Project-local commands live in `.claude/commands/` and are shared via git.
 Use them for repetitive workflows like updating docs, running verification, and appending to `AI_WORKLOG.md`.
 
-### 6.2 Ralph verification loop plugin ("ralph-wiggum" / "ralph-loop")
+### 7.2 Ralph verification loop plugin ("ralph-wiggum" / "ralph-loop")
 Purpose: run an automated “keep going until done” loop with a hard iteration cap, usually via a Stop hook.
 
 Rules for using Ralph in this repo:

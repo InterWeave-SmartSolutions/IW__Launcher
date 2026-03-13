@@ -8,6 +8,7 @@ All AI tools/agents working in this repo MUST follow `docs/ai/AI_WORKFLOW.md`.
 - Every response MUST include `What I did (this response)`.
 - For tasks involving legacy InterWeave behavior, terminology, user workflows, or vendor mappings, read `docs/ai/INTERWEAVE_PDF_CONTEXT.md` and use the approved PDF corpus listed there as supporting context.
 - PDF-derived guidance is additive context only. Do not replace existing repository docs or established behavior unless the user explicitly asks for replacement.
+- **Model selection**: When spawning subagents, use the cheapest model that fits the task (haiku for searches/reads, sonnet for standard edits, opus for complex architecture/security). See `docs/ai/AI_WORKFLOW.md` §6 for the full decision matrix.
 
 ## IMPORTANT: InterWoven concept directory
 If a `frontends/InterWoven/` directory exists in this repo, it is a concept/prototype snapshot for potential future IDE launcher + Java form web page improvements.
