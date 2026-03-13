@@ -63,8 +63,11 @@ All API endpoints require an active session (authenticated via the login flow ab
 **POST /api/auth/login**  
 Authenticates and creates a Tomcat session for the React portal.
 
-**GET /api/auth/session**  
+**GET /api/auth/session**
 Returns session state for the React portal.
+
+**POST /api/auth/logout**
+Invalidates the Tomcat session, clears all Bearer tokens for the user from `ApiTokenStore`, and returns `{"success": true}`. Called by the React UI logout flow. The legacy `/LogoutServlet` endpoint (used by JSP pages) also properly invalidates sessions and clears tokens via `LocalLogoutServlet`.
 
 ### Monitoring API (JSON)
 

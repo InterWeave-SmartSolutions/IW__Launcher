@@ -5,11 +5,43 @@
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
-    <!-- SPA fallback: serve index.html for all client-side routes (returns 200) -->
+    <!-- Security Headers (Tomcat built-in filter) -->
+    <filter>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        <init-param>
+            <param-name>hstsEnabled</param-name>
+            <param-value>false</param-value> <!-- Enable when HTTPS is active -->
+        </init-param>
+        <init-param>
+            <param-name>antiClickJackingEnabled</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>antiClickJackingOption</param-name>
+            <param-value>DENY</param-value>
+        </init-param>
+        <init-param>
+            <param-name>xssProtectionEnabled</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>blockContentTypeSniffingEnabled</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- SPA fallback: serve index.html for all client-side routes (HTTP 200) -->
     <servlet>
         <servlet-name>spa-fallback</servlet-name>
         <jsp-file>/index.html</jsp-file>
     </servlet>
+
+    <!-- Operator routes -->
     <servlet-mapping>
         <servlet-name>spa-fallback</servlet-name>
         <url-pattern>/login</url-pattern>
@@ -45,6 +77,40 @@
     <servlet-mapping>
         <servlet-name>spa-fallback</servlet-name>
         <url-pattern>/admin/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Auth/registration routes -->
+    <servlet-mapping>
+        <servlet-name>spa-fallback</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>spa-fallback</servlet-name>
+        <url-pattern>/register/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>spa-fallback</servlet-name>
+        <url-pattern>/forgot-password</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>spa-fallback</servlet-name>
+        <url-pattern>/mfa/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>spa-fallback</servlet-name>
+        <url-pattern>/notifications</url-pattern>
+    </servlet-mapping>
+
+    <!-- Associate portal routes -->
+    <servlet-mapping>
+        <servlet-name>spa-fallback</servlet-name>
+        <url-pattern>/associate/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Master console routes -->
+    <servlet-mapping>
+        <servlet-name>spa-fallback</servlet-name>
+        <url-pattern>/master/*</url-pattern>
     </servlet-mapping>
 
     <!-- Keep 404 fallback for any other unknown routes -->

@@ -6,7 +6,7 @@
 
 ## Overview
 
-The local servlet bridge replaces 9 original compiled servlets that depend on the missing `iwtransformationserver` webapp. Each local servlet executes direct SQL against Supabase Postgres via the `jdbc/IWDB` JNDI DataSource.
+The local servlet bridge replaces 10 original compiled servlets that depend on the missing `iwtransformationserver` webapp or have critical bugs. Each local servlet executes direct SQL against Supabase Postgres via the `jdbc/IWDB` JNDI DataSource.
 
 ## Architecture
 
@@ -24,6 +24,18 @@ JSP Form → Local*Servlet → JDBC (Supabase Postgres) → Redirect/Forward to 
 ```
 
 ## Servlet Reference
+
+### LocalLogoutServlet
+- **URL**: `/LogoutServlet` (GET, POST)
+- **JSP**: Redirects to `IWLogin.jsp`
+- **Replaces**: Original compiled `LogoutServlet` which does NOT call `session.invalidate()`
+- **Actions**:
+  - Reads `userEmail` from session before invalidation
+  - Clears all Bearer tokens for that user via `ApiTokenStore.removeTokensByAttribute("userEmail", email)`
+  - Clears specific Bearer token from `Authorization` header (if present)
+  - Calls `session.invalidate()` — the critical fix the original was missing
+- **Success redirect**: `IWLogin.jsp`
+- **⚠️ Note**: The original compiled `LogoutServlet.class` remains in `WEB-INF/classes/` but is NOT mapped in `web.xml`. The local version is mapped instead because the original never invalidated the session, causing cross-UI session leak bugs.
 
 ### LocalLoginServlet
 - **URL**: `/LoginServlet` (POST)

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch, setAuthToken, clearAuthToken } from "@/lib/api";
 import type { User, LoginRequest, LoginResponse, SessionResponse } from "@/types/auth";
@@ -21,15 +21,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mfaRequired, setMfaRequired] = useState(false);
-
-  // Check session on mount
-  useEffect(() => {
-    checkSession();
-  }, []);
+  const checkingRef = useRef(false);
 
   async function checkSession() {
-    // 5-second timeout: if the backend proxy hangs (tunnel down, etc.),
-    // we abort and treat the user as unauthenticated so the login form appears.
+    // Prevent concurrent checks (e.g. rapid tab switches)
+    if (checkingRef.current) return;
+    checkingRef.current = true;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
     try {
@@ -39,15 +36,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.authenticated && res.user) {
         setUser(res.user);
       } else {
+        clearAuthToken();
+        queryClient.clear();
         setUser(null);
       }
     } catch {
+      clearAuthToken();
       setUser(null);
     } finally {
       clearTimeout(timer);
+      checkingRef.current = false;
       setIsLoading(false);
     }
   }
+
+  // Check session on mount
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  // Re-validate session when the tab regains focus. This catches external
+  // logouts (e.g. user logged out from the classic JSP UI in another tab).
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === "visible" && user) {
+        checkSession();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [user]);
 
   const login = useCallback(async (creds: LoginRequest) => {
     setError(null);
@@ -76,15 +94,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      // Call classic logout to invalidate the Tomcat session
+      // Use the new API logout that properly calls session.invalidate()
+      await apiFetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Ignore network errors — we clear local state regardless
+    }
+    try {
+      // Also hit the legacy LogoutServlet for the iw-business-daemon JSESSIONID
       await fetch("/iw-business-daemon/LogoutServlet", {
         credentials: "include",
-      });
+      }).catch(() => {});
     } catch {
-      // Ignore — we clear local state regardless
+      // Ignore — belt-and-suspenders
     }
     clearAuthToken();
-    // Wipe all cached data so the next user starts with a clean slate
     queryClient.clear();
     setUser(null);
   }, [queryClient]);

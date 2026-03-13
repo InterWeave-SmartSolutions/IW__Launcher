@@ -76,17 +76,98 @@ Guidance:
 - If multiple AIs worked in parallel on the same task, produce one consolidated entry.
 - If legacy PDF context materially informed the work, list the specific PDF filenames consulted.
 
-## 6) Claude Code-specific enhancements (recommended)
+## 6) Model selection across Claude + Codex (required for Claude Code)
+
+This repo has **14 models** available across two tool families: Claude Code subagents (3 tiers) and OpenAI Codex CLI (11 GPT-5 models). Both are approved for use at any tier. Choose the best model for the task — optimizing for cost when possible, but using higher-tier models freely when the task warrants it.
+
+### Claude Code subagents (Agent tool `model` param)
+
+| Model | ID | Use When |
+|---|---|---|
+| **Haiku 4.5** | `haiku` | File searches, grep/glob, reading files, git ops, running tests, formatting, boilerplate |
+| **Sonnet 4.6** | `sonnet` | Code edits, single-file refactors, writing tests, docs, standard bug fixes, code review |
+| **Opus 4.6** | `opus` | Multi-file architecture, security-sensitive code, complex debugging, cross-system integration |
+
+### Codex CLI (GPT-5 family, via ChatGPT account)
+
+OpenAI Codex CLI (`codex-cli 0.111.0`) is installed and authenticated via ChatGPT account. Invoked from Claude Code via Bash. All 11 models are approved for use.
+
+| Model ID | Tier | Best For |
+|---|---|---|
+| `gpt-5-codex-mini` | Mini | Cheapest — simple questions, quick lookups, formatting |
+| `gpt-5.1-codex-mini` | Mini | Slightly better mini — light code explanations |
+| `gpt-5` | Standard | General reasoning, broad world knowledge |
+| `gpt-5.1` | Standard | Improved general reasoning |
+| `gpt-5.2` | Standard | Professional work, long-running agents |
+| `gpt-5-codex` | Codex | Code-optimized — refactors, reviews, generation |
+| `gpt-5.1-codex` | Codex | Improved code-optimized |
+| `gpt-5.2-codex` | Codex | Frontier agentic coding |
+| `gpt-5.3-codex` | Codex | Frontier Codex-optimized agentic coding |
+| `gpt-5.1-codex-max` | Max | Deep and fast reasoning for complex code tasks |
+| `gpt-5.4` | Frontier | Latest frontier agentic coding (current default) |
+
+**Note:** This install uses a ChatGPT account, NOT a separate OpenAI API key. Models like `o4-mini` are API-only and will NOT work.
+
+### Combined decision matrix (14 models)
+
+| Task Type | Primary Pick | Alternative |
+|---|---|---|
+| File search / grep / git status | Claude **haiku** | — |
+| Read & summarize a file | Claude **haiku** | Codex `gpt-5-codex-mini` |
+| Quick code explanation | Codex `gpt-5-codex-mini` | Claude **haiku** |
+| Standard code edit / bug fix | Claude **sonnet** | Codex `gpt-5.2-codex` |
+| Write tests | Claude **sonnet** | Codex `gpt-5.2-codex` |
+| Code review (primary) | Claude **sonnet** | Codex `gpt-5.3-codex` |
+| Code review (second opinion) | `codex review` (gpt-5.4) | Codex `gpt-5.3-codex` |
+| Refactor / code generation | Claude **sonnet** | Codex `gpt-5.3-codex` |
+| Frontend development (React/TS) | Codex `gpt-5.4` | Claude **sonnet** |
+| Long-running agentic task | Codex `gpt-5.2` or `gpt-5.4` | Claude **opus** |
+| Complex multi-file architecture | Claude **opus** | Codex `gpt-5.4` |
+| Security-sensitive code | Claude **opus** | Codex `gpt-5.1-codex-max` |
+
+### Decision rules
+1. **Use the right model for the task.** Cheap models for simple work, powerful models for complex work.
+2. **Higher-tier Codex models are approved.** `gpt-5.4`, `gpt-5.3-codex`, and `gpt-5.1-codex-max` are all fair game when the task benefits from frontier-level reasoning.
+3. **Claude haiku for bulk/search operations** — file search, grep, git, test runs. Native tool access avoids API round-trips.
+4. **Codex excels at frontend dev and tool calling** — `gpt-5.4` is specifically optimized for these. Prefer it for React/TypeScript generation.
+5. **Claude opus for repo-specific reasoning** — this repo's Java/JSP/React cross-system patterns are deeply embedded in Claude's context window. Use opus when the task requires understanding of the full IW_Launcher architecture.
+6. **Main conversation model stays as configured by the user** — these rules apply to subagent spawning and Codex CLI invocations only.
+7. **Codex CLI uses separate billing** (ChatGPT account tokens). Claude subagents use Anthropic tokens. Consider budget across both when choosing.
+
+### Usage examples
+```bash
+# Claude subagents
+Agent(model="haiku", prompt="Find all files containing 'ApiTokenStore'")
+Agent(model="sonnet", prompt="Create the NotificationsPage component")
+Agent(model="opus", prompt="Analyze the cross-UI session lifecycle and propose fixes")
+
+# Codex CLI — cheap tasks
+codex exec -m gpt-5-codex-mini "describe the purpose of ApiTokenStore.java"
+codex exec --sandbox read-only -a never -m gpt-5.1-codex-mini "list all servlet mappings in web.xml"
+
+# Codex CLI — standard code tasks
+codex exec -m gpt-5.2-codex "refactor this function to use async/await"
+codex exec -m gpt-5.3-codex "write unit tests for LocalLogoutServlet"
+
+# Codex CLI — frontier tasks
+codex exec -m gpt-5.4 "analyze the session lifecycle across JSP and React UIs"
+codex exec -m gpt-5.1-codex-max "design the OAuth broker integration architecture"
+
+# Codex CLI — code review (uses default gpt-5.4 from ~/.codex/config.toml)
+codex review
+```
+
+## 7) Claude Code-specific enhancements (recommended)
 This repo is designed to work well with Claude Code using:
 - Project slash commands in `.claude/commands/`
 - Hooks (PreToolUse/PostToolUse/Stop) to improve verification and logging
 - Optional plugin(s) for automated verification loops
 
-### 6.1 Slash commands (project-local)
+### 7.1 Slash commands (project-local)
 Project-local commands live in `.claude/commands/` and are shared via git.
 Use them for repetitive workflows like updating docs, running verification, and appending to `AI_WORKLOG.md`.
 
-### 6.2 Ralph verification loop plugin ("ralph-wiggum" / "ralph-loop")
+### 7.2 Ralph verification loop plugin ("ralph-wiggum" / "ralph-loop")
 Purpose: run an automated “keep going until done” loop with a hard iteration cap, usually via a Stop hook.
 
 Rules for using Ralph in this repo:

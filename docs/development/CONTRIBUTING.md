@@ -108,6 +108,17 @@ mvn test -P all-tests       # include integration tests
 mvn verify                  # full verification
 ```
 
+### E2E Session & Routing Tests (Playwright)
+
+After any changes to authentication, session management, or routing:
+
+```bash
+# Requires: Tomcat running on :9090, Python 3, playwright installed
+python frontends/iw-portal/tests/e2e_session_and_routing.py
+```
+
+Tests cover: security headers, SPA route refresh (36 routes), login/logout round-trip, cross-UI session leak, JSP→React session sharing, protected route guards, page refresh auth persistence. Target: **29/29 PASS**.
+
 ### Manual Verification
 
 After any web portal change:
