@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import {
   FileText,
   ExternalLink,
@@ -25,11 +25,18 @@ import {
   XCircle,
   Clock,
   ListOrdered,
+  Copy,
+  CopyCheck,
+  Download,
+  Terminal,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { useLogFiles, useLogSummary, useLogContent, type DaySummary, type LogLine } from "@/hooks/useLogs";
+import { useLogFiles, useLogSummary, useLogContent, useLiveLogs, type DaySummary, type LogLine } from "@/hooks/useLogs";
 import { useTransactions } from "@/hooks/useMonitoring";
+import { useToast } from "@/providers/ToastProvider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -338,6 +345,193 @@ function formatTime(fullTime: string): string {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
+/* ─── Virtual scrolling log table ─── */
+
+const VROW_HEIGHT = 26;
+const VBUFFER = 30;
+
+function VirtualLogTable({
+  lines,
+  highlightLine,
+  onCopyLine,
+  copiedLine,
+}: {
+  lines: LogLine[];
+  highlightLine: number | null;
+  onCopyLine: (lineNum: number, text: string) => void;
+  copiedLine: number | null;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(600);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const e of entries) setContainerHeight(e.contentRect.height);
+    });
+    ro.observe(el);
+    setContainerHeight(el.clientHeight);
+    return () => ro.disconnect();
+  }, []);
+
+  // Auto-scroll to highlighted line
+  useEffect(() => {
+    if (highlightLine == null || !containerRef.current) return;
+    const idx = lines.findIndex((l) => l.num === highlightLine);
+    if (idx < 0) return;
+    const targetScroll = Math.max(0, idx * VROW_HEIGHT - containerHeight / 3);
+    containerRef.current.scrollTop = targetScroll;
+  }, [highlightLine, lines, containerHeight]);
+
+  const totalHeight = lines.length * VROW_HEIGHT;
+  const startIdx = Math.max(0, Math.floor(scrollTop / VROW_HEIGHT) - VBUFFER);
+  const endIdx = Math.min(lines.length, Math.ceil((scrollTop + containerHeight) / VROW_HEIGHT) + VBUFFER);
+  const visibleLines = lines.slice(startIdx, endIdx);
+
+  if (lines.length === 0) {
+    return (
+      <div className="border border-[hsl(var(--border))] rounded-[14px] bg-[hsl(var(--card))] shadow-sm p-8 text-center text-muted-foreground text-sm">
+        No matching lines found.
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="border border-[hsl(var(--border))] rounded-[14px] bg-[hsl(var(--card))] shadow-sm overflow-auto max-h-[600px]"
+      onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+    >
+      <div style={{ height: totalHeight, position: "relative" }}>
+        <table className="w-full text-xs font-mono" style={{ position: "absolute", top: startIdx * VROW_HEIGHT, left: 0, right: 0 }}>
+          <tbody>
+            {visibleLines.map((line) => {
+              const isHighlighted = highlightLine === line.num;
+              const isCopied = copiedLine === line.num;
+              return (
+                <tr
+                  key={line.num}
+                  style={{ height: VROW_HEIGHT }}
+                  className={cn(
+                    "border-b border-[hsl(var(--border)/0.3)] group",
+                    line.level === "error" && "bg-[hsl(var(--destructive)/0.08)]",
+                    line.level === "warn" && "bg-[hsl(var(--warning)/0.08)]",
+                    isHighlighted && "ring-2 ring-inset ring-[hsl(var(--primary)/0.5)] bg-[hsl(var(--primary)/0.08)]",
+                    !isHighlighted && "hover:bg-muted/30",
+                  )}
+                >
+                  <td className="px-3 py-0.5 text-right text-muted-foreground/30 select-none w-12 align-top tabular-nums">{line.num}</td>
+                  <td className="px-1 py-0.5 w-5 align-top">
+                    {line.level === "error" && <AlertCircle className="w-3 h-3 text-[hsl(var(--destructive))] mt-0.5" />}
+                    {line.level === "warn" && <AlertTriangle className="w-3 h-3 text-[hsl(var(--warning))] mt-0.5" />}
+                  </td>
+                  <td className={cn(
+                    "px-2 py-0.5 whitespace-pre-wrap break-all",
+                    line.level === "error" && "text-[hsl(var(--destructive))]",
+                    line.level === "warn" && "text-[hsl(var(--warning))]",
+                  )}>{line.text}</td>
+                  <td className="w-8 px-1 py-0.5 align-top">
+                    <button
+                      onClick={() => onCopyLine(line.num, line.text)}
+                      className={cn(
+                        "p-0.5 rounded transition-opacity",
+                        isCopied ? "opacity-100 text-[hsl(var(--success))]" : "opacity-0 group-hover:opacity-60 hover:!opacity-100 text-muted-foreground",
+                      )}
+                      title="Copy line"
+                    >
+                      {isCopied ? <CopyCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Live tail section (uses existing useLiveLogs hook) ─── */
+
+function LiveTailSection() {
+  const [liveFilter, setLiveFilter] = useState("");
+  const { data: liveData, isFetching } = useLiveLogs(200, liveFilter);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+
+  useEffect(() => {
+    if (autoScroll && scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [liveData, autoScroll]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <Terminal className="w-4 h-4 text-[hsl(var(--primary))]" />
+          <span className="text-xs font-medium">Live Server Output</span>
+          {isFetching && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+          {liveData && (
+            <span className="text-[10px] text-muted-foreground">
+              {liveData.file} · last {liveData.lines.length} of {liveData.totalLines.toLocaleString()} lines
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => setAutoScroll(e.target.checked)}
+              className="w-3 h-3 rounded accent-[hsl(var(--primary))]"
+            />
+            Auto-scroll
+          </label>
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Filter…"
+              value={liveFilter}
+              onChange={(e) => setLiveFilter(e.target.value)}
+              className="w-36 pl-7 pr-3 py-1 text-xs rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.4)] placeholder:text-muted-foreground"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-[14px] p-3 font-mono text-[11px] overflow-y-auto max-h-[500px] space-y-0.5"
+      >
+        {liveData?.lines.length ? (
+          liveData.lines.map((line) => (
+            <div
+              key={line.num}
+              className={cn(
+                "leading-relaxed whitespace-pre-wrap break-all px-1 rounded",
+                line.level === "error" && "text-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.06)]",
+                line.level === "warn" && "text-[hsl(var(--warning))] bg-[hsl(var(--warning)/0.04)]",
+                line.level === "ts" && "text-[hsl(var(--primary))]",
+                line.level === "info" && "text-muted-foreground",
+              )}
+            >
+              <span className="text-muted-foreground/30 tabular-nums select-none mr-2">{line.num}</span>
+              {line.text}
+            </div>
+          ))
+        ) : (
+          <p className="text-muted-foreground text-center py-8">No log output yet. Auto-refreshes every 5 seconds.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Per-company Activity Logs component ─── */
 
 function ActivityLogsTab() {
@@ -389,6 +583,31 @@ function ActivityLogsTab() {
           </select>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw className={cn("w-3.5 h-3.5", isFetching && "animate-spin")} />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs gap-1"
+            disabled={filtered.length === 0}
+            onClick={() => {
+              const header = "Time,Flow,Status,Records,Duration(s),Error\n";
+              const rows = filtered.map((tx) => {
+                const ts = tx.started_at ? new Date(tx.started_at).toISOString() : "";
+                const dur = tx.duration_ms != null ? (tx.duration_ms / 1000).toFixed(1) : "";
+                const err = (tx.error_message ?? "").replace(/"/g, '""');
+                return `"${ts}","${tx.flow_name ?? ""}","${tx.status ?? ""}",${tx.records_processed ?? ""},${dur},"${err}"`;
+              }).join("\n");
+              const blob = new Blob([header + rows], { type: "text/csv" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `activity-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download className="w-3 h-3" />
+            CSV
           </Button>
         </div>
       </div>
@@ -456,6 +675,7 @@ function ActivityLogsTab() {
 
 export function LoggingPage() {
   useDocumentTitle("System Logging");
+  const { showToast } = useToast();
 
   const [view, setView] = useState<ViewMode>("list");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -467,6 +687,13 @@ export function LoggingPage() {
   const [detailLevelFilter, setDetailLevelFilter] = useState<"all" | "error" | "warn">("all");
   const [detailSearch, setDetailSearch] = useState("");
   const [expandedIncidents, setExpandedIncidents] = useState<Set<number>>(new Set());
+
+  /* ── New interaction state ── */
+  const [activeDetailTab, setActiveDetailTab] = useState<string>("insights");
+  const [highlightLine, setHighlightLine] = useState<number | null>(null);
+  const [showAllPatterns, setShowAllPatterns] = useState(false);
+  const [showAllIncidents, setShowAllIncidents] = useState(false);
+  const [copiedLine, setCopiedLine] = useState<number | null>(null);
 
   const stripRef = useRef<HTMLDivElement>(null);
 
@@ -633,6 +860,10 @@ export function LoggingPage() {
     setDetailSearch("");
     setDetailLevelFilter("all");
     setExpandedIncidents(new Set());
+    setActiveDetailTab("insights");
+    setHighlightLine(null);
+    setShowAllPatterns(false);
+    setShowAllIncidents(false);
     setView("detail");
   }
 
@@ -642,12 +873,54 @@ export function LoggingPage() {
     setDetailSearch("");
     setDetailLevelFilter("all");
     setExpandedIncidents(new Set());
+    setActiveDetailTab("insights");
+    setHighlightLine(null);
+    setShowAllPatterns(false);
+    setShowAllIncidents(false);
   }
 
   function backToList() {
     setView("list");
     setSelectedDate(null);
+    setHighlightLine(null);
   }
+
+  function jumpToLine(lineNum: number) {
+    setActiveDetailTab("raw");
+    setDetailLevelFilter("all");
+    setDetailSearch("");
+    setHighlightLine(lineNum);
+    // Clear highlight after 3 seconds
+    setTimeout(() => setHighlightLine((prev) => prev === lineNum ? null : prev), 3000);
+  }
+
+  const copyLine = useCallback((lineNum: number, text: string) => {
+    void navigator.clipboard.writeText(text).then(() => {
+      setCopiedLine(lineNum);
+      setTimeout(() => setCopiedLine((prev) => prev === lineNum ? null : prev), 2000);
+    }).catch(() => {});
+  }, []);
+
+  const copyAllVisible = useCallback(() => {
+    const text = filteredLines.map((l) => l.text).join("\n");
+    void navigator.clipboard.writeText(text).then(() => {
+      showToast(`Copied ${filteredLines.length} lines`, "success");
+    }).catch(() => {});
+  }, [filteredLines, showToast]);
+
+  /* ── Keyboard navigation ── */
+  useEffect(() => {
+    if (view !== "detail") return;
+    const handler = (e: KeyboardEvent) => {
+      // Don't intercept when user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "Escape") { backToList(); return; }
+      if (e.key === "ArrowLeft" && dayNavigation.prev) { e.preventDefault(); navigateDay(dayNavigation.prev); }
+      if (e.key === "ArrowRight" && dayNavigation.next) { e.preventDefault(); navigateDay(dayNavigation.next); }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  });
 
   function toggleIncident(idx: number) {
     setExpandedIncidents((prev) => {
@@ -1043,18 +1316,31 @@ export function LoggingPage() {
                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
               </div>
             ) : contentData ? (
-              <Tabs defaultValue="insights">
-                <TabsList>
-                  <TabsTrigger value="insights">
-                    <Activity className="w-3.5 h-3.5" />
-                    Insights
-                  </TabsTrigger>
-                  <TabsTrigger value="raw">
-                    <FileText className="w-3.5 h-3.5" />
-                    Raw Log
-                    <span className="text-[10px] opacity-50 tabular-nums ml-0.5">{contentData.totalLines.toLocaleString()}</span>
-                  </TabsTrigger>
-                </TabsList>
+              <Tabs value={activeDetailTab} onValueChange={setActiveDetailTab}>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <TabsList>
+                    <TabsTrigger value="insights">
+                      <Activity className="w-3.5 h-3.5" />
+                      Insights
+                    </TabsTrigger>
+                    <TabsTrigger value="raw">
+                      <FileText className="w-3.5 h-3.5" />
+                      Raw Log
+                      <span className="text-[10px] opacity-50 tabular-nums ml-0.5">{contentData.totalLines.toLocaleString()}</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="live">
+                      <Terminal className="w-3.5 h-3.5" />
+                      Live Tail
+                    </TabsTrigger>
+                  </TabsList>
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <kbd className="px-1.5 py-0.5 rounded bg-muted border border-[hsl(var(--border))] font-mono text-[9px]">Esc</kbd>
+                    <span>back</span>
+                    <kbd className="px-1.5 py-0.5 rounded bg-muted border border-[hsl(var(--border))] font-mono text-[9px] ml-2">←</kbd>
+                    <kbd className="px-1.5 py-0.5 rounded bg-muted border border-[hsl(var(--border))] font-mono text-[9px]">→</kbd>
+                    <span>prev / next day</span>
+                  </div>
+                </div>
 
                 {/* ── INSIGHTS TAB ── */}
                 <TabsContent value="insights" className="space-y-6">
@@ -1108,7 +1394,7 @@ export function LoggingPage() {
                                   {evt.startupMs}ms
                                 </Badge>
                               )}
-                              <span className="text-muted-foreground/30 tabular-nums text-[10px] shrink-0">L{evt.lineNum}</span>
+                              <button onClick={() => jumpToLine(evt.lineNum)} className="text-[hsl(var(--primary))] tabular-nums text-[10px] shrink-0 hover:underline font-mono" title="Jump to line in Raw Log">L{evt.lineNum}</button>
                             </div>
                           ))}
                         </div>
@@ -1125,16 +1411,34 @@ export function LoggingPage() {
                             <span className="text-[11px] text-muted-foreground">{patterns.length} unique</span>
                           </div>
                           <div className="space-y-1">
-                            {patterns.slice(0, 8).map((p, i) => (
-                              <div key={i} className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-muted/40 text-xs">
+                            {patterns.slice(0, showAllPatterns ? patterns.length : 8).map((p, i) => (
+                              <div key={i} className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-muted/40 text-xs group/pat">
                                 <AlertCircle className="w-3 h-3 text-[hsl(var(--destructive))] shrink-0" />
                                 <span className="text-muted-foreground truncate min-w-0 flex-1 font-mono text-[11px]">{p.message}</span>
+                                <button
+                                  onClick={() => void navigator.clipboard.writeText(p.message).then(() => showToast("Pattern copied", "success")).catch(() => {})}
+                                  className="opacity-0 group-hover/pat:opacity-60 hover:!opacity-100 p-0.5 rounded text-muted-foreground transition-opacity shrink-0"
+                                  title="Copy pattern"
+                                >
+                                  <Copy className="w-3 h-3" />
+                                </button>
                                 <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-[16px] shrink-0">{p.count}×</Badge>
-                                <span className="text-muted-foreground/30 tabular-nums text-[10px] shrink-0">L{p.firstLine}</span>
+                                <button
+                                  onClick={() => jumpToLine(p.firstLine)}
+                                  className="text-[hsl(var(--primary))] tabular-nums text-[10px] shrink-0 hover:underline font-mono"
+                                  title="Jump to line in Raw Log"
+                                >
+                                  L{p.firstLine}
+                                </button>
                               </div>
                             ))}
                             {patterns.length > 8 && (
-                              <p className="text-[10px] text-muted-foreground/50 pl-3">+{patterns.length - 8} more patterns</p>
+                              <button
+                                onClick={() => setShowAllPatterns((v) => !v)}
+                                className="text-[10px] text-[hsl(var(--primary))] hover:underline pl-3 flex items-center gap-1"
+                              >
+                                {showAllPatterns ? <><ChevronUp className="w-3 h-3" />Show less</> : <><ChevronDown className="w-3 h-3" />Show {patterns.length - 8} more patterns</>}
+                              </button>
                             )}
                           </div>
                         </div>
@@ -1148,43 +1452,63 @@ export function LoggingPage() {
                             <span className="text-[11px] text-muted-foreground">{incidents.length} incidents</span>
                           </div>
                           <div className="space-y-1">
-                            {incidents.slice(0, 20).map((inc, i) => {
+                            {incidents.slice(0, showAllIncidents ? incidents.length : 20).map((inc, i) => {
                               const expanded = expandedIncidents.has(i);
                               const hasStack = inc.lineCount > 1;
                               return (
                                 <div key={i}>
-                                  <button
-                                    onClick={() => hasStack && toggleIncident(i)}
+                                  <div
                                     className={cn(
                                       "w-full flex items-start gap-2 py-1.5 px-3 rounded-lg text-xs text-left transition-colors",
                                       inc.level === "error" ? "bg-[hsl(var(--destructive)/0.04)] hover:bg-[hsl(var(--destructive)/0.08)]" : "bg-[hsl(var(--warning)/0.04)] hover:bg-[hsl(var(--warning)/0.08)]",
-                                      hasStack && "cursor-pointer",
                                     )}
                                   >
-                                    <span className="text-muted-foreground/40 tabular-nums font-mono w-10 shrink-0 pt-0.5">
+                                    <button
+                                      onClick={() => jumpToLine(inc.startLine)}
+                                      className="text-[hsl(var(--primary))] tabular-nums font-mono w-10 shrink-0 pt-0.5 hover:underline text-left text-xs"
+                                      title="Jump to line in Raw Log"
+                                    >
                                       L{inc.startLine}
-                                    </span>
+                                    </button>
                                     {inc.level === "error" ? (
                                       <AlertCircle className="w-3 h-3 text-[hsl(var(--destructive))] shrink-0 mt-0.5" />
                                     ) : (
                                       <AlertTriangle className="w-3 h-3 text-[hsl(var(--warning))] shrink-0 mt-0.5" />
                                     )}
-                                    <span className={cn("min-w-0 flex-1 font-mono text-[11px] break-all", inc.level === "error" ? "text-[hsl(var(--destructive)/0.8)]" : "text-[hsl(var(--warning)/0.8)]")}>
+                                    <button
+                                      onClick={() => hasStack ? toggleIncident(i) : jumpToLine(inc.startLine)}
+                                      className={cn("min-w-0 flex-1 font-mono text-[11px] break-all text-left", inc.level === "error" ? "text-[hsl(var(--destructive)/0.8)]" : "text-[hsl(var(--warning)/0.8)]", hasStack && "cursor-pointer")}
+                                    >
                                       {inc.headline.length > 120 ? inc.headline.substring(0, 120) + "…" : inc.headline}
-                                    </span>
+                                    </button>
                                     {hasStack && (
-                                      <Badge variant="secondary" className="text-[9px] px-1 py-0 h-[16px] shrink-0">
-                                        {inc.lineCount} lines
-                                      </Badge>
+                                      <button onClick={() => toggleIncident(i)} className="shrink-0">
+                                        <Badge variant="secondary" className="text-[9px] px-1 py-0 h-[16px] cursor-pointer">
+                                          {expanded ? <ChevronUp className="w-2.5 h-2.5 inline mr-0.5" /> : <ChevronDown className="w-2.5 h-2.5 inline mr-0.5" />}
+                                          {inc.lineCount} lines
+                                        </Badge>
+                                      </button>
                                     )}
-                                  </button>
+                                  </div>
                                   {expanded && contentData?.lines && (
-                                    <div className="ml-12 mr-3 mb-1 px-3 py-2 rounded-lg bg-muted/40 border-l-2 border-red-500/30">
+                                    <div className="ml-12 mr-3 mb-1 px-3 py-2 rounded-lg bg-muted/40 border-l-2 border-red-500/30 relative group/stack">
+                                      <button
+                                        onClick={() => {
+                                          const text = contentData.lines
+                                            .filter((l) => l.num >= inc.startLine && l.num <= inc.endLine)
+                                            .map((l) => l.text).join("\n");
+                                          void navigator.clipboard.writeText(text).then(() => showToast("Stack trace copied", "success")).catch(() => {});
+                                        }}
+                                        className="absolute top-1.5 right-1.5 p-1 rounded bg-muted/60 opacity-0 group-hover/stack:opacity-80 hover:!opacity-100 transition-opacity text-muted-foreground"
+                                        title="Copy stack trace"
+                                      >
+                                        <Copy className="w-3 h-3" />
+                                      </button>
                                       {contentData.lines
                                         .filter((l) => l.num >= inc.startLine && l.num <= inc.endLine)
                                         .map((l) => (
                                           <div key={l.num} className="font-mono text-[10px] text-muted-foreground/70 leading-[1.6] break-all">
-                                            <span className="text-muted-foreground/30 tabular-nums inline-block w-8">{l.num}</span>
+                                            <button onClick={() => jumpToLine(l.num)} className="text-muted-foreground/30 tabular-nums inline-block w-8 hover:text-[hsl(var(--primary))] text-left">{l.num}</button>
                                             {l.text}
                                           </div>
                                         ))}
@@ -1194,17 +1518,28 @@ export function LoggingPage() {
                               );
                             })}
                             {incidents.length > 20 && (
-                              <p className="text-[10px] text-muted-foreground/50 pl-3">+{incidents.length - 20} more incidents — switch to Raw Log for full view</p>
+                              <button
+                                onClick={() => setShowAllIncidents((v) => !v)}
+                                className="text-[10px] text-[hsl(var(--primary))] hover:underline pl-3 flex items-center gap-1"
+                              >
+                                {showAllIncidents ? <><ChevronUp className="w-3 h-3" />Show less</> : <><ChevronDown className="w-3 h-3" />Show {incidents.length - 20} more incidents</>}
+                              </button>
                             )}
                           </div>
                         </div>
                       )}
 
-                      {/* Clean log message */}
+                      {/* Clean log message (enhanced) */}
                       {incidents.length === 0 && (
-                        <div className="glass-panel rounded-[var(--radius)] p-8 text-center">
-                          <Badge variant="success" className="text-xs mb-2">All Clear</Badge>
+                        <div className="glass-panel rounded-[var(--radius)] p-8 text-center space-y-3">
+                          <CheckCircle2 className="w-10 h-10 text-[hsl(var(--success))] mx-auto" />
+                          <Badge variant="success" className="text-xs">All Clear</Badge>
                           <p className="text-sm text-muted-foreground">No errors or warnings found in this log file.</p>
+                          <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
+                            <span>{contentData.totalLines.toLocaleString()} lines processed</span>
+                            <span className="text-muted-foreground/30">|</span>
+                            <span>{(contentData.fileSize / 1024).toFixed(1)} KB</span>
+                          </div>
                         </div>
                       )}
                     </>
@@ -1258,6 +1593,17 @@ export function LoggingPage() {
                           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                           <input value={detailSearch} onChange={(e) => setDetailSearch(e.target.value)} placeholder="Search logs..." className="w-40 bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border))] text-foreground rounded-full pl-7 pr-3 py-1 text-xs outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.4)] transition-shadow" />
                         </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          onClick={copyAllVisible}
+                          disabled={filteredLines.length === 0}
+                          title={`Copy ${filteredLines.length} visible lines`}
+                        >
+                          <Copy className="w-3 h-3" />
+                          Copy
+                        </Button>
                       </div>
                     </div>
                     {(detailSearch || detailLevelFilter !== "all") && (
@@ -1267,33 +1613,18 @@ export function LoggingPage() {
                     )}
                   </div>
 
-                  {/* Log content */}
-                  <div className="border border-[hsl(var(--border))] rounded-[14px] bg-[hsl(var(--card))] shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-                      <table className="w-full text-xs font-mono">
-                        <tbody>
-                          {filteredLines.length === 0 ? (
-                            <tr>
-                              <td className="p-8 text-center text-muted-foreground">
-                                {contentData.totalLines === 0 ? "Log file is empty." : "No matching lines found."}
-                              </td>
-                            </tr>
-                          ) : (
-                            filteredLines.map((line) => (
-                              <tr key={line.num} className={cn("border-b border-[hsl(var(--border)/0.3)] hover:bg-muted/30", line.level === "error" && "bg-[hsl(var(--destructive)/0.1)]", line.level === "warn" && "bg-[hsl(var(--warning)/0.1)]")}>
-                                <td className="px-3 py-1 text-right text-muted-foreground/30 select-none w-12 align-top tabular-nums">{line.num}</td>
-                                <td className="px-1 py-1 w-5 align-top">
-                                  {line.level === "error" && <AlertCircle className="w-3 h-3 text-[hsl(var(--destructive))] mt-0.5" />}
-                                  {line.level === "warn" && <AlertTriangle className="w-3 h-3 text-[hsl(var(--warning))] mt-0.5" />}
-                                </td>
-                                <td className={cn("px-2 py-1 whitespace-pre-wrap break-all", line.level === "error" && "text-[hsl(var(--destructive))]", line.level === "warn" && "text-[hsl(var(--warning))]")}>{line.text}</td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  {/* Virtualized log content */}
+                  <VirtualLogTable
+                    lines={filteredLines}
+                    highlightLine={highlightLine}
+                    onCopyLine={copyLine}
+                    copiedLine={copiedLine}
+                  />
+                </TabsContent>
+
+                {/* ── LIVE TAIL TAB ── */}
+                <TabsContent value="live" className="space-y-4">
+                  <LiveTailSection />
                 </TabsContent>
               </Tabs>
             ) : (

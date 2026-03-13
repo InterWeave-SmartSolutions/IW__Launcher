@@ -7070,3 +7070,65 @@ Actions taken:
 
 ### What I did (this response)
 Fixed heatmap to show green cells for clean/healthy log days instead of neutral gray. Updated legend with Clean/No-data indicators. Provided 6 alternative visualization concepts for the error overview.
+
+---
+
+## 2026-03-13 (Log Viewer improvements)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Improve the log viewer pages in terms of functionality, readability, and interaction
+
+Actions taken:
+
+### 1. Virtual scrolling for Raw Log tab (performance)
+- New `VirtualLogTable` component: fixed-height rows (26px), renders only visible slice + 30-row buffer
+- Uses `ResizeObserver` for container height, `onScroll` for scroll position tracking
+- Replaces full DOM render of all log lines — handles 5000+ lines without jank
+
+### 2. Clickable line references + jump-to-line (interaction)
+- All `L{num}` markers in Error Patterns, Error Incidents, Service Lifecycle, and expanded stack traces are now clickable buttons
+- Clicking jumps to the Raw Log tab, auto-scrolls to the line, and highlights it with a ring pulse for 3 seconds
+- Converted detail Tabs from uncontrolled to controlled (`value`/`onValueChange`) to enable programmatic tab switching
+
+### 3. Copy-to-clipboard (utility)
+- Per-line copy icon appears on hover in Raw Log (uses VirtualLogTable)
+- "Copy" button in Raw Log filter bar copies all visible/filtered lines
+- Copy icon on each error pattern row
+- "Copy stack trace" button appears on hover over expanded incident stack traces
+- All copy actions show toast feedback via `useToast()`
+
+### 4. Show more/less for patterns and incidents (completeness)
+- Error Patterns: was hard-capped at 8 → now shows 8 with expandable "Show N more" / "Show less" toggle
+- Error Incidents: was hard-capped at 20 → same expandable toggle
+- State resets on day navigation
+
+### 5. Live Tail tab (new feature)
+- New `LiveTailSection` component using existing `useLiveLogs(200, filter)` hook
+- Auto-scroll toggle, filter input, line-level color coding
+- Polls every 5s (inherited from hook), shows file path and line counts
+- Added as third tab in detail view alongside Insights and Raw Log
+
+### 6. Keyboard navigation (accessibility)
+- `Escape` returns to list view from detail view
+- `ArrowLeft` / `ArrowRight` navigate to prev/next day
+- Keyboard hints displayed next to tab bar (`Esc` back, `←→` prev/next)
+- Ignores keystrokes when focus is in input fields
+
+### 7. Enhanced "All Clear" state (polish)
+- Clean logs now show a large CheckCircle2 icon + total lines processed + file size
+- More informative than the previous single-line "No errors found" message
+
+### 8. CSV export for Activity Logs (utility)
+- Download button generates CSV from current filtered transaction list
+- Includes time, flow, status, records, duration, error columns
+- Filename includes current date
+
+### Files modified
+- `frontends/iw-portal/src/pages/LoggingPage.tsx` — all 8 improvements
+- `web_portal/tomcat/webapps/iw-portal/` — production build output
+
+### Verification performed
+- TypeScript: zero errors
+- Vite production build: successful (5.92s)
+
+### What I did (this response)
+Implemented 8 improvements to the Log Viewer: virtual scrolling, clickable line refs, copy-to-clipboard, show more/less, live tail tab, keyboard navigation, enhanced all-clear state, and CSV export.
