@@ -92,7 +92,7 @@ interface StripCell {
 
 function stripCellColor(cell: StripCell): string {
   if (!cell.hasData) return "bg-muted/30";
-  if (cell.errors === 0) return "bg-[hsl(var(--muted)/0.3)]";
+  if (cell.errors === 0) return "bg-[hsl(var(--success)/0.35)]";
   if (cell.errors <= 2) return "bg-[hsl(var(--warning)/0.4)]";
   if (cell.errors <= 8) return "bg-[hsl(var(--warning)/0.6)]";
   if (cell.errors <= 16) return "bg-[hsl(var(--destructive)/0.5)]";
@@ -856,11 +856,17 @@ export function LoggingPage() {
                   </div>
 
                   <div className="flex items-center gap-3 pt-1 border-t border-[hsl(var(--border)/0.3)]">
+                    <div className="w-[14px] h-[14px] rounded-[3px] bg-[hsl(var(--success)/0.35)]" />
+                    <span className="text-[9px] text-muted-foreground/50">Clean</span>
+                    <span className="text-[9px] text-muted-foreground/30 mx-1">|</span>
                     <span className="text-[9px] text-muted-foreground/50">Less</span>
-                    {["bg-[hsl(var(--muted)/0.3)]", "bg-[hsl(var(--warning)/0.4)]", "bg-[hsl(var(--warning)/0.6)]", "bg-[hsl(var(--destructive)/0.5)]", "bg-[hsl(var(--destructive)/0.7)]"].map((cls, i) => (
+                    {["bg-[hsl(var(--warning)/0.4)]", "bg-[hsl(var(--warning)/0.6)]", "bg-[hsl(var(--destructive)/0.5)]", "bg-[hsl(var(--destructive)/0.7)]"].map((cls, i) => (
                       <div key={i} className={cn("w-[14px] h-[14px] rounded-[3px]", cls)} />
                     ))}
                     <span className="text-[9px] text-muted-foreground/50">More</span>
+                    <span className="text-[9px] text-muted-foreground/30 mx-1">|</span>
+                    <div className="w-[14px] h-[14px] rounded-[3px] bg-muted/30" />
+                    <span className="text-[9px] text-muted-foreground/50">No data</span>
                   </div>
                 </div>
 

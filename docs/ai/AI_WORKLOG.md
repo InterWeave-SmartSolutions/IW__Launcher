@@ -7052,3 +7052,21 @@ Actions taken:
 
 ### What I did (this response)
 Committed all 6 UI improvements: session leak fix (token-gate), scrollbar theming, dashboard 8-row cap, global zebra striping, logging page spacing, and Activity Overview default to Week. Updated build output.
+
+---
+
+## 2026-03-13 (Green heatmap cells)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Ensure clean/green status logs show up in the Activity Overview heatmap; provide alternative visualization options
+
+Actions taken:
+- Changed `stripCellColor` for clean days (`errors === 0`) from `bg-[hsl(var(--muted)/0.3)]` (invisible gray) to `bg-[hsl(var(--success)/0.35)]` (green)
+- Updated heatmap legend: added "Clean" (green swatch), "No data" (muted swatch), with separator pipes between the three groups
+- Provided 6 alternative visualization options (stacked bar, sparkline, calendar grid, timeline, donut+trend, keep heatmap+green) for future consideration
+
+### Files modified
+- `frontends/iw-portal/src/pages/LoggingPage.tsx` — stripCellColor green + legend update
+- `web_portal/tomcat/webapps/iw-portal/` — production build output
+
+### What I did (this response)
+Fixed heatmap to show green cells for clean/healthy log days instead of neutral gray. Updated legend with Clean/No-data indicators. Provided 6 alternative visualization concepts for the error overview.
