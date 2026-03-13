@@ -56,6 +56,7 @@ These items from the original roadmap are now DONE:
 - Session 20: IDE deep dive — all 308 plugin classes analyzed (229 GUI-dependent/74%, 79 GUI-free). ConfigContext, ProjectActions, JAXB model, build pipeline reverse-engineered. Headless verdict: NO. Server-side replication 80%+ complete. Full analysis: `docs/development/IDE_DEEP_DIVE.md`.
 - Session 21: AI Management Architecture — three-party (AI + IDE + Portal) concurrent workspace management. 5-layer architecture, 14 new API endpoints designed, SSE push, change-source tracking, optimistic locking. Full design: `docs/development/AI_MANAGEMENT_ARCHITECTURE.md`.
 - Session 22: Verified RBAC compiles clean, ErrorHandlingFilter already active (updated CLAUDE.md Known Issues #2), installed cloudflared, Vercel + tunnel deployment prep. CSP `search.js` committed.
+- Session 23: CSP hardening — extracted all inline scripts from 7 JSPs to external .js files, converted 8 onclick handlers to event delegation, deployed HelpLinkService (fixed help-popup.jsp 500), SecurityHeadersFilter now sends `script-src 'self' https://cdn.jsdelivr.net` (no unsafe-inline).
 
 ---
 
@@ -227,7 +228,7 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | ~~Security Headers~~ | ~~HttpHeaderSecurityFilter on iw-portal, meta tags~~ | ~~1 hr~~ | DONE (X-Frame-Options, nosniff, XSS-Protection) |
 | ~~WCAG 2.2 AA Accessibility~~ | ~~Skip nav, ARIA, focus traps, contrast, reduced motion~~ | ~~3-4 hrs~~ | DONE (8 CRITICAL + 4 contrast/focus fixes) |
 | ~~Cross-UI Session Leak~~ | ~~Logout from JSP/React properly invalidates sessions + Bearer tokens~~ | ~~3-4 hrs~~ | DONE (LocalLogoutServlet + ApiLogoutServlet + E2E 29/29) |
-| Content Security Policy (JSPs) | Audit inline scripts/styles in 37+ JSPs, add CSP headers | 2-4 hrs | Open (iw-portal done, iw-business-daemon pending) |
+| ~~Content Security Policy (JSPs)~~ | ~~Audit inline scripts/styles in JSPs, add CSP headers~~ | ~~2-4 hrs~~ | DONE (7 JSPs refactored, strict `script-src 'self'`, SecurityHeadersFilter) |
 | bcrypt migration | Replace SHA-256 with bcrypt, add jBCrypt JAR | 2-3 hrs | Blocked (migration strategy) |
 | Credential encryption | Encrypt DB passwords in config files at rest | 2-3 hrs | Open |
 | Vendor JAR CVE audit | OWASP dependency-check on 133 iwtransformationserver JARs | 1-2 hrs | Open |

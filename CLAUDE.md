@@ -239,7 +239,7 @@ Edit `web_portal/tomcat/conf/server.xml`:
 2. **ErrorHandlingFilter — ACTIVE**
    - Filter is deployed and enabled in `web.xml` (lines 35-50, mapped to `/*`)
    - Source: `src/main/java/com/interweave/web/ErrorHandlingFilter.java` (300 lines)
-   - Compiled class + 9 error framework classes deployed to `WEB-INF/classes/com/interweave/`
+   - Compiled class + 9 error framework classes + 4 HelpLinkService classes deployed to `WEB-INF/classes/com/interweave/`
    - Handles exceptions for both API (JSON 500) and browser (forwards to `ErrorMessage.jsp`) requests
    - Error classification maps to `ErrorCode` enums (DB001, SYSTEM001, SYSTEM005, XPATH004, CONFIG001, SYSTEM003)
 
@@ -252,7 +252,19 @@ Edit `web_portal/tomcat/conf/server.xml`:
    - `interweave-jaxb-compat.jar` (in `tomcat/lib/`) provides JAXB 1.0 classes needed by the engine
    - **Note**: Actual flow execution still requires workspace project files with valid connection credentials and XSLT mappings
 
-4. **Windows-Native Required for Database**
+4. **Content Security Policy — STRICT (iw-business-daemon)**
+   - `SecurityHeadersFilter` (in `web.xml`, mapped to `/*`) sets strict CSP on all responses
+   - `script-src 'self' https://cdn.jsdelivr.net` — **no `'unsafe-inline'`** — all inline scripts extracted to external `.js` files
+   - `style-src 'self' 'unsafe-inline'` — still needed for legacy JSP inline `<style>` blocks
+   - CDN allowlist: `cdn.jsdelivr.net` for Chart.js on `monitoring/Dashboard.jsp`
+   - **Pattern for new JSPs**: Do NOT use inline `<script>` or `onclick`/`onload` attributes. Instead:
+     - Pass server data via `data-*` attributes on a hidden `<div>`
+     - Read data in an external `.js` file: `el.getAttribute('data-...')`
+     - Use `addEventListener` / event delegation instead of inline handlers
+   - Source: `WEB-INF/src/com/interweave/web/SecurityHeadersFilter.java`
+   - Compile: `javac -source 1.8 -target 1.8 -cp "web_portal/tomcat/lib/servlet-api.jar" -d web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/web/SecurityHeadersFilter.java`
+
+5. **Windows-Native Required for Database**
    - **Tomcat MUST run from Windows (PowerShell)**, not WSL2
    - Supabase direct host (`db.*.supabase.co:5432`) is **blocked/unreachable** (connect timeout) — do NOT use
    - Supabase pooler (`aws-0-us-west-2.pooler.supabase.com:6543`) is the **only working endpoint** (verified 2026-02-26)
@@ -608,7 +620,7 @@ IW_Launcher/
 ## Roadmap and Next Steps
 
 See `docs/NEXT_STEPS.md` for the current prioritized development queue:
-- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware compiles clean, cloudflared installed
+- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened (all inline scripts eliminated from 7 JSPs)
 - **Blocked**: Configure monitoring email (needs SMTP credentials)
-- **Active**: Cloudflare tunnel (cloudflared installed, scripts ready), Vercel redeploy (token auth in frontend, needs `vercel login`)
-- **Future**: CSP for JSP pages, bcrypt migration, vendor JAR CVE audit, AI Management Architecture Phase 1
+- **Active**: Cloudflare tunnel (quick tunnel working, named tunnel needs account setup), Vercel auto-deploy (GitHub integration)
+- **Future**: bcrypt migration, vendor JAR CVE audit, AI Management Architecture Phase 1
