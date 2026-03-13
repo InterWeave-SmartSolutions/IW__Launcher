@@ -175,7 +175,7 @@ Key tables (see `database/mysql_schema.sql`):
 - `companies` - Organization profiles with license management
 - `users` - User accounts linked to companies
 - `user_profiles` - Extended user information
-- Authentication uses email + SHA-256 hex password hash (via `LocalLoginServlet`, matches MySQL `SHA2()`)
+- Authentication uses email + bcrypt password hash (via `PasswordHasher` utility, jBCrypt 0.4). Progressive migration from SHA-256/plaintext → bcrypt on login.
 
 **Database Setup:**
 ```bash
@@ -278,7 +278,7 @@ Edit `web_portal/tomcat/conf/server.xml`:
 The original compiled servlets depend on the `iwtransformationserver` webapp (not deployed) or have critical bugs. All 10 user/company management servlets have been replaced with local SQL-based implementations that query Supabase Postgres directly.
 
 - **Source**: `WEB-INF/src/com/interweave/businessDaemon/config/Local*.java`
-- **Base class**: `LocalUserManagementServlet` — DataSource init, SHA-256 hashing, reflection helper
+- **Base class**: `LocalUserManagementServlet` — DataSource init, bcrypt hashing (via `PasswordHasher`), reflection helper
 - **ADR**: `docs/adr/003-local-servlet-bridge.md`
 - **Full reference**: `docs/development/LOCAL_SERVLETS.md`
 
@@ -620,7 +620,7 @@ IW_Launcher/
 ## Roadmap and Next Steps
 
 See `docs/NEXT_STEPS.md` for the current prioritized development queue:
-- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened (all inline scripts eliminated from 7 JSPs)
+- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened, bcrypt migration (PasswordHasher + progressive rehash)
 - **Blocked**: Configure monitoring email (needs SMTP credentials)
 - **Active**: Cloudflare tunnel (quick tunnel working, named tunnel needs account setup), Vercel auto-deploy (GitHub integration)
-- **Future**: bcrypt migration, vendor JAR CVE audit, AI Management Architecture Phase 1
+- **Future**: Credential encryption at rest, vendor JAR CVE audit, AI Management Architecture Phase 1

@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+import com.interweave.web.PasswordHasher;
+
 /**
  * ApiMfaServlet - JSON API endpoint for TOTP-based multi-factor authentication.
  *
@@ -457,7 +459,7 @@ public class ApiMfaServlet extends HttpServlet {
                         return;
                     }
                     String storedHash = rs.getString("password");
-                    if (!verifyPassword(password, storedHash)) {
+                    if (!PasswordHasher.verify(password, storedHash)) {
                         sendJson(response, HttpServletResponse.SC_BAD_REQUEST,
                             "{\"success\":false,\"error\":\"Incorrect password\"}");
                         return;
@@ -610,17 +612,6 @@ public class ApiMfaServlet extends HttpServlet {
         if (session == null) return null;
         Object email = session.getAttribute("userEmail");
         return email != null ? email.toString() : null;
-    }
-
-    private boolean verifyPassword(String password, String storedHash) {
-        if (storedHash == null || storedHash.isEmpty()) return false;
-        if (password.equals(storedHash)) return true;
-        try {
-            return hashSha256(password).equals(storedHash);
-        } catch (Exception e) {
-            log("Error hashing password", e);
-            return false;
-        }
     }
 
     private String hashSha256(String input) {

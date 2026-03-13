@@ -146,6 +146,7 @@ web_portal/tomcat/webapps/iw-business-daemon/db_test.jsp
 !**/LocalChangeCompanyPasswordServlet.*
 !**/ChangePassword.jsp
 !**/ChangeCompanyPassword.jsp
+!**/PasswordHasher.*
 
 # ===== Database Connection (configured per-machine) =====
 web_portal/tomcat/conf/context.xml

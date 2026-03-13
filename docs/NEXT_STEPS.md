@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-13 (Session 20 — IDE deep dive: 308 classes decompiled, build pipeline mapped, headless verdict, server-mode gap analysis)
+**Last Updated:** 2026-03-13 (Session 24 — bcrypt migration: PasswordHasher utility, progressive rehash on login, jBCrypt 0.4 deployed, 10+ servlets updated)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -57,6 +57,7 @@ These items from the original roadmap are now DONE:
 - Session 21: AI Management Architecture — three-party (AI + IDE + Portal) concurrent workspace management. 5-layer architecture, 14 new API endpoints designed, SSE push, change-source tracking, optimistic locking. Full design: `docs/development/AI_MANAGEMENT_ARCHITECTURE.md`.
 - Session 22: Verified RBAC compiles clean, ErrorHandlingFilter already active (updated CLAUDE.md Known Issues #2), installed cloudflared, Vercel + tunnel deployment prep. CSP `search.js` committed.
 - Session 23: CSP hardening — extracted all inline scripts from 7 JSPs to external .js files, converted 8 onclick handlers to event delegation, deployed HelpLinkService (fixed help-popup.jsp 500), SecurityHeadersFilter now sends `script-src 'self' https://cdn.jsdelivr.net` (no unsafe-inline).
+- Session 24: bcrypt migration — centralized PasswordHasher utility (hash/verify/needsRehash/rehashIfNeeded), jBCrypt 0.4 deployed, progressive rehash on login (SHA-256→bcrypt transparent upgrade), 10+ servlets updated (all API + Local config), login verified.
 
 ---
 
@@ -229,7 +230,7 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | ~~WCAG 2.2 AA Accessibility~~ | ~~Skip nav, ARIA, focus traps, contrast, reduced motion~~ | ~~3-4 hrs~~ | DONE (8 CRITICAL + 4 contrast/focus fixes) |
 | ~~Cross-UI Session Leak~~ | ~~Logout from JSP/React properly invalidates sessions + Bearer tokens~~ | ~~3-4 hrs~~ | DONE (LocalLogoutServlet + ApiLogoutServlet + E2E 29/29) |
 | ~~Content Security Policy (JSPs)~~ | ~~Audit inline scripts/styles in JSPs, add CSP headers~~ | ~~2-4 hrs~~ | DONE (7 JSPs refactored, strict `script-src 'self'`, SecurityHeadersFilter) |
-| bcrypt migration | Replace SHA-256 with bcrypt, add jBCrypt JAR | 2-3 hrs | Blocked (migration strategy) |
+| ~~bcrypt migration~~ | ~~Replace SHA-256 with bcrypt, add jBCrypt JAR~~ | ~~2-3 hrs~~ | DONE (PasswordHasher utility, progressive rehash, Session 24) |
 | Credential encryption | Encrypt DB passwords in config files at rest | 2-3 hrs | Open |
 | Vendor JAR CVE audit | OWASP dependency-check on 133 iwtransformationserver JARs | 1-2 hrs | Open |
 

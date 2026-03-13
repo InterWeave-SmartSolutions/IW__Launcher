@@ -2,8 +2,6 @@ package com.interweave.businessDaemon.config;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.naming.Context;
@@ -14,6 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+
+import com.interweave.web.PasswordHasher;
 
 /**
  * Base class for local user/company management servlets.
@@ -37,26 +37,19 @@ public abstract class LocalUserManagementServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Hash a password using bcrypt (delegates to PasswordHasher).
+     */
     protected String hashPassword(String password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(password.getBytes());
-            StringBuilder hex = new StringBuilder();
-            for (byte b : hash) {
-                String h = Integer.toHexString(0xff & b);
-                if (h.length() == 1) hex.append('0');
-                hex.append(h);
-            }
-            return hex.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 not available", e);
-        }
+        return PasswordHasher.hash(password);
     }
 
+    /**
+     * Verify a password against a stored hash.
+     * Supports bcrypt, SHA-256 hex, and plain text (delegates to PasswordHasher).
+     */
     protected boolean verifyPassword(String input, String storedHash) {
-        if (storedHash == null || storedHash.isEmpty()) return false;
-        if (input.equals(storedHash)) return true; // plain text match (testing)
-        return hashPassword(input).equals(storedHash);
+        return PasswordHasher.verify(input, storedHash);
     }
 
     protected void redirectToError(HttpServletRequest req, HttpServletResponse resp,

@@ -3,8 +3,6 @@ package com.interweave.businessDaemon.api;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,6 +25,7 @@ import com.interweave.businessDaemon.TransactionContext;
 import com.interweave.businessDaemon.TransactionThread;
 import com.interweave.businessDaemon.config.WorkspaceProfileCompiler;
 import com.interweave.web.LoginRateLimiter;
+import com.interweave.web.PasswordHasher;
 
 /**
  * ApiLoginServlet - JSON API endpoint for user authentication.
@@ -125,8 +124,8 @@ public class ApiLoginServlet extends HttpServlet {
                     boolean userActive = rs.getBoolean("is_active");
                     boolean companyActive = rs.getBoolean("company_active");
 
-                    // Verify password (SHA-256 or plain text for testing)
-                    if (!verifyPassword(password, storedHash)) {
+                    // Verify password (bcrypt, SHA-256, or plain text)
+                    if (!PasswordHasher.verify(password, storedHash)) {
                         LoginRateLimiter.recordFailure(email);
                         AuditService.record(dataSource, rs.getInt("id"), rs.getInt("company_id"), email,
                             "login_failed", "Invalid password",
@@ -150,6 +149,12 @@ public class ApiLoginServlet extends HttpServlet {
 
                     // All checks passed - clear lockout counter
                     LoginRateLimiter.clearFailures(email);
+
+                    // Progressive bcrypt migration: upgrade SHA-256/plaintext to bcrypt
+                    if (PasswordHasher.needsRehash(storedHash)) {
+                        PasswordHasher.rehashIfNeeded(conn, "users", "id",
+                            rs.getInt("id"), password);
+                    }
 
                     // Build user info
                     int userId = rs.getInt("id");
@@ -293,33 +298,7 @@ public class ApiLoginServlet extends HttpServlet {
         return json.substring(start, end);
     }
 
-    /**
-     * Verifies password against stored hash.
-     * Supports both plain text (for testing) and SHA-256 hashed passwords.
-     * Identical logic to LocalLoginServlet.verifyPassword().
-     */
-    private boolean verifyPassword(String password, String storedHash) {
-        if (storedHash == null || storedHash.isEmpty()) return false;
-        if (password.equals(storedHash)) return true;
-        try {
-            return hashPassword(password).equals(storedHash);
-        } catch (NoSuchAlgorithmException e) {
-            log("Error hashing password", e);
-            return false;
-        }
-    }
-
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hash = md.digest(password.getBytes());
-        StringBuilder hex = new StringBuilder();
-        for (byte b : hash) {
-            String h = Integer.toHexString(0xff & b);
-            if (h.length() == 1) hex.append('0');
-            hex.append(h);
-        }
-        return hex.toString();
-    }
+    // Password hashing/verification delegated to PasswordHasher
 
     private void updateLastLogin(Connection conn, int userId) {
         String sql = "UPDATE users SET last_login = ? WHERE id = ?";

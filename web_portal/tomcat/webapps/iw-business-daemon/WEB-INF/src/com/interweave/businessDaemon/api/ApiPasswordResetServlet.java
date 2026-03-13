@@ -3,8 +3,6 @@ package com.interweave.businessDaemon.api;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,6 +17,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+
+import com.interweave.web.PasswordHasher;
 
 /**
  * ApiPasswordResetServlet - JSON API endpoint for self-service password reset.
@@ -226,8 +226,8 @@ public class ApiPasswordResetServlet extends HttpServlet {
                     int tokenId = rs.getInt("id");
                     int userId = rs.getInt("user_id");
 
-                    // Hash new password (SHA-256, same as ApiLoginServlet)
-                    String hashedPassword = hashPassword(newPassword);
+                    // Hash new password (bcrypt via PasswordHasher)
+                    String hashedPassword = PasswordHasher.hash(newPassword);
 
                     // Update user password
                     String updateSql = "UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?";
@@ -251,10 +251,6 @@ public class ApiPasswordResetServlet extends HttpServlet {
             sendJson(response, HttpServletResponse.SC_OK,
                 "{\"success\":true,\"message\":\"Password has been reset successfully\"}");
 
-        } catch (NoSuchAlgorithmException e) {
-            log("Error hashing password: " + e.getMessage(), e);
-            sendJson(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                "{\"success\":false,\"error\":\"A system error occurred\"}");
         } catch (SQLException e) {
             log("Database error during password reset: " + e.getMessage(), e);
             sendJson(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -273,18 +269,6 @@ public class ApiPasswordResetServlet extends HttpServlet {
                 return rs.next();
             }
         }
-    }
-
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hash = md.digest(password.getBytes());
-        StringBuilder hex = new StringBuilder();
-        for (byte b : hash) {
-            String h = Integer.toHexString(0xff & b);
-            if (h.length() == 1) hex.append('0');
-            hex.append(h);
-        }
-        return hex.toString();
     }
 
     private static String bytesToHex(byte[] bytes) {

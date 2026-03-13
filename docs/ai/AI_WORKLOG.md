@@ -7243,3 +7243,35 @@ JS:   document.addEventListener('click', function(e) {
 - `powershell.exe ... Start-Process ... startup.bat` (Tomcat restart x3)
 - `curl` verification of all pages + headers
 - `grep` sweep for remaining inline scripts/handlers
+
+---
+
+## 2026-03-13 (UTC)
+Agent/tool: Claude Opus 4.6
+User request: Migrate all remaining servlet files with their own hashPassword/verifyPassword methods to use centralized PasswordHasher utility
+Actions taken:
+- Searched all Java sources in api/ and config/ directories for MessageDigest, SHA-256, hashPassword, verifyPassword
+- Updated 7 API servlets to use PasswordHasher.hash() and PasswordHasher.verify() instead of local SHA-256 implementations
+- Removed private hashPassword() and verifyPassword() method definitions from 6 API servlets
+- Removed import java.security.MessageDigest and NoSuchAlgorithmException from 6 API servlets (kept in ApiMfaServlet for backup code SHA-256 hashing)
+- Removed NoSuchAlgorithmException catch blocks from 5 servlets (no longer thrown by PasswordHasher)
+- Added import com.interweave.web.PasswordHasher to 7 servlets
+- Verified 6 Local* config servlets (extend LocalUserManagementServlet) already inherit bcrypt via parent — no changes needed
+Files changed:
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiChangePasswordServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiCompanyProfileServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiCompanyRegistrationServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiMfaServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiPasswordResetServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiProfileServlet.java
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiRegistrationServlet.java
+- docs/ai/AI_WORKLOG.md (this entry)
+Verification performed:
+- Grep confirmed zero remaining hashPassword/verifyPassword method definitions/calls in api/ directory
+- Grep confirmed MessageDigest import only remains in ApiMfaServlet (for backup code hashing, not passwords)
+- Grep confirmed NoSuchAlgorithmException only remains in ApiMfaServlet (same reason)
+- Grep confirmed all 7 API servlets import and use PasswordHasher
+- Grep confirmed Local* config servlets have no own hash/verify methods (inherit from LocalUserManagementServlet)
+Follow-ups / known issues:
+- Servlets need recompilation: javac with PasswordHasher.class + jbcrypt.jar on classpath
+- ApiMfaServlet retains hashSha256() for backup code hashing (not password-related, uses SHA-256 intentionally)

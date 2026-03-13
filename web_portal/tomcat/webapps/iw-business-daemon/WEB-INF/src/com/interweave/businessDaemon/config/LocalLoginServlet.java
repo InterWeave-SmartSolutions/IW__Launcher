@@ -1,8 +1,6 @@
 package com.interweave.businessDaemon.config;
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,6 +22,7 @@ import com.interweave.businessDaemon.QueryContext;
 import com.interweave.businessDaemon.TransactionContext;
 import com.interweave.businessDaemon.TransactionThread;
 import com.interweave.web.LoginRateLimiter;
+import com.interweave.web.PasswordHasher;
 
 /**
  * LocalLoginServlet - Authenticates users against the local MySQL database
@@ -272,6 +271,12 @@ public class LocalLoginServlet extends HttpServlet {
                     userInfo.companyName = rs.getString("company_name");
                     userInfo.solutionType = rs.getString("solution_type");
 
+                    // Progressive bcrypt migration: upgrade SHA-256/plaintext to bcrypt
+                    if (PasswordHasher.needsRehash(storedHash)) {
+                        PasswordHasher.rehashIfNeeded(conn, "users", "id",
+                            userInfo.userId, password);
+                    }
+
                     return AuthenticationResult.success(userInfo);
 
                 } else {
@@ -291,43 +296,11 @@ public class LocalLoginServlet extends HttpServlet {
     }
 
     /**
-     * Verifies password against stored hash
-     * Supports both plain text (for testing) and SHA-256 hashed passwords
+     * Verifies password against stored hash.
+     * Supports bcrypt, SHA-256 hex, and plain text (delegates to PasswordHasher).
      */
     private boolean verifyPassword(String password, String storedHash) {
-        if (storedHash == null || storedHash.isEmpty()) {
-            return false;
-        }
-
-        // Check if stored hash is a plain text password (for testing purposes)
-        if (password.equals(storedHash)) {
-            return true;
-        }
-
-        // Check SHA-256 hash
-        try {
-            String hashedInput = hashPassword(password);
-            return hashedInput.equals(storedHash);
-        } catch (NoSuchAlgorithmException e) {
-            log("Error hashing password", e);
-            return false;
-        }
-    }
-
-    /**
-     * Hashes a password using SHA-256, producing lowercase hex output
-     * to match MySQL's SHA2(password, 256) function.
-     */
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hash = md.digest(password.getBytes());
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.toString();
+        return PasswordHasher.verify(password, storedHash);
     }
 
     /**

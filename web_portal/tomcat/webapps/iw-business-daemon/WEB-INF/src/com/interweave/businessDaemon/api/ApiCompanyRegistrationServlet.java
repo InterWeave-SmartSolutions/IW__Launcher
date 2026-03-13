@@ -3,8 +3,6 @@ package com.interweave.businessDaemon.api;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,6 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+
+import com.interweave.web.PasswordHasher;
 
 /**
  * ApiCompanyRegistrationServlet - JSON API endpoint for company + admin registration.
@@ -177,8 +177,8 @@ public class ApiCompanyRegistrationServlet extends HttpServlet {
                     }
                 }
 
-                // Step 3: Hash password
-                String hashedPw = hashPassword(password);
+                // Step 3: Hash password (bcrypt)
+                String hashedPw = PasswordHasher.hash(password);
 
                 // Step 4: Insert company (uses getGeneratedKeys for cross-DB compat)
                 int companyId;
@@ -236,10 +236,6 @@ public class ApiCompanyRegistrationServlet extends HttpServlet {
                 throw e;
             }
 
-        } catch (NoSuchAlgorithmException e) {
-            log("Password hashing error during company registration", e);
-            sendJson(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                "{\"success\":false,\"error\":\"A system error occurred. Please try again later.\"}");
         } catch (SQLException e) {
             log("Database error during API company registration: " + e.getMessage(), e);
             sendJson(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -396,18 +392,6 @@ public class ApiCompanyRegistrationServlet extends HttpServlet {
         }
         if (end >= json.length()) return null;
         return json.substring(start, end);
-    }
-
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hash = md.digest(password.getBytes());
-        StringBuilder hex = new StringBuilder();
-        for (byte b : hash) {
-            String h = Integer.toHexString(0xff & b);
-            if (h.length() == 1) hex.append('0');
-            hex.append(h);
-        }
-        return hex.toString();
     }
 
     private void setCorsHeaders(HttpServletResponse response) {
