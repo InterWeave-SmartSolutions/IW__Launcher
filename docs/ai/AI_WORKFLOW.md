@@ -76,41 +76,21 @@ Guidance:
 - If multiple AIs worked in parallel on the same task, produce one consolidated entry.
 - If legacy PDF context materially informed the work, list the specific PDF filenames consulted.
 
-## 6) Model selection for token efficiency (required for Claude Code)
+## 6) Model selection across Claude + Codex (required for Claude Code)
 
-Claude Code supports multiple model tiers via the `model` parameter on Agent tool calls. **Always use the cheapest model that can handle the task.** This reduces token consumption without sacrificing quality where it matters.
+This repo has **14 models** available across two tool families: Claude Code subagents (3 tiers) and OpenAI Codex CLI (11 GPT-5 models). Both are approved for use at any tier. Choose the best model for the task — optimizing for cost when possible, but using higher-tier models freely when the task warrants it.
 
-### Available models (as of 2026-03)
+### Claude Code subagents (Agent tool `model` param)
+
 | Model | ID | Use When |
 |---|---|---|
-| **Haiku 4.5** | `haiku` | File searches, grep/glob operations, reading files, simple status checks, formatting, boilerplate generation, running tests, git operations |
-| **Sonnet 4.6** | `sonnet` | Moderate code edits, single-file refactors, writing tests, documentation updates, standard bug fixes, code review of small changes |
-| **Opus 4.6** | `opus` | Complex multi-file architecture, security-sensitive code, intricate debugging, cross-system integration, novel algorithm design |
+| **Haiku 4.5** | `haiku` | File searches, grep/glob, reading files, git ops, running tests, formatting, boilerplate |
+| **Sonnet 4.6** | `sonnet` | Code edits, single-file refactors, writing tests, docs, standard bug fixes, code review |
+| **Opus 4.6** | `opus` | Multi-file architecture, security-sensitive code, complex debugging, cross-system integration |
 
-### Decision rules
-1. **Default to the cheapest viable model.** If the subagent task is "search for X" or "read file Y", use `haiku`.
-2. **Escalate only when needed.** If a `sonnet` agent produces inadequate results, retry with `opus` — don't start at `opus` by default.
-3. **Main conversation model stays as configured by the user** — this guidance applies to *subagent* spawning via the Agent tool's `model` parameter.
-4. **Security-sensitive and architecture work always uses `opus`** — session management, auth flows, cryptographic code, cross-system data flows.
-5. **Bulk operations prefer `haiku`** — searching multiple files, running test suites, compiling, git status/diff/log.
+### Codex CLI (GPT-5 family, via ChatGPT account)
 
-### Examples
-```
-# Searching for a class definition → haiku
-Agent(model="haiku", prompt="Find all files containing 'ApiTokenStore'")
-
-# Writing a new React page → sonnet
-Agent(model="sonnet", prompt="Create the NotificationsPage component")
-
-# Designing auth session invalidation across JSP + React + token store → opus
-Agent(model="opus", prompt="Analyze the cross-UI session lifecycle and propose fixes")
-```
-
-### Codex CLI as an additional tier
-
-OpenAI Codex CLI (`codex-cli 0.111.0`) is installed and authenticated via ChatGPT account. It can be invoked from Claude Code via Bash for tasks where a different model family may be more token-efficient or offer a useful second opinion.
-
-**Available Codex models (GPT-5 family, via ChatGPT account):**
+OpenAI Codex CLI (`codex-cli 0.111.0`) is installed and authenticated via ChatGPT account. Invoked from Claude Code via Bash. All 11 models are approved for use.
 
 | Model ID | Tier | Best For |
 |---|---|---|
@@ -126,43 +106,56 @@ OpenAI Codex CLI (`codex-cli 0.111.0`) is installed and authenticated via ChatGP
 | `gpt-5.1-codex-max` | Max | Deep and fast reasoning for complex code tasks |
 | `gpt-5.4` | Frontier | Latest frontier agentic coding (current default) |
 
-**Note:** This install uses a ChatGPT account, NOT a separate OpenAI API key. Models like `o4-mini` are API-only and will NOT work. Only the GPT-5 family models listed above are available.
+**Note:** This install uses a ChatGPT account, NOT a separate OpenAI API key. Models like `o4-mini` are API-only and will NOT work.
 
-**Usage from Claude Code:**
+### Combined decision matrix (14 models)
+
+| Task Type | Primary Pick | Alternative |
+|---|---|---|
+| File search / grep / git status | Claude **haiku** | — |
+| Read & summarize a file | Claude **haiku** | Codex `gpt-5-codex-mini` |
+| Quick code explanation | Codex `gpt-5-codex-mini` | Claude **haiku** |
+| Standard code edit / bug fix | Claude **sonnet** | Codex `gpt-5.2-codex` |
+| Write tests | Claude **sonnet** | Codex `gpt-5.2-codex` |
+| Code review (primary) | Claude **sonnet** | Codex `gpt-5.3-codex` |
+| Code review (second opinion) | `codex review` (gpt-5.4) | Codex `gpt-5.3-codex` |
+| Refactor / code generation | Claude **sonnet** | Codex `gpt-5.3-codex` |
+| Frontend development (React/TS) | Codex `gpt-5.4` | Claude **sonnet** |
+| Long-running agentic task | Codex `gpt-5.2` or `gpt-5.4` | Claude **opus** |
+| Complex multi-file architecture | Claude **opus** | Codex `gpt-5.4` |
+| Security-sensitive code | Claude **opus** | Codex `gpt-5.1-codex-max` |
+
+### Decision rules
+1. **Use the right model for the task.** Cheap models for simple work, powerful models for complex work.
+2. **Higher-tier Codex models are approved.** `gpt-5.4`, `gpt-5.3-codex`, and `gpt-5.1-codex-max` are all fair game when the task benefits from frontier-level reasoning.
+3. **Claude haiku for bulk/search operations** — file search, grep, git, test runs. Native tool access avoids API round-trips.
+4. **Codex excels at frontend dev and tool calling** — `gpt-5.4` is specifically optimized for these. Prefer it for React/TypeScript generation.
+5. **Claude opus for repo-specific reasoning** — this repo's Java/JSP/React cross-system patterns are deeply embedded in Claude's context window. Use opus when the task requires understanding of the full IW_Launcher architecture.
+6. **Main conversation model stays as configured by the user** — these rules apply to subagent spawning and Codex CLI invocations only.
+7. **Codex CLI uses separate billing** (ChatGPT account tokens). Claude subagents use Anthropic tokens. Consider budget across both when choosing.
+
+### Usage examples
 ```bash
-# Non-interactive execution — cheap model for simple questions
+# Claude subagents
+Agent(model="haiku", prompt="Find all files containing 'ApiTokenStore'")
+Agent(model="sonnet", prompt="Create the NotificationsPage component")
+Agent(model="opus", prompt="Analyze the cross-UI session lifecycle and propose fixes")
+
+# Codex CLI — cheap tasks
 codex exec -m gpt-5-codex-mini "describe the purpose of ApiTokenStore.java"
-
-# Standard code task — code-optimized model
-codex exec -m gpt-5.2-codex "refactor this function to use async/await"
-
-# Code review (uses default model from ~/.codex/config.toml)
-codex review
-
-# With sandbox and auto-approval for safe read-only tasks
 codex exec --sandbox read-only -a never -m gpt-5.1-codex-mini "list all servlet mappings in web.xml"
 
-# Frontier model for complex tasks
+# Codex CLI — standard code tasks
+codex exec -m gpt-5.2-codex "refactor this function to use async/await"
+codex exec -m gpt-5.3-codex "write unit tests for LocalLogoutServlet"
+
+# Codex CLI — frontier tasks
 codex exec -m gpt-5.4 "analyze the session lifecycle across JSP and React UIs"
+codex exec -m gpt-5.1-codex-max "design the OAuth broker integration architecture"
+
+# Codex CLI — code review (uses default gpt-5.4 from ~/.codex/config.toml)
+codex review
 ```
-
-**When to use Codex CLI vs Claude subagents:**
-| Task | Preferred Tool | Reason |
-|---|---|---|
-| File search / grep / git ops | Claude Agent (haiku) | Native tool access, no API hop |
-| Quick code explanation | Codex (`gpt-5-codex-mini`) | Cheap GPT-5 tokens for simple questions |
-| Code review (second opinion) | `codex review` | Different model perspective |
-| Standard code generation | Codex (`gpt-5.2-codex`) | Code-optimized, good balance |
-| Complex architecture / security | Claude Agent (opus) | Best reasoning for this repo's patterns |
-| Bulk refactoring | Claude Agent (sonnet) or Codex | Either works; pick by token budget |
-
-**Codex model selection rules:**
-1. Default to `gpt-5-codex-mini` or `gpt-5.1-codex-mini` for simple read-only queries
-2. Use `gpt-5.2-codex` or `gpt-5.3-codex` for standard code generation and refactoring
-3. Use `gpt-5.4` or `gpt-5.1-codex-max` only for complex multi-file analysis
-4. `codex review` (no model flag) uses the default from `~/.codex/config.toml` (`gpt-5.4`)
-
-**Important:** Codex CLI uses ChatGPT account tokens (separate billing from Claude). Use it when the OpenAI model family offers a cost or capability advantage for the specific task, not as a default.
 
 ## 7) Claude Code-specific enhancements (recommended)
 This repo is designed to work well with Claude Code using:
