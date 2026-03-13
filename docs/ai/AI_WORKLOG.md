@@ -6845,3 +6845,160 @@ Wizard XML (`<SF2QBConfiguration>`) and IDE XML (`<BusinessDaemonConfiguration>`
 
 ### What I did (this response)
 Completed Phases 2–4 of the sync improvement plan: optimistic locking with version columns, XML field-level diffing in conflict responses, frontend conflict type support, and compiled all Java classes. Applied DB migration to Supabase production. Fixed TypeScript error in useSyncSSE.ts.
+
+---
+## 2026-03-13 (Research Only — javap Decompilation of Eclipse Plugin Classes)
+Agent/tool: Claude Opus 4.6
+User request: Use javap to decompile 6 key class files from the InterWeave SDK Eclipse plugin and extract full method signatures, fields, and string constants.
+Actions taken:
+- Located javap at C:\Program Files\Java\jdk-24\bin\javap.exe (bundled JRE is JRE-only, no javap)
+- Ran `javap -p -c -constants` on 6 classes: ConfigContext, Designer, ProjectActions, TransactionBase, TransactionContext, QueryContext
+- Also decompiled inner class TransactionBase$ParameterValue and IwConnection
+- Extracted all unique string constants from ConfigContext (170+ strings) and ProjectActions (60+ strings)
+Files changed/created: None (research only)
+Commands run: javap -p -c -constants on 8 class files; grep for string constants
+Verification performed: All 8 class files successfully decompiled with full bytecode
+Follow-ups / known issues: None — pure research session
+
+### What I did (this response)
+Decompiled 8 Eclipse plugin class files using javap and produced a comprehensive inventory of all fields, methods, string constants, XML element names, config file paths, and build pipeline details.
+
+---
+
+## 2026-03-13 (Research Only — Headless IDE Feasibility Analysis)
+Agent/tool: Claude Opus 4.6
+User request: Investigate whether the InterWeave Eclipse IDE can run headlessly on a server. Produce a detailed feasibility analysis covering Eclipse 3.1 headless mode, the Designer class problem, class extractability, Xvfb/Docker approaches, and what the web portal already replicates.
+Actions taken:
+- Examined plugin.xml, MANIFEST.MF, and iw_ide.ini for Eclipse RCP configuration details
+- Decompiled Designer.class (implements IPlatformRunnable), ProjectActions.class (implements IRunnableWithProgress, depends on IProject/IWorkbenchWindow), BuildProjectAction.class (extends JFace Action, depends on IWorkbenchWindow), and both ConfigContext classes (IDE vs Business Daemon)
+- Counted and categorized all 308 plugin classes by package: 15 core SDK, 8 actions, 70 composites (GUI), 121+30 views/dialogs (GUI), 5+4 wizards (GUI), 10 JAXB model, 41 altova/swtdesigner
+- Read all 4 existing web portal servlet replicas (WorkspaceProfileCompilerServlet, WorkspaceProfileSyncServlet, ApiFlowManagementServlet, ApiConfigurationServlet)
+- Read WorkspaceProfileCompiler.java (925 lines) — already replicates the IDE's profile compilation server-side
+- Compared IDE ConfigContext (73KB, has IProject/IFile/IWorkspace/SWT dependencies) vs Business Daemon ConfigContext (55KB, no GUI dependencies, pure runtime)
+- Researched Eclipse 3.1 headless mode via web search — confirmed headless IApplication pattern exists but this IDE's dependencies make it impractical
+- Researched Xvfb + Docker approaches for virtual framebuffer
+- Analyzed the full dependency graph: Designer→PlatformUI, ProjectActions→IProject+IRunnableWithProgress, BuildProjectAction→IWorkbenchWindow, ConfigContext→IProject/IFile/SWT.CCombo
+Files changed/created: docs/ai/AI_WORKLOG.md (appended this entry)
+Commands run: javap on 7 class files, find/wc for class counts, web searches for Eclipse 3.1 headless mode and Xvfb/Docker
+Verification performed: Cross-referenced IDE ConfigContext methods against Business Daemon ConfigContext to identify overlap and divergence
+Follow-ups / known issues: None — pure research session
+
+### What I did (this response)
+Conducted comprehensive feasibility analysis of running the InterWeave Eclipse IDE headlessly. Examined 308 plugin classes, decompiled key classes with javap, compared IDE vs runtime ConfigContext, read 4 existing server-side replicas, and researched Eclipse 3.1 headless patterns, Xvfb, and Docker approaches. Produced detailed analysis with 5 approaches ranked by feasibility.
+
+---
+
+## 2026-03-13 (Session 20 — IDE Deep Dive Investigation)
+
+Agent/tool: Claude Code (Opus 4.6)
+User request: Comprehensive investigation into how the InterWeave Eclipse IDE operates fully — configuration, editing, management, GUI, and interaction with the web portal. Assess feasibility of always-on server operation.
+
+### Actions taken:
+
+**Phase 1: Plugin Architecture Analysis**
+- Inventoried all 308 classes in `plugins/iw_sdk_1.0.0/bin/`
+- Read `plugin.xml` — mapped 3 perspectives, 11 views, 10 commands, 4 wizards
+- Read `MANIFEST.MF` — identified 6 bundled Apache XML JARs + Eclipse bundle dependencies
+- Categorized 229 GUI-dependent (74%) vs 79 GUI-free classes
+
+**Phase 2: Deep Decompilation (4 parallel agents)**
+1. **Core classes agent**: Decompiled ConfigContext (51 fields, 110+ methods, ALL static), Designer (projectVersion=220048, hostedVersion=18), ProjectActions (4-stage bitmask build: COMPILE_XSLT=1, MAKE_XSLT_JAR=2, BUILD_IM_WAR=4, BUILD_TS_WAR=8), TransactionBase, TransactionContext, QueryContext, IwConnection
+2. **GUI classes agent**: Decompiled NavigationView (18 inner classes, tree CRUD), ConfigBDView/ConfigTSView, TransactionFlowView (visual GC drawing), XSLTEditorView (25 inner classes, source/dest field mapping), TemplateEditorView (37 inner classes, auto-generates XSLT), DataMapView, ConnectionView, BuildProjectAction, 4 wizards, 10 JAXB model classes
+3. **Workspace config agent**: Read all config.xml files across 3 projects, WEB-INF/config.xml, soltran.xslt structures, transactions.xml build output, workspace-profile-map.properties, generated profiles, .project files. Mapped the three-way binding (config.xml ↔ soltran.xslt ↔ transactions.xml via tranname parameter)
+4. **Engine/servlet agent**: Decompiled BD ConfigContext (55KB, GUI-free), analyzed ProductDemoServlet, BusinessDaemonInit, TransactionThread, IWTransform servlet, traced complete flow execution path
+
+**Phase 3: Legacy Documentation Review**
+- Reviewed IW_IDE_Doc.md, Training Sessions 1-4, ENGINE_SYNC_MAP.md
+- Extracted original operational model: shared RDP server, WAR deployment, multi-server failover
+- Documented original hosted multi-tenant architecture
+- Confirmed: no headless mode exists or was ever intended
+
+**Phase 4: Headless Feasibility Assessment**
+- Evaluated 5 approaches: headless IApplication (NOT FEASIBLE), extract JAR (LIMITED), Xvfb/Docker (IMPRACTICAL), server-side replication (RECOMMENDED), hybrid IDE+server (STRATEGIC)
+- Key finding: BD ConfigContext (55KB) is already GUI-free and deployed in Tomcat
+- Server already replicates 80%+ of operational IDE capabilities
+- Created comprehensive gap analysis table
+
+### Files changed/created:
+- `docs/development/IDE_DEEP_DIVE.md` — comprehensive 400+ line architecture analysis
+- `docs/ai/AI_WORKLOG.md` — this entry
+
+### Key Findings:
+1. **Two separate ConfigContext classes**: IDE version (73KB, Eclipse-coupled) vs BD version (55KB, GUI-free). Server does NOT need IDE's version.
+2. **Build pipeline**: 4 bitmask stages. XSLT compilation uses Apache XSLTC with package `iwtransformationserver`. WAR templates at `zip/iwbd_ide.zip` and `zip/iwts_ide.zip`.
+3. **JAXB model**: `iwmappingsType` → `transactionType[]` → `datamapType[]` + `nexttransactionType[]`. 7 adapter classes handle SOAP/REST/SQL/HTTP/session.
+4. **Visual flow editor**: TransactionFlowView uses GC drawing (arrows between transaction boxes), SashForm split with properties panel.
+5. **TemplateEditorView** is the most complex (37 inner classes) — auto-generates XSLT from visual templates, supports IWP/DDL import.
+6. **Headless verdict**: Cannot run IDE headlessly (Windows x86, SWT deps, 74% GUI classes). But don't need to — server-side is 80%+ complete.
+7. **Remaining gaps**: Create new project/transaction/query, visual XSLT editor, transaction flow visual editor, next-transaction wiring.
+8. **10 TS URL variants** map to original multi-server failover architecture (5+ production servers).
+9. **soltran.xslt assembly**: Built from `soltran_start.dat` + optimized content + `soltran_end.dat`, optional split at midpoint for large projects.
+10. **sitetran_host.xslt** contains 10 DB-backed user management transactions — the original hosted auth system before Local Servlet Bridge.
+
+### Verification performed:
+- All 308 classes inventoried and categorized
+- All 4 agent reports cross-referenced for consistency
+- Config XML formats verified against actual workspace files
+- Build pipeline stages confirmed via ProjectActions decompilation
+- Server-side equivalents verified in existing servlet source code
+
+### Follow-ups / known issues:
+- Consider adding "Create New Project" and "Compile XSLT" servlet endpoints (low effort)
+- Transaction/Query CRUD API would close most remaining gaps (medium effort)
+- Web-based visual editors (XSLT mapping, flow wiring) are long-term items
+- InterWoven AI Field Mapping prototype page explores the visual editor direction
+
+### What I did (this response):
+Conducted comprehensive investigation of the InterWeave Eclipse IDE using 4 parallel decompilation agents, legacy doc review agent, and headless feasibility agent. Produced `docs/development/IDE_DEEP_DIVE.md` (400+ lines) covering complete plugin architecture, build pipeline, JAXB model, config formats, GUI components, data flow, and server-mode assessment. Key conclusion: server-side replication is 80%+ complete; the IDE should remain an optional design tool while all operational capabilities are made available through the web portal.
+
+---
+
+## Session 21 — AI Management Architecture Design (2026-03-13)
+
+**Agent**: Claude Opus 4.6
+**Scope**: Designed the full bidirectional AI ↔ IDE ↔ Portal management architecture
+
+### What was done:
+
+1. **Full infrastructure audit** — Read and analyzed all current sync components:
+   - `sync_bridge.ps1` (333 lines) — polling daemon with 2s debounce, 3s cooldown
+   - `SyncEventServlet.java` (203 lines) — SSE push with 15s keepalive
+   - `ApiFlowManagementServlet.java` (906 lines) — flow listing/start/stop/schedule/properties/initialize
+   - `WorkspaceProfileSyncServlet.java` (316 lines) — bidirectional DB ↔ workspace sync
+   - `WorkspaceProfileCompilerServlet.java` (131 lines) — engine overlay generation
+   - `useSyncSSE.ts` (122 lines) — React SSE consumer with auto-reconnect
+
+2. **Workspace data model audit** — Analyzed actual config.xml structure:
+   - `Creatio_QuickBooks_Integration/configuration/im/config.xml` — 7 TransactionDescription + 7 Query elements
+   - `workspace-profile-map.properties` — 5 solution type → project mappings
+   - `soltran.xslt` — complete transaction flow definitions with adapter classes and nexttransaction chaining
+
+3. **Created `docs/development/AI_MANAGEMENT_ARCHITECTURE.md`** — comprehensive 550+ line architecture document covering:
+   - The Three-Party Problem (IDE + Portal + AI concurrency)
+   - 5 architecture layers (workspace API, build API, change tracking, IDE visibility, AI interface)
+   - 28-operation matrix mapping every IDE operation to server-side equivalent
+   - Complete data flow diagrams (AI→IDE and IDE→AI propagation)
+   - Concurrency and conflict resolution strategy
+   - 5 implementation phases with effort estimates
+   - Full API reference for 12 new endpoints
+   - IDE visibility guarantees (how Eclipse sees external changes)
+
+### Key architectural decisions:
+1. **Filesystem is the universal truth** — all three parties read/write the same workspace files
+2. **Sync bridge is the nervous system** — detects changes from ANY source via 1s polling
+3. **SSE is the real-time channel** — <1s push to React and AI consumers
+4. **Eclipse refreshes on focus** — built-in behavior, no modification needed
+5. **Change source tracking** — every change tagged with origin (ide/portal/ai/bridge/system)
+6. **Read-modify-write DOM operations** — prevents concurrent edit conflicts
+
+### New documents created:
+- `docs/development/AI_MANAGEMENT_ARCHITECTURE.md`
+
+### Follow-ups / known issues:
+- Phase 1 (read API + compile API) can be implemented immediately (~200 lines Java)
+- Phase 2 (write API) requires ~400 lines Java for full CRUD
+- Visual XSLT/template editors remain FUTURE items (InterWoven prototype direction)
+- User requested learning/explanatory style for this session
+
+### What I did (this response):
+Audited all existing sync infrastructure (6 source files, 2000+ lines), workspace data model, and gap analysis. Designed and documented the complete AI Management Architecture in a 550+ line document covering 5 layers, 28 operations, data flow diagrams, conflict resolution, and 5 phased implementation plan. The architecture enables full AI management while preserving complete IDE GUI compatibility.

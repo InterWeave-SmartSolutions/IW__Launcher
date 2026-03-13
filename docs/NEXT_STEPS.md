@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-12 (Session 19b — WCAG accessibility audit + security headers + contrast fixes)
+**Last Updated:** 2026-03-13 (Session 20 — IDE deep dive: 308 classes decompiled, build pipeline mapped, headless verdict, server-mode gap analysis)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -87,17 +87,19 @@ These items from the original roadmap are now DONE:
 - PID tracking: `logs/sync_bridge.pid` (prevents duplicate instances)
 - **Live-tested 2026-03-09:** Both profiles imported + recompiled, bridge survives errors, stops cleanly
 
-### 14. Obtain iw_sdk_1.0.0 Source Code
+### ~~14. Obtain iw_sdk_1.0.0 Source Code~~ PARTIALLY RESOLVED
 
-**[PRIORITY: MEDIUM]** **[Effort: N/A — requires vendor contact]**
+**Deep decompilation analysis completed (2026-03-13, Session 20):**
+- All 308 plugin classes analyzed (229 GUI-dependent/74%, 79 GUI-free)
+- Key classes fully reverse-engineered via `javap`: Designer, ConfigContext (73KB/51 static fields/110+ methods), ProjectActions (4-stage bitmask build pipeline), TransactionBase, TransactionContext, QueryContext, NavigationView, TemplateEditorView, XSLTEditorView
+- JAXB model mapped: `iwmappingsType` → `transactionType[]` → `datamapType[]` + `nexttransactionType[]`
+- Three-way config binding documented: config.xml ↔ soltran.xslt ↔ transactions.xml
+- Build pipeline: XSLT → .class via Apache XSLTC, soltran assembly from dat fragments
+- **Headless verdict: NO** — Windows x86 binary, SWT GUI deps, PlatformUI.createAndRunWorkbench
+- **Server-side replication already 80%+ complete** via Business Daemon ConfigContext (GUI-free)
+- Full analysis: `docs/development/IDE_DEEP_DIVE.md`
 
-The compiled Eclipse plugin (253 classes, no source) limits automation capabilities. With source, we could add:
-- Live workspace auto-refresh when portal syncs files
-- Automatic reverse sync on IDE build/save
-- Headless CLI mode for AI-driven project manipulation
-- Native "Push to Portal" / "Pull from Portal" commands
-
-**Action:** Contact Integration Technologies, Inc. (plugin copyright holder) for source access or decompile key classes (Designer, ConfigContext, ProjectActions) for inspection.
+**Still beneficial but no longer blocking:** vendor source access would enable live workspace auto-refresh, reverse sync on IDE build/save, and native Push/Pull commands. Contact Integration Technologies, Inc. if desired.
 
 ---
 
