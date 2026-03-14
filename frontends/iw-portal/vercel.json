@@ -18,7 +18,7 @@
   "rewrites": [
     {
       "source": "/iw-business-daemon/:path*",
-      "destination": "https://benefit-cash-leu-cursor.trycloudflare.com/iw-business-daemon/:path*"
+      "destination": "https://backend.interweave-ide.dev/iw-business-daemon/:path*"
     },
     {
       "source": "/(.*)",
