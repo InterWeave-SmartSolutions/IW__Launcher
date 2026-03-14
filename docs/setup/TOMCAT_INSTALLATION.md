@@ -32,36 +32,36 @@ If `scripts\setup\install_tomcat.bat` doesn't work, download manually:
 
 **URL:** https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83-windows-x64.zip
 
-**Save to:** `C:\IW__Launcher\tomcat-9.0.83.zip`
+**Save to:** `C:\IW_Launcher\tomcat-9.0.83.zip`
 
 #### Step 2: Extract
 
 1. Right-click the ZIP file
 2. Select "Extract All..."
-3. Choose: `C:\IW__Launcher\`
+3. Choose: `C:\IW_Launcher\`
 4. Extract
 
 #### Step 3: Move Files
 
 ```
-From: C:\IW__Launcher\apache-tomcat-9.0.83\bin
-To:   C:\IW__Launcher\web_portal\tomcat\bin
+From: C:\IW_Launcher\apache-tomcat-9.0.83\bin
+To:   C:\IW_Launcher\web_portal\tomcat\bin
 
-From: C:\IW__Launcher\apache-tomcat-9.0.83\lib
-To:   C:\IW__Launcher\web_portal\tomcat\lib
+From: C:\IW_Launcher\apache-tomcat-9.0.83\lib
+To:   C:\IW_Launcher\web_portal\tomcat\lib
 ```
 
 #### Step 4: Cleanup
 
-1. Delete: `C:\IW__Launcher\apache-tomcat-9.0.83\` folder
-2. Delete: `C:\IW__Launcher\tomcat-9.0.83.zip`
+1. Delete: `C:\IW_Launcher\apache-tomcat-9.0.83\` folder
+2. Delete: `C:\IW_Launcher\tomcat-9.0.83.zip`
 
 #### Step 5: Verify
 
 Check if this file exists:
 
 ```
-C:\IW__Launcher\web_portal\tomcat\bin\startup.bat
+C:\IW_Launcher\web_portal\tomcat\bin\startup.bat
 ```
 
 If yes, you're ready!
@@ -77,10 +77,10 @@ Once Tomcat is installed:
 
 ```powershell
 # From Windows PowerShell — double-click or run:
-C:\IW__Launcher\START.bat
+C:\IW_Launcher\START.bat
 
 # Or start Tomcat directly:
-C:\IW__Launcher\web_portal\tomcat\bin\startup.bat
+C:\IW_Launcher\web_portal\tomcat\bin\startup.bat
 ```
 
 **You should see:**
@@ -103,7 +103,7 @@ C:\IW__Launcher\web_portal\tomcat\bin\startup.bat
 **Check location:** Verify that this file exists:
 
 ```
-C:\IW__Launcher\web_portal\tomcat\bin\startup.bat
+C:\IW_Launcher\web_portal\tomcat\bin\startup.bat
 ```
 
 If not, re-run the installation.

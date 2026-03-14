@@ -55,9 +55,9 @@ This:
 - Scripts available in `scripts/`
 
 **WSL2:**
-- Can browse/edit files at `/mnt/c/IW__Launcher/` but **cannot run Tomcat** (Supabase unreachable from WSL2 networking)
+- Can browse/edit files at `/mnt/c/IW_Launcher/` but **cannot run Tomcat** (Supabase unreachable from WSL2 networking)
 - Use WSL2 for code editing, git operations, and file management only
-- **Run Tomcat from Windows PowerShell**: `C:\IW__Launcher\web_portal\tomcat\bin\startup.bat`
+- **Run Tomcat from Windows PowerShell**: `C:\IW_Launcher\web_portal\tomcat\bin\startup.bat`
 
 **Git LFS Requirement (Developers):**
 - If cloning this repo, you MUST have Git LFS installed

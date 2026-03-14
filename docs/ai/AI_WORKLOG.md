@@ -7690,3 +7690,83 @@ Verification performed:
 - 3 validation runs (initial → schema fix → final)
 - All 18 config.xml files validate against their schemas
 - Exit code 0 (success) on final run
+
+---
+
+## 2026-03-14 14:30–15:25 (UTC) — Session 30
+Agent/tool: Claude Opus 4.6 (Claude Code)
+User request: Fix Vercel 502 BAD_GATEWAY (DNS_HOSTNAME_NOT_FOUND) on old UI proxy — set up permanent Cloudflare tunnel to replace ephemeral quick tunnel
+Actions taken:
+- Diagnosed 502 cause: expired quick tunnel URL in vercel.json (`benefit-cash-leu-cursor.trycloudflare.com` no longer resolving)
+- Registered domain `interweave-ide.dev` via Cloudflare Registrar
+- Authenticated cloudflared CLI (`cloudflared tunnel login` → cert.pem)
+- Created named tunnel `iw-portal` (ID: 9dc33b08-30e8-4d4f-936c-c29acff6a7b1)
+- Wrote `~/.cloudflared/config.yml` routing `backend.interweave-ide.dev` → `http://localhost:9090`
+- Created DNS CNAME: `backend.interweave-ide.dev` → tunnel UUID
+- Installed cloudflared as Windows service (auto-starts on boot)
+- Updated `frontends/iw-portal/vercel.json` rewrite destination to permanent tunnel URL
+- Reconnected Vercel GitHub integration (repo renamed from `IW__Launcher` → `IW_Launcher`, webhook was broken)
+- Disabled Cloudflare Bot Fight Mode (was returning 403 `Cf-Mitigated: challenge` to Vercel proxy requests)
+- Started Tomcat via `catalina.bat start` (bash-to-CMD bridge: `cmd.exe //c` with env vars)
+Files changed/created:
+- `frontends/iw-portal/vercel.json` (updated rewrite URL)
+- `~/.cloudflared/config.yml` (new — tunnel routing config)
+- `~/.cloudflared/cert.pem` (new — Cloudflare origin cert)
+- `~/.cloudflared/9dc33b08-*.json` (new — tunnel credentials)
+Commands run:
+- `cloudflared tunnel login`
+- `cloudflared tunnel create iw-portal`
+- `cloudflared tunnel route dns iw-portal backend.interweave-ide.dev`
+- `cloudflared service install`
+- `net start Cloudflared`
+- `git push` (3 commits: tunnel URL update, 2 empty redeploy triggers)
+Verification performed:
+- `localhost:9090/iw-business-daemon/IWLogin.jsp` → 200
+- `backend.interweave-ide.dev/iw-business-daemon/IWLogin.jsp` → 200
+- `iw-portal.vercel.app/` → 200
+- `iw-portal.vercel.app/iw-business-daemon/IWLogin.jsp` → 200 (full chain verified)
+Follow-ups / known issues:
+- Bot Fight Mode disabled globally — consider creating a WAF custom rule to skip only on `backend.interweave-ide.dev` and re-enable Bot Fight Mode for the root domain
+- Git remote still points to old URL (`IW__Launcher`), shows "This repository moved" warning on push — run `git remote set-url origin https://github.com/InterWeave-SmartSolutions/IW_Launcher.git`
+- Tomcat must be running locally for the tunnel to serve traffic (cloudflared service stays up regardless)
+
+---
+
+## 2026-03-14 15:30–16:15 (UTC) — Session 30 (continued)
+Agent/tool: Claude Opus 4.6 (Claude Code)
+User request: Complete remaining low-effort roadmap items: docs/scripts cleanup, XSD validation, CVE quick wins, production deployment automation
+Actions taken:
+- **Git remote fix**: Updated `origin` URL from `IW__Launcher` to `IW_Launcher`
+- **Repo URL cleanup**: Fixed `IW__Launcher` → `IW_Launcher` in 6 files: `.github/ISSUE_TEMPLATE/config.yml`, `docs/development/CONTRIBUTING.md`, `docs/security/SECURITY.md`, `docs/ai/claude-reference/ENVIRONMENT.md`, `docs/setup/TOMCAT_INSTALLATION.md`, `scripts/setup/setup_tomcat.bat` (AI_WORKLOG.md left unchanged — append-only)
+- **NEXT_STEPS.md updated**: Cloudflare tunnel DONE, `interweave-ide.dev` domain documented, Vercel section rewritten
+- **CVE Phase 1**: Replaced `mysql-connector-java-5.1.15-bin.jar` (3 RCE CVEs) with `mysql-connector-java-8.0.33.jar`. Removed 4 test JARs: `cactus-1.5.jar`, `cactus-ant-1.5.jar`, `httpunit-1.5.3.jar`, `junit-3.8.1.jar`
+- **XSD validation**: Added `validateXml()` and `validateGeneratedConfigs()` to `WorkspaceProfileCompiler.java`. Validates IM config against `im-config.xsd` and TS config against `iwtransformationserver.xsd` after profile compilation. Warn-not-block (logs to ServletContext, doesn't throw)
+- **Production deployment script**: Created `scripts/deploy_to_server.bat` — robocopy-based deployment to remote server, safety checks, excludes dev-only files
+Files changed/created:
+- `.github/ISSUE_TEMPLATE/config.yml` (URL fix)
+- `docs/development/CONTRIBUTING.md` (URL fix)
+- `docs/security/SECURITY.md` (URL fix)
+- `docs/ai/claude-reference/ENVIRONMENT.md` (URL fix)
+- `docs/setup/TOMCAT_INSTALLATION.md` (URL fix)
+- `scripts/setup/setup_tomcat.bat` (URL fix)
+- `docs/NEXT_STEPS.md` (roadmap updates)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileCompiler.java` (XSD validation)
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/config/WorkspaceProfileCompiler.class` (recompiled)
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/mysql-connector-java-8.0.33.jar` (new — replaces 5.1.15)
+- `scripts/deploy_to_server.bat` (new)
+Files deleted:
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/mysql-connector-java-5.1.15-bin.jar`
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/cactus-1.5.jar`
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/cactus-ant-1.5.jar`
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/httpunit-1.5.3.jar`
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/junit-3.8.1.jar`
+Commands run:
+- `git remote set-url origin https://github.com/InterWeave-SmartSolutions/IW_Launcher.git`
+- `javac --release 8 ... WorkspaceProfileCompiler.java`
+- `cp mysql-connector-java-8.0.33.jar ...` / `rm mysql-connector-java-5.1.15-bin.jar`
+Verification performed:
+- All 4 endpoints return 200 after changes (BD, TS, Portal, Tunnel)
+- WorkspaceProfileCompiler compiles clean (3 warnings: Java 8 target obsolescence from JDK 24)
+Follow-ups / known issues:
+- CVE Phase 2-3 (Xerces/Xalan upgrade) deferred — requires transformer regression testing in staging
+- XSD validation is warn-only; could be made strict after validating all existing workspace configs pass

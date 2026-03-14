@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-14 (Session 29 — Production intelligence integration: XSD schemas, stunnel mapping, flow catalog, deployment guide, standalone template, IWXT templates)
+**Last Updated:** 2026-03-14 (Session 30 — Permanent Cloudflare tunnel + interweave-ide.dev domain + Vercel reconnection)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -163,28 +163,31 @@ Detail schemas fully expanded (2026-03-10):
 
 ## Public Showcase (Vercel + Tunnel)
 
-**React portal is live at https://iw-portal.vercel.app**
+**React portal is live at https://interweave-ide.dev** (also accessible at https://iw-portal.vercel.app)
 
 | Component | Status | Notes |
 |---|---|---|
+| Custom domain | ✅ Live | `interweave-ide.dev` — registered via Cloudflare Registrar |
 | Vercel deployment | ✅ Live | `frontends/iw-portal`, auto-builds on push to main |
-| Vercel login | ✅ Working | Bearer token auth through Cloudflare tunnel (verified 2026-03-14) |
+| Vercel login | ✅ Working | Bearer token auth through permanent Cloudflare tunnel |
 | Engine flows via Vercel | ✅ Working | 8 scheduled + 6 query flows returned through tunnel proxy |
-| Cloudflare Quick Tunnel | ✅ Working | `scripts/quickstart_tunnel.bat` — no auth needed, auto-patches vercel.json |
-| Named Cloudflare Tunnel | ⚠️ Optional | `scripts/setup_cloudflare_tunnel.bat` — stable URL, requires Cloudflare account |
+| Named Cloudflare Tunnel | ✅ Permanent | `backend.interweave-ide.dev` → localhost:9090, cloudflared Windows service |
+| Old UI via domain | ✅ Working | `interweave-ide.dev/iw-business-daemon/` proxied via tunnel |
 
 ### 15. ~~Replace localtunnel with Cloudflare Tunnel~~ DONE
 
-**Resolved (2026-03-11):**
-- **Quick tunnel (recommended):** Double-click `scripts\quickstart_tunnel.bat` — starts Cloudflare Quick Tunnel (no account/auth), captures `*.trycloudflare.com` URL, auto-patches `vercel.json`, commits + pushes, Vercel rebuilds in ~30s. Keep the window open (tunnel lives while it runs).
-- **Named tunnel (optional):** `scripts\setup_cloudflare_tunnel.bat` creates a persistent named tunnel with stable `*.cfargotunnel.com` URL (requires Cloudflare account login).
-- **Vercel rootDirectory bug fixed (2026-03-11):** trailing space in project settings caused all builds to fail (0ms/ERROR). Patched via Vercel API.
+**Resolved (2026-03-14, Session 30):**
+- **Named tunnel `iw-portal`** with permanent domain `backend.interweave-ide.dev` → `localhost:9090`
+- **cloudflared Windows service** auto-starts on boot — no manual tunnel management
+- **Custom domain** `interweave-ide.dev` pointed at Vercel via A record (`76.76.21.21`)
+- **Vercel rewrites** `/iw-business-daemon/*` to `https://backend.interweave-ide.dev/iw-business-daemon/*`
+- **Cloudflare Bot Fight Mode** disabled to allow Vercel proxy requests
+- **Vercel GitHub integration** reconnected after repo rename (`IW__Launcher` → `IW_Launcher`)
 
-**Scripts:**
-- `scripts/quickstart_tunnel.bat` — one-click: starts Tomcat if needed → Cloudflare quick tunnel → patches vercel.json → git push
-- `scripts/setup_cloudflare_tunnel.bat` — named tunnel setup (Cloudflare auth + stable URL)
-- `scripts/start_cloudflare_tunnel.bat` — starts named tunnel from existing config
-- `scripts/stop_cloudflare_tunnel.bat` — kills tunnel process
+**Legacy scripts (still work for quick tunnels):**
+- `scripts/quickstart_tunnel.bat` — one-click quick tunnel (ephemeral URL, no longer needed)
+- `scripts/setup_cloudflare_tunnel.bat` — named tunnel setup
+- `scripts/start_cloudflare_tunnel.bat` / `scripts/stop_cloudflare_tunnel.bat`
 
 ---
 
@@ -243,11 +246,12 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | ~~Engine flow definitions~~ | ~~Populate config.xml templates with flow definitions~~ | ~~1 hr~~ | DONE (14 CRM2M2 + 3 SF2AUTH flows in all 3 templates, Session 27) |
 | ~~Production server audit~~ | ~~Comprehensive sweep of 107525-UVS13~~ | ~~4-6 hrs~~ | DONE (551-line report + 525 reference files, Session 28) |
 | ~~Production intelligence integration~~ | ~~XSD schemas, flow catalog, stunnel mapping, deployment guide, standalone template, IWXT templates~~ | ~~2-3 hrs~~ | DONE (6 deliverables, Session 29) |
-| CVE remediation | Tomcat 9.0.98+, Xerces/Xalan upgrade, remove test JARs | 4-8 hrs | Open |
-| Named Cloudflare tunnel | Stable URL (requires Cloudflare account login) | 1 hr | Open (quick tunnel working) |
-| XSD validation in build pipeline | Enforce engine schema validation during workspace compilation | 2-3 hrs | Open (schemas in `database/schemas/engine/`) |
+| CVE remediation (Phase 1) | ~~MySQL 5.1.15→8.0.33, remove test JARs (cactus/httpunit/junit)~~ | ~~20 min~~ | DONE (Session 30) |
+| CVE remediation (Phase 2-3) | Xerces 2.7.1→2.12.2+, Xalan 2.7.0→2.7.3+ (requires transformer regression testing) | 4-8 hrs | Open (HIGH RISK — needs staging environment) |
+| ~~Named Cloudflare tunnel~~ | ~~Stable URL via `backend.interweave-ide.dev`~~ | ~~1 hr~~ | DONE (Session 30) |
+| ~~XSD validation in build pipeline~~ | ~~Validate generated IM/TS configs against engine XSDs during compilation~~ | ~~2-3 hrs~~ | DONE (Session 30 — warn-not-block in WorkspaceProfileCompiler) |
 | OMS→QB migration path | Design adapter for production QuickBooks flows (JDBC/ODBC removed in Java 9) | 4-8 hrs | Open (flow catalog documents 37 legacy flows) |
-| Production deployment automation | Script for deploying IW_Launcher alongside production Tomcat 5.5 | 2-4 hrs | Open (manual guide in `docs/deployment/PRODUCTION_DEPLOYMENT.md`) |
+| ~~Production deployment automation~~ | ~~`scripts/deploy_to_server.bat` — robocopy-based deploy to remote server~~ | ~~2-4 hrs~~ | DONE (Session 30) |
 
 ### Transformation Server Status: OPERATIONAL (2026-03-09)
 

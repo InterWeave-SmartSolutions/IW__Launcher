@@ -51,7 +51,7 @@ if exist "tomcat-9.0.83.zip" (
     echo.
     echo  Run this PowerShell command:
     echo.
-    echo  cd C:\IW__Launcher
+    echo  cd C:\IW_Launcher
     echo  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     echo  (New-Object System.Net.WebClient).DownloadFile(
     echo    'https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83-windows-x64.zip',

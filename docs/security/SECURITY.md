@@ -15,7 +15,7 @@ If you discover a security vulnerability, **do not open a public issue**.
 
 Contact the maintainers privately:
 - Email: **security@interweave-smartsolutions.com** *(placeholder -- update with actual contact)*
-- GitHub: Use [private vulnerability reporting](https://github.com/InterWeave-SmartSolutions/IW__Launcher/security/advisories/new)
+- GitHub: Use [private vulnerability reporting](https://github.com/InterWeave-SmartSolutions/IW_Launcher/security/advisories/new)
 
 We aim to acknowledge reports within 48 hours and provide a fix or mitigation within 7 business days.
 

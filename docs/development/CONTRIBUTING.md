@@ -8,7 +8,7 @@
 - **Git LFS** -- required before cloning. Many binaries (`.exe`, `.jar`) are LFS-tracked.
   ```bash
   git lfs install
-  git clone https://github.com/InterWeave-SmartSolutions/IW__Launcher.git
+  git clone https://github.com/InterWeave-SmartSolutions/IW_Launcher.git
   git lfs pull
   ```
   Verify LFS worked: `jre/bin/java.exe` and `web_portal/tomcat/lib/catalina.jar` should NOT be tiny text files.
@@ -171,4 +171,4 @@ All AI agents (Claude Code, Cursor, ChatGPT, etc.) working in this repo **must**
 
 ## Questions?
 
-Open an issue on [GitHub](https://github.com/InterWeave-SmartSolutions/IW__Launcher/issues) or contact the maintainers.
+Open an issue on [GitHub](https://github.com/InterWeave-SmartSolutions/IW_Launcher/issues) or contact the maintainers.

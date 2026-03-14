@@ -23,11 +23,16 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Generates a per-profile engine overlay from wizard-saved SF2QBConfiguration XML.
@@ -137,6 +142,19 @@ public final class WorkspaceProfileCompiler {
 
         // Copy compiled transformer classes from template (XSLTC-compiled bytecode)
         copyTransformerClasses(templateProjectRoot, generatedRoot);
+
+        // Validate generated configs against XSD schemas (warn, don't block)
+        Map<String, String> validationErrors = validateGeneratedConfigs(repoRoot, generatedRoot);
+        if (!validationErrors.isEmpty()) {
+            StringBuilder warn = new StringBuilder("XSD validation warnings for profile '")
+                .append(profileName).append("': ");
+            for (Map.Entry<String, String> entry : validationErrors.entrySet()) {
+                warn.append("[").append(entry.getKey()).append(": ").append(entry.getValue()).append("] ");
+            }
+            if (servletContext != null) {
+                servletContext.log(warn.toString());
+            }
+        }
 
         return new CompileResult(profileName, solutionType, templateProject, mappedProject,
             relativize(repoRoot, generatedRoot), relativize(repoRoot, outIm));
@@ -825,6 +843,55 @@ public final class WorkspaceProfileCompiler {
             return rel;
         }
         return path;
+    }
+
+    /**
+     * Validate an XML file against an XSD schema file.
+     * Returns null if valid, or a description of the validation error.
+     */
+    static String validateXml(File xmlFile, File xsdFile) {
+        if (!xmlFile.isFile() || !xsdFile.isFile()) {
+            return null; // skip if either file missing
+        }
+        try {
+            SchemaFactory sf = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+            Schema schema = sf.newSchema(xsdFile);
+            Validator validator = schema.newValidator();
+            validator.validate(new StreamSource(xmlFile));
+            return null; // valid
+        } catch (SAXException e) {
+            return e.getMessage();
+        } catch (Exception e) {
+            return "Validation setup error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Validate generated config files against engine XSD schemas.
+     * Returns a map of file→error for any validation failures; empty if all pass.
+     */
+    static Map<String, String> validateGeneratedConfigs(File repoRoot, File generatedRoot) {
+        Map<String, String> errors = new LinkedHashMap<String, String>();
+        File schemasDir = new File(repoRoot, "database/schemas");
+        File engineSchemasDir = new File(schemasDir, "engine");
+
+        // IM config.xml → im-config.xsd
+        File imConfig = new File(new File(new File(generatedRoot, "configuration"), "im"), "config.xml");
+        File imXsd = new File(schemasDir, "im-config.xsd");
+        String imError = validateXml(imConfig, imXsd);
+        if (imError != null) {
+            errors.put("im/config.xml", imError);
+        }
+
+        // TS config.xml → iwtransformationserver.xsd
+        File tsConfig = new File(new File(new File(generatedRoot, "configuration"), "ts"), "config.xml");
+        File tsXsd = new File(engineSchemasDir, "iwtransformationserver.xsd");
+        String tsError = validateXml(tsConfig, tsXsd);
+        if (tsError != null) {
+            errors.put("ts/config.xml", tsError);
+        }
+
+        return errors;
     }
 
     private static final class EndpointSettings {
