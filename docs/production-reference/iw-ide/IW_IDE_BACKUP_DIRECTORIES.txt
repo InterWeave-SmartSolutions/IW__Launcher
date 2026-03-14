@@ -1,0 +1,41 @@
+=== IW_IDE Backup Directories on C: Drive ===
+Captured: 2026-03-13 from production server
+
+The following IW_IDE backup/snapshot directories exist on the C: drive root:
+
+1. C:\IW_IDE                    - Current/active installation
+2. C:\IW_IDE-2024-02-01         - Backup from Feb 1, 2024
+3. C:\IW_IDE-2024-04-11         - Backup from Apr 11, 2024
+4. C:\IW_IDE-2024-07-20         - Backup from Jul 20, 2024
+5. C:\IW_IDE-2024-12-15         - Backup from Dec 15, 2024
+6. C:\IW_IDE-2025-03-11         - Backup from Mar 11, 2025
+7. C:\IW_IDE-2025-10-20         - Backup from Oct 20, 2025
+8. C:\IW_IDE-broken             - Broken state snapshot
+9. C:\IW_IDE-broken2            - Broken state snapshot #2
+
+Other IW-related directories:
+- C:\Sites\IWCustomerPortal         - IIS-hosted customer portal (active)
+- C:\Sites\IWCustomerPortal - Win3  - Customer portal variant
+- C:\Sites\IWCustomerPortal - Copy  - Customer portal backup
+- C:\Sites\IWCustomerPortal - Copy (2) - Customer portal backup #2
+- C:\SSL\                          - SSL certificates for demo.interweave.biz
+- C:\nginx\                        - Nginx reverse proxy for InterWeave engine
+
+Additional IW_IDE subdirectories not yet fully copied:
+- C:\IW_IDE\AccpacCom\             - Accpac/Sage COM integration Java code (COPIED)
+- C:\IW_IDE\Data\                  - Sample IW transformation templates (COPIED)
+- C:\IW_IDE\NexternalHostedIan\    - Nexterna hosted project (Ian's)
+- C:\IW_IDE\NexternalQueryTest\    - Nexterna query test project
+- C:\IW_IDE\NexternalQueryTestD\   - Nexterna query test project variant D
+- C:\IW_IDE\NexternalQueryTestIan\ - Nexterna query test project (Ian's)
+- C:\IW_IDE\OldSampleProjects_1\   - Old sample projects
+- C:\IW_IDE\QB_sample\             - QuickBooks sample project
+- C:\IW_IDE\SF2MM\                 - Salesforce to MemberMouse project
+- C:\IW_IDE\SN2QBSP\              - ServiceNow to QB SalesProdigy project
+- C:\IW_IDE\SN_Test\               - ServiceNow test project
+- C:\IW_IDE\SN_Test_New\           - ServiceNow test project (new)
+- C:\IW_IDE\SPworkspace\           - SalesProdigy workspace
+- C:\IW_IDE\SSProject\             - SS project
+- C:\IW_IDE\SalesProdigy1\         - SalesProdigy 1 project
+- C:\IW_IDE\sample_projects\       - Sample projects directory
+- C:\IW_IDE\all_projects_1\        - All projects archive 1

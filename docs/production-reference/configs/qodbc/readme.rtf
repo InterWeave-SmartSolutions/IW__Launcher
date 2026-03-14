@@ -1,0 +1,206 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033\deflangfe1033{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\fswiss\fprq2 Arial;}}
+{\colortbl ;\red0\green0\blue255;}
+{\*\generator Riched20 10.0.22000}{\*\mmathPr\mdispDef1\mwrapIndent1440 }\viewkind4\uc1 
+\pard\nowidctlpar\qc\b\f0\fs18 QODBC\par
+FLEXquarters.com Limited QODBC Driver\par
+for QuickBooks\'ae Editions 2024-2002\par
+
+\pard\nowidctlpar\sa60\qc Version 24.0.0.359\b0\par
+
+\pard\nowidctlpar\fi-360\li360 FLEXquarters.com Limited\par
+
+\pard\nowidctlpar Internet:\tab\tab {{\field{\*\fldinst{HYPERLINK http://www.qodbc.com }}{\fldrslt{http://www.qodbc.com\ul0\cf0}}}}\f0\fs18\par
+Support:\tab\tab {{\field{\*\fldinst{HYPERLINK http://www.qodbc.com/faq }}{\fldrslt{http://www.qodbc.com/faq\ul0\cf0}}}}\f0\fs18\par
+USA Sales:\tab 248-620-2400\par
+\par
+
+\pard\nowidctlpar\sa120\ul\b Startup:\par
+\ulnone\b0 QODBC runs as a full demo for the first 30 days. This mode allows you to read and write all QuickBooks data and reports with the only restriction being 20 writes per session.\par
+\ul\b Troubleshooting Tips:\par
+\ulnone\b0 After you have installed the product, start and minimize QuickBooks, then test the installation by clicking the icon for "QODBC Setup Screen" under the QODBC Driver for QuickBooks folder and click the button that says "Test Connection to QuickBooks". If you installation is proper, you will get a success message. Now you can use the driver as-is which will connect to the currently open QuickBooks company file, or you can create a Data Set Name (DSN) for your own data file and QuickBooks will operate in the background. The processes to connect with various application tools can be found in the QODBC Manual.\par
+If at any time you get an ODBC connect error message it is typically because of the following:\par
+
+\pard\nowidctlpar\fi-360\li720\sa120\tx720\'b7\tab QuickBooks is not installed on the machine you are using. Install it to fix the problem, as it is required to use the QODBC product.\par
+
+\pard\nowidctlpar\fi-360\li720\sa120\'b7\tab Your version of QuickBooks has not been updated to the latest revision from Intuit.\par
+\'b7\tab If you have prior versions of QuickBooks loaded on the machine attempting to use QODBC, you will get a connectivity error. See our FAQ page on the web for details.\par
+\'b7\tab You may be using the Read-Only or the Read-Write version of the driver as a system service or as a web component. Only our Web/Server Edition works in this manner.\par
+
+\pard\nowidctlpar\sa120 For troubleshooting, please use "QODBC Support Wizard". Start "QODBC Support Wizard" from the start menu and follow the instructions.\par
+If "QODBC Support Wizard" is able to connect, QODBC is installed and configured correctly.\par
+In case you are still not able to connect, please submit a support ticket using "QODBC Support Wizard".\par
+\ul\b\par
+Setup Help:\par
+\ulnone\b0 Make sure you are running the latest build of QuickBooks with the latest updates applied before running this driver. To see what version you are running, press the CTRL-1 key (not the keypad 1) while running QuickBooks.\par
+The first time you run this driver with your own company data (using Microsoft Access or our included VB Demo Program), you need to be running QuickBooks Pro on the machine at the same time, and you need to be logged in as Administrator. This is for security reasons. When the driver starts, QuickBooks will ask permission for the driver to access your QuickBooks data. Answer \ldblquote Always allow access\rdblquote  to these files and you will only need to do this once. If you want to modify the files, you will also need to choose \ldblquote Multi-User Mode\rdblquote  from the Files menu in QuickBooks to allow this. You will need to go through this process for each application with which you want to access QuickBooks data.\par
+Also, if you have trouble launching our user manual document, you may need to install the Adobe Acrobat reader program. This can be downloaded from this web site for free:\par
+{{\field{\*\fldinst{HYPERLINK http://www.adobe.com/products/acrobat/main.html }}{\fldrslt{http://www.adobe.com/products/acrobat/main.html\ul0\cf0}}}}\f0\fs18\par
+
+\pard\nowidctlpar\ul\b\par
+General Information:\par
+\par
+\ulnone\b0 If you have any problems with the date format, use this format for direct SQL calls to our driver:\par
+\{d \lquote 2002-09-27\rquote\}\par
+Date and time stamps use this format:\par
+SELECT * FROM Customer WHERE TimeCreated = \{ts \lquote 1999-07-29 14:24:18.000\rquote\}\par
+Use this format for Microsoft Access queries:\par
+SELECT * FROM Invoice WHERE Invoice.TimeModified >= #2003-09-23 00:00:01#\par
+The Access format may vary based on the setting for default date format in your Windows control panel.\par
+
+\pard\nowidctlpar\sa120 Support: {{\field{\*\fldinst{HYPERLINK http://www.qodbc.com/faq }}{\fldrslt{http://www.qodbc.com/faq\ul0\cf0}}}}\f0\fs18\par
+
+\pard\nowidctlpar\par
+
+\pard\nowidctlpar\sa120\qc\b Revision History of QODBC\par
+
+\pard\nowidctlpar\ul Release 24.0.0.352:\par
+\ulnone\b0\par
+B01504 - Added Support for QuickBooks 2024 in QODBC Desktop.\par
+B01658 - QODBC Desktop changed to subscription model.\par
+\par
+QRemote 24.0.0.352\par
+B01626 - Fixed QRemote Server constantly printing the following log "Ping from client socket object" in the event log. Added ping count limit.\par
+\par
+Installer\par
+B01658 - Update setup instruction and license agreement.\par
+\par
+\ul\b Release 24.0.0.353:\par
+\ulnone\b0\par
+B01449 - Fixed unable to run the Pass-Through query with the TxnDate filter in MS Access\par
+B01502 - Added full crash dump in QRemote Client and Server. Added a feature to capture the time taken by QuickBooks SDK and QODBC. For more details, visit {{\field{\*\fldinst{HYPERLINK http://qodbc.com/links/3079 }}{\fldrslt{http://qodbc.com/links/3079\ul0\cf0}}}}\f0\fs18\par
+B01511 - Fixed inability to return payroll data QuickBooks when payroll subscription is turned off.\par
+B01513 - Updated XML Parser to the latest version 3.2.4.\par
+B01631 - Improved error/information message when inserting or updating records in a Read-only table.\par
+B01654 - Fixed the "Between" keyword not sending date filter XML to QuickBooks SDK while using the "UNOPTIMIZED" keyword.\par
+B01659 - changed the "IsUsedOnPurchaseTransaction" field in the "ItemSalesTax" table to not insertable & updatable.\par
+B01661 - Fixed Optimizer Last Sync Data was incorrectly updated using Join tables.\par
+B01664 - Fixed Profit and loss report performance issue when fetching yearly report.\par
+B01666 - Fixed, unable to delete InvoiceLine.\par
+B01668 - Fixed crash issue while activating the license or testing the connection.\par
+B01678 - Fixed incorrectly triggering evaluation message when using QODBC Enterprise edition with QuickBooks Enterprise.\par
+B01679 - Fixed crash issue while trying to sync the license.\par
+\par
+QRemote 24.0.0.353\par
+B01449 - Fixed QRemote Client server issue when executing Pass-Through query with the TxnDate filter in MS Access\par
+B01626 - Added full crash dump in QRemote Client and Server.\par
+B01636 - Improved error/information message when connecting QRemote DSN to a QRemote DSN.\par
+\par
+QODBC Test Tool\par
+B01663 - QODBC Support Wizard - Fixed inaccurate count of tables that are not optimized.\par
+B01663 - Added/Improved QODBC Test Tool Sample SQL statements.\par
+\par
+\ul\b Release 24.0.0.354:\par
+\ulnone\b0\par
+B01515 - Fixed the out-of-memory issue caused by reading huge tables.\par
+B01516 - Added optimizer On/Off information to the QODBC Log.\par
+B01516 - Changed crash report module. Email Address is mandatory even when clicking send the report later.\par
+B01612 - Fixed sp_report returning incorrect results/columns when using Excel parameterized queries involving a date range.\par
+B01672 - Fixed a few QRemote crash issues.\par
+B01673 - Fixed a few issues related to memory leaks.\par
+B01705 - Fixed the incorrect XML generated when the iterator was turned off.\par
+\par
+QRemote 24.0.0.354\par
+B00786-4 - Added QRemote License. Added activation/deactivation/license sync in QRemote Client.\par
+B01660 - Added error message "QRemote server could not save the configuration" when changes to the QRemote Server cannot be applied due to lack of permission.\par
+\par
+\ul\b Release 24.0.0.355:\par
+\ulnone\b0\par
+B01702 - Fixed Union SQL statement was not working when the select contains concat function.\par
+B01706\~-\~Fixed multiple QRemote and QODBC crash issues reported in builds 353 and 354.\par
+B01714\~- Fixed evaluation query limit when using the linked table in Microsoft Access.\par
+B01721\~- Fixed crash related to multiple Excel sheets being refreshed simultaneously.\par
+B01725 - Fixed crash issue when using subquery SQL statement.\par
+\par
+QRemote 24.0.0.355\par
+B01706\~-\~Fixed multiple QRemote and QODBC crash issues reported in builds 353 and 354.\par
+\par
+QODBC Support Wizard 1.0.0.19\par
+B01723 - Fixed QODBC Support Wizard unable to create "QuickBooks Data" (64-Bit) DSN.\par
+\par
+\ul\b Release 24.0.0.356:\par
+\ulnone\b0\par
+B01736 - Minor bug fixes.\par
+\par
+QRemote 24.0.0.356\par
+B01736 - Minor bug fixes.\par
+\par
+\ul\b Release 24.0.0.357:\par
+\ulnone\b0\par
+B01736-R1 - Minor bug fixes.\par
+\par
+QRemote 24.0.0.357\par
+B01736-R1 - Minor bug fixes.\par
+\par
+\ul\b Release 24.0.0.358:\par
+\ulnone\b0\par
+B01456 \f1\endash  Fixed, unable to add an item in a specific group.\par
+B01682 - Fixed the error message "value overflowed the data type" while trying to fetch TaxDetailTotalTax from the Invoice table.\par
+B01686 - Added AddressID field to the following table.\par
+\tab CHECK\par
+\tab COMPANY\par
+\tab EMPLOYEE\par
+\tab ENTITY\par
+\tab PURCHASE\par
+\tab RECURRINGCREDITMEMO\par
+\tab RECURRINGESTIMATE\par
+\tab RECURRINGINVOICE\par
+\tab RECURRINGSALESRECEIPT\par
+\par
+Added the following fields to the "Company" table.\par
+\tab IsNeoEnabled\par
+\tab IsNonTracking\par
+\tab IsQBDTMigrated\par
+\tab CompanyType\par
+\tab SubscriptionStatus\par
+\tab OfferingSku\par
+\tab IsPayrollFeature\par
+\tab IsAccountantFeature\par
+\tab QBOIndustryType\par
+\tab IsItemCategoriesFeature\par
+\tab WebAddressURI\par
+\par
+B01711 - Added the field "BillEmailAddress" to the SalesReceipt table.\par
+B01712 - Change the "Quantity" field from Integer to Decimal in the 'GeneralLedger' report.\par
+B01713 - Added a new table, "PaymentLinkedTxn", for the payment linked transactions.\par
+B01715 - Added the "Memo" field to the PurchaseOrder table.\par
+\f0 B01728 - \f1 Internal\par
+B01729 - Fixed the error "The decimal field's precision is too small" when importing the tables in MS Access.\par
+B01738 - Fixed MS Access showing #Deleted on refresh for records that are added or updated in the customer table in QuickBooks Online UI.\par
+B01739 - Fixed querying the 'ExchangeRate' table takes too long to execute.\par
+B01746 - Internal\par
+B01753 - Add delay/gap when violating QuickBooks Online API threshold limit. \par
+B01754 - Fixed QODBC Online crash using specific MS Access SQL statements.\par
+B01755 - Added support for uploading attachment files.\par
+B01757 - Added Preferred Vendor fields in the Item/ItemService table.\par
+B01760 - Fixed QODBC crashes when clicking the fix button for unoptimized tables in the QODBC Online Support Wizard.\par
+\f0\par
+QRemote 24.0.0.358\par
+B01268 - Minor bug fixes.\par
+B01724 - Fixed QRemote incorrectly prompting for QODBC Server Edition license required when using MS Excel.\par
+B01730 - Changed 'Setting' to 'Settings' in QRemote Server.\par
+B01743 - Minor bug fixes.\par
+B01744 - Added license or subscription-related warnings/messages to the QODBC log file.\par
+B01751 - Fixed Ping count for QRemote reverts to default count on changing the configuration.\par
+B01763 - Added QODBC evaluation rules to QRemote.\par
+\par
+\par
+\ul\b Release 24.0.0.359:\par
+\ulnone\b0\par
+B01719 - Fixed QODBC and QRemote crash issues reported for the build v354.\par
+B01764 - Fixed the blinking issue of the splash screen in evaluation mode.\par
+B01773 - Fixed a crash issue with QODBC affecting certain applications (similar to B01754).\par
+B01775 - Fixed data truncation issue when using the IFNULL function.\par
+B01785 - Fixed QODBC and QRemote crash issues reported for the build v358.\par
+\par
+QRemote 24.0.0.359\par
+B01771 - Fixed the issue of trimming the RefNumber when utilizing a Python script with QRemote.\par
+B00786-5 - QRemote licenses will take precedence over QODBC Evaluation licenses.\par
+\par
+Signed 3rd party redistributable binaries with "FLEXquarters.com Limited" digital signature. Original author and copyrights of 3rd party binaries remain unchanged.\par
+
+\pard\nowidctlpar\li720\par
+\par
+
+\pard\nowidctlpar\qc\b Thanks for using QODBC!\par
+}
+ 

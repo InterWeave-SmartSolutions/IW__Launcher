@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v2004 rel. 4 U (http://www.xmlspy.com) by Alfredo Celestial (Blockade Systems Corp.) -->
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="iwmappings">
+		<xs:annotation>
+			<xs:documentation>Transaction flow description</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="transaction" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="transaction">
+		<xs:annotation>
+			<xs:documentation>Transaction descriptor</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="transform"/>
+				<xs:element ref="classname" minOccurs="0"/>
+				<xs:element ref="nexttransaction" minOccurs="0"/>
+				<xs:element ref="datamap" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+			<xs:attribute name="type" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="transform" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Last transform after the end of last transaction in the chain</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="classname">
+		<xs:annotation>
+			<xs:documentation>Name of the Adaptor to invoke</xs:documentation>
+		</xs:annotation>
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:minLength value="1"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="nexttransaction">
+		<xs:annotation>
+			<xs:documentation>Name of the next transaction to execute</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="name" use="required">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:minLength value="1"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="type" type="xs:string" use="required"/>
+					<xs:attribute name="error" type="xs:string" use="optional"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="datamap">
+		<xs:annotation>
+			<xs:documentation>Transaction data descriptor</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="driver"/>
+				<xs:element ref="url"/>
+				<xs:element ref="user"/>
+				<xs:element ref="password"/>
+				<xs:element ref="access" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="driver" type="xs:string"/>
+	<xs:element name="url" type="xs:anyURI"/>
+	<xs:element name="user" type="xs:string"/>
+	<xs:element name="password" type="xs:string"/>
+	<xs:element name="access">
+		<xs:annotation>
+			<xs:documentation>Ttransaction data access descriptor</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="statementpre"/>
+				<xs:element ref="statementpost"/>
+				<xs:element ref="translator" minOccurs="0"/>
+				<xs:element ref="where" minOccurs="0"/>
+				<xs:element ref="values" minOccurs="0"/>
+				<xs:element ref="outputs" minOccurs="0"/>
+			</xs:sequence>
+			<xs:attribute name="type" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="statementpre" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Command or query to execute </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="statementpost" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Used to control transformation of statementpre result to IWP</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="translator">
+		<xs:annotation>
+			<xs:documentation>Transformation xslt descriptor</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence minOccurs="0">
+				<xs:element ref="inputclass" minOccurs="0"/>
+				<xs:element ref="outputclass" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="inputclass" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Defines transformation xslt of IWP before operation or iwp to operation in dynamic access</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="outputclass" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Converts result of the operation into IWP if needed</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="where" type="parameterlist">
+		<xs:annotation>
+			<xs:documentation>Used for a listr of method parameters in API based transactions</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="parameter">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="translator" minOccurs="0"/>
+				<xs:element ref="input"/>
+				<xs:element ref="mapping"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="input" type="xs:string"/>
+	<xs:element name="mapping">
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="quoted" type="xs:boolean" use="required"/>
+					<xs:attribute name="type" type="xs:string" use="optional"/>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="values" type="parameterlist">
+		<xs:annotation>
+			<xs:documentation>List of general transaction parameters (including those for parametrized statementpre)</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="outputs" type="parameterlist">
+		<xs:annotation>
+			<xs:documentation>Used for output parameter in API based transactions </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="parameterlist">
+		<xs:sequence>
+			<xs:element ref="parameter" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

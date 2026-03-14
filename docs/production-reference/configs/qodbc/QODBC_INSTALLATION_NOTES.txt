@@ -1,0 +1,34 @@
+=== QODBC Installation Details ===
+Captured: 2026-03-13 from production server
+
+Installation path: C:\Program Files (x86)\QODBC Driver for QuickBooks\
+Product: QODBC Driver for QuickBooks (by FlexQuarters)
+
+Key files present:
+- QODBCDS.LIC         - QODBC Desktop license file (binary, dated 2025-03-12)
+- QREMOTE.LIC         - QRemote license file (binary, dated 2025-03-12)
+- license.txt          - License agreement text
+- readme.rtf           - Product readme
+- QODBC Quick Start Guide.pdf - Quick start guide
+
+Executables:
+- EditQDSN.exe / EditQDSN64.exe - DSN editor (32/64-bit)
+- DSNTester.exe / DSNTester64.exe - DSN tester
+- QODBCFUL.EXE - Full QODBC
+- QODBCTST.EXE - QODBC test utility
+- QODBCUPD.EXE - QODBC updater
+- press4qodbc.exe / PRESS4QODBC64.exe - QODBC press utility
+
+Subdirectories:
+- QRemote/         - Remote connector (Client 32-Bit, Client 64-Bit, Server)
+- QSW/             - Support Wizard (32-bit)
+- QSW 64-Bit/      - Support Wizard (64-bit)
+- Optimizer/       - Query optimizer
+- Images/          - UI images
+
+NOTE: Binary license files (.LIC) were NOT copied as they contain
+machine-specific licensing data. The license.txt text file was copied.
+
+Configuration: QODBC connects QuickBooks Desktop to the InterWeave engine
+via ODBC, allowing the engine to read/write QuickBooks data.
+The QRemote component enables remote ODBC access to QuickBooks.

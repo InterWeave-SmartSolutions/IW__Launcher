@@ -1,0 +1,50 @@
+#
+# An unexpected error has been detected by HotSpot Virtual Machine:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x76f395c8, pid=7628, tid=6552
+#
+# Java VM: Java HotSpot(TM) Client VM (1.5.0_22-b03 mixed mode)
+# Problematic frame:
+# C  0x76f395c8
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x49cdaef8):  JavaThread "Thread-92" daemon [_thread_in_native, id=6552]
+
+siginfo: ExceptionCode=0xc0000005, writing address 0x005c0083
+
+Registers:
+EAX=0x005c0067, EBX=0x00000000, ECX=0x007104a0, EDX=0x00000000
+ESP=0x4bcddc10, EBP=0x4bcddc30, ESI=0x0073e888, EDI=0x0000000e
+EIP=0x76f395c8, EFLAGS=0x00010287
+
+Top of Stack: (sp=0x4bcddc10)
+0x4bcddc10:   519daf38 0073b0f8 4bcddcac 76ef8f04
+0x4bcddc20:   4bcddcb0 4bcddcac 00000000 519daf38
+0x4bcddc30:   4bcddc78 76ede348 a9db48a7 4bcdddf0
+0x4bcddc40:   4bcdde80 00000000 00000001 4bcddcb0
+0x4bcddc50:   c0000135 4bcdddf0 0073b0f8 0029006c
+0x4bcddc60:   4bcddc38 4bcdd624 4bcdfc20 76f16dc0
+0x4bcddc70:   94efe447 00000000 4bcdddc4 76edaef4
+0x4bcddc80:   00000600 00000004 00000000 00000000 
+
+Instructions: (pc=0x76f395c8)
+0x76f395b8:   8b 4d 0c 89 01 8b 4d 10 c6 01 01 e9 70 f8 fb ff
+0x76f395c8:   89 48 1c e8 d8 f8 fb ff e9 96 f9 fb ff 85 c0 79 
+
+
+Stack: [0x4bc70000,0x4bce0000),  sp=0x4bcddc10,  free space=439k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  0x76f395c8
+C  0x76ede348
+C  0x76edaef4
+C  0x76ef362f
+C  0x74af70d8
+C  0x73271f29
+C  0x7327142f
+C  0x73270be3
+C  0x6d384c6d
+j  sun.jdbc.odbc.JdbcOdbc.driverConnect(J[B[B)V+0
+j  sun.jdbc.odbc.JdbcOdbc.SQLDriverConnect(JLjava/lang/String;)V+93
+j  sun.jdbc.odbc.JdbcOdbcConnection.initialize(Ljava/lang/String;Ljava/util/Properties;I)V+984

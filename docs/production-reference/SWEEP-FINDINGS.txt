@@ -1,0 +1,122 @@
+Production Server Comprehensive Sweep Findings
+===============================================
+Date: 2026-03-13
+Server: 107525-UVS13 (Windows Server 2016 Datacenter)
+Domain: TRAPPCLOUD.COM
+
+== NEW ITEMS FOUND AND COPIED ==
+
+1. WEBAPP SHARED CONFIG FILES (configs/webapps/shared/)
+   - web.xml: InterWeave Transformation Server webapp descriptor (identical across all 5 webapps)
+     Defines servlets: DefaultGateway (OpenAMF), iwtransformationserver, logging, iwxml, transform, IWScheduledTransform
+   - openamf-config.xml: OpenAMF configuration (identical across all 5)
+   - SF_Test.html: Manual test page for Salesforce SOAP operations
+   - 4 XSD schema files: iwemail.xsd, iwprotocol.xsd, iwtransactions.xsd, iwtransformationserver.xsd
+   - webapp-lib-differences.txt: Analysis of per-webapp library differences
+
+2. WEBAPP LIBRARY DIFFERENCES (engine-jars/)
+   - fd_plugin.jar: UNIQUE to SF2AuthNet webapp (not in other 4)
+   - SF2QBBase/SF2QBCustom use jsch-0.1.51.jar; SF2AuthNet/QB_POAgent/SN2QB_SP use jsch-0.1.55.jar
+   - All 5 webapps share ~120 identical library JARs plus their respective iwsolution_*.jar
+
+3. SERVICE REGISTRY EXPORTS (configs/services/)
+   - tomcat5-registry-export.txt: Tomcat5 service registry (ImagePath, dependencies, startup type)
+     - ImagePath: "C:\Program Files (x86)\Apache Software Foundation\Tomcat 5.5\bin\tomcat5.exe" //RS//Tomcat5
+     - Start type: Automatic (0x2)
+     - Depends on: Tcpip, Afd
+   - stunnel-registry-export.txt: Stunnel service registry
+     - ImagePath: "C:\Program Files (x86)\stunnel\bin\stunnel.exe" -service -install
+     - Start type: Automatic (0x2)
+     - Depends on: TCPIP
+
+4. ODBC DSN CONFIGURATION (configs/qodbc/)
+   - odbc-registry-export.txt: Full 64-bit ODBC registry including:
+     - System DSN "QuickBooks Data": Direct QODBC driver (fqqb64.dll)
+     - System DSN "QuickBooks Data 64-Bit QRemote": QRemote driver connecting to server 172.18.107.120:4500
+     - Installed drivers: QODBC, QRemote for QuickBooks, SQL Server
+   - odbc-32bit-registry-export.txt: 32-bit ODBC entries
+   - QRemoteServerConfig.ini: QRemote server configuration (from ProgramData)
+   - odbcinst-programdata.ini: ODBC driver installation config with ForceStartQB=Yes, PingTotalCount=90000
+
+5. ENVIRONMENT VARIABLES (configs/)
+   - environment-variables.txt: All system env vars including PATH, COMPUTERNAME, domain info
+   - Key finding: No JAVA_HOME or CATALINA_HOME set (Tomcat runs as service with hardcoded paths)
+
+6. FIREWALL RULES (configs/)
+   - firewall-rules-stunnel.txt: Stunnel terminal/GUI firewall rules (both TCP/UDP, Domain profile, Allow All)
+   - Also includes World Wide Web Services HTTP/HTTPS rules
+
+7. HOSTS FILE (configs/)
+   - hosts-file.txt: Default Windows hosts file (no custom entries)
+
+8. CLIENT-SPECIFIC ENGINE LOGS (engine-logs/client-specific/)
+   - 3 client-specific .erl files (latest of each):
+     - amagown.interweave.biz (4 total on server)
+     - interweave.pampabay.com (12 total on server)
+     - interweave.southernlampsinc.com (20 total on server)
+   - client-erl-files-listing.txt: Full listing of all 36 client-specific ERL files
+
+9. JVM CRASH LOG SAMPLE (engine-logs/)
+   - jvm-crash-sample-hs_err_pid7628.txt: Sample header from one of 12 JVM crash logs on server
+
+10. WAR FILES LISTING (configs/webapps/)
+    - war-files-listing.txt: Size listing of 5 deployed WAR archives
+
+11. IWCustomerPortal Win3 VARIANT (sites/IWCustomerPortal-Win3/)
+    - Older/stripped variant of IWCustomerPortal with fewer client directories
+    - Missing clients: Brikers, bpbcpa, carwiser, customerpayments, format14crm, haashow, etc.
+    - Different portal.js, details.html, payment.html
+    - Different interweave client config.json, portal.css, header images
+
+== ALREADY COVERED (confirmed present) ==
+
+- Tomcat configs (server.xml, web.xml, tomcat-users.xml, catalina.properties, context.xml, logging.properties)
+- nginx.conf (nginx installation at C:\nginx\)
+- Stunnel config
+- 5 webapp config.xml files
+- SSL certificates
+- Engine logs (main .erl files)
+- IWCustomerPortal (main version)
+- All workspace projects
+- Engine JARs (16 modular + 5 solutions)
+- Documentation files
+- ASSA portal prototypes
+- IW_IDE files
+- QODBC configs (base)
+
+== ITEMS NOT FOUND / NOT APPLICABLE ==
+
+- D: drive: No IW-related files outside user profile (only system folders)
+- C:\Program Files\: No IW-related software (only Git, nodejs, VS Code)
+- C:\Program Files (x86)\: Only Java JRE 1.5.0_22, stunnel, QODBC (all accounted for)
+- C:\inetpub\: Default IIS installation only (iisstart.htm, iisstart.png)
+- Hosts file: No custom entries
+- Scheduled tasks: None IW-related
+- Registry: No InterWeave-specific registry keys (only Tomcat5 and stunnel services, and ODBC)
+- No JAVA_HOME or CATALINA_HOME environment variables set
+- C:\ProgramData\: Only QODBC data (now captured)
+- Other user profiles: No IW-related files found
+
+== BEING HANDLED BY OTHER AGENT ==
+
+- IIS configuration export
+- Windows services detailed config
+- Remaining IW_IDE subdirectories (SN2QBSP, SSProject, all_projects_1, sample_projects, etc.)
+
+== ADDITIONAL NOTES ==
+
+- Server runs Java JRE 1.5.0_22 (32-bit, very old) at C:\Program Files (x86)\Java\jre1.5.0_22
+- Tomcat 5.5.33 running as Windows service under LocalSystem account
+- QRemote Server connects to 172.18.107.120 on port 4500
+- IWCustomerPortal has 2 backup copies ("Copy" and "Copy (2)") plus a "Win3" variant
+- 12 JVM crash log files (hs_err_pid*.log) in Tomcat root
+- 100+ engine .erl log files in Tomcat root dating from 2024-11-15 to 2026-03-13
+- 36 client-specific .erl files for 3 clients (amagown, pampabay, southernlamps)
+- Tomcat stdout logs in logs/ directory
+- 5 WAR files alongside expanded webapp directories
+- C:\Sites\ contains 4 copies of IWCustomerPortal (main, Win3, Copy, Copy(2))
+- No other sites in C:\Sites\ besides IWCustomerPortal variants
+- C:\SSL\ has SSL cert files (documented in configs/ssl/SSL_CERTIFICATE_INVENTORY.txt, not copied for security)
+- C:\Software\IW_IDE.zip is a 321 MB IDE distribution package (dated 2024-12-15, too large for RDP copy)
+- 8 IW_IDE backup snapshots exist at C:\ root (documented in iw-ide/IW_IDE-BACKUPS-LISTING.txt)
+  Dates: 2024-02-01, 2024-04-11, 2024-07-20, 2024-12-15, 2025-03-11, 2025-10-20, broken, broken2

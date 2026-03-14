@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--<link rel="stylesheet" href="portal.css">-->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IW Customer Portal</title>
+    <script type="text/javascript" 
+        src="portal.js">
+    </script>
+</head>
+<script>
+    //Code for determining if url parameters are correct and session is valid   
+var client = getParameterByName("client");
+var token = getParameterByName("token");
+(function() {
+            fetch(`clients/${client}/config.json`)
+                .then(response => {
+                return response.json();
+                })
+            .then(data => {
+if (client == null || token == null || token != data.accessToken) {
+    window.location.href = 'https://www.interweave.biz';
+}
+            });
+        })();      
+        (function(){
+            var client1 = getParameterByName("client");
+            var link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "clients/" + client1 + "/portal.css";
+            document.getElementsByTagName("head")[0].appendChild(link);            
+        })();
+</script>
+<body>
+    <div class="header-strip">
+        <img id = varHeader>
+    </div>
+    <div class="slds-align_absolute-center" style=" margin-top: 75px; margin-bottom:35px; height:270px;">
+        <div class="loginPage">
+          <table>
+           <tr>
+                   <td>
+                        <label for="usernameId" class="userLabel" >Username</label><br>
+                        <input id="usernameId"  minlength="0" maxlength="18" label="Username"></input>
+                       
+                    </td>
+           </tr>
+           <tr>
+                <td>
+                    <label for="passwordId" class="passLabel">Password</label><br>
+                    <input id="passwordId" type="password" minlength="0" maxlength="18" label="Password"></input>
+                </td>
+           </tr>
+                  <div class="slds-m-vertical--medium">
+            <tr>
+                <div >
+                    <td>
+                        <button class="brand" onclick="logIn(document.getElementById('usernameId').value,document.getElementById('passwordId').value, client)">Login to Payment Portal</button>
+                        
+                    </td>
+                </div>
+            </tr>
+                <tr>
+                    <td>
+                        <button class="astext" >Forget your Password?</button>
+                    </td>
+                </tr>
+                </div>
+                
+            </table>
+
+        </a>
+        </div>
+    </div>
+    <div class="footerIMG">
+        <img id = varFooter>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        //Setting the header and footer images based on the url parameters
+        var temp;
+        window.onload = function() {
+            fetch(`clients/${client}/config.json`)
+                .then(response => {
+                return response.json();
+                })
+            .then(data => {
+           // const data = require(`clients/${client}/config.json`);
+            //console.log(data);
+            document.getElementById("varHeader").src = `clients/${data.activeClient}/header.png`;
+            document.getElementById("varFooter").src = `clients/${data.activeClient}/footer.png`;
+            console.log(data);
+            //Function to generate bearer token
+            generateToken(data);
+            });      
+        }
+    </script>
+</body>
+</html>

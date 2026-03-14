@@ -1,0 +1,21 @@
+=== Tomcat5 Service Configuration (from sc qc Tomcat5) ===
+Captured: 2026-03-13 from production server
+
+SERVICE_NAME: Tomcat5
+        TYPE               : 10  WIN32_OWN_PROCESS 
+        START_TYPE         : 2   AUTO_START
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : "C:\Program Files (x86)\Apache Software Foundation\Tomcat 5.5\bin\tomcat5.exe" //RS//Tomcat5
+        LOAD_ORDER_GROUP   : 
+        TAG                : 0
+        DISPLAY_NAME       : Apache Tomcat 5
+        DEPENDENCIES       : Tcpip
+                           : Afd
+        SERVICE_START_NAME : LocalSystem
+
+=== Service Status (from sc query) ===
+SERVICE_NAME: Tomcat5
+DISPLAY_NAME: Apache Tomcat 5
+        TYPE               : 10  WIN32_OWN_PROCESS  
+        STATE              : 4  RUNNING 
+                                (STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)

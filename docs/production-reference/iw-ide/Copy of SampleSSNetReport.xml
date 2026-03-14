@@ -1,0 +1,973 @@
+<html>
+<head>
+<title>Current Network Summary</title>
+<link rel="stylesheet" type="text/css" href="/www/css/base.css">
+
+<script language="Javascript">
+
+function f_graph (p) {
+   tar = Math.round (Math.random() * 100000);
+   Y = screen.availHeight * 0.8;
+   if (Y < 500)
+      Y = 500;
+   window.open ("/cgi/sh3/guest?ports=" + escape(p), tar, "menubar=yes,scrollbars=yes,resizable=yes,width=850,height=" + Y);
+}
+
+</script>
+</head>
+
+<body class="r_body">
+
+<table class="r_twb" width="100%">
+<tbody>
+
+ <tr>
+  <td colspan="1">
+
+   <table class="r_hdr" width="100%">
+   <tbody>
+    <tr>
+     <td colspan="3"><div class="r_hdr_title">Current Network Summary</div></td>
+    </tr>
+
+    <tr>
+     <td class="r_hdr_left" width="33%">
+       'Guest Access'
+      </td>
+
+     <td class="r_hdr_center">15:23:38 Wed 3 Jan 2007</td>
+
+     <td class="r_hdr_right" width="33%">
+     </td>
+    </tr>
+   </tbody>
+   </table>
+
+  </td>
+ </tr>
+</tbody>
+</table>
+<p>
+
+<!-- End of common head3 -->
+<h4>Current Device Outage Status</h4>
+The following devices are either Down or unreachable due to their Upstream Neighbor being down.<br>
+<table class="r_twb" width=100%>
+<tbody>
+ <tr class="r_col_hdr">
+  <td colspan="4">
+   Totals (Up: 15, Down: 2, Unreachable: 0)
+   (No filter applied)
+  </td>
+ </tr>
+
+ <tr class="r_col_hdr">
+  <td>Device</td>
+  <td>Title</td>
+  <td>State</td>
+  <td>Outage Time</td>
+ </tr>
+
+ <tr class="r_data_L">
+  <td>NewYork-Hub1</td>
+  <td>3Com LinkBuilder Repeater</td>
+  <td class="r_data_9_R">Down</td>
+  <td class="r_data_9_R">13days 14hrs 55mins 33secs</td>
+ </tr>
+
+ <tr class="r_data_L">
+  <td>NewYork-Swt2</td>
+  <td>Cisco switch NYC</td>
+  <td class="r_data_9_R">Down</td>
+  <td class="r_data_9_R">13days 14hrs 55mins 33secs</td>
+ </tr>
+
+ <tr class="r_summary">
+  <td colspan="4">2 of 2 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+<p>
+<h4>Current Top Port Utilization (Top 10)</h4>
+<table class="r_twb" width=100%>
+
+<tbody>
+ <tr class="r_col_hdr">
+  <td rowspan="2">Device</td>
+  <td rowspan="2">Port</td>
+  <td rowspan="2">Speed</td>
+  <td colspan="4">5 Min Receive Averages to</td>
+  <td colspan="4">5 Min Transmit Averages to</td>
+  <td rowspan="2">Admin</td>
+  <td rowspan="2">Oper</td>
+  <td rowspan="2">Title</td>
+ </tr>
+
+ <tr class="r_col_hdr">
+  <td>Now</td>
+  <td>15:15</td>
+  <td>15:10</td>
+  <td>15:05</td>
+  <td>Now</td>
+  <td>15:15</td>
+  <td>15:10</td>
+  <td>15:05</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Berlin-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('6'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>70.85</td>
+  <td>69.74</td>
+  <td>58.82</td>
+  <td>49.73</td>
+  <td>49.37</td>
+  <td>30.14</td>
+  <td>45.83</td>
+  <td>20.38</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Amsterdam-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('2'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>88.18</td>
+  <td>45.69</td>
+  <td>55.84</td>
+  <td>69.28</td>
+  <td>17.54</td>
+  <td>19.06</td>
+  <td>26.25</td>
+  <td>25.02</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Tokyo-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('256'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>29.14</td>
+  <td>39.05</td>
+  <td>36.37</td>
+  <td>42.56</td>
+  <td>16.48</td>
+  <td>14.82</td>
+  <td>17.51</td>
+  <td>17.85</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC to London</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">LosAngeles-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('17'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>28.17</td>
+  <td>33.27</td>
+  <td>27.07</td>
+  <td>30.95</td>
+  <td>11.01</td>
+  <td>19.36</td>
+  <td>16.24</td>
+  <td>17.41</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Sydney-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('252'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>27.85</td>
+  <td>38.19</td>
+  <td>31.00</td>
+  <td>30.09</td>
+  <td>12.14</td>
+  <td>12.57</td>
+  <td>13.62</td>
+  <td>12.97</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC to LosAngeles</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('246'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>53.31</td>
+  <td>36.38</td>
+  <td>45.97</td>
+  <td>41.09</td>
+  <td>15.52</td>
+  <td>12.77</td>
+  <td>17.91</td>
+  <td>14.78</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Melbourne-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('21'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>35.12</td>
+  <td>35.39</td>
+  <td>36.78</td>
+  <td>30.24</td>
+  <td>16.23</td>
+  <td>11.83</td>
+  <td>10.79</td>
+  <td>11.48</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC to Sydney</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">London-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('13'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>12.11</td>
+  <td>23.49</td>
+  <td>33.48</td>
+  <td>17.71</td>
+  <td>7.64</td>
+  <td>16.64</td>
+  <td>34.20</td>
+  <td>9.87</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">PVC to Paris</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Berlin-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('5'); return false;">Se0</a></td>
+  <td>64K</td>
+  <td>22.14</td>
+  <td>22.65</td>
+  <td>18.12</td>
+  <td>17.41</td>
+  <td>22.27</td>
+  <td>15.27</td>
+  <td>18.23</td>
+  <td>13.10</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">FR Trunk</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Paris-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('248'); return false;">Se0</a></td>
+  <td>64K</td>
+  <td>19.43</td>
+  <td>18.69</td>
+  <td>22.43</td>
+  <td>28.72</td>
+  <td>13.00</td>
+  <td>11.74</td>
+  <td>13.45</td>
+  <td>14.00</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L">FR Trunk to BT</td>
+ </tr>
+
+ <tr class="r_summary">
+  <td colspan="14">10 of 257 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+<p>
+<h4>Today's Top Port Utilization Threshold Exceed Count (Top 10)</h4>
+This is the number of five minute periods that a port was in excess of its configured threshold level.<br>
+<table class="r_twb" width=100%>
+
+<tbody>
+ <tr class="r_col_hdr">
+  <td>Device</td>
+  <td>Port</td>
+  <td>Speed</td>
+  <td>Threshold</td>
+  <td>Receive</td>
+  <td>Transmit</td>
+  <td>Total</td>
+  <td>Title</td>
+  </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('90'); return false;">slot_3.2</a></td>
+  <td>10M</td>
+  <td>50%</td>
+  <td>7</td>
+  <td>63</td>
+  <td>70</td>
+  <td class="r_data_L" nowrap>GT88787</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('191'); return false;">slot_3.20</a></td>
+  <td>10M</td>
+  <td>50%</td>
+  <td>0</td>
+  <td>67</td>
+  <td>67</td>
+  <td class="r_data_L" nowrap>14th Floor A2</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('192'); return false;">slot_5.20</a></td>
+  <td>10M</td>
+  <td>50%</td>
+  <td>0</td>
+  <td>62</td>
+  <td>62</td>
+  <td class="r_data_L" nowrap>13TH Floor</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('91'); return false;">slot_5.2</a></td>
+  <td>10M</td>
+  <td>50%</td>
+  <td>59</td>
+  <td>0</td>
+  <td>59</td>
+  <td class="r_data_L" nowrap>GT8978798</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('104'); return false;">slot_5.4</a></td>
+  <td>100M</td>
+  <td>10%</td>
+  <td>0</td>
+  <td>26</td>
+  <td>26</td>
+  <td class="r_data_L" nowrap>MKJH987987</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Amsterdam-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('2'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>90%</td>
+  <td>13</td>
+  <td>3</td>
+  <td>16</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('89'); return false;">slot_2.2</a></td>
+  <td>10M</td>
+  <td>50%</td>
+  <td>0</td>
+  <td>15</td>
+  <td>15</td>
+  <td class="r_data_L" nowrap>SB0980980</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('83'); return false;">slot_3.1</a></td>
+  <td>100M</td>
+  <td>10%</td>
+  <td>14</td>
+  <td>0</td>
+  <td>14</td>
+  <td class="r_data_L" nowrap>AS9879</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('97'); return false;">slot_3.3</a></td>
+  <td>100M</td>
+  <td>10%</td>
+  <td>12</td>
+  <td>0</td>
+  <td>12</td>
+  <td class="r_data_L" nowrap> HU 876876</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Berlin-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('6'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>90%</td>
+  <td>6</td>
+  <td>0</td>
+  <td>6</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+ <tr class="r_summary">
+  <td colspan="8">10 of 257 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+<p>
+<h4>Today's Top Error Totals (Top 10)</h4>
+<table class="r_twb" width=100%>
+
+<tbody>
+ <tr class="r_col_hdr">
+  <td rowspan="2">Device</td>
+  <td rowspan="2">Port</td>
+  <td rowspan="2">Speed</td>
+  <td colspan="2">Total Errors</td>
+  <td colspan="2">5 Min Periods in Error</td>
+  <td rowspan="2">Title</td>
+ </tr>
+
+ <tr class="r_col_hdr">
+  <td>Receive</td>
+
+  <td>Transmit</td>
+
+  <td>Receive</td>
+
+  <td>Transmit</td>
+
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('150'); return false;">slot_2.12</a></td>
+  <td>10M</td>
+  <td>677.9K</td>
+  <td>0</td>
+  <td>147</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>Operations 2</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('102'); return false;">slot_2.4</a></td>
+  <td>10M</td>
+  <td>492.0K</td>
+  <td>0</td>
+  <td>185</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>JHJ098U</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('153'); return false;">slot_1.13</a></td>
+  <td>100M</td>
+  <td>58.0K</td>
+  <td>0</td>
+  <td>95</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>MKGK0776</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('146'); return false;">slot_5.11</a></td>
+  <td>10M</td>
+  <td>32.7K</td>
+  <td>0</td>
+  <td>185</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>LKH07654</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('129'); return false;">slot_1.9</a></td>
+  <td>10M</td>
+  <td>19.4K</td>
+  <td>0</td>
+  <td>113</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>JGFX76575</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('140'); return false;">slot_5.10</a></td>
+  <td>10M</td>
+  <td>10.5K</td>
+  <td>0</td>
+  <td>185</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>KJHU09976</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('99'); return false;">slot_1.4</a></td>
+  <td>100M</td>
+  <td>10.3K</td>
+  <td>0</td>
+  <td>79</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>MNB 987987</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('182'); return false;">slot_2.18</a></td>
+  <td>100M</td>
+  <td>3.9K</td>
+  <td>0</td>
+  <td>58</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>IU-987</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('83'); return false;">slot_3.1</a></td>
+  <td>100M</td>
+  <td>1.1K</td>
+  <td>0</td>
+  <td>54</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>AS9879</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('97'); return false;">slot_3.3</a></td>
+  <td>100M</td>
+  <td>988</td>
+  <td>0</td>
+  <td>36</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap> HU 876876</td>
+ </tr>
+
+ <tr class="r_summary">
+  <td colspan="8">10 of 257 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+<p>
+<h4>Today's Top Discard Totals (Top 10)</h4>
+<table class="r_twb" width=100%>
+
+<tbody>
+ <tr class="r_col_hdr">
+  <td rowspan="2">Device</td>
+  <td rowspan="2">Port</td>
+  <td rowspan="2">Speed</td>
+  <td colspan="2">Total Discards</td>
+  <td colspan="2">5 Min Periods in Discard</td>
+  <td rowspan="2">Title</td>
+  </tr>
+
+ <tr class="r_col_hdr">
+  <td>Receive</td>
+  <td>Transmit</td>
+  <td>Receive</td>
+  <td>Transmit</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('190'); return false;">slot_2.20</a></td>
+  <td>10M</td>
+  <td>0</td>
+  <td>12.3M</td>
+  <td>0</td>
+  <td>185</td>
+  <td class="r_data_L" nowrap>TREW-342</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Hub2</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('50'); return false;">1</a></td>
+  <td>10M</td>
+  <td>1.3M</td>
+  <td>0</td>
+  <td>185</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>SNMP Management Interface</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('148'); return false;">slot_15.12</a></td>
+  <td>1G</td>
+  <td>0</td>
+  <td>26.9K</td>
+  <td>0</td>
+  <td>185</td>
+  <td class="r_data_L" nowrap>LKGHGFD98674</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('149'); return false;">slot_16.12</a></td>
+  <td>1G</td>
+  <td>0</td>
+  <td>26.9K</td>
+  <td>0</td>
+  <td>185</td>
+  <td class="r_data_L" nowrap>MFGS132</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Tokyo-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('254'); return false;">Et0</a></td>
+  <td>10M</td>
+  <td>41</td>
+  <td>0</td>
+  <td>1</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>Tokyo LAN</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Amsterdam-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('0'); return false;">Et0</a></td>
+  <td>10M</td>
+  <td>8</td>
+  <td>0</td>
+  <td>1</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>Amsterdam LAN</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Melbourne-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('19'); return false;">Et0</a></td>
+  <td>10M</td>
+  <td>0</td>
+  <td>6</td>
+  <td>0</td>
+  <td>1</td>
+  <td class="r_data_L" nowrap>Melbourne LAN</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('168'); return false;">slot_2.15</a></td>
+  <td>10M</td>
+  <td>0</td>
+  <td>2</td>
+  <td>0</td>
+  <td>2</td>
+  <td class="r_data_L" nowrap>POIU-98769</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('102'); return false;">slot_2.4</a></td>
+  <td>10M</td>
+  <td>0</td>
+  <td>1</td>
+  <td>0</td>
+  <td>1</td>
+  <td class="r_data_L" nowrap>JHJ098U</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('169'); return false;">slot_3.15</a></td>
+  <td>10M</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>,MNV-65</td>
+ </tr>
+
+ <tr class="r_summary">
+  <td colspan="8">10 of 257 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+<p>
+<h4>Today's Top FrameRelay PVC CIR Exceed Count (Top 10)</h4>
+This is the number of five minute periods that a FrameRelay PVC was in excess of its configured CIR level.<br>
+<table class="r_twb" width=100%>
+
+<tbody>
+ <tr class="r_col_hdr">
+  <td>Device</td>
+  <td>Port</td>
+  <td>Speed</td>
+  <td>CIR</td>
+  <td>Receive</td>
+  <td>Transmit</td>
+  <td>Total</td>
+  <td>Title</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Berlin-ro</td>
+  <td><a href="/" onclick="f_graph ('6'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>16K</td>
+  <td>90</td>
+  <td>16</td>
+  <td>106</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Amsterdam-ro</td>
+  <td><a href="/" onclick="f_graph ('2'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>76</td>
+  <td>5</td>
+  <td>81</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Tokyo-ro</td>
+  <td><a href="/" onclick="f_graph ('256'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>39</td>
+  <td>2</td>
+  <td>41</td>
+  <td class="r_data_L" nowrap>PVC to London</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-ro</td>
+  <td><a href="/" onclick="f_graph ('246'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>28</td>
+  <td>1</td>
+  <td>29</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Melbourne-ro</td>
+  <td><a href="/" onclick="f_graph ('21'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>22</td>
+  <td>1</td>
+  <td>23</td>
+  <td class="r_data_L" nowrap>PVC to Sydney</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Sydney-ro</td>
+  <td><a href="/" onclick="f_graph ('252'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>16</td>
+  <td>4</td>
+  <td>20</td>
+  <td class="r_data_L" nowrap>PVC to LosAngeles</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">LosAngeles-ro</td>
+  <td><a href="/" onclick="f_graph ('17'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>10</td>
+  <td>5</td>
+  <td>15</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">London-ro</td>
+  <td><a href="/" onclick="f_graph ('13'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>8</td>
+  <td>1</td>
+  <td>9</td>
+  <td class="r_data_L" nowrap>PVC to Paris</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Honolulu-ro</td>
+  <td><a href="/" onclick="f_graph ('10'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>5</td>
+  <td>0</td>
+  <td>5</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+ <tr class="r_data_R">
+  <td class="r_data_L">Paris-ro</td>
+  <td><a href="/" onclick="f_graph ('249'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>2</td>
+  <td>2</td>
+  <td>4</td>
+  <td class="r_data_L" nowrap>PVC to London</td>
+ </tr>
+ <tr class="r_summary">
+  <td colspan="8">10 of 14 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+<p>
+<h4>Today's Top FECN / BECN Totals (Top 10)</h4>
+<table class="r_twb" width=100%>
+
+<tbody>
+ <tr class="r_col_hdr">
+  <td rowspan="2">Device</td>
+  <td rowspan="2">Port</td>
+  <td rowspan="2">Speed</td>
+  <td rowspan="2">CIR</td>
+  <td colspan="2">Totals</td>
+  <td colspan="2">5 Min Periods in</td>
+  <td rowspan="2">Title</td>
+ </tr>
+
+ <tr class="r_col_hdr">
+  <td>FECN</td>
+  <td>BECN</td>
+  <td>FECN</td>
+  <td>BECN</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>Tokyo-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('256'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>8</td>
+  <td>0</td>
+  <td>1</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC to London</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>Melbourne-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('21'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>8</td>
+  <td>0</td>
+  <td>1</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC to Sydney</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>NewYork-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('246'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>Sydney-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('252'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC to LosAngeles</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>LosAngeles-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('17'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>London-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('13'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC to Paris</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>Honolulu-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('10'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>Paris-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('249'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC to London</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>LosAngeles-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('18'); return false;">Se0.fr17</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L" nowrap>Amsterdam-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('3'); return false;">Se0.fr17</a></td>
+  <td>64K</td>
+  <td>32K</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td>0</td>
+  <td class="r_data_L" nowrap>PVC</td>
+ </tr>
+
+ <tr class="r_summary">
+  <td colspan="9">10 of 14 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+<p>
+</tbody>
+</table>
+</form>
+
+</body>
+</html>
+

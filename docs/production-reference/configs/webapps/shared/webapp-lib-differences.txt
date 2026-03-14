@@ -1,0 +1,27 @@
+Webapp Library Differences Analysis
+====================================
+All 5 webapps (SF2QBBase, SF2QBCustom, SF2AuthNet, QB_POAgent, SN2QB_SP) share
+identical web.xml, openamf-config.xml, SF_Test.html, and XSD files.
+
+Library differences:
+- SF2QBBase & SF2QBCustom: jsch-0.1.51.jar
+- SF2AuthNet, QB_POAgent, SN2QB_SP: jsch-0.1.55.jar (newer version)
+- SF2AuthNet ONLY: has extra fd_plugin.jar
+
+Each webapp has its own iwsolution_<NAME>.jar in WEB-INF/lib/
+(already captured in engine-jars/solutions/).
+
+The .class files under WEB-INF/classes/ are identical across all webapps
+(same com.interweave.* package structure). These are the expanded versions
+of the iw*.jar engine JARs.
+
+Full shared lib list (120+ JARs) includes:
+- InterWeave engine: iw*.jar (16 JARs)
+- OpenAMF: openamf.jar, astranslator-1.5.5.jar
+- Database: jtds-1.2.2.jar, mysql-connector-java-5.1.15-bin.jar, ojdbc14.jar, freetds_jdbc.jar
+- Google Data API: gdata-*.jar (many)
+- Native: jacob.dll, jacob.jar, TS_JNI.dll, jniwrap-2.8.5.jar
+- Apache: axis.jar, commons-*.jar, xalan.jar, xerces*.jar
+- Mail: mailapi.jar, smtp.jar, imap.jar, pop3.jar
+- SSH: jsch-0.1.51/55.jar
+- JSON: json-lib-2.4-jdk15.jar, ezmorph-1.0.6.jar

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
+    "http://java.sun.com/j2ee/dtds/web-app_2.2.dtd">
+<web-app>
+	<display-name>
+	InterWeave Transformation Server
+	</display-name>
+	<servlet>
+		<servlet-name>DefaultGateway</servlet-name>
+		<display-name>DefaultGateway</display-name>
+		<description>DefaultGateway</description>
+		<servlet-class>org.openamf.DefaultGateway</servlet-class>
+		<init-param>
+			<param-name>OPENAMF_CONFIG</param-name>
+			<param-value>/WEB-INF/openamf-config.xml</param-value>
+			<description>Location of the OpenAMF config file.</description>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>iwtransformationserver</servlet-name>
+		<display-name>iwtransformationserver</display-name>
+		<description>InterWeave ACS Daemon Application</description>
+		<servlet-class>com.interweave.servlets.IWIndex</servlet-class>
+		<init-param>
+			<param-name>application</param-name>
+			<param-value>iwtransformationserver</param-value>
+			<description>InterWeave Application Name.</description>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>logging</servlet-name>
+		<display-name>logging</display-name>
+		<description>InterWeave ACS Daemon Applications</description>
+		<servlet-class>com.interweave.servlets.IWLogging</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>iwxml</servlet-name>
+		<display-name>iwxml</display-name>
+		<description>InterWeave ACS Daemon Application</description>
+		<servlet-class>com.interweave.servlets.IWXmlRequest</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>transform</servlet-name>
+		<display-name>transform</display-name>
+		<description>InterWeave ACS Daemon Application</description>
+		<servlet-class>com.interweave.servlets.IWTransform</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>IWScheduledTransform</servlet-name>
+		<display-name>IWScheduledTransform</display-name>
+		<description>InterWeave ACS Daemon Application</description>
+		<servlet-class>com.interweave.servlets.IWScheduledTransform</servlet-class>
+	</servlet>
+        <servlet-mapping>
+		<servlet-name>DefaultGateway</servlet-name>
+		<url-pattern>/gateway</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>iwtransformationserver</servlet-name>
+		<url-pattern>/index</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>iwxml</servlet-name>
+		<url-pattern>/iwxml</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>transform</servlet-name>
+		<url-pattern>/transform</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>logging</servlet-name>
+		<url-pattern>/logging</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>IWScheduledTransform</servlet-name>
+		<url-pattern>/scheduledtransform</url-pattern>
+	</servlet-mapping>
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+</web-app>

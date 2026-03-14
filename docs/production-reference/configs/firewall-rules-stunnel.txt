@@ -1,0 +1,92 @@
+
+Rule Name:                            stunnel (Terminal Version)
+----------------------------------------------------------------------
+Enabled:                              Yes
+Direction:                            In
+Profiles:                             Domain
+Grouping:                             
+LocalIP:                              Any
+RemoteIP:                             Any
+Protocol:                             UDP
+LocalPort:                            Any
+RemotePort:                           Any
+Edge traversal:                       No
+Action:                               Allow
+
+Rule Name:                            stunnel (Terminal Version)
+----------------------------------------------------------------------
+Enabled:                              Yes
+Direction:                            In
+Profiles:                             Domain
+Grouping:                             
+LocalIP:                              Any
+RemoteIP:                             Any
+Protocol:                             TCP
+LocalPort:                            Any
+RemotePort:                           Any
+Edge traversal:                       No
+Action:                               Allow
+Ok.
+
+
+Rule Name:                            stunnel (GUI Version)
+----------------------------------------------------------------------
+Enabled:                              Yes
+Direction:                            In
+Profiles:                             Domain
+Grouping:                             
+LocalIP:                              Any
+RemoteIP:                             Any
+Protocol:                             UDP
+LocalPort:                            Any
+RemotePort:                           Any
+Edge traversal:                       No
+Action:                               Allow
+
+Rule Name:                            stunnel (GUI Version)
+----------------------------------------------------------------------
+Enabled:                              Yes
+Direction:                            In
+Profiles:                             Domain
+Grouping:                             
+LocalIP:                              Any
+RemoteIP:                             Any
+Protocol:                             TCP
+LocalPort:                            Any
+RemotePort:                           Any
+Edge traversal:                       No
+Action:                               Allow
+Ok.
+
+
+Rule Name:                            World Wide Web Services (HTTPS Traffic-In)
+----------------------------------------------------------------------
+Enabled:                              Yes
+Direction:                            In
+Profiles:                             Domain,Private,Public
+Grouping:                             Secure World Wide Web Services (HTTPS)
+LocalIP:                              Any
+RemoteIP:                             Any
+Protocol:                             TCP
+LocalPort:                            443
+RemotePort:                           Any
+Edge traversal:                       No
+Action:                               Allow
+Ok.
+
+
+Rule Name:                            World Wide Web Services (HTTP Traffic-In)
+----------------------------------------------------------------------
+Enabled:                              Yes
+Direction:                            In
+Profiles:                             Domain,Private,Public
+Grouping:                             World Wide Web Services (HTTP)
+LocalIP:                              Any
+RemoteIP:                             Any
+Protocol:                             TCP
+LocalPort:                            80
+RemotePort:                           Any
+Edge traversal:                       No
+Action:                               Allow
+Ok.
+

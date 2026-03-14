@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<!-- Required for DefaultGateway-->
+	<invoker>
+		<name>Java</name>
+		<class>org.openamf.invoker.JavaServiceInvoker</class>
+	</invoker>
+</config>

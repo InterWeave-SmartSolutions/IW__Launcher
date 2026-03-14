@@ -1,0 +1,9 @@
+id,mailcode,altid,title,fname,lname,suffix,organ,add2,add1,street,city,state,zip,dayphone,nightphone,email,cdate,camt,gender,affil,flag13,flag26
+"00516821H","SAMPLE","0154504732","Mr","Abe M","Pena","","","","","1808 Blue Spruce Dr","Grants","NM","87020-4207","","","APENA87020@MSN.COM",06/30/1997,25.00," ","","X",""
+"00516821H","SAMPLE","0154504732","Mr","Abe M","Pena","","","","","1808 Blue Spruce Dr","Grants","NM","87020-4207","","","APENA87020@MSN.COM",08/21/1996,10.00," ","","X",""
+"02523093F","SAMPLE","0891371452","Ms","Jennifer","Matthews","","","Unit 5v","","500 Rodeo Rd","Santa Fe","NM","87505-6347","212-691-7257","","JEN1234@JVERIZON.NET",05/22/2005,10.00," ","","X","X"
+"02706320Z","SAMPLE","0542104682","","Luciano R","Baca","","","","","30 General Sage Dr","Santa Fe","NM","87505-6395","","","minlub@aol.com",12/13/2005,15.00," ","","X","X"
+"01654194P","SAMPLE","0286076260","","Clarice","Getz","","","","","2308 Camino Artista","Santa Fe","NM","87505-5268","","","",12/24/2002,50.00," ","","X","X"
+"01802727Q","SAMPLE","0066759192","","Lawrence","Waterman","","","","","1061 Camino Manana","Santa Fe","NM","87501-1088","","","",11/24/1993,10.00," ","","X","X"
+"01802727Q","SAMPLE","0066759192","","Lawrence","Waterman","","","","","1061 Camino Manana","Santa Fe","NM","87501-1088","","","",10/27/1995,10.00," ","","X","X"
+

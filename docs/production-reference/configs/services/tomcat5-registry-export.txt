@@ -1,0 +1,15 @@
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tomcat5
+    Type    REG_DWORD    0x10
+    Start    REG_DWORD    0x2
+    ErrorControl    REG_DWORD    0x1
+    ImagePath    REG_EXPAND_SZ    "C:\Program Files (x86)\Apache Software Foundation\Tomcat 5.5\bin\tomcat5.exe" //RS//Tomcat5
+    DisplayName    REG_SZ    Apache Tomcat 5
+    DependOnService    REG_MULTI_SZ    Tcpip\0Afd
+    WOW64    REG_DWORD    0x1
+    ObjectName    REG_SZ    LocalSystem
+    Description    REG_SZ    Apache Tomcat 5.5.33 Server - http://tomcat.apache.org/
+    FailureActions    REG_BINARY    0000000000000000000000000300000014000000010000000000000001000000000000000100000000000000
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tomcat5\Parameters
+

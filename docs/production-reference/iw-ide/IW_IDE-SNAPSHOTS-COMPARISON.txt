@@ -1,0 +1,147 @@
+================================================================================
+IW_IDE SNAPSHOTS COMPARISON REPORT
+Generated: 2026-03-13
+Production Server: Read-Only Catalog
+================================================================================
+
+CURRENT IW_IDE (C:\IW_IDE) - 40 items:
+--------------------------------------------------------------------------------
+AccpacCom                          IDE Quick Installation Guide _2_.pdf
+all_projects_1                     IDETutorial.pdf
+all_projects_2                     IW_IDE_UR.pdf
+Augur.xml                          IW_QBConnector
+CMSUpdLead.xslt                    IWHostedSolutions
+CompanyTokens.rtf                  iwp2HTMLTableLO.xslt
+Copy of SampleSSNetReport.xml      iw_ide
+Copy of SampleSSReport.xml         logs.zip
+Data                               NexternalHostedIan
+NexternalQueryTest                 NexternalQueryTestD
+NexternalQueryTestIan              OldSampleProjects_1
+ProfileMgmt.sql                    QB_sample
+readme.txt                         SalesProdigy1
+samplegift.csv                     samplegift_new.csv
+SampleSSNetReport.html             SampleSSReport.html
+sample_projects                    SF2MM
+SFAccountTestGet.xml               SN2QBSP
+SN_Test                            SN_Test_New
+SPworkspace                        SQLCreateAcct.xslt
+SSProject                          Templates
+transactions_old.xml
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-2024-02-01 (37 items)
+================================================================================
+UNIQUE items NOT in current IW_IDE:
+  + Charge03.xml        (XML config - SF2AuthNet transaction data)
+  + New folder           (directory)
+
+Items in current but NOT in this snapshot:
+  - IDE Quick Installation Guide _2_.pdf
+  - IDETutorial.pdf
+  - IW_IDE_UR.pdf
+  - transactions_old.xml
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-2024-04-11 (36 items)
+================================================================================
+UNIQUE items NOT in current IW_IDE:
+  + New folder           (directory)
+
+Items in current but NOT in this snapshot:
+  - Charge03.xml         (was in 2024-02-01 but removed by this date)
+  - IDE Quick Installation Guide _2_.pdf
+  - IDETutorial.pdf
+  - IW_IDE_UR.pdf
+  - transactions_old.xml
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-2024-07-20 (36 items)
+================================================================================
+UNIQUE items NOT in current IW_IDE:
+  + New folder           (directory)
+
+Items in current but NOT in this snapshot:
+  - IDE Quick Installation Guide _2_.pdf
+  - IDETutorial.pdf
+  - IW_IDE_UR.pdf
+  - transactions_old.xml
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-2024-12-15 (41 items)
+================================================================================
+UNIQUE items NOT in current IW_IDE:
+  + New folder           (directory)
+
+Items in current but NOT in this snapshot:
+  (none -- this snapshot is a superset, matches current plus "New folder")
+
+NOTE: This snapshot added PDFs and transactions_old.xml compared to earlier ones.
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-2025-03-11 (36 items)
+================================================================================
+UNIQUE items NOT in current IW_IDE:
+  + New folder           (directory)
+
+Items in current but NOT in this snapshot:
+  - IDE Quick Installation Guide _2_.pdf
+  - IDETutorial.pdf
+  - IW_IDE_UR.pdf
+  - transactions_old.xml
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-2025-10-20 (LATEST) (36 items)
+================================================================================
+UNIQUE items NOT in current IW_IDE:
+  + New folder           (directory)
+
+Items in current but NOT in this snapshot:
+  - IDE Quick Installation Guide _2_.pdf
+  - IDETutorial.pdf
+  - IW_IDE_UR.pdf
+  - transactions_old.xml
+
+NOTE: The latest snapshot (2025-10-20) is MISSING 3 PDFs and
+transactions_old.xml that ARE in the current IW_IDE. This suggests these
+files were added to the current IW_IDE after the 2025-10-20 snapshot.
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-broken (36 items)
+================================================================================
+Same item set as IW_IDE-2025-03-11 / IW_IDE-2025-10-20.
+
+UNIQUE items NOT in current IW_IDE:
+  + New folder           (directory)
+
+Items in current but NOT in this snapshot:
+  - IDE Quick Installation Guide _2_.pdf
+  - IDETutorial.pdf
+  - IW_IDE_UR.pdf
+  - transactions_old.xml
+
+================================================================================
+SNAPSHOT: C:\IW_IDE-broken2 (11 items - INCOMPLETE/TRUNCATED)
+================================================================================
+Contains only:
+  AccpacCom, all_projects_1, all_projects_2, Augur.xml, CMSUpdLead.xslt,
+  CompanyTokens.rtf, Copy of SampleSSNetReport.xml,
+  Copy of SampleSSReport.xml, Data, IWHostedSolutions,
+  iwp2HTMLTableLO.xslt, iw_ide
+
+This snapshot appears to be a broken/incomplete copy that was interrupted.
+No unique items vs current IW_IDE.
+
+================================================================================
+SUMMARY OF UNIQUE ITEMS ACROSS ALL SNAPSHOTS (not in current IW_IDE)
+================================================================================
+1. Charge03.xml  -- Only in IW_IDE-2024-02-01
+   Type: XML config file (SF2AuthNet / Salesforce-to-AuthorizeNet transaction)
+   Action: COPY to local (config/XML, not a binary)
+
+2. "New folder"  -- In snapshots 2024-02-01 through 2025-10-20 and broken
+   Type: Directory (likely empty or containing temp files)
+   Action: Investigate but likely no action needed
+
+================================================================================
+END OF REPORT
+================================================================================

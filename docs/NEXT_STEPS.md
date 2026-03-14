@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-13 (Session 25 — AI Management Architecture Phase 1: Workspace Read API + XSLT Build API deployed, --release 8 compilation fix, CVE audit + credential encryption in progress)
+**Last Updated:** 2026-03-14 (Session 27-28 — Engine flow definitions in config templates, Cloudflare tunnel + Vercel portal login verified, production server audit committed)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -59,6 +59,9 @@ These items from the original roadmap are now DONE:
 - Session 23: CSP hardening — extracted all inline scripts from 7 JSPs to external .js files, converted 8 onclick handlers to event delegation, deployed HelpLinkService (fixed help-popup.jsp 500), SecurityHeadersFilter now sends `script-src 'self' https://cdn.jsdelivr.net` (no unsafe-inline).
 - Session 24: bcrypt migration — centralized PasswordHasher utility (hash/verify/needsRehash/rehashIfNeeded), jBCrypt 0.4 deployed, progressive rehash on login (SHA-256→bcrypt transparent upgrade), 10+ servlets updated (all API + Local config), login verified.
 - Session 25: AI Management Architecture Phase 1 — ApiWorkspaceManagementServlet (3 endpoints: project listing, detail, raw config) + ApiBuildServlet (XSLT compilation + inventory). Fixed cross-compilation bug: `--release 8` required instead of `-source 1.8 -target 1.8` (endorsed JAXB 1.0-ea JAR causes AbstractMethodError). All compile commands updated in CLAUDE.md.
+- Session 25-26: Credential encryption at rest (AES-256-GCM, CredentialEncryptionService, ENC: prefix), vendor JAR CVE audit (175 JARs, `docs/security/CVE_AUDIT_2026_03_13.md`), NPE fix in handlePutWizard version parsing.
+- Session 27: Engine flow definitions added to all 3 config.xml templates (SF2AUTH + CRM2M2 = 14 flows). Cloudflare tunnel started, Vercel portal login verified end-to-end via Bearer token auth.
+- Session 28: Production server audit committed — `docs/SERVER_AUDIT_2026_03_13.md` (551-line architecture overview), `docs/production-reference/` (525 files from 107525-UVS13: configs, engine logs, workspace projects, IDE snapshots, customer portal). `frontends/IWCustomerPortal` (legacy payment portal HTML).
 
 ---
 
@@ -164,6 +167,8 @@ Detail schemas fully expanded (2026-03-10):
 | Component | Status | Notes |
 |---|---|---|
 | Vercel deployment | ✅ Live | `frontends/iw-portal`, auto-builds on push to main |
+| Vercel login | ✅ Working | Bearer token auth through Cloudflare tunnel (verified 2026-03-14) |
+| Engine flows via Vercel | ✅ Working | 8 scheduled + 6 query flows returned through tunnel proxy |
 | Cloudflare Quick Tunnel | ✅ Working | `scripts/quickstart_tunnel.bat` — no auth needed, auto-patches vercel.json |
 | Named Cloudflare Tunnel | ⚠️ Optional | `scripts/setup_cloudflare_tunnel.bat` — stable URL, requires Cloudflare account |
 
@@ -232,8 +237,12 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | ~~Cross-UI Session Leak~~ | ~~Logout from JSP/React properly invalidates sessions + Bearer tokens~~ | ~~3-4 hrs~~ | DONE (LocalLogoutServlet + ApiLogoutServlet + E2E 29/29) |
 | ~~Content Security Policy (JSPs)~~ | ~~Audit inline scripts/styles in JSPs, add CSP headers~~ | ~~2-4 hrs~~ | DONE (7 JSPs refactored, strict `script-src 'self'`, SecurityHeadersFilter) |
 | ~~bcrypt migration~~ | ~~Replace SHA-256 with bcrypt, add jBCrypt JAR~~ | ~~2-3 hrs~~ | DONE (PasswordHasher utility, progressive rehash, Session 24) |
-| Credential encryption | Encrypt DB passwords in config files at rest | 2-3 hrs | Open |
-| Vendor JAR CVE audit | OWASP dependency-check on 133 iwtransformationserver JARs | 1-2 hrs | Open |
+| ~~Credential encryption~~ | ~~Encrypt DB passwords in config files at rest~~ | ~~2-3 hrs~~ | DONE (AES-256-GCM, CredentialEncryptionService, Session 25-26) |
+| ~~Vendor JAR CVE audit~~ | ~~OWASP dependency-check on 133 iwtransformationserver JARs~~ | ~~1-2 hrs~~ | DONE (175 JARs audited, `docs/security/CVE_AUDIT_2026_03_13.md`, Session 25-26) |
+| ~~Engine flow definitions~~ | ~~Populate config.xml templates with flow definitions~~ | ~~1 hr~~ | DONE (14 CRM2M2 + 3 SF2AUTH flows in all 3 templates, Session 27) |
+| ~~Production server audit~~ | ~~Comprehensive sweep of 107525-UVS13~~ | ~~4-6 hrs~~ | DONE (551-line report + 525 reference files, Session 28) |
+| CVE remediation | Tomcat 9.0.98+, Xerces/Xalan upgrade, remove test JARs | 4-8 hrs | Open |
+| Named Cloudflare tunnel | Stable URL (requires Cloudflare account login) | 1 hr | Open (quick tunnel working) |
 
 ### Transformation Server Status: OPERATIONAL (2026-03-09)
 

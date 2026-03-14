@@ -1,0 +1,5 @@
+-rw-r--r-- 1 TRAPPCLOUD+AUmanets.107525 2147484161 27564854 Mar 12 04:40 C:/Program Files (x86)/Apache Software Foundation/Tomcat 5.5/webapps/QB_POAgent.war
+-rw-r--r-- 1 TRAPPCLOUD+AUmanets.107525 2147484161 25579904 Jun 12  2025 C:/Program Files (x86)/Apache Software Foundation/Tomcat 5.5/webapps/SF2AuthNet.war
+-rw-r--r-- 1 TRAPPCLOUD+AUmanets.107525 2147484161 31344751 Nov 11  2024 C:/Program Files (x86)/Apache Software Foundation/Tomcat 5.5/webapps/SF2QBBase.war
+-rw-r--r-- 1 TRAPPCLOUD+AUmanets.107525 2147484161 27336855 Nov 11  2024 C:/Program Files (x86)/Apache Software Foundation/Tomcat 5.5/webapps/SF2QBCustom.war
+-rw-r--r-- 1 TRAPPCLOUD+AUmanets.107525 2147484161 29553609 Mar 11 13:27 C:/Program Files (x86)/Apache Software Foundation/Tomcat 5.5/webapps/SN2QB_SP.war

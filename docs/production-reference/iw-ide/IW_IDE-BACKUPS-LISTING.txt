@@ -1,0 +1,15 @@
+IW_IDE Backup Snapshots on C:\ Root
+====================================
+The production server has 8 backup/snapshot copies of IW_IDE at C:\ root:
+
+1. C:\IW_IDE-2024-02-01
+2. C:\IW_IDE-2024-04-11
+3. C:\IW_IDE-2024-07-20
+4. C:\IW_IDE-2024-12-15
+5. C:\IW_IDE-2025-03-11
+6. C:\IW_IDE-2025-10-20
+7. C:\IW_IDE-broken
+8. C:\IW_IDE-broken2 (includes all_projects_1, all_projects_2)
+
+The current active IW_IDE is at C:\IW_IDE (already captured).
+These backups represent known-good states before changes were made.

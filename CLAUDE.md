@@ -536,16 +536,27 @@ IW_Launcher/
 ├── docs/                       # Documentation
 │   ├── ai/                     # AI workflow & worklog
 │   ├── assa-specs/             # ASSA specification docs
+│   ├── authentication/         # config.xml templates (supabase/hosted/local) with flow definitions
 │   ├── development/            # Build, API, contributing guides
 │   ├── legacy-pdfs/            # Original PDF documentation
-│   ├── security/               # Security & credential docs
+│   ├── production-reference/   # Production server audit (525 files from 107525-UVS13)
+│   │   ├── configs/            # stunnel, nginx, QODBC, SSL, services, firewall, env vars
+│   │   ├── documentation/      # Customer portal docs (SF, Creatio, Payments)
+│   │   ├── engine-jars/        # Production engine JAR inventory
+│   │   ├── engine-logs/        # Client-specific .erl files (3 clients, 36 logs)
+│   │   ├── iw-ide/             # IDE snapshots comparison, AccpacCom, Data/, PDFs
+│   │   ├── sites/              # IWCustomerPortal + Win3 variant (payment portals)
+│   │   └── workspace-projects/ # IWHostedSolutions, IW_QBConnector, Templates, TomcatWebapps
+│   ├── security/               # Security & credential docs, CVE audit
 │   ├── setup/                  # Installation guides
 │   ├── testing/                # Test plans
-│   └── tutorials/              # Training materials
+│   ├── tutorials/              # Training materials
+│   └── SERVER_AUDIT_2026_03_13.md # 551-line production server architecture + gap analysis
 │
 ├── frontends/                  # Front-end applications
 │   ├── iw-portal/              # React dashboard (Vite 7 + React 19 + TS + Tailwind 4 + shadcn/ui)
 │   ├── InterWoven/             # React SPA (concept/prototype — do not use per CLAUDE.md rules)
+│   ├── IWCustomerPortal        # Legacy payment portal HTML from production server (reference only)
 │   └── assa/                   # Static HTML design prototypes (design reference for iw-portal)
 │       ├── assa_customer_portal/ # 9 pages: billing, intake, library, profile, resource, search...
 │       └── assa_master_console/  # 9 pages: analytics, audit, content, integrations, users...
@@ -639,10 +650,26 @@ IW_Launcher/
 **Design doc**: `docs/security/CREDENTIAL_ENCRYPTION_DESIGN.md`
 **CVE audit**: `docs/security/CVE_AUDIT_2026_03_13.md`
 
+## Production Server Reference
+
+A comprehensive audit of the production server (107525-UVS13, Windows Server 2016) was performed on 2026-03-13. Key artifacts:
+
+- **`docs/SERVER_AUDIT_2026_03_13.md`** — 551-line architecture overview: services, stunnel map, IIS config, webapp inventory, engine classes, client roster, gap analysis
+- **`docs/production-reference/`** — 525 files extracted from production (configs, engine logs, workspace projects, IDE snapshots, customer portal, documentation)
+- **`docs/production-reference/SWEEP-FINDINGS.txt`** — 11-category sweep summary (what was new vs already covered)
+- **`docs/production-reference/iw-ide/IW_IDE-SNAPSHOTS-COMPARISON.txt`** — 8 historical IDE backup comparisons (1 unique item: Charge03.xml from 2024-02-01)
+
+**Production architecture** (for reference when building local equivalents):
+- Tomcat 5.5 (Java 1.5) with 5 webapp variants, `IsHosted="0"` (non-hosted standalone mode)
+- Stunnel TLS proxy (11 tunnels: Salesforce, Authorize.Net, Creatio, Sage Intacct)
+- IIS serving IWCustomerPortal (payment portal) on ports 80/443
+- QODBC → QuickBooks integration via JDBC-ODBC bridge
+- 3 active clients: amagown (InterWeave), pampabay, southernlampsinc
+
 ## Roadmap and Next Steps
 
 See `docs/NEXT_STEPS.md` for the current prioritized development queue:
-- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened, bcrypt migration (PasswordHasher + progressive rehash), AI Management Architecture Phase 1 (Workspace Read API + XSLT Build API), credential encryption at rest (AES-256-GCM), vendor JAR CVE audit
+- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened, bcrypt migration (PasswordHasher + progressive rehash), AI Management Architecture Phase 1 (Workspace Read API + XSLT Build API), credential encryption at rest (AES-256-GCM), vendor JAR CVE audit, engine flow definitions in config templates, production server audit
+- **Done (Vercel)**: Cloudflare quick tunnel working, Vercel auto-deploys on push, login via Bearer token verified through tunnel proxy
 - **Blocked**: Configure monitoring email (needs SMTP credentials)
-- **Active**: Cloudflare tunnel (quick tunnel working, named tunnel needs account setup), Vercel auto-deploy (GitHub integration)
 - **Future**: AI Management Architecture Phase 2+ (write operations, connections, change tracking), CVE remediation (Tomcat 9.0.98+, Xerces/Xalan upgrade)

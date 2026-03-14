@@ -1,0 +1,58 @@
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI\ODBC Data Sources
+    QuickBooks Data    REG_SZ    QODBC Driver for QuickBooks
+    QuickBooks Data 64-Bit QRemote    REG_SZ    QRemote for QuickBooks
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI\QuickBooks Data
+    Driver    REG_SZ    C:\Windows\system32\fqqb64.dll
+    OptimizerAllowDirtyReads    REG_SZ    N
+    OptimizerDBFolder    REG_SZ    %AppData%\QODBC Driver for QuickBooks\Optimizer
+    SyncFromOtherTables    REG_SZ    No
+    DFQ    REG_SZ    .
+    OpenMode    REG_SZ    F
+    OptimizerCurrency    REG_SZ    C
+    OptimizerSyncAfterUpdate    REG_SZ    No
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI\QuickBooks Data 64-Bit QRemote
+    Driver    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 64-Bit\\QRemote-Driver.dll
+    DSN32Bit    REG_SZ    QuickBooks Data
+    Enckey    REG_SZ    
+    ServerName    REG_SZ    172.18.107.120
+    ServerPort    REG_SZ    4500
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Core
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Drivers
+    SQL Server    REG_SZ    Installed
+    QODBC Driver for QuickBooks    REG_SZ    Installed
+    QRemote for QuickBooks    REG_SZ    Installed
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\ODBC Translators
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\QODBC Driver for QuickBooks
+    64Bit    REG_SZ    1
+    Driver    REG_SZ    C:\Windows\system32\fqqb64.dll
+    Setup    REG_SZ    C:\Windows\system32\fqqb64.dll
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\QRemote for QuickBooks
+    64Bit    REG_SZ    1
+    Driver    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 64-Bit\\QRemote-Driver.dll
+    Setup    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 64-Bit\\QRemote-Driver.dll
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBCINST.INI\SQL Server
+    APILevel    REG_SZ    2
+    ConnectFunctions    REG_SZ    YYY
+    CPTimeout    REG_SZ    60
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\SQLSRV32.dll
+    DriverODBCVer    REG_SZ    03.50
+    FileUsage    REG_SZ    0
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\sqlsrv32.dll
+    SQLLevel    REG_SZ    1
+    UsageCount    REG_DWORD    0x1
+

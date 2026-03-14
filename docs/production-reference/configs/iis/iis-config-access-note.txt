@@ -1,0 +1,20 @@
+=== IIS Configuration Capture Attempt ===
+Captured: 2026-03-13 from production server
+
+Commands attempted:
+  C:\Windows\System32\inetsrv\appcmd.exe list site /config
+  C:\Windows\System32\inetsrv\appcmd.exe list apppool /config
+
+Result: ERROR - Configuration error
+  Filename: redirection.config
+  Line Number: 0
+  Description: Cannot read configuration file due to insufficient permissions
+
+NOTE: IIS appcmd requires elevated (administrator) privileges.
+To capture this config, run the above commands from an elevated command prompt.
+
+Known IIS-hosted sites on this server:
+  C:\Sites\IWCustomerPortal - InterWeave Customer Portal (IIS-hosted)
+  C:\Sites\IWCustomerPortal - Win3 (variant)
+  C:\Sites\IWCustomerPortal - Copy (backup)
+  C:\Sites\IWCustomerPortal - Copy (2) (backup)

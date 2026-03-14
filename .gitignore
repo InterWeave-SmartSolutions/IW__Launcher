@@ -191,3 +191,18 @@ frontends/iw-portal/dist/
 !web_portal/tomcat/webapps/iw-portal/**
 
 .vercel
+
+# ===== Production Reference (large files + secrets) =====
+# IDE distribution ZIP too large for GitHub (307MB)
+docs/production-reference/iw-ide/IW_IDE.zip
+# Client-specific engine logs contain Salesforce access tokens (also >100MB)
+docs/production-reference/engine-logs/client-specific/
+# IWCustomerPortal sites contain Salesforce OAuth consumer key/secret in config.json
+docs/production-reference/sites/IWCustomerPortal/
+docs/production-reference/sites/IWCustomerPortal-Win3/
+# IDE data files contain live Salesforce session IDs, Stripe API keys, and credentials
+docs/production-reference/iw-ide/Charge03.xml
+docs/production-reference/iw-ide/Data/
+docs/production-reference/iw-ide/transactions_old.xml
+# .iwxt transaction exports and templates may contain embedded credentials
+docs/production-reference/**/*.iwxt

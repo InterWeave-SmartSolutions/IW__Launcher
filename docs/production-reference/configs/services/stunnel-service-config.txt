@@ -1,0 +1,20 @@
+=== Stunnel Service Configuration (from sc qc stunnel) ===
+Captured: 2026-03-13 from production server
+
+SERVICE_NAME: stunnel
+        TYPE               : 10  WIN32_OWN_PROCESS 
+        START_TYPE         : 2   AUTO_START
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : "C:\Program Files (x86)\stunnel\bin\stunnel.exe" -service -install
+        LOAD_ORDER_GROUP   : 
+        TAG                : 0
+        DISPLAY_NAME       : Stunnel TLS wrapper
+        DEPENDENCIES       : TCPIP
+        SERVICE_START_NAME : LocalSystem
+
+=== Service Status (from sc query) ===
+SERVICE_NAME: stunnel
+DISPLAY_NAME: Stunnel TLS wrapper
+        TYPE               : 10  WIN32_OWN_PROCESS  
+        STATE              : 4  RUNNING 
+                                (STOPPABLE, NOT_PAUSABLE, ACCEPTS_SHUTDOWN)

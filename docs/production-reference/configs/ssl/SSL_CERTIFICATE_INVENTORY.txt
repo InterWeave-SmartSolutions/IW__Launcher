@@ -1,0 +1,18 @@
+=== SSL Certificate Inventory ===
+Captured: 2026-03-13 from production server
+
+Location: C:\SSL\
+
+Files:
+- demo.interweave.biz.pem    (6,908 bytes, dated 2025-03-02) - PEM certificate bundle
+- demo.interweave.biz.pfx    (3,186 bytes, dated 2023-12-29) - PFX certificate (older)
+- 2024-demo.interweave.biz.pfx (3,186 bytes, dated 2024-12-13) - PFX certificate (2024 renewal)
+
+Also referenced in stunnel config:
+- C:\Program Files (x86)\stunnel\config\demo.interweave.biz.pem
+- C:\Program Files (x86)\stunnel\config\ca-certs.pem
+- C:\Program Files (x86)\stunnel\config\stunnel.pem
+
+NOTE: Certificate files NOT copied for security reasons.
+These are production SSL certificates for demo.interweave.biz domain.
+The stunnel service uses demo.interweave.biz.pem for TLS termination on port 8443.

@@ -7472,3 +7472,54 @@ Task: Engine flow definitions + Cloudflare tunnel for Vercel portal
 - Cloudflare quick tunnel is ephemeral — dies when this session ends. Need `quickstart_tunnel.ps1` for persistent operation
 - Vercel auto-deploys on push — new tunnel URL will be live ~30s after git push
 - SF2AUTH flows were already in the hand-edited BD config.xml but missing from templates — now fixed in all 3 templates
+
+## 2026-03-14 02:30 (PST) — Session 28
+Agent: Claude Opus 4.6
+Task: Comprehensive documentation update with production server audit files
+
+### What I did (this response)
+
+**1. Verified production server audit files exist (from other CLI session)**
+- `docs/production-reference/`: 525 files across 54 directories (configs, engine-jars, engine-logs, sites, iw-ide, ssl certs, services)
+- `docs/SERVER_AUDIT_2026_03_13.md`: 551-line comprehensive architecture doc with ASCII diagrams
+- `frontends/IWCustomerPortal`: legacy payment portal from production server
+
+**2. Updated CLAUDE.md**
+- Added `docs/production-reference/` tree to directory structure (7 subdirs)
+- Added `docs/SERVER_AUDIT_2026_03_13.md` and `frontends/IWCustomerPortal` to directory listing
+- Added new "Production Server Reference" section documenting the audit scope and key findings
+- Updated Roadmap section: marked engine flows, production audit, credential encryption, CVE audit as done
+
+**3. Updated docs/NEXT_STEPS.md**
+- Changed Last Updated to 2026-03-14
+- Added Sessions 25-28 to completed items list
+- Updated Future table: credential encryption, CVE audit, engine flows, production audit → DONE
+- Added CVE remediation and named tunnel as Open items
+- Updated Public Showcase table: Vercel login and engine flows via Vercel marked working
+
+**4. Updated MEMORY.md**
+- Updated repo stats (docs now 630+ files with production-reference)
+- Vercel status changed from "needs redeploy" to WORKING
+- Engine flows, credential encryption, CVE audit, production audit marked DONE
+- Removed bcrypt from FUTURE (already done), added CVE remediation
+- Updated date to 2026-03-14
+
+### Files changed
+- `CLAUDE.md` — directory structure + Production Server Reference section + roadmap
+- `docs/NEXT_STEPS.md` — completed items + future table + showcase table
+- `docs/ai/AI_WORKLOG.md` — this Session 28 entry
+- `~/.claude/projects/C--IW-Launcher/memory/MEMORY.md` — repo stats, Vercel status, roadmap updates
+
+### Commands run
+- git status (check untracked files)
+- wc -l AI_WORKLOG.md (find end of file)
+
+### Verification performed
+- Confirmed 525 files / 54 dirs in docs/production-reference/
+- Confirmed SERVER_AUDIT_2026_03_13.md is 551 lines
+- Confirmed IWCustomerPortal exists in frontends/
+- Verified all doc updates are consistent across CLAUDE.md, NEXT_STEPS.md, MEMORY.md
+
+### Follow-ups / known issues
+- All production-reference files, SERVER_AUDIT, and IWCustomerPortal still UNTRACKED — need git add + commit
+- One modified file: workspace/Creatio_Magento2_Integration/configuration/runtime_profiles/Pinnacle_Integrations_admin_sample.com.properties

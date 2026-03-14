@@ -1,0 +1,11 @@
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\stunnel
+    Type    REG_DWORD    0x10
+    Start    REG_DWORD    0x2
+    ErrorControl    REG_DWORD    0x1
+    ImagePath    REG_EXPAND_SZ    "C:\Program Files (x86)\stunnel\bin\stunnel.exe" -service -install
+    DisplayName    REG_SZ    Stunnel TLS wrapper
+    DependOnService    REG_MULTI_SZ    TCPIP
+    ObjectName    REG_SZ    LocalSystem
+    Description    REG_SZ    TLS offloading and load-balancing proxy
+

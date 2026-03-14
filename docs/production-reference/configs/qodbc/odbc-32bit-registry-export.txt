@@ -1,0 +1,336 @@
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBC.INI
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\ODBC Data Sources
+    QuickBooks Data    REG_SZ    QODBC Driver for QuickBooks
+    QuickBooks Data QRemote    REG_SZ    QRemote for QuickBooks
+    SouthernLampsQRC    REG_SZ    QRemote for QuickBooks
+    PampaBayQRC    REG_SZ    QRemote for QuickBooks
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\PampaBayQRC
+    Driver    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 32-Bit\\QRemote-Driver.dll
+    ServerName    REG_SZ    96.56.203.106
+    IsEnckeyEncrypted    REG_SZ    YES
+    Enckey    REG_SZ    4kAzTsNgwRQ5jCwwzrjlLw==
+    DSN32Bit    REG_SZ    PampaBayQR
+    ServerPort    REG_SZ    4500
+    IsEncOn    REG_SZ    0
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\QuickBooks Data
+    Driver    REG_SZ    C:\Windows\SysWOW64\fqqb32.dll
+    OptimizerAllowDirtyReads    REG_SZ    N
+    OptimizerDBFolder    REG_SZ    %AppData%\QODBC Driver for QuickBooks\Optimizer
+    SyncFromOtherTables    REG_SZ    No
+    DFQ    REG_SZ    .
+    OpenMode    REG_SZ    F
+    OptimizerCurrency    REG_SZ    C
+    OptimizerSyncAfterUpdate    REG_SZ    No
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\QuickBooks Data QRemote
+    Driver    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 32-Bit\\QRemote-Driver.dll
+    DSN32Bit    REG_SZ    QuickBooks Data
+    Enckey    REG_SZ    
+    ServerName    REG_SZ    172.18.107.120
+    ServerPort    REG_SZ    4500
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\SouthernLampsQRC
+    Driver    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 32-Bit\\QRemote-Driver.dll
+    ServerName    REG_SZ    75.112.46.98
+    IsEnckeyEncrypted    REG_SZ    YES
+    Enckey    REG_SZ    4kAzTsNgwRQ5jCwwzrjlLw==
+    DSN32Bit    REG_SZ    SouthernLampsQR
+    ServerPort    REG_SZ    4500
+    IsEncOn    REG_SZ    0
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Conversor de pagina de codigo MS
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\MSCPXL32.dll
+    Translator    REG_EXPAND_SZ    %WINDIR%\system32\MSCPXL32.dll
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Driver da Microsoft para arquivos texto (*.txt; *.csv)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.,*.asc,*.csv,*.tab,*.txt,*.csv
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odtext32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Driver do Microsoft Access (*.mdb)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.mdb
+    FileUsage    REG_SZ    2
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Driver do Microsoft dBase (*.dbf)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.dbf,*.ndx,*.mdx
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\oddbse32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Driver do Microsoft Excel(*.xls)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.xls
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odexl32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Driver do Microsoft Paradox (*.db )
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.db
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odpdx32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Access dBASE Driver (*.dbf, *.ndx, *.mdx)
+    FileExtns    REG_SZ    *.dbf, *.ndx, *.mdx
+    APILevel    REG_SZ    1
+    DriverODBCVer    REG_SZ    02.50
+    SQLLevel    REG_SZ    0
+    Driver    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODBC.DLL
+    ConnectFunctions    REG_SZ    YYN
+    UsageCount    REG_DWORD    0x3
+    FileUsage    REG_SZ    2
+    Setup    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODDBS.DLL
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Access Driver (*.mdb)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.mdb
+    FileUsage    REG_SZ    2
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Access Driver (*.mdb, *.accdb)
+    UsageCount    REG_DWORD    0x3
+    Driver    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODBC.DLL
+    Setup    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODBC.DLL
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    DriverODBCVer    REG_SZ    02.50
+    FileUsage    REG_SZ    2
+    FileExtns    REG_SZ    *.mdb,*.accdb
+    SQLLevel    REG_SZ    0
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Access Text Driver (*.txt, *.csv)
+    UsageCount    REG_DWORD    0x3
+    Driver    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODBC.DLL
+    Setup    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODTXT.DLL
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    DriverODBCVer    REG_SZ    02.50
+    FileUsage    REG_SZ    2
+    FileExtns    REG_SZ    *.txt, *.csv
+    SQLLevel    REG_SZ    0
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Access-Treiber (*.mdb)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.mdb
+    FileUsage    REG_SZ    2
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft dBase Driver (*.dbf)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.dbf,*.ndx,*.mdx
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\oddbse32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft dBase-Treiber (*.dbf)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.dbf,*.ndx,*.mdx
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\oddbse32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Excel Driver (*.xls)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.xls
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odexl32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)
+    UsageCount    REG_DWORD    0x3
+    Driver    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODBC.DLL
+    Setup    REG_SZ    C:\PROGRA~2\COMMON~1\MICROS~1\OFFICE16\ACEODEXL.DLL
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    DriverODBCVer    REG_SZ    02.50
+    FileUsage    REG_SZ    2
+    FileExtns    REG_SZ    *.xls,*.xlsx, *.xlsb
+    SQLLevel    REG_SZ    0
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Excel-Treiber (*.xls)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.xls
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odexl32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft ODBC for Oracle
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYY
+    CPTimeout    REG_SZ    120
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\msorcl32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileUsage    REG_SZ    0
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\msorcl32.dll
+    SQLLevel    REG_SZ    1
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Paradox Driver (*.db )
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.db
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odpdx32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Paradox-Treiber (*.db )
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.db
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odpdx32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Text Driver (*.txt; *.csv)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.,*.asc,*.csv,*.tab,*.txt,*.csv
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odtext32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\Microsoft Text-Treiber (*.txt; *.csv)
+    APILevel    REG_SZ    1
+    ConnectFunctions    REG_SZ    YYN
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\odbcjt32.dll
+    DriverODBCVer    REG_SZ    02.50
+    FileExtns    REG_SZ    *.,*.asc,*.csv,*.tab,*.txt,*.csv
+    FileUsage    REG_SZ    1
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\odtext32.dll
+    SQLLevel    REG_SZ    0
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\MS Code Page Translator
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\MSCPXL32.dll
+    Translator    REG_EXPAND_SZ    %WINDIR%\system32\MSCPXL32.dll
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\MS Code Page-Ubersetzer
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\MSCPXL32.dll
+    Translator    REG_EXPAND_SZ    %WINDIR%\system32\MSCPXL32.dll
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\ODBC Core
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\ODBC Drivers
+    Driver da Microsoft para arquivos texto (*.txt; *.csv)    REG_SZ    Installed
+    Driver do Microsoft Access (*.mdb)    REG_SZ    Installed
+    Driver do Microsoft dBase (*.dbf)    REG_SZ    Installed
+    Driver do Microsoft Excel(*.xls)    REG_SZ    Installed
+    Driver do Microsoft Paradox (*.db )    REG_SZ    Installed
+    Microsoft Access Driver (*.mdb)    REG_SZ    Installed
+    Microsoft Access-Treiber (*.mdb)    REG_SZ    Installed
+    Microsoft dBase Driver (*.dbf)    REG_SZ    Installed
+    Microsoft dBase-Treiber (*.dbf)    REG_SZ    Installed
+    Microsoft Excel Driver (*.xls)    REG_SZ    Installed
+    Microsoft Excel-Treiber (*.xls)    REG_SZ    Installed
+    Microsoft ODBC for Oracle    REG_SZ    Installed
+    Microsoft Paradox Driver (*.db )    REG_SZ    Installed
+    Microsoft Paradox-Treiber (*.db )    REG_SZ    Installed
+    Microsoft Text Driver (*.txt; *.csv)    REG_SZ    Installed
+    Microsoft Text-Treiber (*.txt; *.csv)    REG_SZ    Installed
+    SQL Server    REG_SZ    Installed
+    Microsoft Access Driver (*.mdb, *.accdb)    REG_SZ    Installed
+    Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)    REG_SZ    Installed
+    Microsoft Access Text Driver (*.txt, *.csv)    REG_SZ    Installed
+    Microsoft Access dBASE Driver (*.dbf, *.ndx, *.mdx)    REG_SZ    Installed
+    QODBC Driver for QuickBooks    REG_SZ    Installed
+    QRemote for QuickBooks    REG_SZ    Installed
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\ODBC Translators
+    Conversor de pagina de codigo MS    REG_SZ    Installed
+    MS Code Page Translator    REG_SZ    Installed
+    MS Code Page-Ubersetzer    REG_SZ    Installed
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\QODBC Driver for QuickBooks
+    32Bit    REG_SZ    1
+    Driver    REG_SZ    C:\Windows\SysWOW64\fqqb32.dll
+    Setup    REG_SZ    C:\Windows\SysWOW64\fqqb32.dll
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\QRemote for QuickBooks
+    32Bit    REG_SZ    1
+    Driver    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 32-Bit\\QRemote-Driver.dll
+    Setup    REG_SZ    C:\Program Files (x86)\QODBC Driver for QuickBooks\QRemote\Client 32-Bit\\QRemote-Driver.dll
+    UsageCount    REG_DWORD    0x1
+
+HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\ODBC\ODBCINST.INI\SQL Server
+    APILevel    REG_SZ    2
+    ConnectFunctions    REG_SZ    YYY
+    CPTimeout    REG_SZ    60
+    Driver    REG_EXPAND_SZ    %WINDIR%\system32\SQLSRV32.dll
+    DriverODBCVer    REG_SZ    03.50
+    FileUsage    REG_SZ    0
+    Setup    REG_EXPAND_SZ    %WINDIR%\system32\sqlsrv32.dll
+    SQLLevel    REG_SZ    1
+    UsageCount    REG_DWORD    0x1
+

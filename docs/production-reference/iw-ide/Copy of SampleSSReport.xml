@@ -1,0 +1,609 @@
+<ht>
+
+
+<body class="r_body">
+
+<form>
+
+<table class="r_twb" width="100%">
+<tbody>
+
+ <tr>
+  <td colspan="8">
+
+   <table class="r_hdr" width="100%">
+   <tbody>
+    <tr>
+     <td colspan="3"><div class="r_hdr_title">Current Port Bits per Second</div></td>
+    </tr>
+
+    <tr>
+     <td class="r_hdr_left" width="33%">
+       'Guest Access'
+      </td>
+
+     <td class="r_hdr_center">14:52:49 Thu 28 Dec 2006</td>
+
+     <td class="r_hdr_right" width="33%">
+      Refresh: <span id="refresh_id">30</span> &nbsp; &nbsp;
+     </td>
+    </tr>
+   </tbody>
+   </table>
+
+  </td>
+ </tr>
+
+<!-- End of common head1 -->
+ <tr class="r_col_hdr">
+  <td>Device</td>
+  <td>Port</td>
+  <td>Speed</td>
+  <td>Receive</td>
+  <td>Transmit</td>
+  <td>Admin</td>
+  <td>Oper</td>
+  <td>Title</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('207'); return false;">slot_3.24</a></td>
+  <td>1G</td>
+  <td>4.7M</td>
+  <td>837.9K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">FLOOR 7</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('206'); return false;">slot_2.24</a></td>
+  <td>1G</td>
+  <td>355.5K</td>
+  <td>3.6M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">FLOOR 8</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('195'); return false;">slot_3.21</a></td>
+  <td>1G</td>
+  <td>3.3M</td>
+  <td>384.7K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SALES KJ</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('198'); return false;">slot_2.22</a></td>
+  <td>100M</td>
+  <td>222.6K</td>
+  <td>3.3M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SALES JB</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('182'); return false;">slot_2.18</a></td>
+  <td>100M</td>
+  <td>3.2M</td>
+  <td>43.0K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">IU-987</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('163'); return false;">slot_3.14</a></td>
+  <td>100M</td>
+  <td>6.7K</td>
+  <td>3.1M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">HGS-532</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('174'); return false;">slot_3.16</a></td>
+  <td>10M</td>
+  <td>1.9M</td>
+  <td>1.1M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">OIU-987</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('83'); return false;">slot_3.1</a></td>
+  <td>100M</td>
+  <td>232.7K</td>
+  <td>1.7M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">AS9879</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('199'); return false;">slot_3.22</a></td>
+  <td>1G</td>
+  <td>1.1M</td>
+  <td>490.4K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SALES 23</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('90'); return false;">slot_3.2</a></td>
+  <td>10M</td>
+  <td>701.1K</td>
+  <td>873.5K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">GT88787</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('191'); return false;">slot_3.20</a></td>
+  <td>10M</td>
+  <td>0</td>
+  <td>1.6M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">14th Floor A2</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('205'); return false;">slot_1.24</a></td>
+  <td>1G</td>
+  <td>238.7K</td>
+  <td>1.3M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">FLOOR 9</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('193'); return false;">slot_1.21</a></td>
+  <td>1G</td>
+  <td>187.6K</td>
+  <td>1.1M</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SALES 98</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('129'); return false;">slot_1.9</a></td>
+  <td>10M</td>
+  <td>1.1M</td>
+  <td>170.9K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">JGFX76575</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('91'); return false;">slot_5.2</a></td>
+  <td>10M</td>
+  <td>347.9K</td>
+  <td>462.0K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">GT8978798</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('192'); return false;">slot_5.20</a></td>
+  <td>10M</td>
+  <td>0</td>
+  <td>796.4K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">13TH Floor</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('103'); return false;">slot_3.4</a></td>
+  <td>100M</td>
+  <td>345.3K</td>
+  <td>282.3K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">EWE8976785</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('145'); return false;">slot_3.11</a></td>
+  <td>100M</td>
+  <td>262.4K</td>
+  <td>264.9K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">OUO0980</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('133'); return false;">slot_3.9</a></td>
+  <td>100M</td>
+  <td>231.0K</td>
+  <td>289.4K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">LJHGI0980</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('104'); return false;">slot_5.4</a></td>
+  <td>100M</td>
+  <td>255.9K</td>
+  <td>106.9K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">MKJH987987</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('146'); return false;">slot_5.11</a></td>
+  <td>10M</td>
+  <td>140.8K</td>
+  <td>206.4K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">LKH07654</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('194'); return false;">slot_2.21</a></td>
+  <td>1G</td>
+  <td>130.0K</td>
+  <td>191.8K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SALES 78</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('108'); return false;">slot_2.5</a></td>
+  <td>100M</td>
+  <td>117.4K</td>
+  <td>140.9K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">GRH876843</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('140'); return false;">slot_5.10</a></td>
+  <td>10M</td>
+  <td>95.4K</td>
+  <td>84.7K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">KJHU09976</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('143'); return false;">slot_16.11</a></td>
+  <td>1G</td>
+  <td>69.5K</td>
+  <td>108.8K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">JGGD5321</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('125'); return false;">slot_16.8</a></td>
+  <td>100M</td>
+  <td>102.7K</td>
+  <td>63.3K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">2nd floor</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('132'); return false;">slot_2.9</a></td>
+  <td>100M</td>
+  <td>67.7K</td>
+  <td>97.2K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">MNVC543421</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('89'); return false;">slot_2.2</a></td>
+  <td>10M</td>
+  <td>62.0K</td>
+  <td>102.9K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SB0980980</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('197'); return false;">slot_1.22</a></td>
+  <td>1G</td>
+  <td>46.7K</td>
+  <td>90.6K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SALES  UY</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('102'); return false;">slot_2.4</a></td>
+  <td>10M</td>
+  <td>50.3K</td>
+  <td>64.1K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">JHJ098U</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('183'); return false;">slot_3.18</a></td>
+  <td>100M</td>
+  <td>54.9K</td>
+  <td>49.7K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">WER-432</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('98'); return false;">slot_5.3</a></td>
+  <td>100M</td>
+  <td>52.9K</td>
+  <td>43.5K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">OI 8768E</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('99'); return false;">slot_1.4</a></td>
+  <td>100M</td>
+  <td>37.7K</td>
+  <td>44.2K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">MNB 987987</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('185'); return false;">slot_1.19</a></td>
+  <td>10M</td>
+  <td>37.3K</td>
+  <td>44.2K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SDF-432</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('156'); return false;">slot_2.13</a></td>
+  <td>100M</td>
+  <td>35.8K</td>
+  <td>45.6K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1"> B,JH08097</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('150'); return false;">slot_2.12</a></td>
+  <td>10M</td>
+  <td>31.5K</td>
+  <td>43.4K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">Operations 2</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('208'); return false;">slot_5.24</a></td>
+  <td>1G</td>
+  <td>51.7K</td>
+  <td>20.2K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">FLOOR 6</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('169'); return false;">slot_3.15</a></td>
+  <td>10M</td>
+  <td>16.8K</td>
+  <td>50.5K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">,MNV-65</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('121'); return false;">slot_3.7</a></td>
+  <td>100M</td>
+  <td>15.7K</td>
+  <td>51.2K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">HUT098098</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('96'); return false;">slot_2.3</a></td>
+  <td>100M</td>
+  <td>27.1K</td>
+  <td>37.4K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">KJ3425345</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Berlin-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('6'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>32.0K</td>
+  <td>29.8K</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">PVC</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('92'); return false;">3</a></td>
+  <td>10M</td>
+  <td>43.6K</td>
+  <td>16.1K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">GT90898</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Melbourne-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('21'); return false;">Se0.fr16</a></td>
+  <td>64K</td>
+  <td>33.5K</td>
+  <td>22.5K</td>
+  <td class="r_data_R">N/A</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">PVC to Sydney</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('142'); return false;">slot_15.11</a></td>
+  <td>1G</td>
+  <td>47.9K</td>
+  <td>6.1K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">KGFHGD52</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">Berlin-ro</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('4'); return false;">Et0</a></td>
+  <td>2M</td>
+  <td>30.9K</td>
+  <td>21.3K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">Berlin LAN</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('157'); return false;">slot_3.13</a></td>
+  <td>100M</td>
+  <td>13.9K</td>
+  <td>36.8K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">FG-54</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('171'); return false;">slot_1.16</a></td>
+  <td>100M</td>
+  <td>9.2K</td>
+  <td>41.2K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">JH-PO98</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('86'); return false;">slot_1.2</a></td>
+  <td>100M</td>
+  <td>8.2K</td>
+  <td>41.5K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SB987987</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('162'); return false;">slot_2.14</a></td>
+  <td>100M</td>
+  <td>5.0K</td>
+  <td>42.1K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">KJGFJHG-8785</td>
+ </tr>
+
+ <tr class="r_data_R">
+  <td class="r_data_L">NewYork-Swt1</td>
+  <td class="r_data_L"><a href="/" onclick="f_graph ('196'); return false;">slot_5.21</a></td>
+  <td>1G</td>
+  <td>37.8K</td>
+  <td>8.1K</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_R">Up</td>
+  <td class="r_data_L" noerap="1">SALES 98</td>
+ </tr>
+
+ <tr class="r_summary">
+  <td colspan="8">50 of 257 entries displayed.</td>
+ </tr>
+
+</tbody>
+</table>
+</form>
+
+</body>
+</ht>
+

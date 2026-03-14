@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v2004 rel. 4 U (http://www.xmlspy.com) by Alfredo Celestial (Blockade Systems Corp.) -->
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="TransformationServerConfiguration">
+		<xs:annotation>
+			<xs:documentation>Transformation Server Configuration</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="Name" type="xs:NMTOKEN" use="required">
+				<xs:annotation>
+					<xs:documentation>Name of the TS instance</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="IsPrimary" type="xs:boolean" use="optional" default="true">
+				<xs:annotation>
+					<xs:documentation>Shows whether this TS instance is primary</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="LogLevel" use="required">
+				<xs:annotation>
+					<xs:documentation>Log level of this TS</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="LOG_ERRORS"/>
+						<xs:enumeration value="LOG_MINIMUM"/>
+						<xs:enumeration value="LOG_REQUEST"/>
+						<xs:enumeration value="LOG_RESPONSE"/>
+						<xs:enumeration value="LOG_TRANSACTION"/>
+						<xs:enumeration value="LOG_TIMING"/>
+						<xs:enumeration value="LOG_TRANSFORMDATA"/>
+						<xs:enumeration value="LOG_IO"/>
+						<xs:enumeration value="LOG_DATA"/>
+						<xs:enumeration value="LOG_TRANSFORMS"/>
+						<xs:enumeration value="LOG_OBJECTS"/>
+						<xs:enumeration value="LOG_OUTPUT"/>
+						<xs:enumeration value="LOG_PARAMETERS"/>
+						<xs:enumeration value="LOG_ALL"/>
+						<xs:enumeration value="LOG_TRACE"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="IsTimeStamping" type="xs:boolean" use="optional" default="false">
+				<xs:annotation>
+					<xs:documentation>Shows whether timestamps are parts of every log record</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="IsCompiledMapping" type="xs:boolean" use="optional" default="true">
+				<xs:annotation>
+					<xs:documentation>Shows whether transactions are taken from soltran.class (true) or transaction.xml (false)</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="IsHosted" type="xs:boolean" use="optional" default="false"/>
+			<xs:attribute name="BufferSize" type="xs:int" use="optional"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SessionAPIAdaptorConfig">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="AdaptorDescriptor" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="AdaptorDescriptor">
+		<xs:complexType>
+			<xs:attribute name="Type" type="xs:anyURI" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="ConnectionDescriptor"/>
+	<xs:element name="MethodParameter">
+		<xs:complexType>
+			<xs:attribute name="Name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="Type" type="xs:anyURI" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="MethodDescriptor">
+		<xs:complexType>
+			<xs:attribute name="Name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="ReturnType" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:anyURI">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

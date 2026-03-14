@@ -1,0 +1,173 @@
+
+		<Current Network Summary:Current Network Summary statseeker="demohost" user="" date="" />
+		<Current Network Summary:Current Device Outage Status totals=" Totals (Up: 15, Down: 2, Unreachable: 0) (No filter applied) " <Current Network Summary:Current Device Outage Status Device
+									="NewYork-Hub1" Title
+									="3Com LinkBuilder Repeater" State
+									="Down" Outage Time
+									="13days 14hrs 55mins 33secs"  />
+							<Current Network Summary:Current Device Outage Status Device
+									="NewYork-Swt2" Title
+									="Cisco switch NYC" State
+									="Down" Outage Time
+									="13days 14hrs 55mins 33secs"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="10M" Speed
+									="50%" Threshold
+									="7" Receive
+									="63" Transmit
+									="70" Total
+									="GT88787"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="10M" Speed
+									="50%" Threshold
+									="0" Receive
+									="67" Transmit
+									="67" Total
+									="14th Floor A2"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="10M" Speed
+									="50%" Threshold
+									="0" Receive
+									="62" Transmit
+									="62" Total
+									="13TH Floor"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="10M" Speed
+									="50%" Threshold
+									="59" Receive
+									="0" Transmit
+									="59" Total
+									="GT8978798"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="100M" Speed
+									="10%" Threshold
+									="0" Receive
+									="26" Transmit
+									="26" Total
+									="MKJH987987"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="Amsterdam-ro" Port
+									="64K" Speed
+									="90%" Threshold
+									="13" Receive
+									="3" Transmit
+									="16" Total
+									="PVC"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="10M" Speed
+									="50%" Threshold
+									="0" Receive
+									="15" Transmit
+									="15" Total
+									="SB0980980"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="100M" Speed
+									="10%" Threshold
+									="14" Receive
+									="0" Transmit
+									="14" Total
+									="AS9879"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="NewYork-Swt1" Port
+									="100M" Speed
+									="10%" Threshold
+									="12" Receive
+									="0" Transmit
+									="12" Total
+									=" HU 876876"  />
+							<Current Network Summary:Today's Top Port Utilization Threshold Exceed Count (Top 10) Device
+									="Berlin-ro" Port
+									="64K" Speed
+									="90%" Threshold
+									="6" Receive
+									="0" Transmit
+									="6" Total
+									="PVC"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="Berlin-ro" Port
+									="64K" Speed
+									="16K" CIR
+									="90" Receive
+									="16" Transmit
+									="106" Total
+									="PVC"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="Amsterdam-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="76" Receive
+									="5" Transmit
+									="81" Total
+									="PVC"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="Tokyo-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="39" Receive
+									="2" Transmit
+									="41" Total
+									="PVC to London"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="NewYork-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="28" Receive
+									="1" Transmit
+									="29" Total
+									="PVC"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="Melbourne-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="22" Receive
+									="1" Transmit
+									="23" Total
+									="PVC to Sydney"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="Sydney-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="16" Receive
+									="4" Transmit
+									="20" Total
+									="PVC to LosAngeles"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="LosAngeles-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="10" Receive
+									="5" Transmit
+									="15" Total
+									="PVC"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="London-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="8" Receive
+									="1" Transmit
+									="9" Total
+									="PVC to Paris"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="Honolulu-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="5" Receive
+									="0" Transmit
+									="5" Total
+									="PVC"  />
+							<Current Network Summary:Today's Top FrameRelay PVC CIR Exceed Count (Top 10) Device
+									="Paris-ro" Port
+									="64K" Speed
+									="32K" CIR
+									="2" Receive
+									="2" Transmit
+									="4" Total
+									="PVC to London"  />
+							
