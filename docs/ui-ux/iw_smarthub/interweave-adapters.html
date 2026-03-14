@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocol Adapters — InterWeave SmartIntegration Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f10;
+    --bg2: #13161a;
+    --bg3: #1a1e24;
+    --border: rgba(255,255,255,0.07);
+    --border-mid: rgba(255,255,255,0.13);
+    --text: #e8e6e0;
+    --text-2: #8a8880;
+    --text-3: #4a4845;
+    --accent-teal: #1D9E75;
+    --accent-teal-soft: rgba(29,158,117,0.12);
+    --accent-blue: #378ADD;
+    --accent-blue-soft: rgba(55,138,221,0.12);
+    --accent-amber: #BA7517;
+    --accent-amber-soft: rgba(186,117,23,0.12);
+    --accent-purple: #7F77DD;
+    --accent-purple-soft: rgba(127,119,221,0.12);
+    --accent-coral: #D85A30;
+    --accent-coral-soft: rgba(216,90,48,0.12);
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── Noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.018;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Grid line decoration ── */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-teal), transparent);
+    opacity: 0.6;
+    z-index: 10;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,15,16,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-logo-mark {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--accent-teal);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .nav-logo-mark::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--accent-teal);
+    border-radius: 2px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 13px;
+    color: var(--text-2);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    border: 1px solid var(--accent-teal);
+    border-radius: 5px;
+    color: var(--accent-teal);
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .nav-cta:hover {
+    background: var(--accent-teal);
+    color: #fff;
+  }
+
+  /* ── Main wrapper ── */
+  main { position: relative; z-index: 1; }
+
+  /* ── Hero ── */
+  .hero {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 100px 48px 80px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-teal);
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.1s;
+  }
+
+  .hero-h1 {
+    font-family: var(--font-display);
+    font-size: clamp(38px, 5vw, 58px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.2s;
+  }
+
+  .hero-h1 em {
+    font-style: italic;
+    color: var(--text-2);
+  }
+
+  .hero-body {
+    font-size: 16px;
+    color: var(--text-2);
+    line-height: 1.75;
+    max-width: 540px;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.35s;
+  }
+
+  .hero-body + .hero-body {
+    animation-delay: 0.45s;
+    margin-bottom: 36px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.55s;
+  }
+
+  .btn-primary {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    background: var(--accent-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  .btn-ghost {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 11px 20px;
+    background: transparent;
+    color: var(--text-2);
+    border: 1px solid var(--border-mid);
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+    display: inline-block;
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+
+  /* Hero stats panel */
+  .hero-stats {
+    padding-top: 20px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 0.5s;
+  }
+
+  .stats-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 20px;
+  }
+
+  .stat-item {
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-item:last-child { border-bottom: 1px solid var(--border); }
+
+  .stat-number {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-desc {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  /* ── Section wrapper ── */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px 80px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  .filter-btn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-mid);
+    background: transparent;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .filter-btn:hover {
+    border-color: rgba(255,255,255,0.25);
+    color: var(--text);
+  }
+
+  .filter-btn.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  /* ── Adapter grid ── */
+  .adapter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .adapter-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: border-color 0.18s, transform 0.14s, background 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .adapter-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    opacity: 0.8;
+  }
+
+  .adapter-card:hover {
+    border-color: var(--border-mid);
+    transform: translateY(-2px);
+    background: var(--bg3);
+  }
+
+  .adapter-card.hidden { display: none; }
+
+  .adapter-abbr {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 11px;
+    margin-top: 2px;
+  }
+
+  .adapter-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 5px;
+    line-height: 1.3;
+  }
+
+  .adapter-desc {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.55;
+  }
+
+  /* Category color themes */
+  .cat-msg::before  { background: #1D9E75; }
+  .cat-msg .adapter-abbr  { background: rgba(29,158,117,0.15); color: #5DCAA5; }
+  .cat-api::before  { background: #378ADD; }
+  .cat-api .adapter-abbr  { background: rgba(55,138,221,0.15); color: #85B7EB; }
+  .cat-file::before { background: #BA7517; }
+  .cat-file .adapter-abbr { background: rgba(186,117,23,0.15); color: #EF9F27; }
+  .cat-db::before   { background: #7F77DD; }
+  .cat-db .adapter-abbr   { background: rgba(127,119,221,0.15); color: #AFA9EC; }
+  .cat-ind::before  { background: #D85A30; }
+  .cat-ind .adapter-abbr  { background: rgba(216,90,48,0.15); color: #F0997B; }
+
+  /* ── Category deep-dive sections ── */
+  .cat-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding: 36px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .cat-section:last-of-type { border-bottom: 1px solid var(--border); }
+
+  .cat-section-left { padding-right: 24px; }
+
+  .cat-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 14px;
+  }
+
+  .cat-section h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.25;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .cat-section p {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.7;
+  }
+
+  .cat-section-right { padding-top: 8px; }
+
+  .use-cases-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+
+  .use-case-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .use-case-list li {
+    font-size: 13px;
+    color: var(--text-2);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .use-case-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--text-3);
+    font-size: 11px;
+    top: 1px;
+  }
+
+  .adapter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .adapter-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-mid);
+    color: var(--text-2);
+  }
+
+  /* Pill colors */
+  .pill-msg  { background: rgba(29,158,117,0.12);  color: #5DCAA5;  }
+  .pill-api  { background: rgba(55,138,221,0.12);  color: #85B7EB;  }
+  .pill-file { background: rgba(186,117,23,0.12);  color: #EF9F27;  }
+  .pill-db   { background: rgba(127,119,221,0.12); color: #AFA9EC;  }
+  .pill-ind  { background: rgba(216,90,48,0.12);   color: #F0997B;  }
+
+  /* ── Why it matters ── */
+  .proof-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .proof-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 20px;
+  }
+
+  .proof-number {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 10px;
+  }
+
+  .proof-h {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .proof-b {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  /* ── Competitive callout ── */
+  .compare-strip {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 36px;
+    margin-bottom: 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+  }
+
+  .compare-col { padding: 0 12px; }
+  .compare-col:not(:last-child) { border-right: 1px solid var(--border); }
+
+  .compare-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 10px;
+  }
+
+  .compare-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .compare-body {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .compare-col.highlight .compare-title { color: var(--accent-teal); }
+
+  /* ── CTA ── */
+  .cta-section {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 80px 48px;
+    text-align: center;
+  }
+
+  .cta-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-teal);
+    margin-bottom: 16px;
+  }
+
+  .cta-h {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.15;
+  }
+
+  .cta-sub {
+    font-size: 15px;
+    color: var(--text-2);
+    margin-bottom: 36px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .footer-brand {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .footer-note {
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; gap: 48px; padding: 64px 24px 48px; }
+    .hero-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; padding-top: 0; }
+    .stats-label { grid-column: 1/-1; }
+    .section { padding: 0 24px 64px; }
+    .cat-section { grid-template-columns: 1fr; gap: 20px; }
+    .proof-grid { grid-template-columns: repeat(2, 1fr); }
+    .compare-strip { grid-template-columns: 1fr; padding: 24px; }
+    .compare-col:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    .cta-section { padding: 60px 24px; }
+    footer { padding: 24px; flex-direction: column; gap: 8px; text-align: center; }
+  }
+
+  @media (max-width: 560px) {
+    .proof-grid { grid-template-columns: 1fr; }
+    .adapter-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="nav-logo-mark"></span>
+    InterWeave
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Platform</a></li>
+    <li><a href="#">Adapters</a></li>
+    <li><a href="#">Solutions</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Docs</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Book a demo</a>
+</nav>
+
+<main>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">SmartIntegration Platform — Protocol Adapters</p>
+    <h1 class="hero-h1">Every protocol<br>your stack speaks.<br><em>Already built.</em></h1>
+    <p class="hero-body">Most integration projects stall not in the strategy — but in the wiring. InterWeave ships with 16 protocol-specific adapters covering the full spectrum of enterprise connectivity.</p>
+    <p class="hero-body">No custom connector builds. No per-protocol expertise required. No hidden implementation costs.</p>
+    <div class="hero-actions">
+      <a href="#" class="btn-primary">Book a demo</a>
+      <a href="#adapters" class="btn-ghost">Explore adapters ↓</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <p class="stats-label">By the numbers</p>
+    <div class="stat-item">
+      <span class="stat-number">16</span>
+      <span class="stat-desc">Pre-built protocol adapters</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-desc">Integration categories</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">0</span>
+      <span class="stat-desc">Custom connectors needed</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">Day 1</span>
+      <span class="stat-desc">Time to first integration</span>
+    </div>
+  </div>
+</section>
+
+<!-- Adapter grid -->
+<section class="section" id="adapters">
+  <div class="section-header reveal">
+    <span class="section-label">All 16 adapters</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="filter-bar reveal">
+    <button class="filter-btn active" data-cat="all">All 16</button>
+    <button class="filter-btn" data-cat="msg">Messaging &amp; Events</button>
+    <button class="filter-btn" data-cat="api">Web &amp; APIs</button>
+    <button class="filter-btn" data-cat="file">File &amp; Data Transfer</button>
+    <button class="filter-btn" data-cat="db">Database &amp; Enterprise</button>
+    <button class="filter-btn" data-cat="ind">Industry-specific</button>
+  </div>
+
+  <div class="adapter-grid" id="adapter-grid"></div>
+</section>
+
+<!-- Category deep-dives -->
+<section class="section" style="padding-top:0;">
+  <div class="section-header reveal">
+    <span class="section-label">By category</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="cat-section reveal">
+    <div class="cat-section-left">
+      <span class="cat-pill pill-msg">Messaging &amp; Events</span>
+      <h3>Move data at the<br>speed of your business</h3>
+      <p>Whether you're orchestrating microservices, processing IoT sensor streams, or decoupling legacy systems from modern apps, InterWeave's messaging adapters handle the heavy lifting. Native support for the protocols your architecture already depends on.</p>
+    </div>
+    <div class="cat-section-right">
+      <p class="use-cases-label">Common use cases</p>
+      <ul class="use-case-list">
+        <li>Event-driven microservices orchestration</li>
+        <li>IoT data pipelines and sensor processing</li>
+        <li>Enterprise service bus migration</li>
+        <li>Real-time notifications and pub/sub flows</li>
+      </ul>
+      <div class="adapter-tags">
+        <span class="adapter-tag">AMQP</span>
+        <span class="adapter-tag">MQTT</span>
+        <span class="adapter-tag">JMS</span>
+        <span class="adapter-tag">Apache Kafka</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section reveal">
+    <div class="cat-section-left">
+      <span class="cat-pill pill-api">Web &amp; APIs</span>
+      <h3>Connect anything<br>with an endpoint</h3>
+      <p>From modern GraphQL services to 20-year-old SOAP endpoints, InterWeave speaks every dialect of web integration. Bring your SaaS tools, internal services, and partner APIs into a single orchestrated flow without writing glue code.</p>
+    </div>
+    <div class="cat-section-right">
+      <p class="use-cases-label">Common use cases</p>
+      <ul class="use-case-list">
+        <li>SaaS-to-SaaS synchronization</li>
+        <li>Legacy system modernization</li>
+        <li>Real-time dashboards and live data feeds</li>
+        <li>Webhook processing and event routing</li>
+      </ul>
+      <div class="adapter-tags">
+        <span class="adapter-tag">REST / HTTP</span>
+        <span class="adapter-tag">SOAP / WSDL</span>
+        <span class="adapter-tag">GraphQL</span>
+        <span class="adapter-tag">WebSocket</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section reveal">
+    <div class="cat-section-left">
+      <span class="cat-pill pill-file">File &amp; Data Transfer</span>
+      <h3>B2B and batch,<br>handled reliably</h3>
+      <p>Supply chain partners, trading exchanges, and regulated industries still run on file-based workflows — and they're not going away. InterWeave makes these high-stakes transfers as reliable and observable as any modern API call.</p>
+    </div>
+    <div class="cat-section-right">
+      <p class="use-cases-label">Common use cases</p>
+      <ul class="use-case-list">
+        <li>EDI trading partner onboarding</li>
+        <li>Nightly batch processing jobs</li>
+        <li>Secure document exchange with partners</li>
+        <li>Supply chain and logistics automation</li>
+      </ul>
+      <div class="adapter-tags">
+        <span class="adapter-tag">FTP / SFTP</span>
+        <span class="adapter-tag">AS2</span>
+        <span class="adapter-tag">EDIFACT / X12</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section reveal">
+    <div class="cat-section-left">
+      <span class="cat-pill pill-db">Database &amp; Enterprise</span>
+      <h3>Your data layer,<br>unified</h3>
+      <p>Connecting to databases, directories, and enterprise platforms shouldn't require bespoke middleware. InterWeave's enterprise adapters give your integration flows direct, governed access to the data that runs your business.</p>
+    </div>
+    <div class="cat-section-right">
+      <p class="use-cases-label">Common use cases</p>
+      <ul class="use-case-list">
+        <li>ERP and CRM data synchronization</li>
+        <li>Identity-aware routing with LDAP</li>
+        <li>Multi-database orchestration</li>
+        <li>OData-based ERP API integration</li>
+      </ul>
+      <div class="adapter-tags">
+        <span class="adapter-tag">JDBC / ODBC</span>
+        <span class="adapter-tag">LDAP</span>
+        <span class="adapter-tag">OData</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section reveal">
+    <div class="cat-section-left">
+      <span class="cat-pill pill-ind">Industry-specific</span>
+      <h3>Fluent in the standards<br>your sector depends on</h3>
+      <p>Healthcare and regulated industries carry the weight of compliance in every data exchange. InterWeave's industry adapters are built with that context in mind — so your integrations are correct, not just connected.</p>
+    </div>
+    <div class="cat-section-right">
+      <p class="use-cases-label">Common use cases</p>
+      <ul class="use-case-list">
+        <li>EHR and clinical system integration</li>
+        <li>Patient data exchange (HIPAA-compliant)</li>
+        <li>FHIR-based interoperability workflows</li>
+        <li>Email-triggered automation and notifications</li>
+      </ul>
+      <div class="adapter-tags">
+        <span class="adapter-tag">HL7 / FHIR</span>
+        <span class="adapter-tag">SMTP / IMAP</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why it matters -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Why it matters</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="proof-grid">
+    <div class="proof-card reveal">
+      <p class="proof-number">01</p>
+      <p class="proof-h">No integration tax</p>
+      <p class="proof-b">Every adapter is included. No per-connector licensing, no professional services fees to activate a protocol.</p>
+    </div>
+    <div class="proof-card reveal" style="transition-delay:0.08s">
+      <p class="proof-number">02</p>
+      <p class="proof-h">Consistent observability</p>
+      <p class="proof-b">Every protocol — from Kafka topics to AS2 transfers — surfaces the same logging, alerting, and retry behavior.</p>
+    </div>
+    <div class="proof-card reveal" style="transition-delay:0.16s">
+      <p class="proof-number">03</p>
+      <p class="proof-h">Built for the mid-market</p>
+      <p class="proof-b">Your team doesn't need a dedicated integration engineer per protocol. InterWeave abstracts that expertise into the platform.</p>
+    </div>
+    <div class="proof-card reveal" style="transition-delay:0.24s">
+      <p class="proof-number">04</p>
+      <p class="proof-h">Future-proof coverage</p>
+      <p class="proof-b">New protocols are added to the platform, not bolted on. Your existing flows keep working as standards evolve.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Competitive compare -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">How we compare</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="compare-strip reveal">
+    <div class="compare-col">
+      <p class="compare-label">Enterprise platforms</p>
+      <p class="compare-title">MuleSoft / Boomi</p>
+      <p class="compare-body">Comprehensive connector libraries, but connector licensing adds cost per endpoint. Implementation typically requires certified specialists and multi-week ramp time.</p>
+    </div>
+    <div class="compare-col highlight">
+      <p class="compare-label">InterWeave</p>
+      <p class="compare-title">All 16 adapters, included</p>
+      <p class="compare-body">Every protocol adapter ships with the platform. No licensing tiers by connector. Designed for mid-market teams to self-implement — with expert support available when needed.</p>
+    </div>
+    <div class="compare-col">
+      <p class="compare-label">Point solutions</p>
+      <p class="compare-title">Celigo / Workato</p>
+      <p class="compare-body">Strong for SaaS-to-SaaS use cases, but limited depth for EDI, HL7, or legacy enterprise protocols. Typically require additional tooling for complex B2B scenarios.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <p class="cta-eyebrow">Get started with InterWeave</p>
+  <h2 class="cta-h">See the adapters<br>in your environment</h2>
+  <p class="cta-sub">Book a 30-minute technical walkthrough with an InterWeave integration specialist. Bring your stack — we'll map it.</p>
+  <div class="cta-actions">
+    <a href="#" class="btn-primary">Book a demo</a>
+    <a href="#" class="btn-ghost">Start free trial</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span class="footer-brand">InterWeave SmartIntegration Platform</span>
+  <span class="footer-note">© 2026 InterWeave. All rights reserved.</span>
+</footer>
+
+<script>
+const adapters = [
+  { cat:'msg',  abbr:'AMQP',    name:'AMQP',            desc:'Advanced message queuing for RabbitMQ and enterprise brokers.' },
+  { cat:'msg',  abbr:'MQTT',    name:'MQTT',             desc:'Lightweight pub/sub for IoT and event-driven architectures.' },
+  { cat:'msg',  abbr:'JMS',     name:'JMS',              desc:'Java Message Service for async enterprise communication.' },
+  { cat:'msg',  abbr:'Kafka',   name:'Apache Kafka',     desc:'High-throughput event streaming and real-time data pipelines.' },
+  { cat:'api',  abbr:'REST',    name:'REST / HTTP',      desc:'Universal RESTful API communication and webhook support.' },
+  { cat:'api',  abbr:'SOAP',    name:'SOAP / WSDL',      desc:'XML-based web services for legacy and enterprise systems.' },
+  { cat:'api',  abbr:'GQL',     name:'GraphQL',          desc:'Flexible query-based API integration for modern data graphs.' },
+  { cat:'api',  abbr:'WS',      name:'WebSocket',        desc:'Real-time bidirectional communication for live applications.' },
+  { cat:'file', abbr:'SFTP',    name:'FTP / SFTP',       desc:'Secure file transfer for batch processing and legacy systems.' },
+  { cat:'file', abbr:'AS2',     name:'AS2',              desc:'EDI and B2B secure document exchange over the internet.' },
+  { cat:'file', abbr:'EDI',     name:'EDIFACT / X12',    desc:'Electronic data interchange for supply chain and logistics.' },
+  { cat:'db',   abbr:'JDBC',    name:'JDBC / ODBC',      desc:'Direct database connectivity across SQL and enterprise stores.' },
+  { cat:'db',   abbr:'LDAP',    name:'LDAP',             desc:'Directory services and identity management integration.' },
+  { cat:'db',   abbr:'OData',   name:'OData',            desc:'Open data protocol for enterprise API and ERP integration.' },
+  { cat:'ind',  abbr:'HL7',     name:'HL7 / FHIR',       desc:'Healthcare data exchange compliant with modern interop standards.' },
+  { cat:'ind',  abbr:'SMTP',    name:'SMTP / IMAP',      desc:'Email-based integration for notifications and workflow triggers.' },
+];
+
+const grid = document.getElementById('adapter-grid');
+adapters.forEach((a, i) => {
+  const card = document.createElement('div');
+  card.className = `adapter-card cat-${a.cat} reveal`;
+  card.dataset.cat = a.cat;
+  card.style.transitionDelay = (i * 0.03) + 's';
+  card.innerHTML = `<span class="adapter-abbr">${a.abbr}</span><div class="adapter-name">${a.name}</div><div class="adapter-desc">${a.desc}</div>`;
+  grid.appendChild(card);
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.adapter-card').forEach(c => {
+      c.classList.toggle('hidden', cat !== 'all' && c.dataset.cat !== cat);
+    });
+  });
+});
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

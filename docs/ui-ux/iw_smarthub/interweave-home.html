@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterWeave — The SmartIntegration Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f10; --bg2:#13161a; --bg3:#1a1e24; --bg4:#20252d;
+    --border:rgba(255,255,255,0.07); --border-mid:rgba(255,255,255,0.13); --border-hi:rgba(255,255,255,0.22);
+    --text:#e8e6e0; --text-2:#8a8880; --text-3:#4a4845; --text-4:#2e2c2a;
+    --teal:#1D9E75; --teal-soft:rgba(29,158,117,0.12); --teal-glow:rgba(29,158,117,0.25);
+    --font-display:'Instrument Serif',Georgia,serif;
+    --font-body:'DM Sans',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+  /* Noise overlay */
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.018;pointer-events:none;z-index:0}
+
+  /* Top teal line */
+  body::after{content:'';position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--teal),transparent);opacity:.7;z-index:200}
+
+  /* ── TOPBAR ── */
+  .topbar{background:rgba(13,15,16,0.95);border-bottom:1px solid var(--border);padding:0 48px;height:36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:150;backdrop-filter:blur(12px)}
+  .topbar-left{display:flex;align-items:center;gap:20px}
+  .topbar-link{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .topbar-link:hover{color:var(--teal)}
+  .topbar-phone{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--teal);text-decoration:none}
+  .topbar-right{display:flex;align-items:center;gap:16px}
+
+  /* ── NAV ── */
+  nav{position:sticky;top:36px;z-index:140;background:rgba(13,15,16,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 48px;height:60px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+  .nav-logo-mark{width:26px;height:26px;border:1.5px solid var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .nav-logo-mark::before{content:'';width:10px;height:10px;background:var(--teal);border-radius:2.5px}
+  .nav-logo span.bold{color:var(--teal)}
+  .nav-links{display:flex;gap:32px;list-style:none}
+  .nav-links > li > a{font-size:13px;color:var(--text-2);text-decoration:none;letter-spacing:.01em;transition:color .2s}
+  .nav-links > li > a:hover{color:var(--text)}
+  .nav-actions{display:flex;align-items:center;gap:12px}
+  .btn-demo{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 18px;background:var(--teal);color:#fff;border:none;border-radius:5px;cursor:pointer;text-decoration:none;transition:opacity .2s}
+  .btn-demo:hover{opacity:.85}
+  .btn-portal{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:5px;cursor:pointer;text-decoration:none;transition:color .2s,border-color .2s}
+  .btn-portal:hover{color:var(--text);border-color:var(--border-hi)}
+
+  /* ── HERO ── */
+  .hero{position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden;z-index:1}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:.4}
+  .hero-glow{position:absolute;top:-200px;right:-100px;width:700px;height:700px;background:radial-gradient(circle,var(--teal-glow) 0%,transparent 70%);pointer-events:none}
+  .hero-glow2{position:absolute;bottom:-100px;left:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(29,158,117,0.08) 0%,transparent 70%);pointer-events:none}
+  .hero-inner{max-width:1200px;margin:0 auto;padding:120px 48px 100px;position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:24px;padding:5px 14px;border:1px solid rgba(29,158,117,.3);border-radius:30px;background:rgba(29,158,117,.07)}
+  .hero-eyebrow::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+  .hero h1{font-family:var(--font-display);font-size:clamp(44px,5.5vw,72px);font-weight:400;line-height:1.05;color:var(--text);margin-bottom:28px}
+  .hero h1 em{color:var(--teal);font-style:italic}
+  .hero-sub{font-size:16px;color:var(--text-2);line-height:1.75;font-weight:300;margin-bottom:40px;max-width:480px}
+  .hero-sub strong{color:var(--text);font-weight:500}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:56px}
+  .hero-stats{display:flex;gap:32px;padding-top:28px;border-top:1px solid var(--border)}
+  .hero-stat-n{font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px}
+  .hero-stat-l{font-size:12px;color:var(--text-2)}
+
+  /* Hero right — platform diagram */
+  .hero-diagram{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px;position:relative;overflow:hidden}
+  .hero-diagram::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent)}
+  .diagram-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:24px;opacity:.7}
+  .diagram-row{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:12px}
+  .diagram-platform{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center;min-width:110px}
+  .diagram-platform-name{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.05em;margin-bottom:5px}
+  .dp-crm{color:#f97316} .dp-erp{color:#38bdf8} .dp-pay{color:#a78bfa} .dp-ecom{color:#34d399} .dp-iw{color:var(--teal)}
+  .diagram-platform-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
+  .dtag{font-family:var(--font-mono);font-size:8px;padding:1px 5px;border-radius:2px;background:var(--bg);border:1px solid var(--border);color:var(--text-3)}
+  .diagram-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;flex-shrink:0}
+  .diagram-arrow-line{flex:1;border-top:1px dashed var(--teal);opacity:.4;width:100%}
+  .diagram-arrow-label{font-family:var(--font-mono);font-size:7px;letter-spacing:.08em;color:var(--teal);opacity:.6;margin-top:3px}
+  .diagram-hub{background:var(--bg3);border:1px solid rgba(29,158,117,.4);border-radius:10px;padding:16px 20px;text-align:center;position:relative;box-shadow:0 0 40px var(--teal-glow)}
+  .diagram-hub-label{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--teal);letter-spacing:.05em;margin-bottom:4px}
+  .diagram-hub-sub{font-size:10px;color:var(--text-3)}
+  .diagram-connections{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:10px}
+  .diagram-col{display:flex;flex-direction:column;gap:8px}
+  .diagram-arrows-center{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .arrow-bi{font-family:var(--font-mono);font-size:14px;color:var(--teal);opacity:.5}
+
+  /* ── SECTION SCAFFOLD ── */
+  .section{max-width:1200px;margin:0 auto;padding:0 48px 100px;position:relative;z-index:1}
+  .section-header{display:flex;align-items:center;gap:16px;margin-bottom:48px}
+  .section-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+  .section-rule{flex:1;height:1px;background:var(--border)}
+  .section-title{font-family:var(--font-display);font-size:clamp(32px,3.5vw,48px);font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.1}
+  .section-title em{color:var(--teal);font-style:italic}
+  .section-sub{font-size:15px;color:var(--text-2);max-width:560px;line-height:1.75;margin-bottom:48px;font-weight:300}
+
+  /* ── PLATFORM FEATURES ── */
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .feature-card{background:var(--bg2);padding:36px 32px;transition:background .2s;position:relative;overflow:hidden}
+  .feature-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--teal);transition:height .3s}
+  .feature-card:hover::before{height:100%}
+  .feature-card:hover{background:var(--bg3)}
+  .feature-icon{width:40px;height:40px;border:1px solid var(--border-mid);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;background:var(--bg3)}
+  .feature-icon svg{width:18px;height:18px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .feature-title{font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--text);margin-bottom:10px}
+  .feature-desc{font-size:13px;color:var(--text-2);line-height:1.65}
+  .feature-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:16px}
+  .feature-tag{font-family:var(--font-mono);font-size:8px;letter-spacing:.06em;padding:2px 7px;border-radius:3px;background:var(--bg);border:1px solid var(--border-mid);color:var(--text-3)}
+
+  /* ── INDUSTRY ACCELERATORS ── */
+  .industry-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .industry-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px 22px;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;position:relative;overflow:hidden}
+  .industry-card:hover{border-color:var(--border-mid);background:var(--bg3);transform:translateY(-2px)}
+  .industry-card-icon{width:36px;height:36px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .industry-card-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);margin-bottom:8px}
+  .industry-card-desc{font-size:12px;color:var(--text-2);line-height:1.55}
+  .industry-card-arrow{position:absolute;bottom:18px;right:18px;font-family:var(--font-mono);font-size:12px;color:var(--text-3);transition:color .2s,transform .2s}
+  .industry-card:hover .industry-card-arrow{color:var(--teal);transform:translateX(2px)}
+
+  /* ── SOLUTIONS MATRIX ── */
+  .solutions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .solution-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:28px 28px 24px;transition:border-color .2s,background .2s}
+  .solution-card:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .solution-card-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .solution-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+  .solution-card-title{font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--text)}
+  .solution-card-desc{font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:16px}
+  .solution-links{display:flex;flex-wrap:wrap;gap:6px}
+  .solution-link{font-family:var(--font-mono);font-size:9px;letter-spacing:.06em;padding:3px 10px;border-radius:4px;border:1px solid var(--border-mid);color:var(--text-2);text-decoration:none;transition:color .2s,border-color .2s}
+  .solution-link:hover{color:var(--teal);border-color:rgba(29,158,117,.4)}
+
+  /* ── HOW IT WORKS ── */
+  .how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .how-step{background:var(--bg2);padding:36px 28px;border-right:1px solid var(--border);position:relative}
+  .how-step:last-child{border-right:none}
+  .how-step-num{font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--text-4);line-height:1;margin-bottom:20px}
+  .how-step-title{font-family:var(--font-display);font-size:20px;font-weight:400;color:var(--text);margin-bottom:10px;line-height:1.2}
+  .how-step-desc{font-size:13px;color:var(--text-2);line-height:1.65}
+  .how-step-connector{position:absolute;top:36px;right:-12px;width:24px;height:24px;border:1px solid var(--border);border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:2;font-family:var(--font-mono);font-size:10px;color:var(--teal)}
+
+  /* ── STATS BAND ── */
+  .stats-band{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:64px 48px;margin-bottom:0}
+  .stats-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:0;text-align:center}
+  .stat-item{padding:20px;border-right:1px solid var(--border)}
+  .stat-item:last-child{border-right:none}
+  .stat-n{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--text);line-height:1;margin-bottom:8px}
+  .stat-n span{color:var(--teal)}
+  .stat-l{font-size:12px;color:var(--text-2);max-width:120px;margin:0 auto;line-height:1.4}
+
+  /* ── CRM/ERP CONNECTOR GRID ── */
+  .connector-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .connector-col-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;text-align:center}
+  .connector-col{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .connector-col-header{padding:14px 18px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.06em}
+  .connector-item{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-2)}
+  .connector-item:last-child{border-bottom:none}
+  .connector-dot{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+
+  /* ── SMARTAGENT HIGHLIGHT ── */
+  .agent-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:56px 48px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;overflow:hidden}
+  .agent-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent)}
+  .agent-title{font-family:var(--font-display);font-size:clamp(28px,3vw,40px);font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.15}
+  .agent-title em{color:var(--teal);font-style:italic}
+  .agent-desc{font-size:14px;color:var(--text-2);line-height:1.75;margin-bottom:28px}
+  .agent-features{display:flex;flex-direction:column;gap:12px}
+  .agent-feature{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:var(--text-2)}
+  .agent-feature-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);margin-top:8px;flex-shrink:0}
+  .agent-visual{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:10px}
+  .agent-chat-msg{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text-2);line-height:1.5}
+  .agent-chat-msg.agent{border-color:rgba(29,158,117,.3);background:rgba(29,158,117,.06)}
+  .agent-chat-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--text-3);margin-bottom:5px}
+  .agent-chat-label.teal{color:var(--teal)}
+
+  /* ── TESTIMONIAL ── */
+  .testimonial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .testimonial-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:28px 24px}
+  .testimonial-quote{font-family:var(--font-display);font-size:15px;color:var(--text);line-height:1.65;margin-bottom:20px;font-style:italic}
+  .testimonial-quote::before{content:'\201C';color:var(--teal);font-size:24px;line-height:0;vertical-align:-6px;margin-right:2px}
+  .testimonial-author{font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;color:var(--text-3)}
+  .testimonial-company{color:var(--teal)}
+
+  /* ── CTA ── */
+  .cta-section{background:var(--bg2);border-top:1px solid var(--border);padding:100px 48px;text-align:center;position:relative;overflow:hidden}
+  .cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;background:radial-gradient(ellipse,var(--teal-glow) 0%,transparent 70%);pointer-events:none}
+  .cta-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:20px;position:relative}
+  .cta-h{font-family:var(--font-display);font-size:clamp(36px,5vw,64px);font-weight:400;color:var(--text);margin-bottom:20px;line-height:1.08;position:relative}
+  .cta-h em{color:var(--teal);font-style:italic}
+  .cta-sub{font-size:16px;color:var(--text-2);margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.7;position:relative;font-weight:300}
+  .cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;margin-bottom:48px}
+  .cta-trust{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;position:relative}
+  .cta-trust-item{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--text-3);display:flex;align-items:center;gap:6px}
+  .cta-trust-item::before{content:'✓';color:var(--teal)}
+
+  /* ── FOOTER ── */
+  footer{background:var(--bg);border-top:1px solid var(--border);padding:64px 48px 40px}
+  .footer-inner{max-width:1200px;margin:0 auto}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:56px}
+  .footer-brand-logo{font-family:var(--font-mono);font-size:15px;font-weight:700;letter-spacing:.05em;color:var(--text);display:flex;align-items:center;gap:10px;margin-bottom:16px;text-decoration:none}
+  .footer-brand-mark{width:24px;height:24px;border:1.5px solid var(--teal);border-radius:5px;display:flex;align-items:center;justify-content:center}
+  .footer-brand-mark::before{content:'';width:8px;height:8px;background:var(--teal);border-radius:2px}
+  .footer-brand-desc{font-size:13px;color:var(--text-3);line-height:1.65;margin-bottom:20px}
+  .footer-social{display:flex;gap:10px}
+  .footer-social-link{width:30px;height:30px;border:1px solid var(--border-mid);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10px;color:var(--text-3);text-decoration:none;transition:color .2s,border-color .2s}
+  .footer-social-link:hover{color:var(--teal);border-color:rgba(29,158,117,.4)}
+  .footer-col-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:16px}
+  .footer-col-links{display:flex;flex-direction:column;gap:8px}
+  .footer-col-link{font-size:13px;color:var(--text-2);text-decoration:none;transition:color .2s}
+  .footer-col-link:hover{color:var(--teal)}
+  .footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:28px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px}
+  .footer-copy{font-family:var(--font-mono);font-size:11px;color:var(--text-3)}
+  .footer-legal{display:flex;gap:20px}
+  .footer-legal a{font-family:var(--font-mono);font-size:10px;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .footer-legal a:hover{color:var(--teal)}
+
+  /* Buttons */
+  .btn-primary{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:13px 26px;background:var(--teal);color:#fff;border:none;border-radius:6px;cursor:pointer;text-decoration:none;transition:opacity .2s,transform .15s;display:inline-block}
+  .btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-ghost{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:12px 22px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:6px;cursor:pointer;text-decoration:none;transition:color .2s,border-color .2s;display:inline-block}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border-hi)}
+
+  /* Animations */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  .anim-0{animation:fadeUp .7s ease forwards .1s;opacity:0}
+  .anim-1{animation:fadeUp .7s ease forwards .25s;opacity:0}
+  .anim-2{animation:fadeUp .7s ease forwards .4s;opacity:0}
+  .anim-3{animation:fadeUp .7s ease forwards .55s;opacity:0}
+  .anim-4{animation:fadeUp .7s ease forwards .7s;opacity:0}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* Responsive */
+  @media(max-width:1024px){
+    .hero-inner{grid-template-columns:1fr;gap:48px}
+    .hero-diagram{display:none}
+    .features-grid{grid-template-columns:1fr 1fr}
+    .industry-grid{grid-template-columns:repeat(2,1fr)}
+    .how-grid{grid-template-columns:1fr 1fr}
+    .stats-inner{grid-template-columns:repeat(3,1fr)}
+    .stat-item:nth-child(3){border-right:none}
+    .connector-grid{grid-template-columns:1fr}
+    .agent-block{grid-template-columns:1fr}
+    .testimonial-grid{grid-template-columns:1fr 1fr}
+    .footer-top{grid-template-columns:1fr 1fr}
+    .solutions-grid{grid-template-columns:1fr}
+  }
+  @media(max-width:768px){
+    .topbar{display:none}
+    nav{top:0;padding:0 24px}
+    .nav-links{display:none}
+    .section{padding-left:24px;padding-right:24px}
+    .hero-inner{padding:80px 24px 60px}
+    .features-grid{grid-template-columns:1fr}
+    .industry-grid{grid-template-columns:1fr 1fr}
+    .how-grid{grid-template-columns:1fr}
+    .stats-inner{grid-template-columns:repeat(2,1fr)}
+    .stat-item:nth-child(2){border-right:none}
+    .testimonial-grid{grid-template-columns:1fr}
+    .stats-band{padding:48px 24px}
+    .cta-section{padding:72px 24px}
+    footer{padding:48px 24px 32px}
+    .footer-top{grid-template-columns:1fr}
+    .footer-bottom{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="https://interweave.biz/contact-us/" class="topbar-link">Request a Demo</a>
+    <a href="tel:18006718692" class="topbar-phone">1-800-671-8692</a>
+  </div>
+  <div class="topbar-right">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="topbar-link">Customer Portal</a>
+    <a href="https://partner.interweave.biz/" class="topbar-link">Partner Portal</a>
+    <a href="https://interweave.freshdesk.com/support/home" class="topbar-link">Support</a>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="https://interweave.biz" class="nav-logo">
+    <span class="nav-logo-mark"></span>
+    <span><span class="bold">Inter</span>Weave</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="https://interweave.biz/financial-solutions/">Solutions</a></li>
+    <li><a href="https://interweave.biz/financial-solutions-automation/">Industries</a></li>
+    <li><a href="https://interweave.biz/interweave-smartintegration-hub/">Platform</a></li>
+    <li><a href="https://interweave.biz/payments/">Payments</a></li>
+    <li><a href="https://interweave.biz/resource-center/">Resources</a></li>
+    <li><a href="https://interweave.biz/about-us/">Company</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="btn-portal">Log In</a>
+    <a href="https://interweave.biz/contact-us/" class="btn-demo">Request Demo</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow anim-0">The SmartIntegration Platform</div>
+      <h1 class="anim-1">Enterprise Integration.<br><em>Executed with</em><br>Intelligence.</h1>
+      <p class="hero-sub anim-2"><strong>InterWeave</strong> extends leading platforms like Salesforce, Creatio, Intuit, Sage, and Microsoft 365 with specialized AI agents, deep integrations, and human-in-the-loop oversight — transforming them into a unified operating system for your business.</p>
+      <div class="hero-actions anim-3">
+        <a href="https://interweave.biz/contact-us/" class="btn-primary">Explore the Platform</a>
+        <a href="https://interweave.biz/customer-case-studies/" class="btn-ghost">See Case Studies</a>
+      </div>
+      <div class="hero-stats anim-4">
+        <div>
+          <div class="hero-stat-n">48+</div>
+          <div class="hero-stat-l">Payment processors connected</div>
+        </div>
+        <div>
+          <div class="hero-stat-n">100+</div>
+          <div class="hero-stat-l">Integration solutions delivered</div>
+        </div>
+        <div>
+          <div class="hero-stat-n">Day 1</div>
+          <div class="hero-stat-l">No IT deployment</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagram -->
+    <div class="hero-diagram anim-3">
+      <div class="diagram-label">SmartIntegration Hub — live data flow</div>
+      <div class="diagram-connections">
+        <div class="diagram-col">
+          <div class="diagram-platform">
+            <div class="diagram-platform-name dp-crm">CRM</div>
+            <div class="diagram-platform-tags">
+              <span class="dtag">Salesforce</span><span class="dtag">Creatio</span>
+            </div>
+          </div>
+          <div class="diagram-platform">
+            <div class="diagram-platform-name dp-ecom">eCommerce</div>
+            <div class="diagram-platform-tags">
+              <span class="dtag">Magento</span><span class="dtag">Shopify</span>
+            </div>
+          </div>
+          <div class="diagram-platform">
+            <div class="diagram-platform-name dp-pay">Payments</div>
+            <div class="diagram-platform-tags">
+              <span class="dtag">Nuvei</span><span class="dtag">Stripe</span><span class="dtag">+46</span>
+            </div>
+          </div>
+        </div>
+        <div class="diagram-arrows-center">
+          <span class="arrow-bi">⇄</span>
+          <span class="arrow-bi">⇄</span>
+          <span class="arrow-bi">⇄</span>
+        </div>
+        <div class="diagram-col">
+          <div class="diagram-platform">
+            <div class="diagram-platform-name dp-erp">ERP / Finance</div>
+            <div class="diagram-platform-tags">
+              <span class="dtag">Sage</span><span class="dtag">QuickBooks</span>
+            </div>
+          </div>
+          <div class="diagram-platform">
+            <div class="diagram-platform-name dp-erp" style="color:#60a5fa">MS 365</div>
+            <div class="diagram-platform-tags">
+              <span class="dtag">Dynamics</span><span class="dtag">Azure</span>
+            </div>
+          </div>
+          <div class="diagram-platform">
+            <div class="diagram-platform-name" style="color:#f59e0b">Industry Apps</div>
+            <div class="diagram-platform-tags">
+              <span class="dtag">LeagueApps</span><span class="dtag">MindBody</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="diagram-hub">
+        <div class="diagram-hub-label">InterWeave SmartHub</div>
+        <div class="diagram-hub-sub">AI-governed • Real-time • No IT required</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Band -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-n">48<span>+</span></div>
+      <div class="stat-l">Payment processors integrated</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.07s">
+      <div class="stat-n"><span>&lt;</span>5s</div>
+      <div class="stat-l">End-to-end sync latency</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.14s">
+      <div class="stat-n">8<span>+</span></div>
+      <div class="stat-l">Industry accelerators</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.21s">
+      <div class="stat-n">0</div>
+      <div class="stat-l">Developers needed to deploy</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.28s">
+      <div class="stat-n">99.9<span>%</span></div>
+      <div class="stat-l">Uptime SLA</div>
+    </div>
+  </div>
+</div>
+
+<!-- Platform Features -->
+<section class="section" style="padding-top:100px">
+  <div class="section-header reveal">
+    <span class="section-label">Platform capabilities</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Everything your integrations<br>need. <em>Already built.</em></h2>
+  <p class="section-sub reveal">The SmartIntegration Hub combines deep CRM-ERP-payments connectivity with AI-governed automation, human-in-the-loop controls, and prebuilt industry accelerators — so you deploy in days, not months.</p>
+
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="feature-title">// SmartIntegration Hub</div>
+      <div class="feature-desc">A single, governed integration engine connecting your CRM, ERP, payments, and eCommerce systems with real-time bidirectional sync, built-in deduplication, and full audit trails.</div>
+      <div class="feature-tags"><span class="feature-tag">CRM ↔ ERP</span><span class="feature-tag">Real-time</span><span class="feature-tag">Bidirectional</span><span class="feature-tag">Audit log</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      </div>
+      <div class="feature-title">// SmartAgents — AI Automation</div>
+      <div class="feature-desc">Specialized AI agents automate field mapping, data validation, error correction, and exception handling — keeping integrations accurate and low-maintenance without manual intervention.</div>
+      <div class="feature-tags"><span class="feature-tag">Auto-mapping</span><span class="feature-tag">Validation</span><span class="feature-tag">Self-healing</span><span class="feature-tag">Human-in-loop</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <div class="feature-title">// SmartPortal — Customer Hub</div>
+      <div class="feature-desc">A branded customer self-service portal giving your clients real-time access to orders, invoices, payments, and account data — integrated directly from your CRM and ERP systems.</div>
+      <div class="feature-tags"><span class="feature-tag">Self-service</span><span class="feature-tag">Branded</span><span class="feature-tag">Real-time data</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      </div>
+      <div class="feature-title">// Payments — 48+ Processors</div>
+      <div class="feature-desc">InterWeave connects your CRM to 48+ payment processors — triggering payments from orders, syncing transaction status, managing subscriptions, and surfacing chargeback data in your CRM.</div>
+      <div class="feature-tags"><span class="feature-tag">48+ processors</span><span class="feature-tag">Subscriptions</span><span class="feature-tag">Chargebacks</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 12a1 1 0 110 2 1 1 0 010-2z"/></svg>
+      </div>
+      <div class="feature-title">// Advanced Inventory</div>
+      <div class="feature-desc">Real-time inventory sync across CRM, ERP, and eCommerce — on-hand quantities, ATP dates, and warehouse data surfaced directly in your CRM so sales reps quote with confidence.</div>
+      <div class="feature-tags"><span class="feature-tag">On-hand qty</span><span class="feature-tag">ATP</span><span class="feature-tag">Multi-warehouse</span></div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div class="feature-title">// SmartTracks Program</div>
+      <div class="feature-desc">Guided implementation tracks for CRM, financial, and payments integrations — structured onboarding, configuration support, and ongoing optimization aligned to your industry.</div>
+      <div class="feature-tags"><span class="feature-tag">Guided setup</span><span class="feature-tag">Industry tracks</span><span class="feature-tag">Ongoing support</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Industry Accelerators -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Industry accelerators</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Prebuilt for your <em>industry.</em></h2>
+  <p class="section-sub reveal">InterWeave Industry Accelerators are prebuilt integration and workflow frameworks purpose-built for your sector — deployed in days, not quarters.</p>
+
+  <div class="industry-grid">
+    <div class="industry-card reveal" style="transition-delay:0s">
+      <div class="industry-card-icon" style="background:rgba(29,158,117,0.12)">💰</div>
+      <div class="industry-card-title">Financial</div>
+      <div class="industry-card-desc">Prebuilt integration &amp; workflow frameworks for CRM &amp; financial systems — AR, invoicing, payments, and reporting.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+    <div class="industry-card reveal" style="transition-delay:.05s">
+      <div class="industry-card-icon" style="background:rgba(56,189,248,0.12)">🏥</div>
+      <div class="industry-card-title">Healthcare</div>
+      <div class="industry-card-desc">Prebuilt integration &amp; automation for CRM, ERP &amp; financial systems across health and wellness organizations.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+    <div class="industry-card reveal" style="transition-delay:.10s">
+      <div class="industry-card-icon" style="background:rgba(245,158,11,0.12)">🏭</div>
+      <div class="industry-card-title">Manufacturing</div>
+      <div class="industry-card-desc">Prebuilt integration &amp; automation connecting CRM, ERP, inventory, and fulfillment for manufacturing operations.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+    <div class="industry-card reveal" style="transition-delay:.15s">
+      <div class="industry-card-icon" style="background:rgba(167,139,250,0.12)">🛡️</div>
+      <div class="industry-card-title">Insurance</div>
+      <div class="industry-card-desc">Prebuilt integration &amp; workflow frameworks for CRM, policy, and financial systems across insurance carriers and agencies.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+    <div class="industry-card reveal" style="transition-delay:.20s">
+      <div class="industry-card-icon" style="background:rgba(52,211,153,0.12)">🌿</div>
+      <div class="industry-card-title">Nonprofit</div>
+      <div class="industry-card-desc">Prebuilt integration frameworks for CRM, accounting, and payments — connecting donor management with financial operations.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+    <div class="industry-card reveal" style="transition-delay:.25s">
+      <div class="industry-card-icon" style="background:rgba(249,115,22,0.12)">🎓</div>
+      <div class="industry-card-title">Education</div>
+      <div class="industry-card-desc">Prebuilt integration frameworks for student, financial &amp; CRM systems — connecting enrollment, billing, and operations.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+    <div class="industry-card reveal" style="transition-delay:.30s">
+      <div class="industry-card-icon" style="background:rgba(99,102,241,0.12)">💳</div>
+      <div class="industry-card-title">Payments</div>
+      <div class="industry-card-desc">Prebuilt integration frameworks for CRM, billing &amp; payment processing — 48+ processors, subscriptions, and chargeback automation.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+    <div class="industry-card reveal" style="transition-delay:.35s">
+      <div class="industry-card-icon" style="background:rgba(232,56,61,0.12)">🔗</div>
+      <div class="industry-card-title">Integration</div>
+      <div class="industry-card-desc">Prebuilt integration &amp; workflow frameworks for any CRM, ERP &amp; financial system combination — custom-fit to your stack.</div>
+      <div class="industry-card-arrow">→</div>
+    </div>
+  </div>
+</section>
+
+<!-- Solutions Matrix -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Solutions</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Connect any <em>CRM</em> to any<br><em>financial system.</em></h2>
+  <p class="section-sub reveal">Prebuilt, configurable integration solutions for the most common CRM-ERP-payments combinations in the mid-market.</p>
+
+  <div class="solutions-grid">
+    <div class="solution-card reveal">
+      <div class="solution-card-header">
+        <div class="solution-icon" style="background:rgba(249,115,22,0.12)"><span style="font-size:16px">⚡</span></div>
+        <div class="solution-card-title">Creatio CRM Integrations</div>
+      </div>
+      <div class="solution-card-desc">Connect Creatio CRM to your financial systems, payment processors, and eCommerce platforms with bidirectional real-time sync.</div>
+      <div class="solution-links">
+        <a href="https://interweave.biz/creatio-to-quickbooks-integration-by-interweave/" class="solution-link">QuickBooks</a>
+        <a href="https://interweave.biz/creatio-to-sage-integration-by-interweave/" class="solution-link">Sage 100</a>
+        <a href="https://interweave.biz/creatio-to-sage-integration-by-interweave/" class="solution-link">Sage Intacct</a>
+        <a href="https://interweave.biz/creatio-to-msd-integration-by-interweave/" class="solution-link">MS Dynamics</a>
+        <a href="https://interweave.biz/creatio-payment-gateway-by-interweave/" class="solution-link">Payments</a>
+      </div>
+    </div>
+    <div class="solution-card reveal" style="transition-delay:.06s">
+      <div class="solution-card-header">
+        <div class="solution-icon" style="background:rgba(56,189,248,0.12)"><span style="font-size:16px">☁️</span></div>
+        <div class="solution-card-title">Salesforce Integrations</div>
+      </div>
+      <div class="solution-card-desc">Connect Salesforce to your ERP, accounting, and payment systems — keeping pipeline and financial data in perfect sync.</div>
+      <div class="solution-links">
+        <a href="https://interweave.biz/salesforce-to-quickbooks-integration-by-interweave/" class="solution-link">QuickBooks</a>
+        <a href="https://interweave.biz/salesforce-to-sage-integration-by-interweave/" class="solution-link">Sage</a>
+        <a href="https://interweave.biz/salesforce-to-ms-dynamics-integration-by-interweave/" class="solution-link">MS Dynamics</a>
+        <a href="https://interweave.biz/salesforce-payment-gateway-by-interweave/" class="solution-link">Payments</a>
+      </div>
+    </div>
+    <div class="solution-card reveal" style="transition-delay:.12s">
+      <div class="solution-card-header">
+        <div class="solution-icon" style="background:rgba(29,158,117,0.12)"><span style="font-size:16px">📊</span></div>
+        <div class="solution-card-title">Financial System Integrations</div>
+      </div>
+      <div class="solution-card-desc">Deep integrations into QuickBooks, the full Sage family, and Microsoft Dynamics — with field-level mapping and multi-entity support.</div>
+      <div class="solution-links">
+        <a href="https://interweave.biz/quickbooks-online/" class="solution-link">QuickBooks Online</a>
+        <a href="https://interweave.biz/quickbooks-desktop/" class="solution-link">QuickBooks Desktop</a>
+        <a href="https://interweave.biz/sage-100/" class="solution-link">Sage 100</a>
+        <a href="https://interweave.biz/sage-intacct/" class="solution-link">Sage Intacct</a>
+        <a href="https://interweave.biz/ms-dynamics/" class="solution-link">MS Dynamics</a>
+      </div>
+    </div>
+    <div class="solution-card reveal" style="transition-delay:.18s">
+      <div class="solution-card-header">
+        <div class="solution-icon" style="background:rgba(167,139,250,0.12)"><span style="font-size:16px">💳</span></div>
+        <div class="solution-card-title">Payments &amp; eCommerce</div>
+      </div>
+      <div class="solution-card-desc">48+ payment processor integrations and eCommerce platform connections — bringing payments and order data into your CRM and ERP automatically.</div>
+      <div class="solution-links">
+        <a href="https://interweave.biz/payments/" class="solution-link">All Payments</a>
+        <a href="https://interweave.biz/ecommerce/" class="solution-link">eCommerce</a>
+        <a href="https://interweave.biz/multi-cloud-solutions/" class="solution-link">Multi-cloud</a>
+        <a href="https://interweave.biz/customer-portal/" class="solution-link">SmartPortal</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Connector Grid -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Connector coverage</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Your stack. <em>Already connected.</em></h2>
+  <p class="section-sub reveal">InterWeave ships with prebuilt connectors for the platforms your mid-market clients already use — no custom development required.</p>
+
+  <div class="connector-grid reveal">
+    <div class="connector-col">
+      <div class="connector-col-header" style="color:var(--cr, #f97316)">CRM Platforms</div>
+      <div class="connector-item"><span>Salesforce</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Creatio CRM</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Microsoft Dynamics 365 CRM</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>HubSpot</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Zoho CRM</span><span class="connector-dot"></span></div>
+    </div>
+    <div class="connector-col">
+      <div class="connector-col-header" style="color:#38bdf8">ERP &amp; Financial</div>
+      <div class="connector-item"><span>QuickBooks Online &amp; Desktop</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Sage Intacct</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Sage 100cloud</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Sage X3</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Sage BusinessWorks</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>MS Dynamics 365 Finance</span><span class="connector-dot"></span></div>
+    </div>
+    <div class="connector-col">
+      <div class="connector-col-header" style="color:#a78bfa">Payments &amp; Commerce</div>
+      <div class="connector-item"><span>Nuvei</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Run Payments</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Stripe / Braintree</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>PayPal / Authorize.net</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>Magento 2 / Shopify</span><span class="connector-dot"></span></div>
+      <div class="connector-item"><span>+40 more processors</span><span class="connector-dot" style="background:var(--text-3)"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">How it works</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Live in <em>days,</em><br>not months.</h2>
+  <p class="section-sub reveal">InterWeave's SmartTracks deployment methodology takes you from signed to syncing in a structured, no-surprises process — no IT team required.</p>
+
+  <div class="how-grid reveal">
+    <div class="how-step">
+      <div class="how-step-num">01</div>
+      <h3 class="how-step-title">Connect your platforms</h3>
+      <p class="how-step-desc">Authenticate your CRM, ERP, and payment systems in the InterWeave console. No IT involvement — credentials only, configuration guided step by step.</p>
+      <div class="how-step-connector">→</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">02</div>
+      <h3 class="how-step-title">Configure your sync objects</h3>
+      <p class="how-step-desc">Select which objects sync, in which direction, with what conflict resolution rules. Use prebuilt SmartMaps or customize field mappings in the no-code console.</p>
+      <div class="how-step-connector">→</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">03</div>
+      <h3 class="how-step-title">Run initial data load</h3>
+      <p class="how-step-desc">InterWeave's dedup engine aligns your existing records across systems — matching, deduplicating, and cross-referencing before go-live.</p>
+      <div class="how-step-connector">→</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">04</div>
+      <h3 class="how-step-title">Go live. Stay live.</h3>
+      <p class="how-step-desc">Real-time sync, AI-governed validation, and the InterWeave dashboard keep your integration healthy — with alerts, audit trails, and SmartAgent oversight.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SmartAgent Block -->
+<section class="section">
+  <div class="agent-block reveal">
+    <div>
+      <div class="hero-eyebrow" style="margin-bottom:20px">SmartAgents — AI-Powered</div>
+      <h2 class="agent-title"><em>AI agents</em> that keep<br>your integrations accurate.</h2>
+      <p class="agent-desc">InterWeave SmartAgents use AI to automate field mapping, data validation, error correction, and exception handling — keeping your integrations accurate, stable, and low-maintenance without constant manual intervention.</p>
+      <div class="agent-features">
+        <div class="agent-feature"><span class="agent-feature-dot"></span><span>Automatic field mapping suggestions based on data patterns</span></div>
+        <div class="agent-feature"><span class="agent-feature-dot"></span><span>Real-time validation against both systems' business rules</span></div>
+        <div class="agent-feature"><span class="agent-feature-dot"></span><span>Anomaly detection and self-healing for common error types</span></div>
+        <div class="agent-feature"><span class="agent-feature-dot"></span><span>Human-in-the-loop escalation for edge cases requiring judgment</span></div>
+        <div class="agent-feature"><span class="agent-feature-dot"></span><span>Continuous learning from your configuration and corrections</span></div>
+      </div>
+    </div>
+    <div class="agent-visual">
+      <div class="agent-chat-msg">
+        <div class="agent-chat-label">System</div>
+        3 new orders confirmed in Creatio — initiating sync to Sage 100...
+      </div>
+      <div class="agent-chat-msg agent">
+        <div class="agent-chat-label teal">SmartAgent</div>
+        Order #10241: CustomerNo mismatch detected. Account "Acme Corp" exists in Sage as "ACME Corporation" — auto-matched on tax ID. Proceeding.
+      </div>
+      <div class="agent-chat-msg">
+        <div class="agent-chat-label">System</div>
+        Order #10241 → Sage Sales Order SO-8823 created. Invoice #INV-4419 posted. Balance due: $14,280.
+      </div>
+      <div class="agent-chat-msg agent">
+        <div class="agent-chat-label teal">SmartAgent</div>
+        Invoice status written back to Creatio Order. Account balance updated. 3/3 orders synced successfully. No human review required.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Customer results</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">What our clients say.</h2>
+
+  <div class="testimonial-grid">
+    <div class="testimonial-card reveal">
+      <p class="testimonial-quote">InterWeave eliminated hours of manual data entry between Creatio and Sage every week. Our sales team now has real-time AR visibility without ever leaving the CRM.</p>
+      <div class="testimonial-author">Operations Director · <span class="testimonial-company">Mid-market distributor</span></div>
+    </div>
+    <div class="testimonial-card reveal" style="transition-delay:.07s">
+      <p class="testimonial-quote">The payment integration is exceptional. Orders confirmed in Salesforce trigger payments automatically and status writes back in seconds. Our AR process is transformed.</p>
+      <div class="testimonial-author">CFO · <span class="testimonial-company">SaaS company</span></div>
+    </div>
+    <div class="testimonial-card reveal" style="transition-delay:.14s">
+      <p class="testimonial-quote">We were live in four days. The SmartTracks program gave us a structured path that we could actually follow without an IT team. Best integration experience we've had.</p>
+      <div class="testimonial-author">VP Operations · <span class="testimonial-company">Professional services firm</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <p class="cta-eyebrow">Get started today</p>
+  <h2 class="cta-h">Your systems.<br><em>Finally talking</em> to each other.</h2>
+  <p class="cta-sub">Deploy the InterWeave SmartIntegration Platform and give your team one version of the truth — across every system, in real time.</p>
+  <div class="cta-actions">
+    <a href="https://interweave.biz/contact-us/" class="btn-primary">Request a Demo</a>
+    <a href="https://interweave.biz/interweave-smartintegration-hub/" class="btn-ghost">Explore the Platform</a>
+  </div>
+  <div class="cta-trust">
+    <span class="cta-trust-item">No IT team required</span>
+    <span class="cta-trust-item">Live in days, not months</span>
+    <span class="cta-trust-item">48+ payment processors</span>
+    <span class="cta-trust-item">99.9% uptime SLA</span>
+    <span class="cta-trust-item">Human-in-the-loop AI</span>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <a href="https://interweave.biz" class="footer-brand-logo">
+          <span class="footer-brand-mark"></span>
+          <span style="font-family:var(--font-mono);font-weight:700;font-size:14px"><span style="color:var(--teal)">Inter</span>Weave</span>
+        </a>
+        <p class="footer-brand-desc">The SmartIntegration Platform — connecting CRM, ERP, payments, and eCommerce for mid-market businesses. Enterprise integration, executed with intelligence.</p>
+        <div class="footer-social">
+          <a href="https://twitter.com/interweave1" class="footer-social-link">X</a>
+          <a href="https://www.linkedin.com/company/integration-technologies-inc./" class="footer-social-link">in</a>
+          <a href="https://www.facebook.com/www.interweave.biz" class="footer-social-link">f</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Solutions</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/interweave-smartintegration-hub/" class="footer-col-link">SmartIntegration Hub</a>
+          <a href="https://interweave.biz/financial-solutions/" class="footer-col-link">Financial</a>
+          <a href="https://interweave.biz/payments/" class="footer-col-link">Payments</a>
+          <a href="https://interweave.biz/ecommerce/" class="footer-col-link">eCommerce</a>
+          <a href="https://interweave.biz/customer-portal/" class="footer-col-link">SmartPortal</a>
+          <a href="https://interweave.biz/advanced-inventory/" class="footer-col-link">Advanced Inventory</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">CRM Integrations</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/creatio-to-quickbooks-integration-by-interweave/" class="footer-col-link">Creatio → QuickBooks</a>
+          <a href="https://interweave.biz/creatio-to-sage-integration-by-interweave/" class="footer-col-link">Creatio → Sage</a>
+          <a href="https://interweave.biz/creatio-to-msd-integration-by-interweave/" class="footer-col-link">Creatio → MS Dynamics</a>
+          <a href="https://interweave.biz/salesforce-to-quickbooks-integration-by-interweave/" class="footer-col-link">Salesforce → QuickBooks</a>
+          <a href="https://interweave.biz/salesforce-to-sage-integration-by-interweave/" class="footer-col-link">Salesforce → Sage</a>
+          <a href="https://interweave.biz/salesforce-to-ms-dynamics-integration-by-interweave/" class="footer-col-link">Salesforce → Dynamics</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Industries</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/financial-solutions-automation/" class="footer-col-link">Financial</a>
+          <a href="https://interweave.biz/interweave-manufacturing-automation/" class="footer-col-link">Manufacturing</a>
+          <a href="https://interweave.biz/interweave-nonprofit-automation/" class="footer-col-link">Nonprofit</a>
+          <a href="https://interweave.biz/interweave-education-automation/" class="footer-col-link">Education</a>
+          <a href="https://interweave.biz/interweave-insurance-automation/" class="footer-col-link">Insurance</a>
+          <a href="https://interweave.biz/interweave-payments-automation/" class="footer-col-link">Payments</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/about-us/" class="footer-col-link">About Us</a>
+          <a href="https://interweave.biz/our-team/" class="footer-col-link">Our Team</a>
+          <a href="https://interweave.biz/partners/" class="footer-col-link">Partners</a>
+          <a href="https://interweave.biz/customer-case-studies/" class="footer-col-link">Case Studies</a>
+          <a href="https://interweave.biz/interweave-blog/" class="footer-col-link">Blog</a>
+          <a href="https://interweave.biz/contact-us/" class="footer-col-link">Contact Us</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 InterWeave SmartSolutions. All rights reserved. 1-800-671-8692</span>
+      <div class="footer-legal">
+        <a href="https://interweave.biz/faq/">FAQ</a>
+        <a href="https://interweave.biz/interweave-faqs/">Terms</a>
+        <a href="https://help.interweave.biz/">Support</a>
+        <a href="https://status.interweave.biz/">Status</a>
+        <a href="https://academy.interweave.biz/">Academy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold: 0.07});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Nav scroll effect
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    nav.style.borderBottomColor = window.scrollY > 80 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)';
+  });
+</script>
+</body>
+</html>

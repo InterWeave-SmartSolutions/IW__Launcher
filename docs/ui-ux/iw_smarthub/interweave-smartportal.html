@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPortal — InterWeave SmartIntegration Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f10;--bg2:#13161a;--bg3:#1a1e24;
+    --border:rgba(255,255,255,0.07);--border-mid:rgba(255,255,255,0.13);--border-hi:rgba(255,255,255,0.22);
+    --text:#e8e6e0;--text-2:#8a8880;--text-3:#4a4845;--text-4:#272523;
+    --teal:#1D9E75;--teal-soft:rgba(29,158,117,0.12);--teal-glow:rgba(29,158,117,0.22);
+    --cyan:#06b6d4;--cyan-soft:rgba(6,182,212,0.12);--cyan-glow:rgba(6,182,212,0.16);
+    --violet:#8b5cf6;--violet-soft:rgba(139,92,246,0.12);
+    --gold:#f59e0b;--gold-soft:rgba(245,158,11,0.12);
+    --font-display:'Instrument Serif',Georgia,serif;
+    --font-body:'DM Sans',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.018;pointer-events:none;z-index:0}
+  body::after{content:'';position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--teal),transparent);opacity:.7;z-index:200}
+
+  /* ── TOPBAR ── */
+  .topbar{background:rgba(13,15,16,.97);border-bottom:1px solid var(--border);padding:0 48px;height:36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:150;backdrop-filter:blur(12px)}
+  .topbar-left,.topbar-right{display:flex;align-items:center;gap:20px}
+  .topbar-link{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .topbar-link:hover{color:var(--teal)}
+  .topbar-phone{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--teal);text-decoration:none}
+
+  /* ── NAV ── */
+  nav{position:sticky;top:36px;z-index:140;background:rgba(13,15,16,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 48px;height:60px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+  .nav-logo-mark{width:26px;height:26px;border:1.5px solid var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .nav-logo-mark::before{content:'';width:10px;height:10px;background:var(--teal);border-radius:2.5px}
+  .nav-links{display:flex;gap:32px;list-style:none}
+  .nav-links a{font-size:13px;color:var(--text-2);text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-links a.active{color:var(--teal)}
+  .nav-actions{display:flex;align-items:center;gap:12px}
+  .btn-demo{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 18px;background:var(--teal);color:#fff;border:none;border-radius:5px;text-decoration:none;transition:opacity .2s}
+  .btn-demo:hover{opacity:.85}
+  .btn-portal{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:5px;text-decoration:none;transition:color .2s,border-color .2s}
+  .btn-portal:hover{color:var(--text);border-color:var(--border-hi)}
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb{max-width:1200px;margin:0 auto;padding:20px 48px 0;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .breadcrumb a,.breadcrumb span{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);text-decoration:none}
+  .breadcrumb a:hover{color:var(--teal)}
+  .breadcrumb .sep{color:var(--text-4)}
+  .breadcrumb .current{color:var(--teal)}
+
+  /* ── SECTION ── */
+  .section{max-width:1200px;margin:0 auto;padding:0 48px 96px;position:relative;z-index:1}
+  .section-header{display:flex;align-items:center;gap:16px;margin-bottom:44px}
+  .section-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+  .section-rule{flex:1;height:1px;background:var(--border)}
+  .section-title{font-family:var(--font-display);font-size:clamp(30px,3.5vw,46px);font-weight:400;color:var(--text);margin-bottom:14px;line-height:1.1}
+  .section-title em{color:var(--teal);font-style:italic}
+  .section-sub{font-size:15px;color:var(--text-2);max-width:640px;line-height:1.78;margin-bottom:44px;font-weight:300}
+
+  /* Buttons */
+  .btn-primary{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:13px 26px;background:var(--teal);color:#fff;border:none;border-radius:6px;text-decoration:none;transition:opacity .2s,transform .15s;display:inline-block}
+  .btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-ghost{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:12px 22px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:6px;text-decoration:none;transition:color .2s,border-color .2s;display:inline-block}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border-hi)}
+
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+  .pulse-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite;flex-shrink:0}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .anim-0{animation:fadeUp .65s ease forwards .1s;opacity:0}
+  .anim-1{animation:fadeUp .7s ease forwards .22s;opacity:0}
+  .anim-2{animation:fadeUp .7s ease forwards .36s;opacity:0}
+  .anim-3{animation:fadeUp .7s ease forwards .5s;opacity:0}
+  .anim-4{animation:fadeUp .7s ease forwards .62s;opacity:0}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* ── HERO ── */
+  .hero{position:relative;overflow:hidden;z-index:1}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:.35}
+  .hero-glow{position:absolute;top:-100px;right:-60px;width:660px;height:660px;background:radial-gradient(circle,var(--teal-glow) 0%,transparent 65%);pointer-events:none}
+  .hero-glow2{position:absolute;bottom:-60px;left:5%;width:400px;height:240px;background:radial-gradient(ellipse,var(--cyan-glow) 0%,transparent 70%);pointer-events:none}
+  .hero-inner{max-width:1200px;margin:0 auto;padding:88px 48px 80px;position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:20px;padding:5px 14px;border:1px solid rgba(29,158,117,.3);border-radius:30px;background:rgba(29,158,117,.07)}
+  .hero h1{font-family:var(--font-display);font-size:clamp(38px,4.8vw,64px);font-weight:400;line-height:1.06;color:var(--text);margin-bottom:22px}
+  .hero h1 em{color:var(--teal);font-style:italic}
+  .hero h1 .cy{color:var(--cyan);font-style:italic}
+  .hero-desc{font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:14px;font-weight:300;max-width:520px}
+  .hero-desc strong{color:var(--text);font-weight:500}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:48px}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--border)}
+  .hero-stat{padding:20px 16px;border-right:1px solid var(--border);text-align:center}
+  .hero-stat:last-child{border-right:none}
+  .hero-stat-n{font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px}
+  .hero-stat-n span{color:var(--teal)}
+  .hero-stat-l{font-size:11px;color:var(--text-2)}
+
+  /* ── PORTAL MOCK-UI ── */
+  .portal-ui{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative}
+  .portal-ui::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--teal),transparent)}
+  .portal-topbar{background:var(--bg3);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+  .portal-topbar-brand{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--teal)}
+  .portal-topbar-user{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--text-3);display:flex;align-items:center;gap:6px}
+  .portal-topbar-user::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal)}
+  .portal-nav{background:var(--bg3);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:0}
+  .portal-nav-item{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:10px 14px;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;cursor:default}
+  .portal-nav-item.active{color:var(--teal);border-bottom-color:var(--teal)}
+  .portal-body{padding:20px}
+  .portal-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .portal-summary-card{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:12px 14px}
+  .psc-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+  .psc-value{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text);line-height:1}
+  .psc-value span{color:var(--teal);font-size:13px}
+  .psc-sub{font-size:10px;color:var(--text-3);margin-top:3px}
+  .portal-invoices{background:var(--bg3);border:1px solid var(--border);border-radius:7px;overflow:hidden}
+  .pi-header{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text-2);display:flex;justify-content:space-between}
+  .pi-item{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-2)}
+  .pi-item:last-child{border-bottom:none}
+  .pi-status{font-family:var(--font-mono);font-size:8px;letter-spacing:.06em;padding:2px 7px;border-radius:3px;flex-shrink:0}
+  .st-open{background:var(--gold-soft);border:1px solid rgba(245,158,11,.3);color:var(--gold)}
+  .st-paid{background:var(--teal-soft);border:1px solid rgba(29,158,117,.3);color:var(--teal)}
+  .st-due{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.3);color:#f43f5e}
+  .pi-info{flex:1}
+  .pi-amount{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)}
+  .portal-pay-btn{margin-top:12px;width:100%;background:var(--teal);color:#fff;border:none;border-radius:6px;padding:10px;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-align:center;cursor:default}
+
+  /* ── STATS BAND ── */
+  .stats-band{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stats-inner{max-width:1200px;margin:0 auto;padding:52px 48px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
+  .stat-item{padding:16px;border-right:1px solid var(--border)}
+  .stat-item:last-child{border-right:none}
+  .stat-n{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text);line-height:1;margin-bottom:6px}
+  .stat-n span{color:var(--teal)}
+  .stat-l{font-size:12px;color:var(--text-2);line-height:1.4;max-width:120px;margin:0 auto}
+
+  /* ── HOW IT WORKS FLOW ── */
+  .flow-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .flow-step{background:var(--bg2);padding:32px 26px;border-right:1px solid var(--border);position:relative}
+  .flow-step:last-child{border-right:none}
+  .flow-step-num{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--text-4);line-height:1;margin-bottom:16px}
+  .flow-step-icon{width:36px;height:36px;border:1px solid var(--border-mid);border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .flow-step-icon svg{width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .flow-step-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);margin-bottom:8px}
+  .flow-step-desc{font-size:12px;color:var(--text-2);line-height:1.6}
+  .flow-connector{position:absolute;top:32px;right:-12px;width:24px;height:24px;border:1px solid var(--border);border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:2;font-family:var(--font-mono);font-size:10px;color:var(--teal)}
+
+  /* ── MAIN FEATURE SPLIT ── */
+  .feature-split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+  .feature-prose h3{font-family:var(--font-display);font-size:clamp(24px,2.8vw,36px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.2}
+  .feature-prose h3 em{color:var(--teal);font-style:italic}
+  .feature-prose p{font-size:14px;color:var(--text-2);line-height:1.8;margin-bottom:14px;font-weight:300}
+  .feature-prose p strong{color:var(--text);font-weight:500}
+  .feature-cards{display:flex;flex-direction:column;gap:10px}
+  .feature-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;display:flex;gap:14px;align-items:flex-start;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
+  .feature-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--teal);transition:height .3s}
+  .feature-card:hover::before{height:100%}
+  .feature-card:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .fc-icon{width:32px;height:32px;border:1px solid var(--border-mid);border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .fc-icon svg{width:15px;height:15px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .fc-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);margin-bottom:5px}
+  .fc-desc{font-size:12px;color:var(--text-2);line-height:1.6}
+
+  /* ── CAPABILITIES GRID ── */
+  .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .cap-card{background:var(--bg2);padding:32px 28px;transition:background .2s;position:relative;overflow:hidden}
+  .cap-card:hover{background:var(--bg3)}
+  .cap-num{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;color:var(--text-3);margin-bottom:14px}
+  .cap-icon{width:38px;height:38px;border:1px solid var(--border-mid);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;background:var(--bg3)}
+  .cap-icon svg{width:17px;height:17px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .cap-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text);margin-bottom:10px}
+  .cap-desc{font-size:13px;color:var(--text-2);line-height:1.68}
+
+  /* ── PAYMENT DETAIL BLOCK ── */
+  .payment-block{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:56px 48px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;position:relative;overflow:hidden}
+  .payment-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--teal),transparent)}
+  .payment-title{font-family:var(--font-display);font-size:clamp(24px,2.8vw,36px);font-weight:400;color:var(--text);margin-bottom:14px;line-height:1.2}
+  .payment-title em{color:var(--teal);font-style:italic}
+  .payment-desc{font-size:14px;color:var(--text-2);line-height:1.78;margin-bottom:24px;font-weight:300}
+  .payment-methods{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:24px}
+  .pm-chip{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2);transition:border-color .2s}
+  .pm-chip:hover{border-color:var(--border-mid)}
+  .pm-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0}
+  .payment-msp{background:var(--bg3);border:1px solid rgba(29,158,117,.2);border-radius:8px;padding:16px 18px}
+  .payment-msp-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+  .payment-msp-list{display:flex;flex-wrap:wrap;gap:6px}
+  .msp-tag{font-family:var(--font-mono);font-size:9px;padding:3px 9px;border-radius:4px;background:var(--bg);border:1px solid var(--border-mid);color:var(--text-2)}
+  /* Transaction flow */
+  .txn-flow{display:flex;flex-direction:column;gap:8px}
+  .txn-step{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s}
+  .txn-step:hover{border-color:var(--border-mid)}
+  .txn-step-num{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--cyan);background:var(--cyan-soft);border:1px solid rgba(6,182,212,.25);border-radius:3px;padding:2px 6px;flex-shrink:0;margin-top:1px}
+  .txn-step-content{font-size:12px;color:var(--text-2);line-height:1.5}
+  .txn-step-content strong{color:var(--text);font-weight:500}
+
+  /* ── EDITIONS ── */
+  .editions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .edition-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:36px 32px;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
+  .edition-card:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .edition-card-accent{position:absolute;top:0;left:0;right:0;height:2px}
+  .edition-badge{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:16px}
+  .badge-sf{background:rgba(0,162,255,.1);border:1px solid rgba(0,162,255,.3);color:#00a2ff}
+  .badge-cr{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#f97316}
+  .edition-title{font-family:var(--font-display);font-size:26px;font-weight:400;color:var(--text);margin-bottom:12px;line-height:1.2}
+  .edition-title em{color:var(--teal);font-style:italic}
+  .edition-desc{font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:20px}
+  .edition-features{display:flex;flex-direction:column;gap:8px}
+  .ef-item{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text-2);line-height:1.5}
+  .ef-dot{width:4px;height:4px;border-radius:50%;background:var(--teal);margin-top:7px;flex-shrink:0}
+
+  /* ── SECURITY TRUST ── */
+  .trust-band{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid rgba(29,158,117,.2);border-radius:12px;padding:44px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative;overflow:hidden}
+  .trust-band::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent)}
+  .trust-item{text-align:center}
+  .trust-icon{font-size:26px;margin-bottom:10px}
+  .trust-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--text);margin-bottom:5px}
+  .trust-desc{font-size:11px;color:var(--text-3);line-height:1.55}
+
+  /* ── BENEFITS STRIP ── */
+  .benefits-strip{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:40px 36px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .benefit-block{display:flex;flex-direction:column;gap:12px}
+  .bb-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--teal);margin-bottom:4px}
+  .bb-items{display:flex;flex-direction:column;gap:7px}
+  .bb-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-2);line-height:1.5}
+  .bb-item::before{content:'—';color:var(--text-3);font-size:10px;margin-top:2px;flex-shrink:0}
+
+  /* ── CTA ── */
+  .cta-section{background:var(--bg2);border-top:1px solid var(--border);padding:96px 48px;text-align:center;position:relative;overflow:hidden}
+  .cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:300px;background:radial-gradient(ellipse,var(--teal-glow) 0%,transparent 70%);pointer-events:none}
+  .cta-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:18px;position:relative}
+  .cta-h{font-family:var(--font-display);font-size:clamp(34px,4.5vw,58px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.08;position:relative}
+  .cta-h em{color:var(--teal);font-style:italic}
+  .cta-sub{font-size:15px;color:var(--text-2);margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.75;font-weight:300;position:relative}
+  .cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;margin-bottom:32px}
+  .cta-trust{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;position:relative}
+  .cta-trust-item{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--text-3);display:flex;align-items:center;gap:6px}
+  .cta-trust-item::before{content:'✓';color:var(--teal)}
+
+  /* ── FOOTER ── */
+  footer{background:var(--bg);border-top:1px solid var(--border);padding:56px 48px 36px}
+  .footer-inner{max-width:1200px;margin:0 auto}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+  .footer-brand-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:.05em;color:var(--text);display:flex;align-items:center;gap:10px;margin-bottom:14px;text-decoration:none}
+  .footer-brand-mark{width:22px;height:22px;border:1.5px solid var(--teal);border-radius:5px;display:flex;align-items:center;justify-content:center}
+  .footer-brand-mark::before{content:'';width:8px;height:8px;background:var(--teal);border-radius:2px}
+  .footer-desc{font-size:13px;color:var(--text-3);line-height:1.65;margin-bottom:18px}
+  .footer-social{display:flex;gap:8px}
+  .footer-social-link{width:28px;height:28px;border:1px solid var(--border-mid);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:var(--text-3);text-decoration:none;transition:color .2s,border-color .2s}
+  .footer-social-link:hover{color:var(--teal);border-color:rgba(29,158,117,.4)}
+  .footer-col-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px}
+  .footer-col-links{display:flex;flex-direction:column;gap:7px}
+  .footer-col-link{font-size:12px;color:var(--text-2);text-decoration:none;transition:color .2s}
+  .footer-col-link:hover{color:var(--teal)}
+  .footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px}
+  .footer-copy{font-family:var(--font-mono);font-size:10px;color:var(--text-3)}
+  .footer-legal{display:flex;gap:16px}
+  .footer-legal a{font-family:var(--font-mono);font-size:9px;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .footer-legal a:hover{color:var(--teal)}
+
+  /* Responsive */
+  @media(max-width:1024px){
+    .hero-inner,.feature-split,.payment-block,.editions-grid{grid-template-columns:1fr}
+    .portal-ui{display:none}
+    .cap-grid{grid-template-columns:1fr 1fr}
+    .flow-steps{grid-template-columns:1fr 1fr}
+    .trust-band,.benefits-strip{grid-template-columns:repeat(2,1fr)}
+    .stats-inner{grid-template-columns:repeat(2,1fr)}
+    .stat-item:nth-child(2){border-right:none}
+    .footer-top{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:768px){
+    .topbar{display:none}
+    nav{top:0;padding:0 24px}
+    .nav-links{display:none}
+    .breadcrumb,.section{padding-left:24px;padding-right:24px}
+    .hero-inner{padding:72px 24px 60px}
+    .cap-grid,.flow-steps{grid-template-columns:1fr}
+    .trust-band,.benefits-strip{grid-template-columns:1fr}
+    .payment-methods{grid-template-columns:1fr}
+    .cta-section{padding:72px 24px}
+    footer{padding:48px 24px 32px}
+    .footer-top{grid-template-columns:1fr}
+    .footer-bottom{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="https://interweave.biz/contact-us/" class="topbar-link">Request a Demo</a>
+    <a href="tel:18006718692" class="topbar-phone">1-800-671-8692</a>
+  </div>
+  <div class="topbar-right">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="topbar-link">Customer Portal</a>
+    <a href="https://partner.interweave.biz/" class="topbar-link">Partner Portal</a>
+    <a href="https://interweave.freshdesk.com/support/home" class="topbar-link">Support</a>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="https://interweave.biz" class="nav-logo">
+    <span class="nav-logo-mark"></span>
+    <span style="font-family:var(--font-mono);font-weight:700"><span style="color:var(--teal)">Inter</span>Weave</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="https://interweave.biz/financial-solutions/" class="active">Solutions</a></li>
+    <li><a href="https://interweave.biz/financial-solutions-automation/">Industries</a></li>
+    <li><a href="https://interweave.biz/interweave-smartintegration-hub/">Platform</a></li>
+    <li><a href="https://interweave.biz/payments/">Payments</a></li>
+    <li><a href="https://interweave.biz/resource-center/">Resources</a></li>
+    <li><a href="https://interweave.biz/about-us/">Company</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="btn-portal">Log In</a>
+    <a href="https://interweave.biz/contact-us/" class="btn-demo">Request Demo</a>
+  </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="https://interweave.biz">Home</a>
+  <span class="sep">/</span>
+  <a href="https://interweave.biz/financial-solutions/">Solutions</a>
+  <span class="sep">/</span>
+  <span class="current">SmartPortal</span>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow anim-0"><span class="pulse-dot"></span>SmartPortal for CRM</div>
+      <h1 class="anim-1">Your Customers.<br><em>Self-service.</em><br><span class="cy">Always on.</span></h1>
+      <p class="hero-desc anim-2">The <strong>InterWeave SmartPortal</strong> delivers a powerful yet easy-to-use configurable integration solution for your CRM customers — with over <strong>48 integrated Merchant Service Providers</strong> to choose from, giving your customers total payment flexibility while keeping everything organised in your CRM and financial systems.</p>
+      <p class="hero-desc anim-3" style="margin-bottom:36px">A secure, hosted environment where your customers can register, authenticate, view outstanding invoices, and pay — any time, 24 hours a day — with all activity flowing directly into your CRM and financial application.</p>
+      <div class="hero-actions anim-3">
+        <a href="https://interweave.biz/contact-us/" class="btn-primary">Explore SmartPortal</a>
+        <a href="#details" class="btn-ghost">See Portal Details ↓</a>
+      </div>
+      <div class="hero-stats anim-4">
+        <div class="hero-stat">
+          <div class="hero-stat-n">48<span>+</span></div>
+          <div class="hero-stat-l">Merchant service providers</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n">24<span>/7</span></div>
+          <div class="hero-stat-l">Customer self-service access</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n">0</div>
+          <div class="hero-stat-l">Manual payment processing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portal mock UI -->
+    <div class="portal-ui anim-3">
+      <div class="portal-topbar">
+        <span class="portal-topbar-brand">Your Company Portal</span>
+        <span class="portal-topbar-user">Acme Corp · Jane Smith</span>
+      </div>
+      <div class="portal-nav">
+        <span class="portal-nav-item active">Invoices</span>
+        <span class="portal-nav-item">Payment Methods</span>
+        <span class="portal-nav-item">History</span>
+        <span class="portal-nav-item">Account</span>
+      </div>
+      <div class="portal-body">
+        <div class="portal-summary">
+          <div class="portal-summary-card">
+            <div class="psc-label">Balance Due</div>
+            <div class="psc-value">$4,<span>280</span></div>
+            <div class="psc-sub">3 open invoices</div>
+          </div>
+          <div class="portal-summary-card">
+            <div class="psc-label">Last Payment</div>
+            <div class="psc-value">$2,<span>100</span></div>
+            <div class="psc-sub">Mar 1, 2026</div>
+          </div>
+          <div class="portal-summary-card">
+            <div class="psc-label">Credit Terms</div>
+            <div class="psc-value">Net<span> 30</span></div>
+            <div class="psc-sub">ACH / Card on file</div>
+          </div>
+        </div>
+        <div class="portal-invoices">
+          <div class="pi-header"><span>Invoice</span><span>Due Date</span><span>Amount</span><span>Status</span></div>
+          <div class="pi-item">
+            <span class="pi-status st-due">Overdue</span>
+            <div class="pi-info">INV-10241 · Mar Services<br><span style="font-size:9px;color:var(--text-3)">Due: Feb 28, 2026</span></div>
+            <span class="pi-amount">$1,800</span>
+          </div>
+          <div class="pi-item">
+            <span class="pi-status st-open">Open</span>
+            <div class="pi-info">INV-10268 · Apr License<br><span style="font-size:9px;color:var(--text-3)">Due: Mar 31, 2026</span></div>
+            <span class="pi-amount">$1,480</span>
+          </div>
+          <div class="pi-item">
+            <span class="pi-status st-open">Open</span>
+            <div class="pi-info">INV-10302 · Consulting<br><span style="font-size:9px;color:var(--text-3)">Due: Apr 15, 2026</span></div>
+            <span class="pi-amount">$1,000</span>
+          </div>
+          <div class="pi-item">
+            <span class="pi-status st-paid">Paid</span>
+            <div class="pi-info">INV-10198 · Feb Services<br><span style="font-size:9px;color:var(--text-3)">Paid: Mar 1, 2026</span></div>
+            <span class="pi-amount">$2,100</span>
+          </div>
+        </div>
+        <div class="portal-pay-btn">Pay Selected Invoices — ACH / Credit Card</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Band -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-n">48<span>+</span></div>
+      <div class="stat-l">Merchant service providers</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.07s">
+      <div class="stat-n">24<span>/7</span></div>
+      <div class="stat-l">Always-on customer self-service</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.14s">
+      <div class="stat-n">100<span>%</span></div>
+      <div class="stat-l">Uptime — Rackspace Managed Hosting</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.21s">
+      <div class="stat-n"><span>✓</span></div>
+      <div class="stat-l">PCI-DSS &amp; HIPAA compliant</div>
+    </div>
+  </div>
+</div>
+
+<!-- How It Works -->
+<section class="section" style="padding-top:96px">
+  <div class="section-header reveal">
+    <span class="section-label">How SmartPortal works</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">From customer login to <em>payment recorded.</em></h2>
+  <p class="section-sub reveal">The SmartPortal manages the entire customer payment journey — from secure login to transaction posting — without any manual intervention from your team.</p>
+
+  <div class="flow-steps reveal">
+    <div class="flow-step">
+      <div class="flow-step-num">01</div>
+      <div class="flow-step-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="flow-step-title">Register &amp; Authenticate</div>
+      <div class="flow-step-desc">Customers register and authenticate through the SmartPortal using the same permissions hierarchy as your CRM administration setup — no separate credential management.</div>
+      <div class="flow-connector">→</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">02</div>
+      <div class="flow-step-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="flow-step-title">Review Outstanding Invoices</div>
+      <div class="flow-step-desc">Customers see their outstanding invoices, due dates, and account balance — pulled directly from your CRM in real time. Complete payment history and status for every invoice.</div>
+      <div class="flow-connector">→</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">03</div>
+      <div class="flow-step-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <div class="flow-step-title">Make Payment</div>
+      <div class="flow-step-desc">Customers pay via ACH, credit card, debit card, or mobile wallet — processed against your Merchant Service Provider. Any amount, any time, 24 hours a day.</div>
+      <div class="flow-connector">→</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">04</div>
+      <div class="flow-step-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="flow-step-title">Automatic CRM &amp; Financial Update</div>
+      <div class="flow-step-desc">Transaction Records are created in your CRM. These Sales Receipts are then transferred to your Financial Application — QuickBooks, Sage, MS Dynamics, and more — automatically.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Building Upon Success -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Building upon success</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="feature-split">
+    <div class="feature-prose reveal">
+      <h3>Seamless integration between your CRM and <em>Merchant Service Providers.</em></h3>
+      <p>The InterWeave Customer Payment Portal provides a secure environment, with <strong>seamless integration between your CRM and Merchant Service Providers</strong> — allowing real-time ACH/Credit Card payments integrated with your Accounts, Contacts, Opportunities, and Products, and then with your Financial Applications.</p>
+      <p>The Customer Payment Portal is directly integrated with your CRM Account, Contact, Opportunity, and Product Objects. It's a <strong>java application</strong> that provides the data structure, workflow, and complex processing logic necessary for fast, reliable, and secure transmission of transaction data.</p>
+      <p>Once configured, the SmartPortal is available <strong>24/7 for processing transactions</strong> — managing routing just like a traditional credit card terminal, but using the Internet.</p>
+      <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="https://interweave.biz/contact-us/" class="btn-primary">Get Started</a>
+        <a href="https://interweave.biz/videos-and-podcasts/" class="btn-ghost">Watch Videos</a>
+      </div>
+    </div>
+    <div class="feature-cards reveal" style="transition-delay:.1s">
+      <div class="feature-card">
+        <div class="fc-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><div class="fc-title">Secure, Hosted Environment</div><div class="fc-desc">A fully hosted, PCI-DSS and HIPAA compliant payment environment. Sensitive card data is never stored in your CRM — all processing happens through your configured Merchant Service Provider.</div></div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div><div class="fc-title">Custom-Branded for Your Business</div><div class="fc-desc">The SmartPortal can be custom-branded for your business or nonprofit — giving your customers a seamless experience that reflects your brand, not InterWeave's.</div></div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div><div class="fc-title">Real-time CRM Sync</div><div class="fc-desc">Every payment creates a Transaction Record in your CRM immediately — linked to the Account, Contact, Opportunity, and Invoice — with no manual data entry by your team.</div></div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div><div class="fc-title">Financial Application Integration</div><div class="fc-desc">Payment records flow automatically to QuickBooks, Sage, MS Dynamics, Oracle, and other financial applications — creating Sales Receipts without any manual posting or reconciliation.</div></div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+        <div><div class="fc-title">Multiple MSPs Simultaneously</div><div class="fc-desc">Support multiple Merchant Service Providers at the same time — routing different payment types, customers, or business units to different processors based on configurable business rules.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Capabilities Grid -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Portal capabilities</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">A solution that works as <em>hard as you do.</em></h2>
+  <p class="section-sub reveal">The InterWeave SmartPortal delivers powerful yet easy-to-use configurable integration with your Merchant Service Providers, CRM, and financial applications — with security and reliability built in at every layer.</p>
+
+  <div class="cap-grid reveal">
+    <div class="cap-card">
+      <div class="cap-num">01</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="cap-title">// Online Payment Acceptance</div>
+      <div class="cap-desc">Enables small businesses, nonprofits, and organisations to accept online payments or donations through a secure, hosted portal — with minimal technical setup to link from an existing website.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">02</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <div class="cap-title">// Multiple Payment Methods</div>
+      <div class="cap-desc">Real-time credit cards, debit cards, mobile wallets, ACH/EFT, and single payments from checking or savings accounts (processed as Web ACH transactions) — all through one configurable portal.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">03</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div class="cap-title">// Customer-Selected Amounts</div>
+      <div class="cap-desc">Enhances customer convenience by allowing consumers to select the amount of the transaction — enabling partial payments, overpayments, and donation-style flexible-amount acceptance.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">04</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+      <div class="cap-title">// CRM Permissions Hierarchy</div>
+      <div class="cap-desc">Utilises the same authentication and permissions hierarchy as your CRM administration setup — ensuring customers only see their own accounts, invoices, and payment history, with role-based access control.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">05</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div class="cap-title">// Invoice Management</div>
+      <div class="cap-desc">Customers review outstanding invoices, due dates, and payment history — all pulled in real time from your CRM. Pay individual invoices, select multiple, or pay the full balance in a single transaction.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">06</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
+      <div class="cap-title">// Paperless Processing</div>
+      <div class="cap-desc">Streamlines payment processes and reduces paper use — no printed invoices, no mailed cheques, no manual receipt generation. Everything digital, automatic, and reconciled in real time.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Payment Portal Details -->
+<section id="details" class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Payment portal details</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="payment-block reveal">
+    <div>
+      <h2 class="payment-title">48+ Merchant Service Providers. <em>One portal.</em></h2>
+      <p class="payment-desc">Connecting your CRM to a Customer Payment Portal is typically beyond the expertise and technical resources of most businesses. Instead, customers can easily integrate the InterWeave SmartPortal with their CRM and their payment processors — without custom development.</p>
+      <div class="payment-methods">
+        <div class="pm-chip"><span class="pm-dot"></span>ACH / EFT</div>
+        <div class="pm-chip"><span class="pm-dot"></span>Credit Cards</div>
+        <div class="pm-chip"><span class="pm-dot"></span>Debit Cards</div>
+        <div class="pm-chip"><span class="pm-dot"></span>Mobile Wallets</div>
+        <div class="pm-chip"><span class="pm-dot"></span>Checking Account</div>
+        <div class="pm-chip"><span class="pm-dot"></span>Savings Account</div>
+        <div class="pm-chip"><span class="pm-dot"></span>Donation Amounts</div>
+        <div class="pm-chip"><span class="pm-dot"></span>Partial Payments</div>
+      </div>
+      <div class="payment-msp">
+        <div class="payment-msp-label">Supported Merchant Service Providers (48+)</div>
+        <div class="payment-msp-list">
+          <span class="msp-tag">Authorize.net</span>
+          <span class="msp-tag">Chase Paymentech</span>
+          <span class="msp-tag">First Data</span>
+          <span class="msp-tag">PayPal</span>
+          <span class="msp-tag">Transfirst</span>
+          <span class="msp-tag">Nuvei</span>
+          <span class="msp-tag">Run Payments</span>
+          <span class="msp-tag">Stripe</span>
+          <span class="msp-tag">Moneris</span>
+          <span class="msp-tag">+ 39 more</span>
+        </div>
+      </div>
+    </div>
+    <div class="txn-flow">
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px">Transaction flow — CRM to Financial Application</div>
+      <div class="txn-step">
+        <span class="txn-step-num">01</span>
+        <span class="txn-step-content">Customer authenticates via SmartPortal using <strong>CRM permissions hierarchy</strong></span>
+      </div>
+      <div class="txn-step">
+        <span class="txn-step-num">02</span>
+        <span class="txn-step-content">Outstanding invoices loaded from <strong>CRM Account / Contact / Opportunity objects</strong> in real time</span>
+      </div>
+      <div class="txn-step">
+        <span class="txn-step-num">03</span>
+        <span class="txn-step-content">Customer selects invoices and payment method — <strong>ACH, credit card, debit, or wallet</strong></span>
+      </div>
+      <div class="txn-step">
+        <span class="txn-step-num">04</span>
+        <span class="txn-step-content">SmartPortal routes transaction to <strong>Merchant Service Provider</strong> — processed securely via Internet</span>
+      </div>
+      <div class="txn-step">
+        <span class="txn-step-num">05</span>
+        <span class="txn-step-content"><strong>Transaction Record created in CRM</strong> — linked to Account, Contact, Opportunity, and Invoice</span>
+      </div>
+      <div class="txn-step">
+        <span class="txn-step-num">06</span>
+        <span class="txn-step-content">Sales Receipt posted to <strong>Financial Application</strong> — QuickBooks, Sage, MS Dynamics, Oracle, etc.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Portal Editions -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Portal editions</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Which <em>Portal Edition</em> is right for your business?</h2>
+  <p class="section-sub reveal">The good news? InterWeave supports them all. Our configurable Cloud Integration Solutions are not fixed — we constantly update based on conversations with our customers to understand their needs, refine their solutions, and improve our offerings.</p>
+
+  <div class="editions-grid">
+    <div class="edition-card reveal">
+      <div class="edition-card-accent" style="background:linear-gradient(90deg,#00a2ff,transparent)"></div>
+      <span class="edition-badge badge-sf">Salesforce Edition</span>
+      <div class="edition-title">Salesforce <em>Customer Portal</em></div>
+      <div class="edition-desc">The Salesforce SmartPortal edition integrates directly with Salesforce Accounts, Contacts, Opportunities, Products, and custom objects — giving your Salesforce customers a seamless self-service payment experience with full CRM writeback.</div>
+      <div class="edition-features">
+        <div class="ef-item"><span class="ef-dot"></span>Direct integration with Salesforce Account, Contact, Opportunity &amp; Product objects</div>
+        <div class="ef-item"><span class="ef-dot"></span>ACH/Credit Card payments against Salesforce invoices and opportunities</div>
+        <div class="ef-item"><span class="ef-dot"></span>Transaction Records created in Salesforce on payment completion</div>
+        <div class="ef-item"><span class="ef-dot"></span>Sales Receipts transferred to connected financial application automatically</div>
+        <div class="ef-item"><span class="ef-dot"></span>Salesforce permissions hierarchy for secure customer access</div>
+        <div class="ef-item"><span class="ef-dot"></span>Custom branding to match your Salesforce Experience Cloud</div>
+      </div>
+    </div>
+    <div class="edition-card reveal" style="transition-delay:.08s">
+      <div class="edition-card-accent" style="background:linear-gradient(90deg,#f97316,transparent)"></div>
+      <span class="edition-badge badge-cr">Creatio Edition</span>
+      <div class="edition-title">Creatio <em>Customer Portal</em></div>
+      <div class="edition-desc">The Creatio SmartPortal edition integrates directly with Creatio CRM's Account, Contact, Opportunity, Order, and Invoice objects — providing Creatio customers with a branded self-service portal that handles all payment types through 48+ MSPs.</div>
+      <div class="edition-features">
+        <div class="ef-item"><span class="ef-dot"></span>Direct integration with Creatio Account, Contact, Order &amp; Invoice objects</div>
+        <div class="ef-item"><span class="ef-dot"></span>ACH/Credit Card payments processed against Creatio invoice records</div>
+        <div class="ef-item"><span class="ef-dot"></span>Payment Activity records created in Creatio on completion</div>
+        <div class="ef-item"><span class="ef-dot"></span>Automatic sync to QuickBooks, Sage, or MS Dynamics financial application</div>
+        <div class="ef-item"><span class="ef-dot"></span>Creatio CRM permissions for customer-level secure access</div>
+        <div class="ef-item"><span class="ef-dot"></span>Custom branding with Creatio portal design standards</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benefits Strip -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Who benefits</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Built for <em>every type</em> of organisation.</h2>
+  <p class="section-sub reveal">The InterWeave SmartPortal is designed for any organisation that collects payments from customers, members, donors, or citizens — regardless of size or industry.</p>
+
+  <div class="benefits-strip reveal">
+    <div class="benefit-block">
+      <div class="bb-title">// Small Businesses</div>
+      <div class="bb-items">
+        <div class="bb-item">Accept online payments without building custom payment infrastructure</div>
+        <div class="bb-item">Reduce inbound billing calls with self-service invoice review</div>
+        <div class="bb-item">Automatically reconcile payments to QuickBooks or Sage</div>
+        <div class="bb-item">Minimal technical setup — link from your existing website</div>
+      </div>
+    </div>
+    <div class="benefit-block">
+      <div class="bb-title">// Nonprofits &amp; Associations</div>
+      <div class="bb-items">
+        <div class="bb-item">Accept donations online with flexible customer-selected amounts</div>
+        <div class="bb-item">Membership dues and renewal payments — fully automated</div>
+        <div class="bb-item">Custom-branded donor portal reflecting your organisation's identity</div>
+        <div class="bb-item">Full audit trail for nonprofit financial compliance requirements</div>
+      </div>
+    </div>
+    <div class="benefit-block">
+      <div class="bb-title">// Enterprise &amp; B2B</div>
+      <div class="bb-items">
+        <div class="bb-item">Give large account customers self-service access to their invoice portfolio</div>
+        <div class="bb-item">Support multiple Merchant Service Providers simultaneously</div>
+        <div class="bb-item">Complex permissions hierarchy matching your CRM account structure</div>
+        <div class="bb-item">Automatic posting to enterprise ERP — Sage, MS Dynamics, Oracle</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Security Trust Band -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Security &amp; compliance</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="trust-band reveal">
+    <div class="trust-item">
+      <div class="trust-icon">🔒</div>
+      <div class="trust-title">PCI-DSS Compliant</div>
+      <div class="trust-desc">All payment data processed through Rackspace Managed Hosting — fully PCI-DSS certified. Sensitive card data never stored in your CRM or exposed to your internal systems.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">🏥</div>
+      <div class="trust-title">HIPAA Certified</div>
+      <div class="trust-desc">Rackspace Managed Hosting provides HIPAA compliance — enabling the SmartPortal for healthcare providers, patient payment collection, and sensitive medical billing workflows.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">⚡</div>
+      <div class="trust-title">100% Uptime Guarantee</div>
+      <div class="trust-desc">Rackspace provides a 100% uptime guarantee. The SmartPortal is available 24/7 — no maintenance windows, no payment downtime, no customer-facing outages.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">🔐</div>
+      <div class="trust-title">CRM Auth Integration</div>
+      <div class="trust-desc">Customers authenticate using the same security model as your CRM — no separate password management, no additional credentials, and role-based access to their own data only.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <p class="cta-eyebrow">Give your customers self-service</p>
+  <h2 class="cta-h">Your customers.<br><em>Paying themselves.</em></h2>
+  <p class="cta-sub">Deploy the InterWeave SmartPortal and give your customers a branded, secure, self-service payment portal — connected to your CRM and financial systems, available 24/7.</p>
+  <div class="cta-actions">
+    <a href="https://interweave.biz/contact-us/" class="btn-primary">Request a Demo</a>
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="btn-ghost">View Customer Portal ↗</a>
+  </div>
+  <div class="cta-trust">
+    <span class="cta-trust-item">48+ merchant service providers</span>
+    <span class="cta-trust-item">Custom-branded portal</span>
+    <span class="cta-trust-item">PCI-DSS &amp; HIPAA compliant</span>
+    <span class="cta-trust-item">Salesforce &amp; Creatio editions</span>
+    <span class="cta-trust-item">No manual reconciliation</span>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <a href="https://interweave.biz" class="footer-brand-logo">
+          <span class="footer-brand-mark"></span>
+          <span style="font-family:var(--font-mono);font-weight:700"><span style="color:var(--teal)">Inter</span>Weave</span>
+        </a>
+        <p class="footer-desc">The SmartIntegration Platform — connecting CRM, ERP, payments, and customer portals for mid-market businesses, with 48+ payment processors and branded self-service for your customers.</p>
+        <div class="footer-social">
+          <a href="https://twitter.com/interweave1" class="footer-social-link">X</a>
+          <a href="https://www.linkedin.com/company/integration-technologies-inc./" class="footer-social-link">in</a>
+          <a href="https://www.facebook.com/www.interweave.biz" class="footer-social-link">f</a>
+          <a href="https://www.instagram.com/interweavesmartsolutions/" class="footer-social-link">ig</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">SmartPortal</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/customer-portal/" class="footer-col-link">Customer Portal Overview</a>
+          <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="footer-col-link">Log in to Portal</a>
+          <a href="https://interweave.biz/payments/" class="footer-col-link">Payments</a>
+          <a href="https://interweave.biz/salesforce-payment-gateway-by-interweave/" class="footer-col-link">Salesforce Gateway</a>
+          <a href="https://interweave.biz/creatio-payment-gateway-by-interweave/" class="footer-col-link">Creatio Gateway</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Solutions</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/interweave-smartintegration-hub/" class="footer-col-link">SmartIntegration Hub</a>
+          <a href="https://interweave.biz/financial-solutions/" class="footer-col-link">Financial Solutions</a>
+          <a href="https://interweave.biz/ecommerce/" class="footer-col-link">eCommerce</a>
+          <a href="https://interweave.biz/advanced-inventory/" class="footer-col-link">Advanced Inventory</a>
+          <a href="https://interweave.biz/multi-cloud-solutions/" class="footer-col-link">Multi-Cloud Solutions</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Industries</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/financial-solutions-automation/" class="footer-col-link">Financial</a>
+          <a href="https://interweave.biz/financial-health-automation/" class="footer-col-link">Healthcare</a>
+          <a href="https://interweave.biz/interweave-nonprofit-automation/" class="footer-col-link">Nonprofit</a>
+          <a href="https://interweave.biz/interweave-education-automation/" class="footer-col-link">Education</a>
+          <a href="https://interweave.biz/interweave-insurance-automation/" class="footer-col-link">Insurance</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/about-us/" class="footer-col-link">About Us</a>
+          <a href="https://interweave.biz/partners/" class="footer-col-link">Partners</a>
+          <a href="https://interweave.biz/customer-case-studies/" class="footer-col-link">Case Studies</a>
+          <a href="https://interweave.biz/contact-us/" class="footer-col-link">Contact Us</a>
+          <a href="https://academy.interweave.biz/" class="footer-col-link">Academy</a>
+          <a href="https://status.interweave.biz/" class="footer-col-link">Status</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 InterWeave SmartSolutions. All rights reserved. USA: (203) 274-5226 · CAN: 1-800-671-8692</span>
+      <div class="footer-legal">
+        <a href="https://interweave.biz/privacy-policy/">Privacy</a>
+        <a href="https://interweave.biz/terms-and-conditions/">Terms</a>
+        <a href="https://help.interweave.biz/">Support</a>
+        <a href="https://status.interweave.biz/">Status</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold: 0.07});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

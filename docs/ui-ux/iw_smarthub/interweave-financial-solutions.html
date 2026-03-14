@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Solutions — InterWeave SmartIntegration Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f10; --bg2:#13161a; --bg3:#1a1e24;
+    --border:rgba(255,255,255,0.07); --border-mid:rgba(255,255,255,0.13); --border-hi:rgba(255,255,255,0.22);
+    --text:#e8e6e0; --text-2:#8a8880; --text-3:#4a4845; --text-4:#272523;
+    --teal:#1D9E75; --teal-soft:rgba(29,158,117,0.12); --teal-glow:rgba(29,158,117,0.22);
+    --qb:#2ca01c;  --qb-soft:rgba(44,160,28,0.13);
+    --sage:#00b050; --sage-soft:rgba(0,176,80,0.13);
+    --ms:#00a4ef;  --ms-soft:rgba(0,164,239,0.13);
+    --font-display:'Instrument Serif',Georgia,serif;
+    --font-body:'DM Sans',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.018;pointer-events:none;z-index:0}
+  body::after{content:'';position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--teal),transparent);opacity:.7;z-index:200}
+
+  /* ── TOPBAR ── */
+  .topbar{background:rgba(13,15,16,.97);border-bottom:1px solid var(--border);padding:0 48px;height:36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:150;backdrop-filter:blur(12px)}
+  .topbar-left,.topbar-right{display:flex;align-items:center;gap:20px}
+  .topbar-link{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .topbar-link:hover{color:var(--teal)}
+  .topbar-phone{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--teal);text-decoration:none}
+
+  /* ── NAV ── */
+  nav{position:sticky;top:36px;z-index:140;background:rgba(13,15,16,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 48px;height:60px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+  .nav-logo-mark{width:26px;height:26px;border:1.5px solid var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .nav-logo-mark::before{content:'';width:10px;height:10px;background:var(--teal);border-radius:2.5px}
+  .nav-links{display:flex;gap:32px;list-style:none}
+  .nav-links a{font-size:13px;color:var(--text-2);text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-links a.active{color:var(--teal)}
+  .nav-actions{display:flex;align-items:center;gap:12px}
+  .btn-demo{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 18px;background:var(--teal);color:#fff;border:none;border-radius:5px;text-decoration:none;transition:opacity .2s}
+  .btn-demo:hover{opacity:.85}
+  .btn-portal{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:5px;text-decoration:none;transition:color .2s,border-color .2s}
+  .btn-portal:hover{color:var(--text);border-color:var(--border-hi)}
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb{max-width:1200px;margin:0 auto;padding:20px 48px 0;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .breadcrumb a,.breadcrumb span{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);text-decoration:none}
+  .breadcrumb a:hover{color:var(--teal)}
+  .breadcrumb .sep{color:var(--text-4)}
+  .breadcrumb .current{color:var(--teal)}
+
+  /* ── SECTION SCAFFOLD ── */
+  .section{max-width:1200px;margin:0 auto;padding:0 48px 96px;position:relative;z-index:1}
+  .section-header{display:flex;align-items:center;gap:16px;margin-bottom:44px}
+  .section-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+  .section-rule{flex:1;height:1px;background:var(--border)}
+  .section-title{font-family:var(--font-display);font-size:clamp(30px,3.5vw,46px);font-weight:400;color:var(--text);margin-bottom:14px;line-height:1.1}
+  .section-title em{color:var(--teal);font-style:italic}
+  .section-sub{font-size:15px;color:var(--text-2);max-width:640px;line-height:1.78;margin-bottom:44px;font-weight:300}
+
+  /* Buttons */
+  .btn-primary{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:13px 26px;background:var(--teal);color:#fff;border:none;border-radius:6px;cursor:pointer;text-decoration:none;transition:opacity .2s,transform .15s;display:inline-block}
+  .btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-ghost{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:12px 22px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:6px;cursor:pointer;text-decoration:none;transition:color .2s,border-color .2s;display:inline-block}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border-hi)}
+
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+  .pulse-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite;flex-shrink:0}
+
+  /* ── HERO ── */
+  .hero{position:relative;overflow:hidden;z-index:1}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:.35}
+  .hero-glow{position:absolute;top:-120px;right:-60px;width:680px;height:680px;background:radial-gradient(circle,var(--teal-glow) 0%,transparent 65%);pointer-events:none}
+  .hero-inner{max-width:1200px;margin:0 auto;padding:88px 48px 80px;position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:20px;padding:5px 14px;border:1px solid rgba(29,158,117,.3);border-radius:30px;background:rgba(29,158,117,.07)}
+  .hero h1{font-family:var(--font-display);font-size:clamp(38px,4.8vw,64px);font-weight:400;line-height:1.06;color:var(--text);margin-bottom:22px}
+  .hero h1 em{color:var(--teal);font-style:italic}
+  .hero-desc{font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:36px;font-weight:300;max-width:520px}
+  .hero-desc strong{color:var(--text);font-weight:500}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:48px}
+  .hero-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--border)}
+  .hero-proof-item{padding:20px 16px;border-right:1px solid var(--border);text-align:center}
+  .hero-proof-item:last-child{border-right:none}
+  .hero-proof-n{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--text);line-height:1;margin-bottom:5px}
+  .hero-proof-n span{color:var(--teal)}
+  .hero-proof-l{font-size:11px;color:var(--text-2)}
+
+  /* Hero right — financial system cards */
+  .hero-systems{display:flex;flex-direction:column;gap:10px}
+  .hero-system-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;display:flex;align-items:center;gap:16px;transition:border-color .2s,background .2s}
+  .hero-system-card:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .hero-system-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:13px;font-family:var(--font-mono)}
+  .icon-qb{background:var(--qb-soft);border:1px solid rgba(44,160,28,.3);color:var(--qb)}
+  .icon-sage{background:var(--sage-soft);border:1px solid rgba(0,176,80,.3);color:var(--sage)}
+  .icon-ms{background:var(--ms-soft);border:1px solid rgba(0,164,239,.3);color:var(--ms)}
+  .hero-system-info{flex:1}
+  .hero-system-name{font-family:var(--font-mono);font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--text);margin-bottom:3px}
+  .hero-system-desc{font-size:11px;color:var(--text-2);line-height:1.5}
+  .hero-system-arrow{font-family:var(--font-mono);font-size:13px;color:var(--text-3);transition:color .2s,transform .2s}
+  .hero-system-card:hover .hero-system-arrow{color:var(--teal);transform:translateX(2px)}
+
+  /* ── STATS BAND ── */
+  .stats-band{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stats-inner{max-width:1200px;margin:0 auto;padding:52px 48px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
+  .stat-item{padding:16px;border-right:1px solid var(--border)}
+  .stat-item:last-child{border-right:none}
+  .stat-n{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text);line-height:1;margin-bottom:6px}
+  .stat-n span{color:var(--teal)}
+  .stat-l{font-size:12px;color:var(--text-2);line-height:1.4;max-width:120px;margin:0 auto}
+
+  /* ── BUILDING UPON SUCCESS ── */
+  .success-split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+  .success-prose h3{font-family:var(--font-display);font-size:clamp(24px,2.8vw,36px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.2}
+  .success-prose h3 em{color:var(--teal);font-style:italic}
+  .success-prose p{font-size:14px;color:var(--text-2);line-height:1.8;margin-bottom:16px;font-weight:300}
+  .success-prose p strong{color:var(--text);font-weight:500}
+  .success-pillars{display:flex;flex-direction:column;gap:10px}
+  .success-pillar{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;display:flex;gap:14px;align-items:flex-start;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
+  .success-pillar::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--teal);transition:height .3s}
+  .success-pillar:hover::before{height:100%}
+  .success-pillar:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .success-pillar-icon{width:34px;height:34px;border:1px solid var(--border-mid);border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .success-pillar-icon svg{width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .success-pillar-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);margin-bottom:5px}
+  .success-pillar-desc{font-size:12px;color:var(--text-2);line-height:1.6}
+
+  /* ── FINANCIAL SOLUTIONS CARDS ── */
+  .solutions-tabs{display:flex;gap:0;margin-bottom:32px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .sol-tab{flex:1;padding:12px 16px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);background:var(--bg2);border:none;cursor:pointer;transition:background .2s,color .2s;border-right:1px solid var(--border);text-align:center}
+  .sol-tab:last-child{border-right:none}
+  .sol-tab.active{background:var(--bg3);color:var(--teal)}
+  .sol-tab:hover:not(.active){background:var(--bg3);color:var(--text)}
+
+  .solutions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .solution-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:0;overflow:hidden;transition:border-color .2s,transform .15s;text-decoration:none;display:block}
+  .solution-card:hover{border-color:var(--border-mid);transform:translateY(-2px)}
+  .solution-card-top{padding:28px 26px 22px;position:relative}
+  .solution-card-accent{height:2px;width:100%}
+  .solution-card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.04em}
+  .solution-card-title{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--text);margin-bottom:8px;line-height:1.2}
+  .solution-card-sub{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px}
+  .solution-card-tags{display:flex;flex-wrap:wrap;gap:5px}
+  .solution-tag{font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;padding:2px 8px;border-radius:3px;background:var(--bg3);border:1px solid var(--border);color:var(--text-3)}
+  .solution-card-footer{padding:14px 26px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg3)}
+  .solution-card-cta{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+  .solution-card-arrow{font-family:var(--font-mono);font-size:14px;color:var(--text-3);transition:transform .2s,color .2s}
+  .solution-card:hover .solution-card-arrow{transform:translateX(3px);color:var(--teal)}
+
+  /* ── WHAT THEY SHARE ── */
+  .shared-intro{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;margin-bottom:48px}
+  .shared-processes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .process-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s,background .2s}
+  .process-card:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .process-card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+  .process-card-icon{width:28px;height:28px;border-radius:6px;background:var(--teal-soft);border:1px solid rgba(29,158,117,.2);display:flex;align-items:center;justify-content:center}
+  .process-card-icon svg{width:13px;height:13px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .process-card-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text)}
+  .process-items{padding:6px 0}
+  .process-item{padding:7px 18px;font-size:12px;color:var(--text-2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:8px}
+  .process-item:last-child{border-bottom:none}
+  .process-item::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);margin-top:7px;flex-shrink:0}
+
+  /* ── AGILITY BLOCK ── */
+  .agility-block{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:56px 48px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;position:relative;overflow:hidden}
+  .agility-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent)}
+  .agility-title{font-family:var(--font-display);font-size:clamp(26px,3vw,38px);font-weight:400;color:var(--text);margin-bottom:16px;line-height:1.15}
+  .agility-title em{color:var(--teal);font-style:italic}
+  .agility-desc{font-size:14px;color:var(--text-2);line-height:1.78;margin-bottom:28px;font-weight:300}
+  .agility-features{display:flex;flex-direction:column;gap:14px}
+  .agility-feature{display:flex;gap:14px;align-items:flex-start}
+  .agility-feature-num{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--teal);background:var(--teal-soft);border:1px solid rgba(29,158,117,.25);border-radius:4px;padding:2px 7px;flex-shrink:0;margin-top:2px}
+  .agility-feature-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);margin-bottom:4px}
+  .agility-feature-desc{font-size:12px;color:var(--text-2);line-height:1.6}
+  .agility-visual{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .agility-tile{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:18px 16px;text-align:center;transition:border-color .2s}
+  .agility-tile:hover{border-color:var(--border-mid)}
+  .agility-tile-icon{font-size:24px;margin-bottom:8px}
+  .agility-tile-label{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--text);margin-bottom:4px}
+  .agility-tile-sub{font-size:11px;color:var(--text-3);line-height:1.4}
+
+  /* ── CRM CROSS-REFERENCE ── */
+  .crm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .crm-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px 26px;transition:border-color .2s,background .2s}
+  .crm-card:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .crm-card-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .crm-logo{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.04em;padding:5px 12px;border-radius:5px}
+  .crm-sf{background:rgba(0,162,255,.1);border:1px solid rgba(0,162,255,.3);color:#00a2ff}
+  .crm-cr{background:var(--qb-soft);border:1px solid rgba(249,115,22,.3);color:#f97316}
+  .crm-card-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text)}
+  .crm-card-desc{font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:16px}
+  .crm-links{display:flex;flex-wrap:wrap;gap:6px}
+  .crm-link{font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;padding:3px 9px;border-radius:4px;border:1px solid var(--border-mid);color:var(--text-2);text-decoration:none;transition:color .2s,border-color .2s}
+  .crm-link:hover{color:var(--teal);border-color:rgba(29,158,117,.4)}
+
+  /* ── CUSTOMISATION STRIP ── */
+  .custom-strip{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:44px 40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;align-items:start}
+  .custom-block-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--teal);margin-bottom:12px}
+  .custom-block-desc{font-size:13px;color:var(--text-2);line-height:1.7}
+  .custom-divider{width:1px;background:var(--border);align-self:stretch}
+
+  /* ── CTA ── */
+  .cta-section{background:var(--bg2);border-top:1px solid var(--border);padding:96px 48px;text-align:center;position:relative;overflow:hidden}
+  .cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:300px;background:radial-gradient(ellipse,var(--teal-glow) 0%,transparent 70%);pointer-events:none}
+  .cta-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:18px;position:relative}
+  .cta-h{font-family:var(--font-display);font-size:clamp(34px,4.5vw,58px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.08;position:relative}
+  .cta-h em{color:var(--teal);font-style:italic}
+  .cta-sub{font-size:15px;color:var(--text-2);margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.75;font-weight:300;position:relative}
+  .cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;margin-bottom:32px}
+  .cta-trust{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;position:relative}
+  .cta-trust-item{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--text-3);display:flex;align-items:center;gap:6px}
+  .cta-trust-item::before{content:'✓';color:var(--teal)}
+
+  /* ── FOOTER ── */
+  footer{background:var(--bg);border-top:1px solid var(--border);padding:56px 48px 36px}
+  .footer-inner{max-width:1200px;margin:0 auto}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+  .footer-brand-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:.05em;color:var(--text);display:flex;align-items:center;gap:10px;margin-bottom:14px;text-decoration:none}
+  .footer-brand-mark{width:22px;height:22px;border:1.5px solid var(--teal);border-radius:5px;display:flex;align-items:center;justify-content:center}
+  .footer-brand-mark::before{content:'';width:8px;height:8px;background:var(--teal);border-radius:2px}
+  .footer-desc{font-size:13px;color:var(--text-3);line-height:1.65;margin-bottom:18px}
+  .footer-social{display:flex;gap:8px}
+  .footer-social-link{width:28px;height:28px;border:1px solid var(--border-mid);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:var(--text-3);text-decoration:none;transition:color .2s,border-color .2s}
+  .footer-social-link:hover{color:var(--teal);border-color:rgba(29,158,117,.4)}
+  .footer-col-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px}
+  .footer-col-links{display:flex;flex-direction:column;gap:7px}
+  .footer-col-link{font-size:12px;color:var(--text-2);text-decoration:none;transition:color .2s}
+  .footer-col-link:hover{color:var(--teal)}
+  .footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px}
+  .footer-copy{font-family:var(--font-mono);font-size:10px;color:var(--text-3)}
+  .footer-legal{display:flex;gap:16px}
+  .footer-legal a{font-family:var(--font-mono);font-size:9px;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .footer-legal a:hover{color:var(--teal)}
+
+  /* Animations */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .anim-0{animation:fadeUp .65s ease forwards .1s;opacity:0}
+  .anim-1{animation:fadeUp .7s ease forwards .22s;opacity:0}
+  .anim-2{animation:fadeUp .7s ease forwards .36s;opacity:0}
+  .anim-3{animation:fadeUp .7s ease forwards .5s;opacity:0}
+  .anim-4{animation:fadeUp .7s ease forwards .62s;opacity:0}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* Responsive */
+  @media(max-width:1024px){
+    .hero-inner,.success-split,.shared-intro,.agility-block,.crm-grid{grid-template-columns:1fr}
+    .hero-systems{display:none}
+    .solutions-grid{grid-template-columns:1fr 1fr}
+    .shared-processes{grid-template-columns:1fr 1fr}
+    .agility-visual{grid-template-columns:1fr 1fr}
+    .custom-strip{grid-template-columns:1fr}
+    .custom-divider{display:none}
+    .stats-inner{grid-template-columns:repeat(2,1fr)}
+    .stat-item:nth-child(2){border-right:none}
+    .footer-top{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:768px){
+    .topbar{display:none}
+    nav{top:0;padding:0 24px}
+    .nav-links{display:none}
+    .breadcrumb,.section{padding-left:24px;padding-right:24px}
+    .hero-inner{padding:72px 24px 60px}
+    .solutions-grid,.shared-processes,.crm-grid{grid-template-columns:1fr}
+    .agility-visual{grid-template-columns:1fr 1fr}
+    .cta-section{padding:72px 24px}
+    footer{padding:48px 24px 32px}
+    .footer-top{grid-template-columns:1fr}
+    .footer-bottom{flex-direction:column;align-items:flex-start}
+    .solutions-tabs{flex-direction:column}
+    .sol-tab{border-right:none;border-bottom:1px solid var(--border)}
+  }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="https://interweave.biz/contact-us/" class="topbar-link">Request a Demo</a>
+    <a href="tel:18006718692" class="topbar-phone">1-800-671-8692</a>
+  </div>
+  <div class="topbar-right">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="topbar-link">Customer Portal</a>
+    <a href="https://partner.interweave.biz/" class="topbar-link">Partner Portal</a>
+    <a href="https://interweave.freshdesk.com/support/home" class="topbar-link">Support</a>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="https://interweave.biz" class="nav-logo">
+    <span class="nav-logo-mark"></span>
+    <span style="font-family:var(--font-mono);font-weight:700"><span style="color:var(--teal)">Inter</span>Weave</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="https://interweave.biz/financial-solutions/" class="active">Solutions</a></li>
+    <li><a href="https://interweave.biz/financial-solutions-automation/">Industries</a></li>
+    <li><a href="https://interweave.biz/interweave-smartintegration-hub/">Platform</a></li>
+    <li><a href="https://interweave.biz/payments/">Payments</a></li>
+    <li><a href="https://interweave.biz/resource-center/">Resources</a></li>
+    <li><a href="https://interweave.biz/about-us/">Company</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="btn-portal">Log In</a>
+    <a href="https://interweave.biz/contact-us/" class="btn-demo">Request Demo</a>
+  </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="https://interweave.biz">Home</a>
+  <span class="sep">/</span>
+  <span class="current">Financial Solutions</span>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow anim-0"><span class="pulse-dot"></span>SmartIntegration Platform</div>
+      <h1 class="anim-1">Financial Application<br><em>Integration.</em><br>Done Right.</h1>
+      <p class="hero-desc anim-2"><strong>InterWeave SmartSolutions</strong> empowers businesses to streamline operations with complete integration between Financial Accounting Applications and your CRM — uni- or bidirectional, cloud or on-premise, configured without code.</p>
+      <div class="hero-actions anim-3">
+        <a href="https://interweave.biz/contact-us/" class="btn-primary">Get Started</a>
+        <a href="#solutions" class="btn-ghost">View Solutions ↓</a>
+      </div>
+      <div class="hero-proof anim-4">
+        <div class="hero-proof-item">
+          <div class="hero-proof-n">3<span>+</span></div>
+          <div class="hero-proof-l">Financial platform families</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-n"><span>⇄</span></div>
+          <div class="hero-proof-l">Bidirectional sync</div>
+        </div>
+        <div class="hero-proof-item">
+          <div class="hero-proof-n">0</div>
+          <div class="hero-proof-l">Code required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial system cards -->
+    <div class="hero-systems anim-3">
+      <a href="https://interweave.biz/quickbooks-online/" class="hero-system-card">
+        <div class="hero-system-icon icon-qb">QB</div>
+        <div class="hero-system-info">
+          <div class="hero-system-name">QuickBooks</div>
+          <div class="hero-system-desc">Online &amp; Desktop — full AR/AP integration with your CRM</div>
+        </div>
+        <span class="hero-system-arrow">→</span>
+      </a>
+      <a href="https://interweave.biz/sage-intacct/" class="hero-system-card">
+        <div class="hero-system-icon icon-sage">SI</div>
+        <div class="hero-system-info">
+          <div class="hero-system-name">Sage</div>
+          <div class="hero-system-desc">Intacct, 100cloud, X3, BusinessWorks &amp; more</div>
+        </div>
+        <span class="hero-system-arrow">→</span>
+      </a>
+      <a href="https://interweave.biz/ms-dynamics/" class="hero-system-card">
+        <div class="hero-system-icon icon-ms">D365</div>
+        <div class="hero-system-info">
+          <div class="hero-system-name">MS Dynamics 365</div>
+          <div class="hero-system-desc">Finance, Business Central &amp; all Dynamics editions</div>
+        </div>
+        <span class="hero-system-arrow">→</span>
+      </a>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 22px;display:flex;align-items:center;gap:12px">
+        <span class="pulse-dot"></span>
+        <span style="font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;color:var(--text-2)">All solutions pre-configured. No coding required.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Band -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-n">6<span>+</span></div>
+      <div class="stat-l">Financial platforms supported</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.07s">
+      <div class="stat-n"><span>⇄</span></div>
+      <div class="stat-l">Uni- or bidirectional sync</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.14s">
+      <div class="stat-n">Day<span> 1</span></div>
+      <div class="stat-l">Deploy without IT</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.21s">
+      <div class="stat-n">99.9<span>%</span></div>
+      <div class="stat-l">Uptime SLA</div>
+    </div>
+  </div>
+</div>
+
+<!-- Building Upon Success -->
+<section class="section" style="padding-top:96px">
+  <div class="section-header reveal">
+    <span class="section-label">The SmartSolutions approach</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="success-split">
+    <div class="success-prose reveal">
+      <h3>Building upon the success of your <em>financial systems.</em></h3>
+      <p>InterWeave SmartSolutions builds upon the success of Financial Accounting Applications by delivering powerful yet easy-to-use configurable integration solutions for your CRM. Our SmartSolutions enable seamless uni- or bidirectional integration of data between your Financial Accounting Applications and your CRM.</p>
+      <p><strong>Complete, pre-built integration solutions</strong> between "best of breed" applications. All processes, workflow logic, and mapping are ready for you to configure — using only your mouse and a web interface.</p>
+      <p>SmartSolutions are fully customizable, allowing you to leverage pick lists, drop-down menus, and custom fields to tailor integrations to your exact needs. Whether you're a start-up, SMB, or enterprise, choose the perfect configuration model for your business — and modify it at any time.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px">
+        <a href="https://interweave.biz/contact-us/" class="btn-primary">Learn More</a>
+        <a href="https://interweave.biz/videos-and-podcasts/" class="btn-ghost">Watch Videos</a>
+      </div>
+    </div>
+    <div class="success-pillars reveal" style="transition-delay:.1s">
+      <div class="success-pillar">
+        <div class="success-pillar-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div>
+          <div class="success-pillar-title">Pre-built &amp; Configurable</div>
+          <div class="success-pillar-desc">All mapping, workflow logic, and process rules ready to configure via a no-code web interface — no developer required.</div>
+        </div>
+      </div>
+      <div class="success-pillar">
+        <div class="success-pillar-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div class="success-pillar-title">Uni- or Bidirectional Sync</div>
+          <div class="success-pillar-desc">Choose the direction that fits your process — one-way for ERP-of-record workflows, or bidirectional for full real-time visibility across both systems.</div>
+        </div>
+      </div>
+      <div class="success-pillar">
+        <div class="success-pillar-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        </div>
+        <div>
+          <div class="success-pillar-title">Cloud &amp; On-Premise</div>
+          <div class="success-pillar-desc">Supports both cloud-based and on-premise accounting solutions — from QuickBooks Online to Sage 100cloud to MS Dynamics on-premise deployments.</div>
+        </div>
+      </div>
+      <div class="success-pillar">
+        <div class="success-pillar-icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <div>
+          <div class="success-pillar-title">Fully Customisable</div>
+          <div class="success-pillar-desc">Leverage pick lists, drop-down menus, and custom field mapping. Modify your configuration at any time as your business grows and changes.</div>
+        </div>
+      </div>
+      <div class="success-pillar">
+        <div class="success-pillar-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <div class="success-pillar-title">Scales with Your Business</div>
+          <div class="success-pillar-desc">From start-up to enterprise — the same platform adapts to your growth without re-implementation. Add integrations, objects, and entities as you scale.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Financial Solutions Cards -->
+<section id="solutions" class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Financial solutions</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Pre-configured solutions for every<br><em>financial platform.</em></h2>
+  <p class="section-sub reveal">For pre-configured solutions covering all AR/AP transaction integration. Choose your financial platform — all solutions include full object and field-level mapping, ready to configure via the SmartMap console.</p>
+
+  <!-- Platform tabs -->
+  <div class="solutions-tabs reveal">
+    <div class="sol-tab active">QuickBooks</div>
+    <div class="sol-tab">Sage</div>
+    <div class="sol-tab">MS Dynamics</div>
+    <div class="sol-tab">All Platforms</div>
+  </div>
+
+  <div class="solutions-grid">
+
+    <!-- QuickBooks Online -->
+    <a href="https://interweave.biz/quickbooks-online/" class="solution-card reveal" style="transition-delay:0s">
+      <div class="solution-card-accent" style="background:linear-gradient(90deg,var(--qb),transparent)"></div>
+      <div class="solution-card-top">
+        <div class="solution-card-icon" style="background:var(--qb-soft);border:1px solid rgba(44,160,28,.3);color:var(--qb)">QB Online</div>
+        <div class="solution-card-title">QuickBooks Online</div>
+        <div class="solution-card-sub">Configurable solutions between your favourite CRMs and QuickBooks Online — cloud-native, real-time, bidirectional sync with full AR/AP coverage.</div>
+        <div class="solution-card-tags">
+          <span class="solution-tag">Salesforce</span>
+          <span class="solution-tag">Creatio</span>
+          <span class="solution-tag">Bidirectional</span>
+          <span class="solution-tag">AR/AP</span>
+          <span class="solution-tag">Real-time</span>
+        </div>
+      </div>
+      <div class="solution-card-footer">
+        <span class="solution-card-cta">Explore solution</span>
+        <span class="solution-card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- QuickBooks Desktop -->
+    <a href="https://interweave.biz/quickbooks-desktop/" class="solution-card reveal" style="transition-delay:.06s">
+      <div class="solution-card-accent" style="background:linear-gradient(90deg,var(--qb),transparent)"></div>
+      <div class="solution-card-top">
+        <div class="solution-card-icon" style="background:var(--qb-soft);border:1px solid rgba(44,160,28,.3);color:var(--qb)">QB Desktop</div>
+        <div class="solution-card-title">QuickBooks Desktop</div>
+        <div class="solution-card-sub">Configurable solutions between your favourite CRMs and QuickBooks Desktop — Pro Plus, Premier Plus, Enterprise, and Desktop Payments editions.</div>
+        <div class="solution-card-tags">
+          <span class="solution-tag">Pro Plus</span>
+          <span class="solution-tag">Enterprise</span>
+          <span class="solution-tag">On-premise</span>
+          <span class="solution-tag">Bidirectional</span>
+        </div>
+      </div>
+      <div class="solution-card-footer">
+        <span class="solution-card-cta">Explore solution</span>
+        <span class="solution-card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Sage Intacct -->
+    <a href="https://interweave.biz/sage-intacct/" class="solution-card reveal" style="transition-delay:.12s">
+      <div class="solution-card-accent" style="background:linear-gradient(90deg,var(--sage),transparent)"></div>
+      <div class="solution-card-top">
+        <div class="solution-card-icon" style="background:var(--sage-soft);border:1px solid rgba(0,176,80,.3);color:var(--sage)">Intacct</div>
+        <div class="solution-card-title">Sage Intacct</div>
+        <div class="solution-card-sub">Configurable solutions between your favourite CRMs and Sage Intacct — multi-entity, multi-currency, with full AR, contracts, projects, and GL dimension mapping.</div>
+        <div class="solution-card-tags">
+          <span class="solution-tag">Multi-entity</span>
+          <span class="solution-tag">Multi-currency</span>
+          <span class="solution-tag">GL Dimensions</span>
+          <span class="solution-tag">Projects</span>
+        </div>
+      </div>
+      <div class="solution-card-footer">
+        <span class="solution-card-cta">Explore solution</span>
+        <span class="solution-card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Sage 100cloud -->
+    <a href="https://interweave.biz/sage-100/" class="solution-card reveal" style="transition-delay:.18s">
+      <div class="solution-card-accent" style="background:linear-gradient(90deg,var(--sage),transparent)"></div>
+      <div class="solution-card-top">
+        <div class="solution-card-icon" style="background:var(--sage-soft);border:1px solid rgba(0,176,80,.3);color:var(--sage)">S100</div>
+        <div class="solution-card-title">Sage 100cloud</div>
+        <div class="solution-card-sub">Configurable solutions between your favourite CRMs and Sage 100cloud — BOI-native integration with full Customer, Sales Order, AR Invoice, and Inventory sync.</div>
+        <div class="solution-card-tags">
+          <span class="solution-tag">BOI native</span>
+          <span class="solution-tag">On-premise</span>
+          <span class="solution-tag">UDF support</span>
+          <span class="solution-tag">Inventory</span>
+        </div>
+      </div>
+      <div class="solution-card-footer">
+        <span class="solution-card-cta">Explore solution</span>
+        <span class="solution-card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- All Other Sage -->
+    <a href="https://interweave.biz/all-other-sage/" class="solution-card reveal" style="transition-delay:.24s">
+      <div class="solution-card-accent" style="background:linear-gradient(90deg,var(--sage),transparent)"></div>
+      <div class="solution-card-top">
+        <div class="solution-card-icon" style="background:var(--sage-soft);border:1px solid rgba(0,176,80,.3);color:var(--sage)">Sage+</div>
+        <div class="solution-card-title">All Other Sage</div>
+        <div class="solution-card-sub">Configurable solutions for Sage X3, Sage 300cloud, Sage 500cloud, Sage BusinessWorks, Sage 50cloud, and Sage 100 Contractor — tailored to each platform's architecture.</div>
+        <div class="solution-card-tags">
+          <span class="solution-tag">Sage X3</span>
+          <span class="solution-tag">Sage 300</span>
+          <span class="solution-tag">BusinessWorks</span>
+          <span class="solution-tag">Sage 50</span>
+        </div>
+      </div>
+      <div class="solution-card-footer">
+        <span class="solution-card-cta">Explore solution</span>
+        <span class="solution-card-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- MS Dynamics 365 -->
+    <a href="https://interweave.biz/ms-dynamics/" class="solution-card reveal" style="transition-delay:.30s">
+      <div class="solution-card-accent" style="background:linear-gradient(90deg,var(--ms),transparent)"></div>
+      <div class="solution-card-top">
+        <div class="solution-card-icon" style="background:var(--ms-soft);border:1px solid rgba(0,164,239,.3);color:var(--ms)">D365</div>
+        <div class="solution-card-title">MS Dynamics 365</div>
+        <div class="solution-card-sub">Configurable solutions between your favourite CRMs and Microsoft Dynamics 365 Finance, Business Central, NAV, and AX — using OData REST API with Azure AD auth.</div>
+        <div class="solution-card-tags">
+          <span class="solution-tag">Finance</span>
+          <span class="solution-tag">Business Central</span>
+          <span class="solution-tag">OData REST</span>
+          <span class="solution-tag">Azure AD</span>
+        </div>
+      </div>
+      <div class="solution-card-footer">
+        <span class="solution-card-cta">Explore solution</span>
+        <span class="solution-card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- What They Share — Shared Processes -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Shared financial processes</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="shared-intro">
+    <div class="reveal">
+      <h2 class="section-title" style="margin-bottom:14px">QuickBooks, Sage &amp; Dynamics.<br><em>More in common</em> than you think.</h2>
+      <p class="section-sub" style="margin-bottom:0">While they differ in target audience and advanced features, QuickBooks, Sage, and Microsoft Dynamics all share the same core financial processes — and InterWeave integrates all of them through a single, consistent SmartSolutions platform.</p>
+    </div>
+    <div class="reveal" style="transition-delay:.1s">
+      <div style="background:var(--bg2);border:1px solid rgba(29,158,117,.3);border-radius:10px;padding:24px 22px">
+        <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:14px">The InterWeave advantage</div>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:14px">Because all three platforms share the same underlying financial processes, a single InterWeave SmartSolution deployment handles any combination — without rebuilding your integration when you change ERP vendors.</p>
+        <a href="https://interweave.biz/interweave-smartintegration-hub/" style="font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);text-decoration:none">Learn about the SmartHub →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="shared-processes">
+    <div class="process-card reveal">
+      <div class="process-card-header">
+        <div class="process-card-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <span class="process-card-title">Financial Management</span>
+      </div>
+      <div class="process-items">
+        <div class="process-item">Accounts Payable (AP) — vendor invoices &amp; payments</div>
+        <div class="process-item">Accounts Receivable (AR) — customer invoices &amp; payments</div>
+        <div class="process-item">General Ledger (GL) — chart of accounts &amp; transactions</div>
+        <div class="process-item">Bank Reconciliation — matching bank records to system</div>
+        <div class="process-item">Financial Reporting — P&amp;L, balance sheet, cash flow</div>
+      </div>
+    </div>
+    <div class="process-card reveal" style="transition-delay:.06s">
+      <div class="process-card-header">
+        <div class="process-card-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        </div>
+        <span class="process-card-title">Inventory Management</span>
+      </div>
+      <div class="process-items">
+        <div class="process-item">Tracking inventory levels and managing stock</div>
+        <div class="process-item">Monitoring inventory costs and sales</div>
+        <div class="process-item">Inventory movement and valuation reports</div>
+        <div class="process-item">ATP (Available to Promise) quantities</div>
+      </div>
+    </div>
+    <div class="process-card reveal" style="transition-delay:.12s">
+      <div class="process-card-header">
+        <div class="process-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <span class="process-card-title">Customer &amp; Vendor Management</span>
+      </div>
+      <div class="process-items">
+        <div class="process-item">Detailed records for customers and vendors</div>
+        <div class="process-item">Customer invoices, payments, outstanding balances</div>
+        <div class="process-item">Vendor bills and payment management</div>
+        <div class="process-item">Credit limits and AR aging reports</div>
+      </div>
+    </div>
+    <div class="process-card reveal" style="transition-delay:.18s">
+      <div class="process-card-header">
+        <div class="process-card-icon">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <span class="process-card-title">Budgeting &amp; Forecasting</span>
+      </div>
+      <div class="process-items">
+        <div class="process-item">Creating and managing budgets vs. actuals</div>
+        <div class="process-item">Analyzing financial trends for forecasting</div>
+        <div class="process-item">Project and job costing profitability tracking</div>
+        <div class="process-item">Allocating revenue and expenses to projects</div>
+      </div>
+    </div>
+    <div class="process-card reveal" style="transition-delay:.24s">
+      <div class="process-card-header">
+        <div class="process-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span class="process-card-title">Tax &amp; Compliance</span>
+      </div>
+      <div class="process-items">
+        <div class="process-item">Sales tax and VAT calculation &amp; collection</div>
+        <div class="process-item">Tax reports for compliance and audit purposes</div>
+        <div class="process-item">Payroll — salaries, tax calculations, deductions</div>
+        <div class="process-item">Payroll compliance and reporting</div>
+      </div>
+    </div>
+    <div class="process-card reveal" style="transition-delay:.30s">
+      <div class="process-card-header">
+        <div class="process-card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+        </div>
+        <span class="process-card-title">Multi-Currency &amp; Integration</span>
+      </div>
+      <div class="process-items">
+        <div class="process-item">Multi-currency transactions &amp; FX tracking</div>
+        <div class="process-item">Currency gains and losses reporting</div>
+        <div class="process-item">CRM, payment gateway &amp; third-party sync</div>
+        <div class="process-item">Automating recurring billing workflows</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Agility & Innovation Block -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Agility &amp; innovation</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="agility-block reveal">
+    <div>
+      <h2 class="agility-title">Empower <em>Agility</em> and Innovation with a Connected Business.</h2>
+      <p class="agility-desc">Transform your business with InterWeave's Financial Application Integration, designed to unify data, processes, and teams. Deliver operational excellence, foster innovation, and create exceptional customer experiences — all while enabling your team to thrive in a hyperconnected environment.</p>
+      <div class="agility-features">
+        <div class="agility-feature">
+          <span class="agility-feature-num">01</span>
+          <div>
+            <div class="agility-feature-title">Stay Effortlessly Organised</div>
+            <div class="agility-feature-desc">Keep your accounts in order without the hassle. InterWeave's integration seamlessly syncs with your accounts and automatically categorises transactions, ensuring you stay organised year-round with minimal effort.</div>
+          </div>
+        </div>
+        <div class="agility-feature">
+          <span class="agility-feature-num">02</span>
+          <div>
+            <div class="agility-feature-title">Track Expenses with Confidence</div>
+            <div class="agility-feature-desc">From managing daily expenses to preparing for tax season, InterWeave's Financial Application Integration gives you a clear understanding of where your money is going.</div>
+          </div>
+        </div>
+        <div class="agility-feature">
+          <span class="agility-feature-num">03</span>
+          <div>
+            <div class="agility-feature-title">All-in-One Financial Overview</div>
+            <div class="agility-feature-desc">Start your day with a complete financial snapshot. With every transaction imported into a centralised dashboard, monitor all your balances in one place for total clarity.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="agility-visual">
+      <div class="agility-tile">
+        <div class="agility-tile-icon">📊</div>
+        <div class="agility-tile-label">Real-time Dashboards</div>
+        <div class="agility-tile-sub">Live financial data in your CRM</div>
+      </div>
+      <div class="agility-tile">
+        <div class="agility-tile-icon">⚡</div>
+        <div class="agility-tile-label">Auto Sync</div>
+        <div class="agility-tile-sub">No manual data entry required</div>
+      </div>
+      <div class="agility-tile">
+        <div class="agility-tile-icon">🔒</div>
+        <div class="agility-tile-label">Secure &amp; Audited</div>
+        <div class="agility-tile-sub">SOC 2 Type II · Full audit logs</div>
+      </div>
+      <div class="agility-tile">
+        <div class="agility-tile-icon">🔧</div>
+        <div class="agility-tile-label">No-Code Config</div>
+        <div class="agility-tile-sub">Mouse-driven SmartMap console</div>
+      </div>
+      <div class="agility-tile">
+        <div class="agility-tile-icon">🌐</div>
+        <div class="agility-tile-label">Cloud &amp; On-Premise</div>
+        <div class="agility-tile-sub">Any deployment model supported</div>
+      </div>
+      <div class="agility-tile">
+        <div class="agility-tile-icon">📈</div>
+        <div class="agility-tile-label">Scalable</div>
+        <div class="agility-tile-sub">Start-up to enterprise ready</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CRM Cross-Reference -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">CRM integrations</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Connect your CRM to<br>every <em>financial platform.</em></h2>
+  <p class="section-sub reveal">InterWeave SmartSolutions are available for both Salesforce and Creatio CRM — connecting each to the full range of QuickBooks, Sage, and Microsoft Dynamics financial platforms.</p>
+
+  <div class="crm-grid">
+    <div class="crm-card reveal">
+      <div class="crm-card-header">
+        <span class="crm-logo crm-sf">Salesforce</span>
+        <span class="crm-card-title">Salesforce Integrations</span>
+      </div>
+      <div class="crm-card-desc">Connect Salesforce CRM to your financial systems, payment processors, and eCommerce platforms — keeping pipeline data and financial records in real-time sync.</div>
+      <div class="crm-links">
+        <a href="https://interweave.biz/salesforce-to-quickbooks-integration-by-interweave/" class="crm-link">→ QuickBooks</a>
+        <a href="https://interweave.biz/salesforce-to-sage-integration-by-interweave/" class="crm-link">→ Sage</a>
+        <a href="https://interweave.biz/salesforce-to-ms-dynamics-integration-by-interweave/" class="crm-link">→ MS Dynamics</a>
+        <a href="https://interweave.biz/salesforce-payment-gateway-by-interweave/" class="crm-link">→ Payment Gateway</a>
+      </div>
+    </div>
+    <div class="crm-card reveal" style="transition-delay:.08s">
+      <div class="crm-card-header">
+        <span class="crm-logo crm-cr">Creatio</span>
+        <span class="crm-card-title">Creatio Integrations</span>
+      </div>
+      <div class="crm-card-desc">Connect Creatio CRM to your financial systems, payment processors, and eCommerce platforms — with the same bidirectional real-time sync and pre-built SmartSolutions.</div>
+      <div class="crm-links">
+        <a href="https://interweave.biz/creatio-to-quickbooks-integration-by-interweave/" class="crm-link">→ QuickBooks</a>
+        <a href="https://interweave.biz/creatio-to-sage-integration-by-interweave/" class="crm-link">→ Sage</a>
+        <a href="https://interweave.biz/creatio-to-msd-integration-by-interweave/" class="crm-link">→ MS Dynamics</a>
+        <a href="https://interweave.biz/creatio-payment-gateway-by-interweave/" class="crm-link">→ Payment Gateway</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Customisation Strip -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Platform leader</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">The leader in Accounting &amp;<br>Financial Application Software <em>Integration.</em></h2>
+  <p class="section-sub reveal">InterWeave has consistently stayed ahead as financial platforms have evolved — delivering solutions that adapt to and align with every advancement in accounting and ERP technology.</p>
+
+  <div class="custom-strip reveal">
+    <div>
+      <div class="custom-block-title">// Compete on Integration</div>
+      <div class="custom-block-desc">Transform integration into a competitive advantage. InterWeave SmartSolutions empowers your systems to work together seamlessly — turning operational complexity into business agility that your competitors can't match without the same platform.</div>
+    </div>
+    <div class="custom-divider"></div>
+    <div>
+      <div class="custom-block-title">// Start-up to Enterprise</div>
+      <div class="custom-block-desc">Whether you're a start-up connecting QuickBooks for the first time or an enterprise managing multi-entity Sage Intacct environments, choose the perfect configuration model for your business — and modify it at any time to adapt to growth and change.</div>
+    </div>
+    <div class="custom-divider"></div>
+    <div>
+      <div class="custom-block-title">// Evolving with Your Platforms</div>
+      <div class="custom-block-desc">As financial applications have evolved, InterWeave has consistently stayed ahead — delivering integration enhancements, new customisation capabilities, and a modernised user experience that aligns with every platform update.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <p class="cta-eyebrow">Take the next step</p>
+  <h2 class="cta-h">Take control of your<br><em>business processes.</em></h2>
+  <p class="cta-sub">Deploy an InterWeave Financial SmartSolution and connect your CRM to your accounting system — without manual entry, without custom development, and without the wait.</p>
+  <div class="cta-actions">
+    <a href="https://interweave.biz/contact-us/" class="btn-primary">Request a Demo</a>
+    <a href="https://interweave.biz/interweave-smartintegration-hub/" class="btn-ghost">Explore the Platform</a>
+  </div>
+  <div class="cta-trust">
+    <span class="cta-trust-item">No coding required</span>
+    <span class="cta-trust-item">Cloud &amp; on-premise</span>
+    <span class="cta-trust-item">Bidirectional sync</span>
+    <span class="cta-trust-item">Live in days</span>
+    <span class="cta-trust-item">Start-up to enterprise</span>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <a href="https://interweave.biz" class="footer-brand-logo">
+          <span class="footer-brand-mark"></span>
+          <span style="font-family:var(--font-mono);font-weight:700"><span style="color:var(--teal)">Inter</span>Weave</span>
+        </a>
+        <p class="footer-desc">The SmartIntegration Platform for Financial Application Integration — connecting CRM, ERP, payments, and eCommerce for mid-market businesses.</p>
+        <div class="footer-social">
+          <a href="https://twitter.com/interweave1" class="footer-social-link">X</a>
+          <a href="https://www.linkedin.com/company/integration-technologies-inc./" class="footer-social-link">in</a>
+          <a href="https://www.facebook.com/www.interweave.biz" class="footer-social-link">f</a>
+          <a href="https://www.instagram.com/interweavesmartsolutions/" class="footer-social-link">ig</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Financial Solutions</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/quickbooks-online/" class="footer-col-link">QuickBooks Online</a>
+          <a href="https://interweave.biz/quickbooks-desktop/" class="footer-col-link">QuickBooks Desktop</a>
+          <a href="https://interweave.biz/sage-intacct/" class="footer-col-link">Sage Intacct</a>
+          <a href="https://interweave.biz/sage-100/" class="footer-col-link">Sage 100cloud</a>
+          <a href="https://interweave.biz/all-other-sage/" class="footer-col-link">All Other Sage</a>
+          <a href="https://interweave.biz/ms-dynamics/" class="footer-col-link">MS Dynamics 365</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">CRM Solutions</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/salesforce-to-quickbooks-integration-by-interweave/" class="footer-col-link">Salesforce → QuickBooks</a>
+          <a href="https://interweave.biz/salesforce-to-sage-integration-by-interweave/" class="footer-col-link">Salesforce → Sage</a>
+          <a href="https://interweave.biz/salesforce-to-ms-dynamics-integration-by-interweave/" class="footer-col-link">Salesforce → Dynamics</a>
+          <a href="https://interweave.biz/creatio-to-quickbooks-integration-by-interweave/" class="footer-col-link">Creatio → QuickBooks</a>
+          <a href="https://interweave.biz/creatio-to-sage-integration-by-interweave/" class="footer-col-link">Creatio → Sage</a>
+          <a href="https://interweave.biz/creatio-to-msd-integration-by-interweave/" class="footer-col-link">Creatio → Dynamics</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/interweave-smartintegration-hub/" class="footer-col-link">SmartIntegration Hub</a>
+          <a href="https://interweave.biz/payments/" class="footer-col-link">Payments</a>
+          <a href="https://interweave.biz/ecommerce/" class="footer-col-link">eCommerce</a>
+          <a href="https://interweave.biz/customer-portal/" class="footer-col-link">SmartPortal</a>
+          <a href="https://interweave.biz/advanced-inventory/" class="footer-col-link">Advanced Inventory</a>
+          <a href="https://interweave.biz/multi-cloud-solutions/" class="footer-col-link">Multi-Cloud</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/about-us/" class="footer-col-link">About Us</a>
+          <a href="https://interweave.biz/partners/" class="footer-col-link">Partners</a>
+          <a href="https://interweave.biz/customer-case-studies/" class="footer-col-link">Case Studies</a>
+          <a href="https://interweave.biz/contact-us/" class="footer-col-link">Contact Us</a>
+          <a href="https://academy.interweave.biz/" class="footer-col-link">Academy</a>
+          <a href="https://status.interweave.biz/" class="footer-col-link">Status</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 InterWeave SmartSolutions. All rights reserved. 1-800-671-8692</span>
+      <div class="footer-legal">
+        <a href="https://interweave.biz/faq/">FAQ</a>
+        <a href="https://help.interweave.biz/">Support</a>
+        <a href="https://exchange.interweave.biz/">Exchange</a>
+        <a href="https://status.interweave.biz/">Status</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold: 0.07});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Tab interaction
+  document.querySelectorAll('.sol-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.sol-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

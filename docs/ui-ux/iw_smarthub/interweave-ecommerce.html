@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eCommerce Solutions — InterWeave SmartIntegration Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0f10;--bg2:#13161a;--bg3:#1a1e24;
+    --border:rgba(255,255,255,0.07);--border-mid:rgba(255,255,255,0.13);--border-hi:rgba(255,255,255,0.22);
+    --text:#e8e6e0;--text-2:#8a8880;--text-3:#4a4845;--text-4:#272523;
+    --teal:#1D9E75;--teal-soft:rgba(29,158,117,0.12);--teal-glow:rgba(29,158,117,0.22);
+    --orange:#f97316;--orange-soft:rgba(249,115,22,0.12);--orange-glow:rgba(249,115,22,0.16);
+    --rose:#f43f5e;--rose-soft:rgba(244,63,94,0.12);
+    --sky:#38bdf8;--sky-soft:rgba(56,189,248,0.12);
+    --font-display:'Instrument Serif',Georgia,serif;
+    --font-body:'DM Sans',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.018;pointer-events:none;z-index:0}
+  body::after{content:'';position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--teal),transparent);opacity:.7;z-index:200}
+
+  /* ── TOPBAR ── */
+  .topbar{background:rgba(13,15,16,.97);border-bottom:1px solid var(--border);padding:0 48px;height:36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:150;backdrop-filter:blur(12px)}
+  .topbar-left,.topbar-right{display:flex;align-items:center;gap:20px}
+  .topbar-link{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .topbar-link:hover{color:var(--teal)}
+  .topbar-phone{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--teal);text-decoration:none}
+
+  /* ── NAV ── */
+  nav{position:sticky;top:36px;z-index:140;background:rgba(13,15,16,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 48px;height:60px;display:flex;align-items:center;justify-content:space-between}
+  .nav-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px}
+  .nav-logo-mark{width:26px;height:26px;border:1.5px solid var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .nav-logo-mark::before{content:'';width:10px;height:10px;background:var(--teal);border-radius:2.5px}
+  .nav-links{display:flex;gap:32px;list-style:none}
+  .nav-links a{font-size:13px;color:var(--text-2);text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-links a.active{color:var(--teal)}
+  .nav-actions{display:flex;align-items:center;gap:12px}
+  .btn-demo{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 18px;background:var(--teal);color:#fff;border:none;border-radius:5px;text-decoration:none;transition:opacity .2s}
+  .btn-demo:hover{opacity:.85}
+  .btn-portal{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:7px 16px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:5px;text-decoration:none;transition:color .2s,border-color .2s}
+  .btn-portal:hover{color:var(--text);border-color:var(--border-hi)}
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb{max-width:1200px;margin:0 auto;padding:20px 48px 0;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .breadcrumb a,.breadcrumb span{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);text-decoration:none}
+  .breadcrumb a:hover{color:var(--teal)}
+  .breadcrumb .sep{color:var(--text-4)}
+  .breadcrumb .current{color:var(--teal)}
+
+  /* ── SECTION ── */
+  .section{max-width:1200px;margin:0 auto;padding:0 48px 96px;position:relative;z-index:1}
+  .section-header{display:flex;align-items:center;gap:16px;margin-bottom:44px}
+  .section-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+  .section-rule{flex:1;height:1px;background:var(--border)}
+  .section-title{font-family:var(--font-display);font-size:clamp(30px,3.5vw,46px);font-weight:400;color:var(--text);margin-bottom:14px;line-height:1.1}
+  .section-title em{color:var(--teal);font-style:italic}
+  .section-sub{font-size:15px;color:var(--text-2);max-width:640px;line-height:1.78;margin-bottom:44px;font-weight:300}
+
+  /* Buttons */
+  .btn-primary{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:13px 26px;background:var(--teal);color:#fff;border:none;border-radius:6px;text-decoration:none;transition:opacity .2s,transform .15s;display:inline-block}
+  .btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-ghost{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:12px 22px;background:transparent;color:var(--text-2);border:1px solid var(--border-mid);border-radius:6px;text-decoration:none;transition:color .2s,border-color .2s;display:inline-block}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border-hi)}
+
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+  .pulse-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite;flex-shrink:0}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .anim-0{animation:fadeUp .65s ease forwards .1s;opacity:0}
+  .anim-1{animation:fadeUp .7s ease forwards .22s;opacity:0}
+  .anim-2{animation:fadeUp .7s ease forwards .36s;opacity:0}
+  .anim-3{animation:fadeUp .7s ease forwards .5s;opacity:0}
+  .anim-4{animation:fadeUp .7s ease forwards .62s;opacity:0}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  /* ── HERO ── */
+  .hero{position:relative;overflow:hidden;z-index:1}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:.35}
+  .hero-glow{position:absolute;top:-100px;right:-60px;width:680px;height:680px;background:radial-gradient(circle,var(--teal-glow) 0%,transparent 65%);pointer-events:none}
+  .hero-glow2{position:absolute;bottom:-60px;left:10%;width:440px;height:260px;background:radial-gradient(ellipse,var(--orange-glow) 0%,transparent 70%);pointer-events:none}
+  .hero-inner{max-width:1200px;margin:0 auto;padding:88px 48px 80px;position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);margin-bottom:20px;padding:5px 14px;border:1px solid rgba(29,158,117,.3);border-radius:30px;background:rgba(29,158,117,.07)}
+  .hero h1{font-family:var(--font-display);font-size:clamp(38px,4.8vw,64px);font-weight:400;line-height:1.06;color:var(--text);margin-bottom:22px}
+  .hero h1 em{color:var(--teal);font-style:italic}
+  .hero h1 .or{color:var(--orange);font-style:italic}
+  .hero-tagline{font-family:var(--font-mono);font-size:11px;letter-spacing:.07em;color:var(--orange);margin-bottom:18px}
+  .hero-desc{font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:14px;font-weight:300;max-width:520px}
+  .hero-desc strong{color:var(--text);font-weight:500}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:48px}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--border)}
+  .hero-stat{padding:20px 16px;border-right:1px solid var(--border);text-align:center}
+  .hero-stat:last-child{border-right:none}
+  .hero-stat-n{font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px}
+  .hero-stat-n span{color:var(--teal)}
+  .hero-stat-l{font-size:11px;color:var(--text-2)}
+
+  /* ── ECOMMERCE FLOW DIAGRAM ── */
+  .eco-diagram{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px 28px;position:relative;overflow:hidden}
+  .eco-diagram::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),var(--teal),transparent)}
+  .eco-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:24px;opacity:.7}
+  /* Order flow steps */
+  .eco-steps{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+  .eco-step{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px 14px;display:flex;align-items:center;gap:10px;transition:border-color .2s}
+  .eco-step:hover{border-color:var(--border-mid)}
+  .eco-step-num{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--orange);background:var(--orange-soft);border:1px solid rgba(249,115,22,.25);border-radius:3px;padding:2px 6px;flex-shrink:0}
+  .eco-step-text{font-size:11px;color:var(--text-2);flex:1;line-height:1.35}
+  .eco-step-badge{font-family:var(--font-mono);font-size:7px;letter-spacing:.07em;padding:2px 6px;border-radius:3px;flex-shrink:0}
+  .eb-live{background:var(--teal-soft);border:1px solid rgba(29,158,117,.3);color:var(--teal)}
+  .eb-auto{background:var(--sky-soft);border:1px solid rgba(56,189,248,.3);color:var(--sky)}
+  .eb-sync{background:var(--orange-soft);border:1px solid rgba(249,115,22,.3);color:var(--orange)}
+  /* Platform grid */
+  .eco-platforms{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .eco-platform{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:9px 10px;text-align:center;transition:border-color .2s}
+  .eco-platform:hover{border-color:var(--border-mid)}
+  .eco-platform-name{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.04em;color:var(--text-2);margin-bottom:3px}
+  .eco-platform-type{font-family:var(--font-mono);font-size:7px;color:var(--text-3)}
+
+  /* ── STATS BAND ── */
+  .stats-band{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stats-inner{max-width:1200px;margin:0 auto;padding:52px 48px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
+  .stat-item{padding:16px;border-right:1px solid var(--border)}
+  .stat-item:last-child{border-right:none}
+  .stat-n{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text);line-height:1;margin-bottom:6px}
+  .stat-n span{color:var(--teal)}
+  .stat-l{font-size:12px;color:var(--text-2);line-height:1.4;max-width:120px;margin:0 auto}
+
+  /* ── 360 VIEW SPLIT ── */
+  .view360-split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+  .view360-prose h3{font-family:var(--font-display);font-size:clamp(24px,2.8vw,36px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.2}
+  .view360-prose h3 em{color:var(--teal);font-style:italic}
+  .view360-prose p{font-size:14px;color:var(--text-2);line-height:1.8;margin-bottom:14px;font-weight:300}
+  .view360-prose p strong{color:var(--text);font-weight:500}
+  .benefits-list{display:flex;flex-direction:column;gap:10px}
+  .benefit-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start;transition:border-color .2s,background .2s;position:relative;overflow:hidden}
+  .benefit-item::before{content:'';position:absolute;top:0;left:0;width:2px;height:0;background:var(--teal);transition:height .3s}
+  .benefit-item:hover::before{height:100%}
+  .benefit-item:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .bi-icon{width:32px;height:32px;border:1px solid var(--border-mid);border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .bi-icon svg{width:15px;height:15px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .bi-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--text);margin-bottom:4px}
+  .bi-desc{font-size:12px;color:var(--text-2);line-height:1.6}
+
+  /* ── CAPABILITIES GRID ── */
+  .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .cap-card{background:var(--bg2);padding:34px 28px;transition:background .2s;position:relative;overflow:hidden}
+  .cap-card:hover{background:var(--bg3)}
+  .cap-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--teal-soft),transparent);opacity:0;transition:opacity .3s}
+  .cap-card:hover::after{opacity:1}
+  .cap-num{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;color:var(--text-3);margin-bottom:14px}
+  .cap-icon{width:38px;height:38px;border:1px solid var(--border-mid);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;background:var(--bg3)}
+  .cap-icon svg{width:17px;height:17px;stroke:var(--teal);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .cap-title{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text);margin-bottom:10px}
+  .cap-desc{font-size:13px;color:var(--text-2);line-height:1.68}
+
+  /* ── CONFIG BLOCK ── */
+  .config-block{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:56px 48px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;position:relative;overflow:hidden}
+  .config-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),var(--teal),transparent)}
+  .config-title{font-family:var(--font-display);font-size:clamp(24px,2.8vw,36px);font-weight:400;color:var(--text);margin-bottom:14px;line-height:1.2}
+  .config-title em{color:var(--teal);font-style:italic}
+  .config-desc{font-size:14px;color:var(--text-2);line-height:1.78;margin-bottom:24px;font-weight:300}
+  .config-items{display:flex;flex-direction:column;gap:10px}
+  .config-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;transition:border-color .2s}
+  .config-item:hover{border-color:var(--border-mid)}
+  .ci-tag{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.07em;padding:3px 8px;border-radius:4px;background:var(--teal-soft);border:1px solid rgba(29,158,117,.25);color:var(--teal);flex-shrink:0;margin-top:1px}
+  .ci-text{font-size:12px;color:var(--text-2);line-height:1.55}
+  .config-visual{display:flex;flex-direction:column;gap:10px}
+  .cv-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px 18px;transition:border-color .2s}
+  .cv-card:hover{border-color:var(--border-mid)}
+  .cv-label{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:8px}
+  .cv-value{font-size:12px;color:var(--text-2);line-height:1.55}
+
+  /* ── ANALYTICS BLOCK ── */
+  .analytics-split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .analytics-prose h3{font-family:var(--font-display);font-size:clamp(24px,2.6vw,34px);font-weight:400;color:var(--text);margin-bottom:14px;line-height:1.2}
+  .analytics-prose h3 em{color:var(--teal);font-style:italic}
+  .analytics-prose p{font-size:14px;color:var(--text-2);line-height:1.78;margin-bottom:14px;font-weight:300}
+  .analytics-prose p strong{color:var(--text);font-weight:500}
+  .analytics-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:24px}
+  .am-tile{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 12px;text-align:center}
+  .am-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+  .am-value{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);line-height:1}
+  /* mini dashboard visual */
+  .dash-visual{display:flex;flex-direction:column;gap:8px}
+  .dv-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .dv-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+  .dv-card-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+  .dv-card-val{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--text);line-height:1}
+  .dv-card-val span{color:var(--teal);font-size:15px}
+  .dv-card-change{font-family:var(--font-mono);font-size:9px;color:var(--teal);margin-top:3px}
+  .dv-bar-row{display:flex;flex-direction:column;gap:4px}
+  .dv-bar-label{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;color:var(--text-3)}
+  .dv-bar-label .val{color:var(--text-2)}
+  .dv-bar-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+  .dv-bar-fill{height:100%;border-radius:3px}
+  .dv-order-list{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .dv-order-header{padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--teal);display:flex;align-items:center;gap:6px}
+  .dv-order-header::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--teal)}
+  .dv-order-item{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-2)}
+  .dv-order-item:last-child{border-bottom:none}
+  .dv-order-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .dot-ok{background:var(--teal)} .dot-proc{background:var(--orange)} .dot-ship{background:var(--sky)}
+  .dv-order-info{flex:1;line-height:1.3}
+  .dv-order-amt{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text)}
+
+  /* ── PROVIDER GRID ── */
+  .providers-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .provider-col{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .provider-col-header{padding:14px 18px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.07em;display:flex;align-items:center;gap:8px}
+  .provider-col-header span{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .provider-items{padding:6px 0}
+  .provider-item{padding:8px 18px;font-size:12px;color:var(--text-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .provider-item:last-child{border-bottom:none}
+  .provider-dot{width:5px;height:5px;border-radius:50%;background:var(--teal)}
+
+  /* ── SECURITY TRUST ── */
+  .trust-band{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid rgba(29,158,117,.2);border-radius:12px;padding:44px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative;overflow:hidden}
+  .trust-band::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent)}
+  .trust-item{text-align:center}
+  .trust-icon{font-size:26px;margin-bottom:10px}
+  .trust-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--text);margin-bottom:5px}
+  .trust-desc{font-size:11px;color:var(--text-3);line-height:1.55}
+
+  /* ── USE CASES ── */
+  .use-cases-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .use-case{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:26px 24px;transition:border-color .2s,background .2s}
+  .use-case:hover{border-color:var(--border-mid);background:var(--bg3)}
+  .uc-tag{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+  .uc-tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--orange)}
+  .uc-title{font-family:var(--font-display);font-size:20px;font-weight:400;color:var(--text);margin-bottom:10px;line-height:1.2}
+  .uc-desc{font-size:13px;color:var(--text-2);line-height:1.65}
+
+  /* ── CTA ── */
+  .cta-section{background:var(--bg2);border-top:1px solid var(--border);padding:96px 48px;text-align:center;position:relative;overflow:hidden}
+  .cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:300px;background:radial-gradient(ellipse,var(--teal-glow) 0%,transparent 70%);pointer-events:none}
+  .cta-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:18px;position:relative}
+  .cta-h{font-family:var(--font-display);font-size:clamp(34px,4.5vw,58px);font-weight:400;color:var(--text);margin-bottom:18px;line-height:1.08;position:relative}
+  .cta-h em{color:var(--teal);font-style:italic}
+  .cta-sub{font-size:15px;color:var(--text-2);margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.75;font-weight:300;position:relative}
+  .cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;margin-bottom:32px}
+  .cta-trust{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;position:relative}
+  .cta-trust-item{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--text-3);display:flex;align-items:center;gap:6px}
+  .cta-trust-item::before{content:'✓';color:var(--teal)}
+
+  /* ── FOOTER ── */
+  footer{background:var(--bg);border-top:1px solid var(--border);padding:56px 48px 36px}
+  .footer-inner{max-width:1200px;margin:0 auto}
+  .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+  .footer-brand-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:.05em;color:var(--text);display:flex;align-items:center;gap:10px;margin-bottom:14px;text-decoration:none}
+  .footer-brand-mark{width:22px;height:22px;border:1.5px solid var(--teal);border-radius:5px;display:flex;align-items:center;justify-content:center}
+  .footer-brand-mark::before{content:'';width:8px;height:8px;background:var(--teal);border-radius:2px}
+  .footer-desc{font-size:13px;color:var(--text-3);line-height:1.65;margin-bottom:18px}
+  .footer-social{display:flex;gap:8px}
+  .footer-social-link{width:28px;height:28px;border:1px solid var(--border-mid);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:var(--text-3);text-decoration:none;transition:color .2s,border-color .2s}
+  .footer-social-link:hover{color:var(--teal);border-color:rgba(29,158,117,.4)}
+  .footer-col-title{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px}
+  .footer-col-links{display:flex;flex-direction:column;gap:7px}
+  .footer-col-link{font-size:12px;color:var(--text-2);text-decoration:none;transition:color .2s}
+  .footer-col-link:hover{color:var(--teal)}
+  .footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:24px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px}
+  .footer-copy{font-family:var(--font-mono);font-size:10px;color:var(--text-3)}
+  .footer-legal{display:flex;gap:16px}
+  .footer-legal a{font-family:var(--font-mono);font-size:9px;color:var(--text-3);text-decoration:none;transition:color .2s}
+  .footer-legal a:hover{color:var(--teal)}
+
+  /* Responsive */
+  @media(max-width:1024px){
+    .hero-inner,.view360-split,.config-block,.analytics-split{grid-template-columns:1fr}
+    .eco-diagram{display:none}
+    .cap-grid{grid-template-columns:1fr 1fr}
+    .providers-grid{grid-template-columns:1fr}
+    .trust-band{grid-template-columns:repeat(2,1fr)}
+    .use-cases-grid{grid-template-columns:1fr}
+    .stats-inner{grid-template-columns:repeat(2,1fr)}
+    .stat-item:nth-child(2){border-right:none}
+    .footer-top{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:768px){
+    .topbar{display:none}
+    nav{top:0;padding:0 24px}
+    .nav-links{display:none}
+    .breadcrumb,.section{padding-left:24px;padding-right:24px}
+    .hero-inner{padding:72px 24px 60px}
+    .cap-grid{grid-template-columns:1fr}
+    .trust-band{grid-template-columns:1fr 1fr}
+    .analytics-metrics{grid-template-columns:repeat(2,1fr)}
+    .cta-section{padding:72px 24px}
+    footer{padding:48px 24px 32px}
+    .footer-top{grid-template-columns:1fr}
+    .footer-bottom{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="https://interweave.biz/contact-us/" class="topbar-link">Request a Demo</a>
+    <a href="tel:18006718692" class="topbar-phone">1-800-671-8692</a>
+  </div>
+  <div class="topbar-right">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="topbar-link">Customer Portal</a>
+    <a href="https://partner.interweave.biz/" class="topbar-link">Partner Portal</a>
+    <a href="https://interweave.freshdesk.com/support/home" class="topbar-link">Support</a>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="https://interweave.biz" class="nav-logo">
+    <span class="nav-logo-mark"></span>
+    <span style="font-family:var(--font-mono);font-weight:700"><span style="color:var(--teal)">Inter</span>Weave</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="https://interweave.biz/financial-solutions/" class="active">Solutions</a></li>
+    <li><a href="https://interweave.biz/financial-solutions-automation/">Industries</a></li>
+    <li><a href="https://interweave.biz/interweave-smartintegration-hub/">Platform</a></li>
+    <li><a href="https://interweave.biz/payments/">Payments</a></li>
+    <li><a href="https://interweave.biz/resource-center/">Resources</a></li>
+    <li><a href="https://interweave.biz/about-us/">Company</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="https://iw0.interweave.biz:8443/iw-business-daemon/IWLogin.jsp" class="btn-portal">Log In</a>
+    <a href="https://interweave.biz/contact-us/" class="btn-demo">Request Demo</a>
+  </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="https://interweave.biz">Home</a>
+  <span class="sep">/</span>
+  <a href="https://interweave.biz/financial-solutions/">Solutions</a>
+  <span class="sep">/</span>
+  <span class="current">eCommerce</span>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow anim-0"><span class="pulse-dot"></span>SmartIntegration Gateway</div>
+      <h1 class="anim-1">eCommerce<br><em>Integrated</em> with<br><span class="or">your CRM.</span></h1>
+      <p class="hero-tagline anim-2">B2B · B2G · Enterprise · SMB — in every industry.</p>
+      <p class="hero-desc anim-2">The <strong>InterWeave eCommerce Gateway</strong> synchronizes eCommerce inventory, sales, customer, and billing information with your CRM and Financial Accounting Applications — innovative, secure, and integrated.</p>
+      <p class="hero-desc anim-3" style="margin-bottom:36px">A powerful yet easy-to-use configurable Integration Solution that <strong>automates the transfer of data</strong> between your eCommerce stores, financial applications, databases, and CRM — 24 hours a day, 7 days a week.</p>
+      <div class="hero-actions anim-3">
+        <a href="https://interweave.biz/contact-us/" class="btn-primary">Explore eCommerce</a>
+        <a href="https://interweave.biz/ecommerce-demo/" class="btn-ghost">See a Demo Store ↗</a>
+      </div>
+      <div class="hero-stats anim-4">
+        <div class="hero-stat">
+          <div class="hero-stat-n">44<span>+</span></div>
+          <div class="hero-stat-l">eCommerce providers</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n">24<span>/7</span></div>
+          <div class="hero-stat-l">Automated data transfer</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n"><span>↺</span></div>
+          <div class="hero-stat-l">Real-time or batch sync</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- eCommerce flow diagram -->
+    <div class="eco-diagram anim-3">
+      <div class="eco-label">eCommerce Gateway — automated order flow</div>
+      <div class="eco-steps">
+        <div class="eco-step">
+          <span class="eco-step-num">01</span>
+          <span class="eco-step-text">Customer places order on eCommerce store</span>
+          <span class="eco-step-badge eb-live">Real-time</span>
+        </div>
+        <div class="eco-step">
+          <span class="eco-step-num">02</span>
+          <span class="eco-step-text">InterWeave retrieves order → validates &amp; transforms data</span>
+          <span class="eco-step-badge eb-auto">Automated</span>
+        </div>
+        <div class="eco-step">
+          <span class="eco-step-num">03</span>
+          <span class="eco-step-text">Order, customer, and billing data synced to CRM</span>
+          <span class="eco-step-badge eb-sync">CRM sync</span>
+        </div>
+        <div class="eco-step">
+          <span class="eco-step-num">04</span>
+          <span class="eco-step-text">Inventory updated in ERP / financial application</span>
+          <span class="eco-step-badge eb-auto">Automated</span>
+        </div>
+        <div class="eco-step">
+          <span class="eco-step-num">05</span>
+          <span class="eco-step-text">Invoice generated → sales team notified in real time</span>
+          <span class="eco-step-badge eb-live">Instant</span>
+        </div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin:16px 0 10px">Supported eCommerce platforms</div>
+      <div class="eco-platforms">
+        <div class="eco-platform"><div class="eco-platform-name">Shopify</div><div class="eco-platform-type">Cloud SaaS</div></div>
+        <div class="eco-platform"><div class="eco-platform-name">Magento</div><div class="eco-platform-type">Adobe Commerce</div></div>
+        <div class="eco-platform"><div class="eco-platform-name">WooCommerce</div><div class="eco-platform-type">WordPress</div></div>
+        <div class="eco-platform"><div class="eco-platform-name">BigCommerce</div><div class="eco-platform-type">Cloud SaaS</div></div>
+        <div class="eco-platform"><div class="eco-platform-name">Amazon</div><div class="eco-platform-type">Marketplace</div></div>
+        <div class="eco-platform"><div class="eco-platform-name">+ 39 more</div><div class="eco-platform-type">All providers</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Band -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="stat-item reveal">
+      <div class="stat-n">44<span>+</span></div>
+      <div class="stat-l">eCommerce providers integrated</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.07s">
+      <div class="stat-n">24<span>/7</span></div>
+      <div class="stat-l">Always-on automated data transfer</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.14s">
+      <div class="stat-n">360<span>°</span></div>
+      <div class="stat-l">Customer view in your CRM</div>
+    </div>
+    <div class="stat-item reveal" style="transition-delay:.21s">
+      <div class="stat-n">0</div>
+      <div class="stat-l">Manual order entry required</div>
+    </div>
+  </div>
+</div>
+
+<!-- 360 Customer View -->
+<section class="section" style="padding-top:96px">
+  <div class="section-header reveal">
+    <span class="section-label">360-degree customer view</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="view360-split">
+    <div class="view360-prose reveal">
+      <h3>A 360-degree view of your customers — <em>inside your CRM.</em></h3>
+      <p>Integrating your CRM with your eCommerce platform provides several immediate benefits. Integration collects data on all up-to-date customer information and tracks the customer's journey — providing you a <strong>360-degree view of your customer actions</strong> across every sales channel.</p>
+      <p>You can now make informed decisions about which products to restock and which to discontinue, and create campaigns to promote slow-moving inventory or adjust inventory levels for a new product launch. Sales teams now have better visibility over their sales pipelines, and inventory teams can share turnover data with marketing to drive campaigns.</p>
+      <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="https://interweave.biz/contact-us/" class="btn-primary">Learn More</a>
+        <a href="https://interweave.biz/videos-and-podcasts/" class="btn-ghost">Watch Videos</a>
+      </div>
+    </div>
+    <div class="benefits-list reveal" style="transition-delay:.1s">
+      <div class="benefit-item">
+        <div class="bi-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div><div class="bi-title">Increase Customer Retention</div><div class="bi-desc">Know your customers' purchase history, preferences, and behaviour across online and offline channels — enabling personalised retention campaigns that keep them coming back.</div></div>
+      </div>
+      <div class="benefit-item">
+        <div class="bi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div><div class="bi-title">Understand Your Customers Better</div><div class="bi-desc">Track each customer's journey through the sales funnel — from first visit to repeat purchase — with complete transaction history in your CRM, updated in real time.</div></div>
+      </div>
+      <div class="benefit-item">
+        <div class="bi-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/></svg></div>
+        <div><div class="bi-title">Personalise Customer Experiences</div><div class="bi-desc">Arm your sales and marketing teams with complete eCommerce data — purchase frequency, average order value, product preferences — to deliver targeted, relevant experiences.</div></div>
+      </div>
+      <div class="benefit-item">
+        <div class="bi-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div>
+        <div><div class="bi-title">Better Inventory Planning &amp; Forecasting</div><div class="bi-desc">Share real-time inventory turnover data with marketing and operations — enabling data-driven decisions about restocking, promotions, and product launches without spreadsheets.</div></div>
+      </div>
+      <div class="benefit-item">
+        <div class="bi-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div><div class="bi-title">Better Sales Pipeline Visibility</div><div class="bi-desc">Sales teams see eCommerce orders, abandoned carts, and customer activity in their CRM pipeline — giving them the context they need to close, upsell, and retain without switching systems.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Capabilities Grid -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Gateway capabilities</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">A solution that works as <em>hard as you do.</em></h2>
+  <p class="section-sub reveal">InterWeave provides the data structure, workflow, and complex processing logic necessary to ensure fast, reliable, and secure transmission of eCommerce transaction data to your CRM — 24 hours a day, 7 days a week.</p>
+
+  <div class="cap-grid reveal">
+    <div class="cap-card">
+      <div class="cap-num">01</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="cap-title">// Real-time &amp; Batch Transfer</div>
+      <div class="cap-desc">Orders placed through your online sales channels are retrieved and transferred to your CRM and financial application in real-time or batch — configurable to match your operational rhythm, 24/7.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">02</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div class="cap-title">// Inventory Synchronisation</div>
+      <div class="cap-desc">Inventory levels sync between your eCommerce store, CRM, and ERP in real time — preventing overselling, enabling accurate ATP (Available to Promise) commitments, and keeping warehouse data current.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">03</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div class="cap-title">// Customer Data Unification</div>
+      <div class="cap-desc">Customer records from your eCommerce platform sync to your CRM — including contact details, billing/shipping addresses, and purchase history — creating a single unified customer profile.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">04</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <div class="cap-title">// Billing &amp; Financial Sync</div>
+      <div class="cap-desc">Sales, billing, and payment information from eCommerce orders automatically sync to your financial accounting application — posting invoices, updating AR, and reconciling payments without manual entry.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">05</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div class="cap-title">// Multi-Store Support</div>
+      <div class="cap-desc">Manage multiple eCommerce storefronts, brands, or regional stores through a single InterWeave integration — with configurable routing rules that direct each store's orders to the correct CRM entity.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">06</div>
+      <div class="cap-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div class="cap-title">// PCI-DSS &amp; HIPAA Secure</div>
+      <div class="cap-desc">All eCommerce transaction data is transmitted through Rackspace Managed Hosting — PCI-DSS and HIPAA compliant, with a 100% uptime guarantee and full audit trails for every data transfer.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Configuration Block -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Configuration &amp; automation</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="config-block reveal">
+    <div>
+      <h2 class="config-title">Deeply configurable. <em>Unique to your business.</em></h2>
+      <p class="config-desc">Configuring the integration flow from your eCommerce platform to your CRM involves several critical considerations. In-depth configuration options are tailored to your individual business processes and workflows — making your Solution unique to your requirements.</p>
+      <div class="config-items">
+        <div class="config-item">
+          <span class="ci-tag">Binding</span>
+          <span class="ci-text">Define how eCommerce customers and orders are matched to existing CRM records — preventing duplicate accounts and contacts through configurable binding criteria.</span>
+        </div>
+        <div class="config-item">
+          <span class="ci-tag">Contacts</span>
+          <span class="ci-text">Configure primary contact handling — whether the billing contact, shipping contact, or account owner drives the CRM record, with parent-child hierarchy management.</span>
+        </div>
+        <div class="config-item">
+          <span class="ci-tag">Hierarchy</span>
+          <span class="ci-text">Define parent-child account relationships — mapping eCommerce organizational structures (e.g., corporate accounts with multiple buyers) to your CRM's account hierarchy.</span>
+        </div>
+        <div class="config-item">
+          <span class="ci-tag">Sync Ops</span>
+          <span class="ci-text">Configure which sync operations run (create, update, delete) per object type — with directional controls for each: eCommerce → CRM, CRM → eCommerce, or bidirectional.</span>
+        </div>
+        <div class="config-item">
+          <span class="ci-tag">Shipping</span>
+          <span class="ci-text">Map shipping and billing address fields, carrier data, tracking numbers, and fulfilment status between your eCommerce platform and CRM order records.</span>
+        </div>
+        <div class="config-item">
+          <span class="ci-tag">Custom Map</span>
+          <span class="ci-text">Custom field mapping for any eCommerce platform's proprietary fields — including product attributes, custom order metadata, and store-specific data not covered by standard mappings.</span>
+        </div>
+      </div>
+    </div>
+    <div class="config-visual">
+      <div class="cv-card">
+        <div class="cv-label">// Automated Processing</div>
+        <div class="cv-value">InterWeave automates the transfer of eCommerce transactions 7 days a week, 24 hours a day. No manual intervention required — orders flow from store to CRM to financial application automatically.</div>
+      </div>
+      <div class="cv-card">
+        <div class="cv-label">// Real-time or Batch</div>
+        <div class="cv-value">Choose real-time sync for instant CRM visibility of new orders, or batch sync at configurable intervals for high-volume stores that process thousands of orders per hour.</div>
+      </div>
+      <div class="cv-card">
+        <div class="cv-label">// No-Code Configuration</div>
+        <div class="cv-value">All mapping, binding criteria, hierarchy rules, and sync operations are configured through the InterWeave SmartMap console — no coding, no custom scripts, no developer required.</div>
+      </div>
+      <div class="cv-card">
+        <div class="cv-label">// Start-up to Enterprise</div>
+        <div class="cv-value">Whether you're a single-store startup or a multi-brand enterprise, choose the configuration model that fits — and modify it at any time as your eCommerce operation grows and changes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Analytics Block -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">CRM analytics &amp; dashboards</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="analytics-split">
+    <div class="analytics-prose reveal">
+      <h3>Your CRM dashboards updated <em>in real time.</em></h3>
+      <p>Real-time information provided to your CRM tracks all of your key business metrics via elegant dashboards — with all displayed data available in detailed, exportable reports. Included are key metrics such as <strong>MRR, Churn, LTV, AR, and cash collected</strong> — the lifeline for any subscription-based or eCommerce business.</p>
+      <p>InterWeave resides at ISP Rackspace Managed Hosting — industry compliant with HIPAA and PCI-DSS — providing a 100% uptime guarantee for always-on eCommerce data synchronisation.</p>
+      <div class="analytics-metrics">
+        <div class="am-tile"><div class="am-label">MRR</div><div class="am-value">Monthly Recurring Revenue</div></div>
+        <div class="am-tile"><div class="am-label">Churn</div><div class="am-value">Subscription Churn Rate</div></div>
+        <div class="am-tile"><div class="am-label">LTV</div><div class="am-value">Customer Lifetime Value</div></div>
+        <div class="am-tile"><div class="am-label">AR</div><div class="am-value">Accounts Receivable</div></div>
+        <div class="am-tile"><div class="am-label">Cash</div><div class="am-value">Cash Collected</div></div>
+        <div class="am-tile"><div class="am-label">Reports</div><div class="am-value">Exportable all metrics</div></div>
+      </div>
+    </div>
+    <div class="dash-visual reveal" style="transition-delay:.1s">
+      <div class="dv-row">
+        <div class="dv-card">
+          <div class="dv-card-label">Orders today</div>
+          <div class="dv-card-val">142<span></span></div>
+          <div class="dv-card-change">↑ +18% vs yesterday</div>
+        </div>
+        <div class="dv-card">
+          <div class="dv-card-label">Revenue today</div>
+          <div class="dv-card-val">$28<span>.4k</span></div>
+          <div class="dv-card-change">↑ +22% vs yesterday</div>
+        </div>
+      </div>
+      <div class="dv-bar-row">
+        <div class="dv-bar-label"><span>Inventory sync</span><span class="val">1,847 items</span></div>
+        <div class="dv-bar-track"><div class="dv-bar-fill" style="width:98%;background:var(--teal)"></div></div>
+      </div>
+      <div class="dv-bar-row">
+        <div class="dv-bar-label"><span>Orders synced to CRM</span><span class="val">100%</span></div>
+        <div class="dv-bar-track"><div class="dv-bar-fill" style="width:100%;background:var(--teal)"></div></div>
+      </div>
+      <div class="dv-bar-row">
+        <div class="dv-bar-label"><span>Invoices auto-generated</span><span class="val">142 of 142</span></div>
+        <div class="dv-bar-track"><div class="dv-bar-fill" style="width:100%;background:var(--orange)"></div></div>
+      </div>
+      <div class="dv-order-list">
+        <div class="dv-order-header">Live order stream</div>
+        <div class="dv-order-item">
+          <span class="dv-order-dot dot-ok"></span>
+          <div class="dv-order-info">Acme Corp — 4x Widget Pro<br><span style="font-size:9px;color:var(--text-3)">Shopify · synced to Creatio · 2m ago</span></div>
+          <span class="dv-order-amt">$1,240</span>
+        </div>
+        <div class="dv-order-item">
+          <span class="dv-order-dot dot-proc"></span>
+          <div class="dv-order-info">BrightStar — 12x Bulk Pack<br><span style="font-size:9px;color:var(--text-3)">WooCommerce · processing · 5m ago</span></div>
+          <span class="dv-order-amt">$3,600</span>
+        </div>
+        <div class="dv-order-item">
+          <span class="dv-order-dot dot-ship"></span>
+          <div class="dv-order-info">Meridian Health — 2x Premium Kit<br><span style="font-size:9px;color:var(--text-3)">Magento · shipped · 11m ago</span></div>
+          <span class="dv-order-amt">$890</span>
+        </div>
+        <div class="dv-order-item">
+          <span class="dv-order-dot dot-ok"></span>
+          <div class="dv-order-info">Global Parts Inc — Bulk order<br><span style="font-size:9px;color:var(--text-3)">BigCommerce · synced · 18m ago</span></div>
+          <span class="dv-order-amt">$7,200</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Provider Grid -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">eCommerce providers</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Integration with over <em>44 eCommerce providers</em> and counting.</h2>
+  <p class="section-sub reveal">Connecting an eCommerce platform to a CRM is difficult and typically beyond the expertise and technical resources of most businesses. The InterWeave eCommerce Gateway makes it easy — no coding, no middleware, no custom connectors.</p>
+
+  <div class="providers-grid reveal">
+    <div class="provider-col">
+      <div class="provider-col-header"><span style="background:var(--orange)"></span>Major eCommerce Platforms</div>
+      <div class="provider-items">
+        <div class="provider-item"><span>Shopify</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Adobe Commerce (Magento)</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>WooCommerce</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>BigCommerce</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Squarespace</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Wix eCommerce</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Weebly</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Zoho Commerce</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>CoreCommerce</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Square Online</span><span class="provider-dot"></span></div>
+      </div>
+    </div>
+    <div class="provider-col">
+      <div class="provider-col-header"><span style="background:var(--teal)"></span>Marketplaces &amp; Specialist Platforms</div>
+      <div class="provider-items">
+        <div class="provider-item"><span>Amazon</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>eBay</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Ecwid</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>BigCartel</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Volusion</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>X-Cart</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>Zyro</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>BlueHost eCommerce</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>VentriaLive</span><span class="provider-dot"></span></div>
+        <div class="provider-item"><span>+ many more</span><span class="provider-dot" style="background:var(--text-3)"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Use Cases -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Common use cases</span>
+    <div class="section-rule"></div>
+  </div>
+  <h2 class="section-title reveal">Real eCommerce problems.<br><em>Real solutions.</em></h2>
+  <p class="section-sub reveal">InterWeave eCommerce Integration solves the most common data-gap challenges facing B2B and B2C businesses selling online today.</p>
+
+  <div class="use-cases-grid">
+    <div class="use-case reveal">
+      <div class="uc-tag">B2B eCommerce</div>
+      <div class="uc-title">eCommerce Orders → CRM + ERP</div>
+      <div class="uc-desc">B2B orders placed on Shopify or Magento automatically create Sales Orders in Sage 100 or MS Dynamics, update the CRM account record, and generate an AR invoice — without any manual re-entry by the sales or finance team.</div>
+    </div>
+    <div class="use-case reveal" style="transition-delay:.06s">
+      <div class="uc-tag">Inventory</div>
+      <div class="uc-title">Inventory Sync Across All Channels</div>
+      <div class="uc-desc">On-hand quantities sync between your ERP, your eCommerce store, and your CRM in real time — so sales reps always quote accurate availability, eCommerce shows correct stock levels, and warehouse data never falls behind.</div>
+    </div>
+    <div class="use-case reveal" style="transition-delay:.12s">
+      <div class="uc-tag">Customer Journey</div>
+      <div class="uc-title">360° Customer View from First Visit</div>
+      <div class="uc-desc">Every eCommerce interaction — browse, cart abandon, purchase, return — flows into your CRM customer record. Sales and marketing teams see the complete online journey alongside offline touchpoints for true 360° visibility.</div>
+    </div>
+    <div class="use-case reveal" style="transition-delay:.18s">
+      <div class="uc-tag">Multi-Store</div>
+      <div class="uc-title">Multiple Stores → Single CRM</div>
+      <div class="uc-desc">Operate multiple eCommerce storefronts — different brands, regions, or channels — and route all orders, customers, and inventory data into a single CRM with configurable entity mapping and store-level business rules.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Security Trust Band -->
+<section class="section">
+  <div class="section-header reveal">
+    <span class="section-label">Security &amp; compliance</span>
+    <div class="section-rule"></div>
+  </div>
+  <div class="trust-band reveal">
+    <div class="trust-item">
+      <div class="trust-icon">🔒</div>
+      <div class="trust-title">PCI-DSS Compliant</div>
+      <div class="trust-desc">All eCommerce payment data transmitted through Rackspace Managed Hosting — fully PCI-DSS certified, keeping transaction data in a governed, compliant environment.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">🏥</div>
+      <div class="trust-title">HIPAA Certified Hosting</div>
+      <div class="trust-desc">Rackspace Managed Hosting provides HIPAA compliance — enabling InterWeave to serve healthcare eCommerce and sensitive medical supply chains requiring compliant data handling.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">⚡</div>
+      <div class="trust-title">100% Uptime Guarantee</div>
+      <div class="trust-desc">Rackspace provides a 100% uptime guarantee. eCommerce orders sync around the clock — no maintenance windows, no missed orders, no data gaps in your CRM or ERP.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">📋</div>
+      <div class="trust-title">Full Audit Trails</div>
+      <div class="trust-desc">Every eCommerce data transfer is logged — order ID, timestamp, status, and delta. Complete audit trails give your finance and compliance teams full visibility into every automated transaction.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <p class="cta-eyebrow">Connect your store to your CRM</p>
+  <h2 class="cta-h">eCommerce data.<br><em>Flowing where you need it.</em></h2>
+  <p class="cta-sub">Deploy the InterWeave eCommerce Gateway and connect your online store to your CRM and financial systems — orders, inventory, customers, and billing automated 24/7 without manual entry.</p>
+  <div class="cta-actions">
+    <a href="https://interweave.biz/contact-us/" class="btn-primary">Request a Demo</a>
+    <a href="https://interweave.biz/ecommerce-demo/" class="btn-ghost">See a Demo Store ↗</a>
+  </div>
+  <div class="cta-trust">
+    <span class="cta-trust-item">44+ eCommerce providers</span>
+    <span class="cta-trust-item">Real-time or batch sync</span>
+    <span class="cta-trust-item">PCI-DSS &amp; HIPAA compliant</span>
+    <span class="cta-trust-item">No coding required</span>
+    <span class="cta-trust-item">24/7 automated transfer</span>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <a href="https://interweave.biz" class="footer-brand-logo">
+          <span class="footer-brand-mark"></span>
+          <span style="font-family:var(--font-mono);font-weight:700"><span style="color:var(--teal)">Inter</span>Weave</span>
+        </a>
+        <p class="footer-desc">The SmartIntegration Platform — connecting eCommerce stores to CRM and financial systems for mid-market businesses, with 44+ eCommerce providers and 24/7 automated data transfer.</p>
+        <div class="footer-social">
+          <a href="https://twitter.com/interweave1" class="footer-social-link">X</a>
+          <a href="https://www.linkedin.com/company/integration-technologies-inc./" class="footer-social-link">in</a>
+          <a href="https://www.facebook.com/www.interweave.biz" class="footer-social-link">f</a>
+          <a href="https://www.instagram.com/interweavesmartsolutions/" class="footer-social-link">ig</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">eCommerce</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/ecommerce/" class="footer-col-link">eCommerce Integration</a>
+          <a href="https://interweave.biz/ecommerce-demo/" class="footer-col-link">Demo Store</a>
+          <a href="https://interweave.biz/payments/" class="footer-col-link">Payments</a>
+          <a href="https://interweave.biz/advanced-inventory/" class="footer-col-link">Advanced Inventory</a>
+          <a href="https://interweave.biz/customer-portal/" class="footer-col-link">SmartPortal</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Solutions</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/interweave-smartintegration-hub/" class="footer-col-link">SmartIntegration Hub</a>
+          <a href="https://interweave.biz/financial-solutions/" class="footer-col-link">Financial Solutions</a>
+          <a href="https://interweave.biz/multi-cloud-solutions/" class="footer-col-link">Multi-Cloud Solutions</a>
+          <a href="https://interweave.biz/salesforce-to-quickbooks-integration-by-interweave/" class="footer-col-link">Salesforce → QuickBooks</a>
+          <a href="https://interweave.biz/creatio-to-sage-integration-by-interweave/" class="footer-col-link">Creatio → Sage</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Industries</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/financial-solutions-automation/" class="footer-col-link">Financial</a>
+          <a href="https://interweave.biz/interweave-manufacturing-automation/" class="footer-col-link">Manufacturing</a>
+          <a href="https://interweave.biz/interweave-nonprofit-automation/" class="footer-col-link">Nonprofit</a>
+          <a href="https://interweave.biz/interweave-education-automation/" class="footer-col-link">Education</a>
+          <a href="https://interweave.biz/interweave-insurance-automation/" class="footer-col-link">Insurance</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <div class="footer-col-links">
+          <a href="https://interweave.biz/about-us/" class="footer-col-link">About Us</a>
+          <a href="https://interweave.biz/partners/" class="footer-col-link">Partners</a>
+          <a href="https://interweave.biz/customer-case-studies/" class="footer-col-link">Case Studies</a>
+          <a href="https://interweave.biz/contact-us/" class="footer-col-link">Contact Us</a>
+          <a href="https://academy.interweave.biz/" class="footer-col-link">Academy</a>
+          <a href="https://status.interweave.biz/" class="footer-col-link">Status</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 InterWeave SmartSolutions. All rights reserved. USA: (203) 274-5226 · CAN: 1-800-671-8692</span>
+      <div class="footer-legal">
+        <a href="https://interweave.biz/privacy-policy/">Privacy</a>
+        <a href="https://interweave.biz/terms-and-conditions/">Terms</a>
+        <a href="https://help.interweave.biz/">Support</a>
+        <a href="https://status.interweave.biz/">Status</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold: 0.07});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
