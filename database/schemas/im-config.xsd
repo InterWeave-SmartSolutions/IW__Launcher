@@ -27,6 +27,11 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="TransactionDescription" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="Query" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+
             <!-- Basic Configuration Attributes -->
             <xs:attribute name="Name" type="xs:string" use="required">
                 <xs:annotation>
@@ -308,6 +313,73 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Flow definition: TransactionDescription (scheduled/triggered flows) -->
+    <xs:element name="TransactionDescription">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="Parameter" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="Id" type="xs:string" use="required"/>
+            <xs:attribute name="Description" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="Solution" type="xs:string" use="optional"/>
+            <xs:attribute name="Interval" type="xs:string" use="optional" default="0"/>
+            <xs:attribute name="Shift" type="xs:string" use="optional" default="0"/>
+            <xs:attribute name="RunAtStartUp" type="xs:string" use="optional" default="false"/>
+            <xs:attribute name="NumberOfExecutions" type="xs:string" use="optional" default="0"/>
+            <xs:attribute name="InnerCycles" type="xs:string" use="optional" default="0"/>
+            <xs:attribute name="PrimaryTSURL" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURL" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURLT" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURLT" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURL1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURL1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURLT1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURLT1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURLD" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURLD" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="IsActive" type="xs:string" use="optional" default="false"/>
+            <xs:attribute name="IsPublic" type="xs:string" use="optional" default="false"/>
+            <xs:attribute name="IsStateful" type="xs:string" use="optional" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Flow definition: Query (on-demand callable flows) -->
+    <xs:element name="Query">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="Parameter" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="Id" type="xs:string" use="required"/>
+            <xs:attribute name="Description" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="Solution" type="xs:string" use="optional"/>
+            <xs:attribute name="PrimaryTSURL" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURL" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURLT" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURLT" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURL1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURL1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURLT1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURLT1" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="PrimaryTSURLD" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="SecondaryTSURLD" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="InnerCycles" type="xs:string" use="optional" default="0"/>
+            <xs:attribute name="IsActive" type="xs:string" use="optional" default="false"/>
+            <xs:attribute name="IsPublic" type="xs:string" use="optional" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Flow parameter -->
+    <xs:element name="Parameter">
+        <xs:complexType>
+            <xs:attribute name="Name" type="xs:string" use="required"/>
+            <xs:attribute name="Value" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="Fixed" type="xs:string" use="optional" default="false"/>
+            <xs:attribute name="Upload" type="xs:string" use="optional"/>
+            <xs:attribute name="Password" type="xs:string" use="optional"/>
+            <xs:anyAttribute processContents="lax"/>
         </xs:complexType>
     </xs:element>
 

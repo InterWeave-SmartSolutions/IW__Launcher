@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+	<xsl:template match="iwtransformationserver">
+		<xsl:variable name="SessionId"/>
+		<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<soap:Header>
+				<SessionHeader xmlns="urn:partner.soap.sforce.com">
+					<sessionId>
+						<xsl:value-of select="$SessionId"/>
+					</sessionId>
+				</SessionHeader>
+				<CallOptions xmlns="urn:partner.soap.sforce.com">
+					<client>Expresiv/Interweave</client>
+				</CallOptions>
+			</soap:Header>
+			<soap:Body>
+				<upsert xmlns="urn:partner.soap.sforce.com">
+					<externalIDFieldName xsi:type="xsd:string">External_Key__c</externalIDFieldName>
+					<!---note this value should be replaced with whatever the External ID field is in SF Opportunity -->
+					<xsl:for-each select=".">
+						<xsl:variable name="SFOppExternalKey"/>
+						<xsl:variable name="SFOppAccountId"/>
+						<xsl:variable name="SFOppAmount"/>
+						<xsl:variable name="SFOppCloseDate"/>
+						<xsl:variable name="SFOppDescription"/>
+						<xsl:variable name="SFOppExpectedRevenue"/>
+						<xsl:variable name="SFOppForecastCategory"/>
+						<xsl:variable name="SFOppName"/>
+						<xsl:variable name="SFOppLeadSource"/>
+						<xsl:variable name="SFOppNextStep"/>
+						<xsl:variable name="SFOppOwnerId"/>
+						<xsl:variable name="SFOppPricebook2Id"/>
+						<xsl:variable name="SFOppProbability"/>
+						<xsl:variable name="SFOppStageName"/>
+						<xsl:variable name="SFOppType"/>
+						<sObjects>
+							<type xmlns="urn:sobject.partner.soap.sforce.com">Opportunity</type>
+							<External_Key__c xmlns="">
+								<xsl:value-of select="$SFOppExternalKey"/>
+							</External_Key__c>
+							<xsl:if test="$SFOppAccountId!=''">
+								<AccountId xmlns="">
+									<xsl:value-of select="$SFOppAccountId"/>
+								</AccountId>
+							</xsl:if>
+							<xsl:if test="$SFOppAmount!=''">
+								<Amount xmlns="">
+									<xsl:value-of select="$SFOppAmount"/>
+								</Amount>
+							</xsl:if>
+							<CloseDate xmlns="">
+								<xsl:value-of select="$SFOppCloseDate"/>
+							</CloseDate>
+							<Description xmlns="">
+								<xsl:value-of select="$SFOppDescription"/>
+							</Description>
+							<xsl:if test="$SFOppExpectedRevenue!=''">
+								<ExpectedRevenue xmlns="">
+									<xsl:value-of select="$SFOppExpectedRevenue"/>
+								</ExpectedRevenue>
+							</xsl:if>
+							<xsl:if test="$SFOppForecastCategory!=''">
+								<ForecastCategory xmlns="">
+									<xsl:value-of select="$SFOppForecastCategory"/>
+								</ForecastCategory>
+							</xsl:if>
+							<Name xmlns="">
+								<xsl:value-of select="$SFOppName"/>
+							</Name>
+							<xsl:if test="$SFOppLeadSource!=''">
+								<LeadSource xmlns="">
+									<xsl:value-of select="$SFOppLeadSource"/>
+								</LeadSource>
+							</xsl:if>
+							<NextStep xmlns="">
+								<xsl:value-of select="$SFOppNextStep"/>
+							</NextStep>
+							<xsl:if test="$SFOppOwnerId!=''">
+								<OwnerId xmlns="">
+									<xsl:value-of select="$SFOppOwnerId"/>
+								</OwnerId>
+							</xsl:if>
+							<xsl:if test="$SFOppPricebook2Id!=''">
+								<Pricebook2Id xmlns="">
+									<xsl:value-of select="$SFOppPricebook2Id"/>
+								</Pricebook2Id>
+							</xsl:if>
+							<xsl:if test="$SFOppProbability!=''">
+								<Probability xmlns="">
+									<xsl:value-of select="$SFOppProbability"/>
+								</Probability>
+							</xsl:if>
+							<xsl:if test="$SFOppStageName!=''">
+								<StageName xmlns="">
+									<xsl:value-of select="$SFOppStageName"/>
+								</StageName>
+							</xsl:if>
+							<xsl:if test="$SFOppType!=''">
+								<Type xmlns="">
+									<xsl:value-of select="$SFOppType"/>
+								</Type>
+							</xsl:if>
+						</sObjects>
+					</xsl:for-each>
+				</upsert>
+			</soap:Body>
+		</soap:Envelope>
+	</xsl:template>
+</xsl:stylesheet>

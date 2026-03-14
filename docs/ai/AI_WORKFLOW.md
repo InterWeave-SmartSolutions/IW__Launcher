@@ -143,7 +143,7 @@ Agent(model="opus", prompt="Analyze the cross-UI session lifecycle and propose f
 
 # Codex CLI — cheap tasks
 codex exec -m gpt-5-codex-mini "describe the purpose of ApiTokenStore.java"
-codex exec --sandbox read-only -a never -m gpt-5.1-codex-mini "list all servlet mappings in web.xml"
+codex exec -s read-only -m gpt-5.1-codex-mini "list all servlet mappings in web.xml"
 
 # Codex CLI — standard code tasks
 codex exec -m gpt-5.2-codex "refactor this function to use async/await"

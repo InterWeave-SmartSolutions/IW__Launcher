@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+	<xsl:template match="iwtransformationserver">
+		<IWEMail Debug="true">
+			<To>?</To>
+			<From>?</From>
+			<Subject>IW Email Adaptor test</Subject>
+			<Message>
+				<xsl:for-each select=".">
+					<xsl:variable name="SFCustomerNo"/>
+					<xsl:variable name="SFFirstName"/>
+					<xsl:variable name="SFLastName"/>
+					<xsl:variable name="SFEmail"/>
+					<xsl:variable name="SFBAddr1"/>
+					<xsl:variable name="SFBCity"/>
+					<xsl:variable name="SFBState"/>
+					<xsl:variable name="SFBPostCode"/>
+					<xsl:variable name="SFBCountry"/>
+					<xsl:variable name="SFPhone"/>
+					<xsl:variable name="SFAltPhone"/>
+					<xsl:variable name="SFFax"/>
+					Customer No: <xsl:value-of select="$SFCustomerNo"/><xsl:text>&#10;</xsl:text>
+					First Name:	<xsl:value-of select="$SFFirstName"/><xsl:text>&#10;</xsl:text>
+					Last Name:	<xsl:value-of select="$SFLastName"/><xsl:text>&#10;</xsl:text>
+					City:	<xsl:value-of select="$SFBCity"/><xsl:text>&#10;</xsl:text>
+					Country: <xsl:value-of select="$SFBCountry"/><xsl:text>&#10;</xsl:text>
+					Postal Code: <xsl:value-of select="$SFBPostCode"/><xsl:text>&#10;</xsl:text>
+					State: <xsl:value-of select="$SFBState"/><xsl:text>&#10;</xsl:text>
+					Street: <xsl:value-of select="$SFBAddr1"/><xsl:text>&#10;</xsl:text>
+					Fax: <xsl:value-of select="$SFFax"/><xsl:text>&#10;</xsl:text>
+					Phone: <xsl:value-of select="$SFPhone"/><xsl:text>&#10;</xsl:text>
+					Mobile Phone: <xsl:value-of select="$SFAltPhone"/><xsl:text>&#10;</xsl:text>
+					Email: <xsl:value-of select="$SFEmail"/><xsl:text>&#10;&#10;</xsl:text>
+				</xsl:for-each>
+			</Message>
+		</IWEMail>
+	</xsl:template>
+</xsl:stylesheet>

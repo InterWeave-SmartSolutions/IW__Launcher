@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+	<xsl:template match="iwtransformationserver">
+		<xsl:variable name="SessionId"/>
+		<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<soap:Header>
+				<SessionHeader xmlns="urn:partner.soap.sforce.com">
+					<sessionId>
+						<xsl:value-of select="$SessionId"/>
+					</sessionId>
+				</SessionHeader>
+				<CallOptions xmlns="urn:partner.soap.sforce.com">
+					<client>Expresiv/Interweave</client>
+				</CallOptions>
+			</soap:Header>
+			<soap:Body>
+				<upsert xmlns="urn:partner.soap.sforce.com">
+					<externalIDFieldName xsi:type="xsd:string">External_ID__c</externalIDFieldName>
+					<!---replace External_ID__c with the actual External ID field-->
+					<xsl:for-each select=".">
+						<xsl:variable name="SFContactFirstName"/>
+						<xsl:variable name="SFContactLastName"/>
+						<xsl:variable name="SFContactSalutation"/>
+						<xsl:variable name="SFContactTitle"/>
+						<xsl:variable name="SFContactEmail"/>
+						<xsl:variable name="SFContactMailingStreet"/>
+						<xsl:variable name="SFContactMailingCity"/>
+						<xsl:variable name="SFContactMailingState"/>
+						<xsl:variable name="SFContactMailingCountry"/>
+						<xsl:variable name="SFContactMailingPostalCode"/>
+						<xsl:variable name="SFContactPhone"/>
+						<xsl:variable name="SFContactFax"/>
+						<sObjects>
+							<type xmlns="urn:sobject.partner.soap.sforce.com">Contact</type>
+							<MailingCity xmlns="">
+								<xsl:value-of select="$SFContactMailingCity"/>
+							</MailingCity>
+							<MailingCountry xmlns="">
+								<xsl:value-of select="$SFContactMailingCountry"/>
+							</MailingCountry>
+							<MailingPostalCode xmlns="">
+								<xsl:value-of select="$SFContactMailingPostalCode"/>
+							</MailingPostalCode>
+							<MailingState xmlns="">
+								<xsl:value-of select="$SFContactMailingState"/>
+							</MailingState>
+							<MailingStreet xmlns="">
+								<xsl:value-of select="$SFContactMailingStreet"/>
+							</MailingStreet>
+							<Fax xmlns="">
+								<xsl:value-of select="$SFContactFax"/>
+							</Fax>
+							<Phone xmlns="">
+								<xsl:value-of select="$SFContactPhone"/>
+							</Phone>
+							<Title>
+								<xsl:value-of select="$SFContactTitle"/>
+							</Title>
+							<Salutation>
+								<xsl:value-of select="$SFContactSalutation"/>
+							</Salutation>
+							<Email>
+								<xsl:value-of select="$SFContactEmail"/>
+							</Email>
+							<First_Name__c>
+								<xsl:value-of select="$SFContactFirstName"/>
+							</First_Name__c>
+							<Last_Name__c>
+								<xsl:value-of select="$SFContactLastName"/>
+							</Last_Name__c>
+						</sObjects>
+					</xsl:for-each>
+				</upsert>
+			</soap:Body>
+		</soap:Envelope>
+	</xsl:template>
+</xsl:stylesheet>

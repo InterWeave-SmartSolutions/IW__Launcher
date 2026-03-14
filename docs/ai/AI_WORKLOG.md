@@ -18,6 +18,37 @@ Follow-ups / known issues:
 
 ---
 
+## 2026-03-14 (UTC)
+Agent/tool: Claude Haiku 4.5 (Agent)
+User request: Read-only exploration - find all XML config files in workspace projects and map them to their corresponding XSD schemas
+Actions taken:
+- Located all config.xml files under workspace/ (glob: workspace/**/config.xml) → 18 files (9 ts/, 9 im/)
+- Located all transactions.xml files under workspace/ (glob: workspace/**/transactions.xml) → 9 files
+- Catalogued all XSD files in database/schemas/ and database/schemas/engine/ → 7 total schemas
+- Examined root elements of sample config and transactions files to determine schema mappings
+- Located all soltran.xslt (9 files) and dataconnections.xslt (9 files) support files
+- Created comprehensive mapping table with all XML files categorized by root element type
+Files analyzed:
+- 9 TransformationServerConfiguration (ts/config.xml) → ts-config.xsd or iwtransformationserver.xsd
+- 9 BusinessDaemonConfiguration (im/config.xml) → im-config.xsd
+- 9 iwmappings (transactions.xml) → iwtransactions.xsd or transactions.xsd
+- 9 soltran.xslt (solution-level transformers, no schema validation needed)
+- 9 dataconnections.xslt (data connection definitions, no schema validation needed)
+Verification performed:
+- Verified root elements via head/grep commands on sample files
+- Confirmed XSD filenames match expected patterns per architecture documentation
+- Validated workspace structure consistency across 4 source projects + 5 generated profiles
+- Spot-checked FirstTest project structure difference (no Site/new subdirectory for soltran.xslt)
+Output:
+- Generated comprehensive mapping report with consolidated table
+- All file paths verified as absolute paths
+- Categorized files into 3 configuration types + 2 XSLT support file types
+Follow-ups / known issues:
+- FirstTest project has soltran.xslt at xslt/include/ rather than xslt/Site/new/include/ (unique structure)
+- iwtransactions.xsd and iwtransformationserver.xsd in engine/ are alternatives to root-level schemas (both are valid)
+
+---
+
 ## 2026-01-12 18:22 (UTC)
 Agent/tool: Claude Code (Sonnet 4.5)
 User request: Review all documentation in the directory and parent, ensure CLAUDE.md exists, ensure all documentation is synced and correct
@@ -7523,3 +7554,139 @@ Task: Comprehensive documentation update with production server audit files
 ### Follow-ups / known issues
 - All production-reference files, SERVER_AUDIT, and IWCustomerPortal still UNTRACKED — need git add + commit
 - One modified file: workspace/Creatio_Magento2_Integration/configuration/runtime_profiles/Pinnacle_Integrations_admin_sample.com.properties
+
+---
+
+## Session 26 — 2026-03-14 — CLAUDE.md Refactoring
+
+### What I did (this response)
+- Split monolithic CLAUDE.md (675 lines / 42KB) into lean root + 8 topic reference files
+- Root CLAUDE.md reduced to 102 lines: mandatory workflow, critical warnings, reference index table
+- Created `docs/ai/claude-reference/` with 8 self-contained reference files:
+  - `ARCHITECTURE.md` (64 lines) — three-tier system, integration flows, engine lifecycle
+  - `DEVELOPMENT.md` (149 lines) — compile commands, servlet bridge, Maven, known issues, IDE, sync
+  - `PORTAL.md` (81 lines) — React portal routes, API servlets, hooks, build
+  - `DATABASE.md` (61 lines) — DB config, schema, connection modes
+  - `ENVIRONMENT.md` (103 lines) — running the app, fresh clone, WSL2, test results
+  - `SECURITY.md` (41 lines) — CSP, credential encryption
+  - `WORKSPACE.md` (63 lines) — integration projects, XSLT pipeline, production reference
+  - `DIRECTORY_STRUCTURE.md` (102 lines) — full tree, roadmap
+- All original content preserved — zero information loss
+- Root CLAUDE.md has reference index table mapping topics → files with "when to read" guidance
+
+### Architecture decision
+- Root file retains: mandatory workflow rules, InterWoven warning, project overview (3 lines), quick start, ALL critical warnings (DB pooler, --release 8, CATALINA_HOME, CSP, fresh clone)
+- Reference files are self-contained per topic — agents read 1-2 as needed vs loading all 675 lines every time
+
+---
+
+## 2026-03-14 10:37 (EST)
+Agent/tool: Claude Code (Opus 4.6)
+User request: Integrate production server intelligence into IW_Launcher — 6 deliverables: XSD schemas, stunnel mapping, flow catalog, production deployment guide, standalone config template, IWXT workspace templates.
+Actions taken:
+- Copied 4 production XSD schemas (iwtransformationserver, iwtransactions, iwemail, iwprotocol) from `docs/production-reference/configs/webapps/shared/` to `database/schemas/engine/` for engine XML validation
+- Created `docs/deployment/STUNNEL_MAPPING.md` — bidirectional mapping of all 11 active + 222 reserved stunnel tunnels to real HTTPS endpoints, with IW_Launcher direct-HTTPS replacement table
+- Created `docs/deployment/FLOW_CATALOG.md` — comprehensive catalog of all 56 unique flows: 39 production (IWHostedSolutions: 37 transactions + 2 queries) + 17 IW_Launcher (3 SF2AUTH + 14 CRM2M2), with parameter reference and coverage analysis
+- Created `docs/deployment/PRODUCTION_DEPLOYMENT.md` — side-by-side deployment guide for Tomcat 9 (port 9090) alongside production Tomcat 5.5 (port 8080) on Windows Server 2016, with safety checklist
+- Created `docs/authentication/config.xml.standalone.template` — production-compatible engine config with IsHosted="0", commented example flows for SF2AUTH, CRM2M2, and OMS→QB patterns
+- Copied 7 IWXT template files (CreateEmailAcct, CreateEmailCont, SFCreateProdOMSDemo, SFUpsertAcct, SFUpsertContact, SFUpsertLead, SFUpsertOpp) from production-reference to `workspace/Templates/`
+- Updated `docs/ai/claude-reference/ARCHITECTURE.md` with standalone mode section and engine XSD schema reference
+Files changed/created:
+- `database/schemas/engine/iwtransformationserver.xsd` (new — copied from production)
+- `database/schemas/engine/iwtransactions.xsd` (new — copied from production)
+- `database/schemas/engine/iwemail.xsd` (new — copied from production)
+- `database/schemas/engine/iwprotocol.xsd` (new — copied from production)
+- `docs/deployment/STUNNEL_MAPPING.md` (new)
+- `docs/deployment/FLOW_CATALOG.md` (new)
+- `docs/deployment/PRODUCTION_DEPLOYMENT.md` (new)
+- `docs/authentication/config.xml.standalone.template` (new)
+- `workspace/Templates/CreateEmailAcct.iwxt` (new — copied from production)
+- `workspace/Templates/CreateEmailCont.iwxt` (new — copied from production)
+- `workspace/Templates/SFCreateProdOMSDemo.iwxt` (new — copied from production)
+- `workspace/Templates/SFUpsertAcct.iwxt` (new — copied from production)
+- `workspace/Templates/SFUpsertContact.iwxt` (new — copied from production)
+- `workspace/Templates/SFUpsertLead.iwxt` (new — copied from production)
+- `workspace/Templates/SFUpsertOpp.iwxt` (new — copied from production)
+- `docs/ai/claude-reference/ARCHITECTURE.md` (updated — standalone mode + XSD schema sections)
+- `docs/ai/AI_WORKLOG.md` (this entry)
+Commands run:
+- mkdir -p for new directories (database/schemas/engine, docs/deployment, workspace/Templates)
+- cp for XSD and IWXT file copies
+- grep for extracting flow IDs from production im-config.xml and stunnel sections
+- ls/head for verification
+Verification performed:
+- Confirmed 4 XSD files in database/schemas/engine/ are valid XML (<?xml headers present)
+- Confirmed 7 IWXT files in workspace/Templates/ copied correctly
+- Confirmed 3 deployment docs created in docs/deployment/
+- Confirmed standalone template created in docs/authentication/
+- Cross-referenced all stunnel mappings against source stunnel.conf (11 active tunnels match)
+- Cross-referenced flow catalog: 37+2 production flows + 3+14 IW_Launcher flows = 56 total
+Follow-ups / known issues:
+- XSD validation not yet enforced in build pipeline (schemas are reference only)
+- OMS→QB production flows require JDBC/ODBC bridge solution for Java 8+ migration
+- Production deployment guide assumes manual copy — no automated deployment script yet
+- IWXT templates in workspace/Templates/ are available to IDE but not yet integrated into build pipeline
+
+### Verification & cross-reference pass (same session)
+Agent/tool: Claude Code (Opus 4.6, orchestrating haiku subagents + Codex CLI gpt-5-codex-mini)
+Actions taken:
+- Delegated file verification to haiku subagent → 5/5 PASS (XSDs valid XML, IWXTs valid XSLT, deployment docs have headings, standalone template has correct attributes, ARCHITECTURE.md has standalone section)
+- Delegated cross-reference check to haiku subagent → found STUNNEL_MAPPING.md and FLOW_CATALOG.md were orphaned
+- Fixed: added 3 deployment docs to CLAUDE.md "Other key docs" section
+- Fixed: added "Production intelligence" subsection to docs/ai/claude-reference/WORKSPACE.md listing all 6 deliverables
+- Delegated TypeScript build check to haiku subagent → PASS (tsc --noEmit exit code 0, zero errors)
+- Ran Codex CLI reviews (gpt-5-codex-mini, read-only sandbox):
+  - STUNNEL_MAPPING.md: Accuracy 4/5, Completeness 3/5, Security 5/5
+  - FLOW_CATALOG.md: Accuracy 4/5, Completeness 3/5, Security 3/5
+  - PRODUCTION_DEPLOYMENT.md: Accuracy 4/5, Completeness 3/5, Security 3/5
+- Updated NEXT_STEPS.md with Session 29 entry + 3 new roadmap items
+- Updated project memory (MEMORY.md, new feedback_codex_cli_syntax.md)
+- Discovered Codex CLI syntax issue: AI_WORKFLOW.md §6 examples use invalid `-a never` flag (correct: omit `-a`, use `-s` for sandbox)
+Model usage:
+- **Opus** (main): orchestration, doc writing, cross-reference fixes
+- **Haiku** (3 subagents): file verification, cross-reference check, TypeScript build
+- **Codex gpt-5-codex-mini** (3 invocations): doc quality reviews
+Files changed:
+- `CLAUDE.md` (added 3 deployment doc refs)
+- `docs/ai/claude-reference/WORKSPACE.md` (added production intelligence subsection)
+- `docs/NEXT_STEPS.md` (Session 29 entry + 3 new roadmap items)
+
+### Codex gpt-5.3-codex review fixes (same session)
+Agent/tool: Claude Code (Opus 4.6), fixes informed by Codex CLI (gpt-5.3-codex, 385K tokens)
+Actions taken:
+- Fixed STUNNEL_MAPPING.md tunnel count: 222→223 reserved (88+93+20+20+1+1=223)
+- Fixed FLOW_CATALOG.md + standalone template: JDBC/ODBC bridge removed in Java 8, not Java 9
+- Fixed standalone template SF2AUTH example: SFLogin→SFLogin_CM (matches current workspace config)
+- Fixed PRODUCTION_DEPLOYMENT.md: added note that START.bat auto-renders config.xml/context.xml from .env
+- Fixed FLOW_CATALOG.md: added per-template flow variance note (hosted/supabase=17, local=5, standalone=0 active)
+Files changed:
+- `docs/deployment/STUNNEL_MAPPING.md` (count fix)
+- `docs/deployment/FLOW_CATALOG.md` (Java version + template variance note)
+- `docs/deployment/PRODUCTION_DEPLOYMENT.md` (START.bat auto-rendering note)
+- `docs/authentication/config.xml.standalone.template` (Java version + SFLogin_CM)
+
+### XSD validation script + im-config.xsd schema fix (same session, continued)
+Agent/tool: Claude Code (Opus 4.6, haiku subagent for exploration)
+Actions taken:
+- Created `scripts/validate_workspace_configs.py` — Python XSD validator using lxml
+  - Validates 27 workspace XML files against 5 XSD schemas
+  - Auto-maps root elements to candidate schemas (tries both production + modernized)
+  - Distinguishes config.xml results from transactions.xml results
+- Installed `lxml 6.0.2` for Python XSD validation support
+- Fixed `database/schemas/im-config.xsd` — added TransactionDescription, Query, and Parameter element definitions
+  - Root element was empty (attributes only) — now includes child element sequence
+  - Parameter supports Upload, Password, and arbitrary attributes via xs:anyAttribute
+- Fixed AI_WORKFLOW.md §6 Codex CLI example: `--sandbox read-only -a never` → `-s read-only` (invalid flag)
+- Results after 2 Ralph-style iterations:
+  - Iteration 1: 11/27 PASS (im-config.xsd too restrictive)
+  - Iteration 2: 19/27 PASS (all config.xml pass, only transactions.xml fail)
+  - Final: **18/18 config.xml PASS**, 1/9 transactions.xml PASS
+  - 8 transactions.xml failures are known production XSD deviations (element ordering + xs:anyURI)
+Files changed/created:
+- `scripts/validate_workspace_configs.py` (new)
+- `database/schemas/im-config.xsd` (updated — TransactionDescription/Query/Parameter elements)
+- `docs/ai/AI_WORKFLOW.md` (fixed Codex CLI example)
+Verification performed:
+- 3 validation runs (initial → schema fix → final)
+- All 18 config.xml files validate against their schemas
+- Exit code 0 (success) on final run

@@ -1,6 +1,6 @@
 # InterWeave IDE — Next Steps Roadmap
 
-**Last Updated:** 2026-03-14 (Session 27-28 — Engine flow definitions in config templates, Cloudflare tunnel + Vercel portal login verified, production server audit committed)
+**Last Updated:** 2026-03-14 (Session 29 — Production intelligence integration: XSD schemas, stunnel mapping, flow catalog, deployment guide, standalone template, IWXT templates)
 **Project:** IW_Launcher — Enterprise Data Integration Platform
 **Stack:** Eclipse 3.1 IDE + Tomcat 9.0.83 + Supabase Postgres
 **React Portal:** Vite + React 19 + TypeScript (strict) + Tailwind 4 + shadcn/ui + TanStack Query + Recharts
@@ -62,6 +62,7 @@ These items from the original roadmap are now DONE:
 - Session 25-26: Credential encryption at rest (AES-256-GCM, CredentialEncryptionService, ENC: prefix), vendor JAR CVE audit (175 JARs, `docs/security/CVE_AUDIT_2026_03_13.md`), NPE fix in handlePutWizard version parsing.
 - Session 27: Engine flow definitions added to all 3 config.xml templates (SF2AUTH + CRM2M2 = 14 flows). Cloudflare tunnel started, Vercel portal login verified end-to-end via Bearer token auth.
 - Session 28: Production server audit committed — `docs/SERVER_AUDIT_2026_03_13.md` (551-line architecture overview), `docs/production-reference/` (525 files from 107525-UVS13: configs, engine logs, workspace projects, IDE snapshots, customer portal). `frontends/IWCustomerPortal` (legacy payment portal HTML).
+- Session 29: Production intelligence integration — 4 XSD schemas → `database/schemas/engine/`, stunnel mapping reference, flow catalog (56 flows), production deployment guide, standalone config template, 7 IWXT templates → `workspace/Templates/`.
 
 ---
 
@@ -241,8 +242,12 @@ Program admin console for IW/ASSA administrators. Key new patterns:
 | ~~Vendor JAR CVE audit~~ | ~~OWASP dependency-check on 133 iwtransformationserver JARs~~ | ~~1-2 hrs~~ | DONE (175 JARs audited, `docs/security/CVE_AUDIT_2026_03_13.md`, Session 25-26) |
 | ~~Engine flow definitions~~ | ~~Populate config.xml templates with flow definitions~~ | ~~1 hr~~ | DONE (14 CRM2M2 + 3 SF2AUTH flows in all 3 templates, Session 27) |
 | ~~Production server audit~~ | ~~Comprehensive sweep of 107525-UVS13~~ | ~~4-6 hrs~~ | DONE (551-line report + 525 reference files, Session 28) |
+| ~~Production intelligence integration~~ | ~~XSD schemas, flow catalog, stunnel mapping, deployment guide, standalone template, IWXT templates~~ | ~~2-3 hrs~~ | DONE (6 deliverables, Session 29) |
 | CVE remediation | Tomcat 9.0.98+, Xerces/Xalan upgrade, remove test JARs | 4-8 hrs | Open |
 | Named Cloudflare tunnel | Stable URL (requires Cloudflare account login) | 1 hr | Open (quick tunnel working) |
+| XSD validation in build pipeline | Enforce engine schema validation during workspace compilation | 2-3 hrs | Open (schemas in `database/schemas/engine/`) |
+| OMS→QB migration path | Design adapter for production QuickBooks flows (JDBC/ODBC removed in Java 9) | 4-8 hrs | Open (flow catalog documents 37 legacy flows) |
+| Production deployment automation | Script for deploying IW_Launcher alongside production Tomcat 5.5 | 2-4 hrs | Open (manual guide in `docs/deployment/PRODUCTION_DEPLOYMENT.md`) |
 
 ### Transformation Server Status: OPERATIONAL (2026-03-09)
 

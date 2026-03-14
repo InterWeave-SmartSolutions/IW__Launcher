@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+	<xsl:template match="iwtransformationserver">
+		<xsl:variable name="SessionId"/>
+		<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<soap:Header>
+				<SessionHeader xmlns="urn:partner.soap.sforce.com">
+					<sessionId>
+						<xsl:value-of select="$SessionId"/>
+					</sessionId>
+				</SessionHeader>
+				<CallOptions xmlns="urn:partner.soap.sforce.com">
+					<client>Expresiv/Interweave</client>
+				</CallOptions>
+			</soap:Header>
+			<soap:Body>
+				<upsert xmlns="urn:partner.soap.sforce.com">
+					<!---replace External_ID__c with the actual External ID field-->
+					<externalIDFieldName xsi:type="xsd:string">External_ID__c</externalIDFieldName>
+					<xsl:for-each select=".">
+						<xsl:variable name="SFAcctExternalID"/>
+						<xsl:variable name="SFAccountNumber"/>
+						<xsl:variable name="SFAcctAnnualRevenue"/>
+						<xsl:variable name="SFAcctIndustry"/>
+						<xsl:variable name="SFAcctNumberOfEmployees"/>
+						<xsl:variable name="SFAcctRating"/>
+						<xsl:variable name="SFCustomerComments"/>
+						<xsl:variable name="SFName"/>
+						<xsl:variable name="SFBAddr"/>
+						<xsl:variable name="SFBCity"/>
+						<xsl:variable name="SFBState"/>
+						<xsl:variable name="SFBPostCode"/>
+						<xsl:variable name="SFBCountry"/>
+						<xsl:variable name="SFSAddr"/>
+						<xsl:variable name="SFSCity"/>
+						<xsl:variable name="SFSState"/>
+						<xsl:variable name="SFSPostCode"/>
+						<xsl:variable name="SFSCountry"/>
+						<xsl:variable name="SFPhone"/>
+						<xsl:variable name="SFFax"/>
+						<xsl:variable name="SFSic"/>
+						<xsl:variable name="SFSite"/>
+						<xsl:variable name="SFAcctTickerSymbol"/>
+						<xsl:variable name="SFAcctType"/>
+						<xsl:variable name="SFAcctWebsite"/>
+						<sObjects>
+							<type xmlns="urn:sobject.partner.soap.sforce.com">Account</type>
+							<!---replace External_ID__c with the actual External ID field-->
+							<External_ID__c xmlns="">
+								<xsl:value-of select="$SFAcctExternalID"/>
+							</External_ID__c>
+							<AccountNumber xmlns="">
+								<xsl:value-of select="$SFAccountNumber"/>
+							</AccountNumber>
+							<xsl:if test="$SFAcctAnnualRevenue!=''">
+								<AnnualRevenue xmlns="">
+									<xsl:value-of select="$SFAcctAnnualRevenue"/>
+								</AnnualRevenue>
+							</xsl:if>
+							<xsl:if test="$SFAcctIndustry!=''">
+								<Industry xmlns="">
+									<xsl:value-of select="$SFAcctIndustry"/>
+								</Industry>
+							</xsl:if>
+							<xsl:if test="$SFAcctNumberOfEmployees!=''">
+								<NumberOfEmployees>
+									<xsl:value-of select="$SFAcctNumberOfEmployees"/>
+								</NumberOfEmployees>
+							</xsl:if>
+							<xsl:if test="$SFAcctTickerSymbol!=''">
+								<TickerSymbol>
+									<xsl:value-of select="$SFAcctTickerSymbol"/>
+								</TickerSymbol>
+							</xsl:if>
+							<xsl:if test="$SFAcctType!=''">
+								<Type>
+									<xsl:value-of select="$SFAcctType"/>
+								</Type>
+							</xsl:if>
+							<xsl:if test="$SFAcctRating!=''">
+								<Rating>
+									<xsl:value-of select="$SFAcctRating"/>
+								</Rating>
+							</xsl:if>
+							<Name xmlns="">
+								<xsl:value-of select="$SFName"/>
+							</Name>
+							<BillingCity xmlns="">
+								<xsl:value-of select="$SFBCity"/>
+							</BillingCity>
+							<BillingCountry xmlns="">
+								<xsl:value-of select="$SFBCountry"/>
+							</BillingCountry>
+							<BillingPostalCode xmlns="">
+								<xsl:value-of select="$SFBPostCode"/>
+							</BillingPostalCode>
+							<BillingState xmlns="">
+								<xsl:value-of select="$SFBState"/>
+							</BillingState>
+							<BillingStreet xmlns="">
+								<xsl:value-of select="$SFBAddr"/>
+							</BillingStreet>
+							<ShippingCity xmlns="">
+								<xsl:value-of select="$SFSCity"/>
+							</ShippingCity>
+							<ShippingCountry xmlns="">
+								<xsl:value-of select="$SFSCountry"/>
+							</ShippingCountry>
+							<ShippingPostalCode xmlns="">
+								<xsl:value-of select="$SFSPostCode"/>
+							</ShippingPostalCode>
+							<ShippingState xmlns="">
+								<xsl:value-of select="$SFSState"/>
+							</ShippingState>
+							<ShippingStreet xmlns="">
+								<xsl:value-of select="$SFSAddr"/>
+							</ShippingStreet>
+							<Description xmlns="">
+								<xsl:value-of select="$SFCustomerComments"/>
+							</Description>
+							<Fax xmlns="">
+								<xsl:value-of select="$SFFax"/>
+							</Fax>
+							<Phone xmlns="">
+								<xsl:value-of select="$SFPhone"/>
+							</Phone>
+							<Sic xmlns="">
+								<xsl:value-of select="$SFSic"/>
+							</Sic>
+							<Site xmlns="">
+								<xsl:value-of select="$SFSite"/>
+							</Site>
+							<Website>
+								<xsl:value-of select="$SFAcctWebsite"/>
+							</Website>
+						</sObjects>
+					</xsl:for-each>
+				</upsert>
+			</soap:Body>
+		</soap:Envelope>
+	</xsl:template>
+</xsl:stylesheet>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+	<xsl:template match="iwtransformationserver">
+					<xsl:for-each select=".">
+						<xsl:variable name="SFCustomerNo"/>
+						<xsl:variable name="SFFirstName"/>
+						<xsl:variable name="SFLastName"/>
+						<xsl:variable name="SFName">
+							<xsl:value-of select="$SFLastName"/>, <xsl:value-of select="$SFFirstName"/>
+						</xsl:variable>
+						<xsl:variable name="SFEmail"/>
+						<xsl:variable name="SFBAddr1"/>
+						<xsl:variable name="SFBAddr2"/>
+						<xsl:variable name="SFBCity"/>
+						<xsl:variable name="SFBState"/>
+						<xsl:variable name="SFBPostCode"/>
+						<xsl:variable name="SFBCountry"/>
+						<xsl:variable name="SFPhone"/>
+						<xsl:variable name="SFAltPhone"/>
+						<xsl:variable name="SFFax"/>
+						<sObjects>
+							<type xmlns="urn:sobject.partner.soap.sforce.com">Account</type>
+							<Name xmlns="">
+								<xsl:value-of select="$SFName"/>
+							</Name>
+							<BillingCity xmlns="">
+								<xsl:value-of select="$SFBCity"/>
+							</BillingCity>
+							<BillingCountry xmlns="">
+								<xsl:value-of select="$SFBCountry"/>
+							</BillingCountry>
+							<BillingPostalCode xmlns="">
+								<xsl:value-of select="$SFBPostCode"/>
+							</BillingPostalCode>
+							<BillingState xmlns="">
+								<xsl:value-of select="$SFBState"/>
+							</BillingState>
+							<BillingStreet xmlns="">
+								<xsl:value-of select="$SFBAddr1"/>
+								<xsl:value-of select="$SFBAddr2"/>
+							</BillingStreet>
+							<Description xmlns="">
+								<xsl:value-of select="$SFCustomerComments"/>
+							</Description>
+							<Fax xmlns="">
+								<xsl:value-of select="$SFFax"/>
+							</Fax>
+							<Industry xmlns="">
+							</Industry>
+							<Phone xmlns="">
+								<xsl:value-of select="$SFPhone"/>
+							</Phone>
+							<Active__c>
+								<xsl:value-of select="$SFIsActive"/>
+							</Active__c>
+							<Customer_No__c>
+								<xsl:value-of select="$SFCustomerNo"/>
+							</Customer_No__c>
+							<Email__c>
+								<xsl:value-of select="$SFEmail"/>
+							</Email__c>
+							<First_Name__c>
+								<xsl:value-of select="$SFFirstName"/>
+							</First_Name__c>
+							<Last_Name__c>
+								<xsl:value-of select="$SFLastName"/>
+							</Last_Name__c>
+							<Email_Opt_Out__c>
+								<xsl:value-of select="$MailList"/>
+							</Email_Opt_Out__c>
+						</sObjects>
+					</xsl:for-each>
+	</xsl:template>
+</xsl:stylesheet>

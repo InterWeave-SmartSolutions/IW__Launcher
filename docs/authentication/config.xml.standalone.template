@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+================================================================================
+    STANDALONE ENGINE CONFIGURATION TEMPLATE (Production-Compatible)
+================================================================================
+
+This template mirrors the production server's standalone configuration pattern.
+Use it to run individual workspace projects without the hosted/multi-tenant layer.
+
+INSTRUCTIONS:
+1. Copy this file to: web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml
+2. Replace __TS_BASE_URL__ with your transformation server URL
+   (e.g., http://localhost:9090/iwtransformationserver/scheduledtransform)
+3. Uncomment and configure the flow definitions for your workspace project
+4. Restart Tomcat
+
+DIFFERENCES FROM HOSTED MODE:
+- IsHosted="0" — no database authentication required
+- Admin-only login: __iw_admin__ / %iwps%
+- No per-company flow isolation (all flows visible)
+- Flow parameters (driver, url, user, password) are inline, not from DB
+- No Solution attribute needed on flow definitions
+
+WHEN TO USE:
+- Testing a single workspace project in isolation
+- Debugging engine behavior without DB dependencies
+- Running on the production server alongside Tomcat 5.5
+- Development when Supabase is unreachable
+
+PRODUCTION REFERENCE:
+- Source pattern: docs/production-reference/workspace-projects/IWHostedSolutions/im-config.xml
+- Production uses IsHosted="0", PrimaryTSURL pointing to 72.3.142.149:8080
+================================================================================
+-->
+<BusinessDaemonConfiguration
+    Name="BD_Standalone"
+    HartbeatInterval="0"
+    RefreshInterval="10000"
+
+    PrimaryTSURL="__TS_BASE_URL__"
+    SecondaryTSURL=""
+    PrimaryTSURLT="__TS_BASE_URL__"
+    SecondaryTSURLT=""
+    PrimaryTSURL1=""
+    SecondaryTSURL1=""
+    PrimaryTSURLT1=""
+    SecondaryTSURLT1=""
+    PrimaryTSURLD=""
+    SecondaryTSURLD=""
+
+    FailoverURL=""
+
+    IsPrimary="1"
+    RunAtStartUp="0"
+    BufferSize="1024"
+
+    IsHosted="0"
+>
+  <!--
+  ============================================================================
+  EXAMPLE: SF2AUTH Project Flows (Salesforce <-> Authorize.Net)
+  Uncomment and configure for SF2AuthNet workspace project testing.
+  ============================================================================
+  -->
+  <!--
+  <TransactionDescription Id="SFTransactions2Auth" Description="SF scheduled transaction sync to Authorize.Net"
+      Interval="60000" Shift="0" RunAtStartUp="false" NumberOfExecutions="0" InnerCycles="0"
+      PrimaryTSURL="" SecondaryTSURL="" PrimaryTSURLT="" SecondaryTSURLT=""
+      PrimaryTSURL1="null" SecondaryTSURL1="null" PrimaryTSURLT1="null" SecondaryTSURLT1="null"
+      PrimaryTSURLD="" SecondaryTSURLD="" IsActive="true" IsPublic="false" IsStateful="true">
+    <Parameter Name="ReturnString" Value="" Fixed="true" />
+    <Parameter Name="applicationname" Value="iwtransformationserver" Fixed="true" />
+    <Parameter Name="tranname" Value="SFLogin_CM" Fixed="true" />
+    <Parameter Name="QueryStartTime" Value="2008-04-28 08:59:24.682" />
+  </TransactionDescription>
+  -->
+
+  <!--
+  ============================================================================
+  EXAMPLE: CRM2M2 Project Flows (Creatio <-> Magento 2)
+  Uncomment and configure for Creatio_Magento2_Integration workspace project.
+  ============================================================================
+  -->
+  <!--
+  <TransactionDescription Id="BPMTransactions2Magento" Description="Creatio scheduled transaction sync to Magento 2"
+      Interval="60000" Shift="0" RunAtStartUp="false" NumberOfExecutions="0" InnerCycles="0"
+      PrimaryTSURL="" SecondaryTSURL="" PrimaryTSURLT="" SecondaryTSURLT=""
+      PrimaryTSURL1="null" SecondaryTSURL1="null" PrimaryTSURLT1="null" SecondaryTSURLT1="null"
+      PrimaryTSURLD="" SecondaryTSURLD="" IsActive="true" IsPublic="false" IsStateful="true">
+    <Parameter Name="ReturnString" Value="" Fixed="true" />
+    <Parameter Name="applicationname" Value="iwtransformationserver" Fixed="true" />
+    <Parameter Name="tranname" Value="BPMLogin" Fixed="true" />
+    <Parameter Name="QueryStartTime" Value="2008-04-28 08:59:24.682" />
+  </TransactionDescription>
+
+  <TransactionDescription Id="CRMAcctSync2M2" Description="Creatio Account sync to Magento 2 Customer"
+      Interval="60000" Shift="0" RunAtStartUp="false" NumberOfExecutions="0" InnerCycles="0"
+      PrimaryTSURL="" SecondaryTSURL="" PrimaryTSURLT="" SecondaryTSURLT=""
+      PrimaryTSURL1="null" SecondaryTSURL1="null" PrimaryTSURLT1="null" SecondaryTSURLT1="null"
+      PrimaryTSURLD="" SecondaryTSURLD="" IsActive="true" IsPublic="false" IsStateful="true">
+    <Parameter Name="ReturnString" Value="" Fixed="true" />
+    <Parameter Name="applicationname" Value="iwtransformationserver" Fixed="true" />
+    <Parameter Name="tranname" Value="CRMAcctLogin" Fixed="true" />
+    <Parameter Name="QueryStartTime" Value="2008-04-28 08:59:24.682" />
+  </TransactionDescription>
+  -->
+
+  <!--
+  ============================================================================
+  EXAMPLE: OMS -> QuickBooks Flow (production pattern)
+  This shows the production-style flow with inline connection parameters.
+  NOTE: sun.jdbc.odbc.JdbcOdbcDriver was removed in Java 8 (Oracle JDK).
+        Use a JDBC-ODBC bridge library or direct QB API with Java 8+.
+  ============================================================================
+  -->
+  <!--
+  <TransactionDescription Id="NextOrdCust2QBAcct_A" Description="OMS Customers+Orders to QB Accounts+SRs+Invoices"
+      Interval="1000" Shift="0" RunAtStartUp="false" NumberOfExecutions="1000"
+      PrimaryTSURL="" SecondaryTSURL="" PrimaryTSURLT="" SecondaryTSURLT=""
+      PrimaryTSURL1="null" SecondaryTSURL1="null" PrimaryTSURLT1="null" SecondaryTSURLT1="null"
+      PrimaryTSURLD="" SecondaryTSURLD="" IsActive="false" IsPublic="false" IsStateful="false">
+    <Parameter Name="OMS_ACCOUNT_NAME" Value="__OMS_ACCOUNT__" Fixed="true" />
+    <Parameter Name="QBDriver" Value="sun.jdbc.odbc.JdbcOdbcDriver" />
+    <Parameter Name="tranname" Value="OrderQuery" Fixed="true" />
+    <Parameter Name="USER" Value="__OMS_USER__" />
+    <Parameter Name="QBURL" Value="jdbc:odbc:__ODBC_DSN__" />
+    <Parameter Name="QBPassword" Value="__QB_PASSWORD__" />
+    <Parameter Name="applicationname" Value="iwtransformationserver" Fixed="true" />
+    <Parameter Name="OMS_KEY" Value="__OMS_API_KEY__" />
+    <Parameter Name="QBUser" Value="__QB_USER__" />
+    <Parameter Name="PASSWORD" Value="__OMS_PASSWORD__" />
+    <Parameter Name="QueryStartTime" Value="1998-10-01 00:00:00.0" />
+  </TransactionDescription>
+  -->
+
+</BusinessDaemonConfiguration>

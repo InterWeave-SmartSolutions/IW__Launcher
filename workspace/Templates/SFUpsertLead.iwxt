@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+	<xsl:template match="iwtransformationserver">
+		<xsl:variable name="SessionId"/>
+		<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<soap:Header>
+				<SessionHeader xmlns="urn:partner.soap.sforce.com">
+					<sessionId>
+						<xsl:value-of select="$SessionId"/>
+					</sessionId>
+				</SessionHeader>
+				<CallOptions xmlns="urn:partner.soap.sforce.com">
+					<client>Expresiv/Interweave</client>
+				</CallOptions>
+			</soap:Header>
+			<soap:Body>
+				<upsert xmlns="urn:partner.soap.sforce.com">
+					<externalIDFieldName xsi:type="xsd:string">External_ID__c</externalIDFieldName>
+					<!---replace External_ID__c with the actual External ID field-->
+					<xsl:for-each select=".">
+						<xsl:variable name="SFLeadExternalID"/>
+						<xsl:variable name="SFLeadFirstName"/>
+						<xsl:variable name="SFLeadLastName"/>
+						<xsl:variable name="SFLeadSalutation"/>
+						<xsl:variable name="SFLeadTitle"/>
+						<xsl:variable name="SFLeadEmail"/>
+						<xsl:variable name="SFLeadStreet"/>
+						<xsl:variable name="SFLeadCity"/>
+						<xsl:variable name="SFLeadState"/>
+						<xsl:variable name="SFLeadCountry"/>
+						<xsl:variable name="SFLeadPostalCode"/>
+						<xsl:variable name="SFLeadPhone"/>
+						<xsl:variable name="SFLeadFax"/>
+						<xsl:variable name="SFLeadAnnualRevenue"/>
+						<xsl:variable name="SFLeadCompany"/>
+						<xsl:variable name="SFLeadDescription"/>
+						<xsl:variable name="SFLeadHasOptedOutOfEmail"/>
+						<xsl:variable name="SFLeadIndustry"/>
+						<xsl:variable name="SFLeadLeadSource"/>
+						<xsl:variable name="SFLeadMobilePhone"/>
+						<xsl:variable name="SFLeadNumberOfEmployees"/>
+						<xsl:variable name="SFLeadRating"/>
+						<xsl:variable name="SFLeadStatus"/>
+						<xsl:variable name="SFLeadWebsite"/>
+						<sObjects>
+							<type xmlns="urn:sobject.partner.soap.sforce.com">Lead</type>
+					<!---replace External_ID__c with the actual External ID field-->
+							<External_ID__c xmlns="">
+								<xsl:value-of select="$SFLeadExternalID"/>
+							</External_ID__c>
+							<City xmlns="">
+								<xsl:value-of select="$SFLeadCity"/>
+							</City>
+							<Country xmlns="">
+								<xsl:value-of select="$SFLeadCountry"/>
+							</Country>
+							<PostalCode xmlns="">
+								<xsl:value-of select="$SFLeadPostalCode"/>
+							</PostalCode>
+							<State xmlns="">
+								<xsl:value-of select="$SFLeadState"/>
+							</State>
+							<Street xmlns="">
+								<xsl:value-of select="$SFLeadStreet"/>
+							</Street>
+							<Fax xmlns="">
+								<xsl:value-of select="$SFLeadFax"/>
+							</Fax>
+							<Phone xmlns="">
+								<xsl:value-of select="$SFLeadPhone"/>
+							</Phone>
+							<Title>
+								<xsl:value-of select="$SFLeadTitle"/>
+							</Title>
+							<xsl:if test="$SFLeadSalutation!=''">
+								<Salutation>
+									<xsl:value-of select="$SFLeadSalutation"/>
+								</Salutation>
+							</xsl:if>
+							<Email>
+								<xsl:value-of select="$SFLeadEmail"/>
+							</Email>
+							<FirstName>
+								<xsl:value-of select="$SFLeadFirstName"/>
+							</FirstName>
+							<LastName>
+								<xsl:value-of select="$SFLeadLastName"/>
+							</LastName>
+							<xsl:if test="$SFLeadAnnualRevenue!=''">
+								<AnnualRevenue xmlns="">
+									<xsl:value-of select="$SFLeadAnnualRevenue"/>
+								</AnnualRevenue>
+							</xsl:if>
+							<Company xmlns="">
+								<xsl:value-of select="$SFLeadCompany"/>
+							</Company>
+							<Description xmlns="">
+								<xsl:value-of select="$SFLeadDescription"/>
+							</Description>
+							<HasOptedOutOfEmail xmlns="">
+								<xsl:choose>
+									<xsl:when test="$SFLeadHasOptedOutOfEmail=''">0</xsl:when>
+									<xsl:otherwise>
+										<xsl:value-of select="$SFLeadHasOptedOutOfEmail"/>
+									</xsl:otherwise>
+								</xsl:choose>
+							</HasOptedOutOfEmail>
+							<xsl:if test="$SFLeadIndustry!=''">
+								<Industry xmlns="">
+									<xsl:value-of select="$SFLeadIndustry"/>
+								</Industry>
+							</xsl:if>
+							<xsl:if test="$SFLeadLeadSource!=''">
+								<LeadSource xmlns="">
+									<xsl:value-of select="$SFLeadLeadSource"/>
+								</LeadSource>
+							</xsl:if>
+							<MobilePhone xmlns="">
+								<xsl:value-of select="$SFLeadMobilePhone"/>
+							</MobilePhone>
+							<xsl:if test="$SFLeadNumberOfEmployees!=''">
+								<NumberOfEmployees>
+									<xsl:value-of select="$SFLeadNumberOfEmployees"/>
+								</NumberOfEmployees>
+							</xsl:if>
+							<xsl:if test="$SFLeadRating!=''">
+								<Rating>
+									<xsl:value-of select="$SFLeadRating"/>
+								</Rating>
+							</xsl:if>
+							<xsl:if test="$SFLeadStatus!=''">
+								<Status>
+									<xsl:value-of select="$SFLeadStatus"/>
+								</Status>
+							</xsl:if>
+							<Website>
+								<xsl:value-of select="$SFLeadWebsite"/>
+							</Website>
+						</sObjects>
+					</xsl:for-each>
+				</upsert>
+			</soap:Body>
+		</soap:Envelope>
+	</xsl:template>
+</xsl:stylesheet>
