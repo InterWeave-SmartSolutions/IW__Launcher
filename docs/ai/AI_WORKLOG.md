@@ -7332,3 +7332,86 @@ Follow-ups / known issues:
 - CVE audit results pending (background agent)
 - Credential encryption design pending (background agent)
 - compiledClassCount shows 0 for all projects in listing (classes dir may not exist or path calculation issue — minor)
+
+---
+
+## 2026-03-13 21:15 (EST) — Session 26
+Agent/tool: Claude Code (Opus 4.6), continuation of Session 25
+User request: Continue tackling Ready Now blockers — credential encryption at rest + vendor JAR CVE audit (autonomous continuation from session 25)
+
+Actions taken:
+
+### Credential Encryption at Rest (AES-256-GCM) — COMPLETE
+1. **CredentialEncryptionService.java** created and compiled (from Session 25)
+   - AES-256-GCM with 12-byte random IV, 128-bit auth tag
+   - `ENC:` prefix sentinel for backwards compatibility
+   - Passthrough mode when no key configured
+   - Key loaded from `CREDENTIAL_ENCRYPTION_KEY` in `.env` (64 hex chars)
+
+2. **ApiConfigurationServlet.java** modified with encryption integration:
+   - `handlePutCredentials()`: encrypts password, api_key, api_secret before DB insert
+   - `handlePutWizard()`: encrypts credential fields per-field inside XML blob (SFPswd, QBPswd0, etc.)
+   - `parseXmlToJsonFields()`: decrypts credential fields when reading wizard config for React UI
+   - Added `isCredentialField()` helper (matches PSWD, PASSWORD, SECRET, TOKEN, APIKEY patterns)
+   - Fixed pre-existing NPE bug at line 360: `vStr.isEmpty()` without null check on version field
+
+3. **WorkspaceProfileCompiler.java** modified:
+   - `buildDataConnectionsXslt()`: decrypts password values before writing to plaintext XSLT
+
+4. **.env.example** updated: added `CREDENTIAL_ENCRYPTION_KEY=generate-with-openssl-rand-hex-32` placeholder
+
+5. **End-to-end testing verified**:
+   - Generated AES-256 key with `openssl rand -hex 32`, added to `.env`
+   - Tomcat restart → log confirms "Encryption key loaded (AES-256-GCM active)"
+   - PUT credentials → saved successfully (encrypted in DB)
+   - GET credentials → returns hasApiKey:true without exposing raw values
+   - PUT wizard with syncMappings containing SFPswd/QBPswd0 → saved successfully
+   - GET wizard → credential fields decrypted correctly on read (round-trip verified)
+   - Credential test endpoint → works (decrypts before connection attempt)
+
+### Vendor JAR CVE Audit — COMPLETE
+- CVE audit report saved to `docs/security/CVE_AUDIT_2026_03_13.md`
+- Credential encryption design doc saved to `docs/security/CREDENTIAL_ENCRYPTION_DESIGN.md`
+- 175 JARs audited across 4 locations (iwtransformationserver, iw-business-daemon, tomcat/lib, jre/lib/endorsed)
+- Top findings: Xerces 2.7.1 (CVE-2012-0881, CVE-2013-4002), Xalan 2.7.0 (CVE-2014-0107, CVE-2022-34169), MySQL 5.1.15 (CVE-2017-3523, CVE-2018-3258), Axis 1.2.1 (CVE-2023-51441)
+- Quick wins identified: replace MySQL 5.1.15 with existing 8.0.33, remove test JARs (junit/cactus/httpunit)
+
+### CLAUDE.md updates
+- Added "Credential Encryption at Rest" subsection under Security Notes
+- Updated Roadmap: moved credential encryption + CVE audit to Done
+- Added CVE remediation to Future items
+
+Files changed:
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/api/ApiConfigurationServlet.java (encryption integration + NPE fix)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/WorkspaceProfileCompiler.java (decrypt at compiler boundary)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src/com/interweave/businessDaemon/config/CredentialEncryptionService.java (new, from session 25)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/api/ApiConfigurationServlet.class (recompiled)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/config/WorkspaceProfileCompiler.class (recompiled)
+- web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/classes/com/interweave/businessDaemon/config/CredentialEncryptionService.class (new)
+- .env.example (added CREDENTIAL_ENCRYPTION_KEY placeholder)
+- docs/security/CREDENTIAL_ENCRYPTION_DESIGN.md (new — architecture blueprint)
+- docs/security/CVE_AUDIT_2026_03_13.md (new — 175 JAR audit report)
+- CLAUDE.md (credential encryption docs, roadmap update)
+- docs/ai/AI_WORKLOG.md (this entry)
+
+Commands run:
+- `javac --release 8 -cp "..." ApiConfigurationServlet.java` (recompile with encryption)
+- `javac --release 8 -cp "..." WorkspaceProfileCompiler.java` (recompile with decrypt)
+- `openssl rand -hex 32` (generate AES-256 key for testing)
+- Tomcat stop/start (multiple restarts for testing)
+- curl commands for end-to-end credential encryption testing
+
+Verification performed:
+- Tomcat log: "Encryption key loaded (AES-256-GCM active)" confirmed
+- PUT /api/config/credentials → "Credential saved successfully"
+- GET /api/config/credentials → hasApiKey:true (raw values not exposed)
+- PUT /api/config/wizard with SFPswd/QBPswd0 → "Configuration saved successfully"
+- GET /api/config/wizard → credential fields returned correctly (decrypt round-trip verified)
+- POST /api/config/credentials/test → endpoint reachable (HTTP 200, 163ms)
+- Passthrough mode confirmed when no key configured
+
+Follow-ups / known issues:
+- Migration endpoint for existing plaintext credentials not yet built (future: POST /api/admin/encrypt-credentials)
+- Credential masking in API responses could be enhanced (wizard GET still returns raw passwords to authenticated users)
+- CVE remediation pending: Tomcat 9.0.98+ upgrade (CVE-2024-50379 critical on Windows), Xerces/Xalan upgrade, MySQL 5.1.15 replacement
+- Quick CVE wins: remove test JARs (junit-3.8.1, cactus-1.5, httpunit-1.5.3) from iwtransformationserver

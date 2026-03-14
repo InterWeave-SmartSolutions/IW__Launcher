@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
+import com.interweave.businessDaemon.config.CredentialEncryptionService;
 
 /**
  * ApiConfigurationServlet - JSON API for company configuration management.
@@ -47,7 +48,11 @@ public class ApiConfigurationServlet extends HttpServlet {
             Context envContext = (Context) initContext.lookup("java:/comp/env");
             dataSource = (DataSource) envContext.lookup("jdbc/IWDB");
             ensureTableExists();
-            log("ApiConfigurationServlet initialized");
+            // Initialize credential encryption (key from .env at repo root)
+            String catalinaBase = System.getProperty("catalina.base", ".");
+            CredentialEncryptionService.initialize(new java.io.File(catalinaBase, "../../.env"));
+            log("ApiConfigurationServlet initialized" +
+                (CredentialEncryptionService.isActive() ? " (credential encryption ACTIVE)" : " (credential encryption INACTIVE — passthrough)"));
         } catch (NamingException e) {
             throw new ServletException("Cannot initialize database connection", e);
         }
@@ -303,8 +308,12 @@ public class ApiConfigurationServlet extends HttpServlet {
                     strippedKeys.add(key);
                     return; // Skip disallowed mapping
                 }
+                // Encrypt credential values before storing in XML
+                String stored = isCredentialField(key)
+                    ? CredentialEncryptionService.encryptIfNeeded(val)
+                    : val;
                 xml.append("<").append(key).append(">")
-                   .append(xmlEscape(val))
+                   .append(xmlEscape(stored))
                    .append("</").append(key).append(">");
             });
         }
@@ -348,7 +357,7 @@ public class ApiConfigurationServlet extends HttpServlet {
                 int clientVersion = 0;
                 try {
                     String vStr = extractJsonString(body, "version");
-                    if (!vStr.isEmpty()) clientVersion = Integer.parseInt(vStr);
+                    if (vStr != null && !vStr.isEmpty()) clientVersion = Integer.parseInt(vStr);
                 } catch (NumberFormatException ignored) {}
 
                 String userEmail = (String) session.getAttribute("userEmail");
@@ -493,9 +502,12 @@ public class ApiConfigurationServlet extends HttpServlet {
                 stmt.setString(2, credentialType.trim());
                 stmt.setString(3, credentialName != null ? credentialName.trim() : credentialType.trim());
                 stmt.setString(4, username != null ? username.trim() : "");
-                stmt.setString(5, password != null ? password.trim() : "");
-                stmt.setString(6, apiKey != null ? apiKey.trim() : "");
-                stmt.setString(7, apiSecret != null ? apiSecret.trim() : "");
+                stmt.setString(5, CredentialEncryptionService.encryptIfNeeded(
+                    password != null ? password.trim() : ""));
+                stmt.setString(6, CredentialEncryptionService.encryptIfNeeded(
+                    apiKey != null ? apiKey.trim() : ""));
+                stmt.setString(7, CredentialEncryptionService.encryptIfNeeded(
+                    apiSecret != null ? apiSecret.trim() : ""));
                 stmt.setString(8, endpointUrl != null ? endpointUrl.trim() : "");
                 stmt.setString(9, extraConfig != null ? extraConfig.trim() : "");
                 stmt.executeUpdate();
@@ -670,8 +682,13 @@ public class ApiConfigurationServlet extends HttpServlet {
 
                 if (!first) result.append(",");
                 first = false;
+                // Decrypt credential fields for wizard display
+                String fieldValue = xmlUnescape(value);
+                if (isCredentialField(tagName)) {
+                    fieldValue = CredentialEncryptionService.decrypt(fieldValue);
+                }
                 result.append("\"").append(escapeJson(tagName)).append("\":\"")
-                      .append(escapeJson(xmlUnescape(value))).append("\"");
+                      .append(escapeJson(fieldValue)).append("\"");
 
                 pos = closePos + closeTag.length();
             } else {
@@ -717,6 +734,15 @@ public class ApiConfigurationServlet extends HttpServlet {
     /** Known non-sync config keys that are always allowed (detail fields, credentials, etc.). */
     private static boolean isSyncMappingKey(String key) {
         return key.startsWith("SyncType");
+    }
+
+    /** Returns true if the field contains a credential that should be encrypted at rest. */
+    private static boolean isCredentialField(String key) {
+        if (key == null) return false;
+        String upper = key.toUpperCase();
+        return upper.contains("PSWD") || upper.contains("PASSWORD")
+            || upper.contains("SECRET") || upper.contains("TOKEN")
+            || upper.endsWith("APIKEY");
     }
 
     /**

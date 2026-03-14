@@ -330,10 +330,12 @@ public final class WorkspaceProfileCompiler {
         }
 
         String iwUser = values.has("SFIntUsr") ? values.get("SFIntUsr") : "";
-        String iwPassword = values.has("SFPswd") ? values.get("SFPswd") : "";
+        String iwPassword = CredentialEncryptionService.decrypt(
+            values.has("SFPswd") ? values.get("SFPswd") : "");
         String msUrl = values.has("QDSN0") ? values.get("QDSN0") : "";
         String msUser = values.has("QBIntUsr0") ? values.get("QBIntUsr0") : "";
-        String msPassword = values.has("QBPswd0") ? values.get("QBPswd0") : "";
+        String msPassword = CredentialEncryptionService.decrypt(
+            values.has("QBPswd0") ? values.get("QBPswd0") : "");
 
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"

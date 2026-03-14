@@ -621,10 +621,28 @@ IW_Launcher/
 - Supabase Postgres credentials are shared across all team members
 - Admin password `%iwps%` is hardcoded in authentication system
 
+### Credential Encryption at Rest (AES-256-GCM)
+
+**Status**: ACTIVE — `CredentialEncryptionService` encrypts credential fields in `company_credentials` and `company_configurations` tables.
+
+**How it works**:
+- `CREDENTIAL_ENCRYPTION_KEY` in `.env` (64 hex chars = 32 bytes = AES-256)
+- Sentinel prefix `ENC:` on encrypted values — values without prefix are plaintext (backwards-compatible)
+- `CredentialEncryptionService.encrypt()` / `.decrypt()` / `.isEncrypted()` / `.encryptIfNeeded()`
+- **Write path**: `ApiConfigurationServlet.handlePutCredentials()` encrypts `password`, `api_key`, `api_secret` before DB insert. `handlePutWizard()` encrypts credential fields per-field inside the XML blob.
+- **Read path**: `parseXmlToJsonFields()` decrypts credential fields before returning to React UI. `handleGetCredentials()` never exposes raw passwords (returns `hasApiKey: boolean`).
+- **Compiler boundary**: `WorkspaceProfileCompiler.buildDataConnectionsXslt()` decrypts passwords before writing plaintext XSLT (engine requires plaintext).
+- **Passthrough mode**: If no key in `.env`, all operations are no-ops (backwards compatible).
+
+**Generate a key**: `openssl rand -hex 32`
+
+**Design doc**: `docs/security/CREDENTIAL_ENCRYPTION_DESIGN.md`
+**CVE audit**: `docs/security/CVE_AUDIT_2026_03_13.md`
+
 ## Roadmap and Next Steps
 
 See `docs/NEXT_STEPS.md` for the current prioritized development queue:
-- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened, bcrypt migration (PasswordHasher + progressive rehash), AI Management Architecture Phase 1 (Workspace Read API + XSLT Build API)
+- **Done**: ErrorHandlingFilter ACTIVE, RBAC middleware, cloudflared installed, CSP hardened, bcrypt migration (PasswordHasher + progressive rehash), AI Management Architecture Phase 1 (Workspace Read API + XSLT Build API), credential encryption at rest (AES-256-GCM), vendor JAR CVE audit
 - **Blocked**: Configure monitoring email (needs SMTP credentials)
-- **Active**: Cloudflare tunnel (quick tunnel working, named tunnel needs account setup), Vercel auto-deploy (GitHub integration), credential encryption at rest, vendor JAR CVE audit
-- **Future**: AI Management Architecture Phase 2+ (write operations, connections, change tracking)
+- **Active**: Cloudflare tunnel (quick tunnel working, named tunnel needs account setup), Vercel auto-deploy (GitHub integration)
+- **Future**: AI Management Architecture Phase 2+ (write operations, connections, change tracking), CVE remediation (Tomcat 9.0.98+, Xerces/Xalan upgrade)
