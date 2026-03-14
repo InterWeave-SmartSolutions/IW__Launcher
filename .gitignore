@@ -195,6 +195,9 @@ frontends/iw-portal/dist/
 # ===== Production Reference (large files + secrets) =====
 # IDE distribution ZIP too large for GitHub (307MB)
 docs/production-reference/iw-ide/IW_IDE.zip
+docs/production-reference/iw-ide/IW_IDE-707MB-full-backup.zip
+# Customer Portal Documentation ZIPs (Creatio/Salesforce integration packages, 7-17MB each)
+docs/production-reference/documentation/Customer Portal Documentation/**/*.zip
 # Client-specific engine logs contain Salesforce access tokens (also >100MB)
 docs/production-reference/engine-logs/client-specific/
 # IWCustomerPortal sites contain Salesforce OAuth consumer key/secret in config.json
