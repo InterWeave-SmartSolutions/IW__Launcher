@@ -7415,3 +7415,60 @@ Follow-ups / known issues:
 - Credential masking in API responses could be enhanced (wizard GET still returns raw passwords to authenticated users)
 - CVE remediation pending: Tomcat 9.0.98+ upgrade (CVE-2024-50379 critical on Windows), Xerces/Xalan upgrade, MySQL 5.1.15 replacement
 - Quick CVE wins: remove test JARs (junit-3.8.1, cactus-1.5, httpunit-1.5.3) from iwtransformationserver
+
+## 2026-03-14 01:30 (PST) — Session 27
+Agent: Claude Opus 4.6
+Task: Engine flow definitions + Cloudflare tunnel for Vercel portal
+
+### What I did (this response)
+
+**1. Engine config.xml populated with CRM2M2 flow definitions**
+- Root cause: `iw-business-daemon/WEB-INF/config.xml` (loaded by ConfigContext at startup) had zero CRM2M2 flows
+- Added all 14 CRM2M2 flow definitions (8 TransactionDescription + 6 Query) to the BD config.xml
+- Also updated `iwtransformationserver/WEB-INF/config.xml` with same flows + `IsHosted="1"`
+- **Critical fix**: Updated all 3 config.xml templates (`supabase`, `hosted`, `local`) with flow definitions
+  - Templates were bare (root element only) — `START.bat` renders config.xml from template on every run
+  - Without template update, flows would be wiped on next startup
+
+**2. Verified engine flows load in React UI**
+- Restarted Tomcat, logged in as admin@sample.com (CRM2MG2 solution type)
+- `GET /api/flows` returns 8 scheduled + 6 query flows (was returning 0 before)
+- Playwright test confirms 14/14 flows visible in Engine Controls tab
+- 8 Start buttons displayed, Live Engine Log panel operational
+
+**3. Cloudflare quick tunnel started for Vercel portal**
+- Old tunnel URL `census-linear-lover-somewhere.trycloudflare.com` was dead
+- Started new tunnel: `benefit-cash-leu-cursor.trycloudflare.com`
+- Updated `frontends/iw-portal/vercel.json` with new tunnel destination
+- Verified tunnel proxies correctly: login returns Bearer token, session check via Bearer works
+
+### Files changed
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/config.xml` — added 14 CRM2M2 flows + IsHosted=1
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/config.xml` — added 14 CRM2M2 flows (gitignored, local only)
+- `docs/authentication/config.xml.supabase.template` — added SF2AUTH + CRM2M2 flow definitions
+- `docs/authentication/config.xml.hosted.template` — added SF2AUTH + CRM2M2 flow definitions
+- `docs/authentication/config.xml.local.template` — added subset of CRM2M2 flow definitions
+- `frontends/iw-portal/vercel.json` — updated tunnel URL
+- `workspace/Creatio_Magento2_Integration/configuration/runtime_profiles/` — new generated profile for Pinnacle_Integrations
+
+### Commands run
+- `taskkill //F //PID 42712` (kill Tomcat)
+- `cmd.exe //C startup.bat` (restart Tomcat)
+- `curl POST /api/auth/login` (test login)
+- `curl GET /api/flows` (verify 14 flows load)
+- `python test_engine_flows.py` (Playwright UI verification)
+- `npx cloudflared tunnel --url http://localhost:9090` (start quick tunnel)
+- `curl` through tunnel URL (verify proxy + Bearer auth)
+
+### Verification performed
+- 14/14 flows visible in Engine Controls tab (Playwright screenshot)
+- 8 Start buttons for scheduled flows
+- 6 query flows with HTTP GET URLs
+- Login via tunnel: returns Bearer token
+- Session check via tunnel with Bearer: authenticated=true
+- Vercel portal at iw-portal.vercel.app returns HTTP 200
+
+### Follow-ups / known issues
+- Cloudflare quick tunnel is ephemeral — dies when this session ends. Need `quickstart_tunnel.ps1` for persistent operation
+- Vercel auto-deploys on push — new tunnel URL will be live ~30s after git push
+- SF2AUTH flows were already in the hand-edited BD config.xml but missing from templates — now fixed in all 3 templates
