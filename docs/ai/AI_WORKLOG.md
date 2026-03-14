@@ -7970,3 +7970,28 @@ Verification performed:
 Follow-ups / known issues:
 - Config templates in `docs/authentication/` should be updated with CRM2MG2+CRM2QB flow definitions for fresh deployments
 - `interweave-multi-cloud_1.html` is an exact duplicate of `interweave-multi-cloud.html` — can be deleted
+
+---
+
+## Session 30d — Backend Write APIs + Frontend Mutations (2026-03-14)
+
+### Workspace Write API (ApiWorkspaceManagementServlet)
+
+Expanded from 485 → 750+ lines. Added `doPost`, `doPut`, `doDelete` with 6 write endpoints:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `.../transactions` | POST | Create TransactionDescription in config.xml |
+| `.../transactions/{id}` | PUT | Update TransactionDescription |
+| `.../transactions/{id}` | DELETE | Remove TransactionDescription |
+| `.../queries` | POST | Create Query element |
+| `.../queries/{id}` | DELETE | Remove Query element |
+| `.../connections` | PUT | Update dataconnections.xslt params |
+
+Key implementation: DOM parse → modify → atomic write (.tmp + rename), synchronized blocks, JAXP 1.1 compatible, single-line XML output matching engine format.
+
+### Frontend Mutations (useWorkspace.ts)
+
+Added 5 hooks: useCreateTransaction, useUpdateTransaction, useDeleteTransaction, useCreateQuery, useDeleteQuery. All invalidate workspace + engine-flows queries.
+
+Compiled with `--release 8`, zero TS errors, Vite build passes.
