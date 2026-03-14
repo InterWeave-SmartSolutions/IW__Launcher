@@ -206,3 +206,22 @@ docs/production-reference/iw-ide/Data/
 docs/production-reference/iw-ide/transactions_old.xml
 # .iwxt transaction exports and templates may contain embedded credentials
 docs/production-reference/**/*.iwxt
+# Extracted workspace projects contain plaintext credentials in config.xml (DB passwords, SMTP creds, API keys)
+docs/production-reference/workspace-projects/all_projects_1/
+docs/production-reference/workspace-projects/all_projects_2/
+docs/production-reference/workspace-projects/NexternalHostedIan/
+docs/production-reference/workspace-projects/NexternalQueryTest/
+docs/production-reference/workspace-projects/NexternalQueryTestD/
+docs/production-reference/workspace-projects/NexternalQueryTestIan/
+docs/production-reference/workspace-projects/QB_sample/
+docs/production-reference/workspace-projects/SN2QBSP/
+docs/production-reference/workspace-projects/SN_Test/
+docs/production-reference/workspace-projects/SN_Test_New/
+docs/production-reference/workspace-projects/SPworkspace/
+docs/production-reference/workspace-projects/SSProject/
+docs/production-reference/workspace-projects/SalesProdigy1/
+docs/production-reference/workspace-projects/IWHostedSolutions/IWHostedSolutions/
+docs/production-reference/workspace-projects/IWHostedSolutions/test111/
+docs/production-reference/workspace-projects/sample_projects/
+docs/production-reference/workspace-projects/iw_ide/
+docs/production-reference/workspace-projects/sdk_templates/

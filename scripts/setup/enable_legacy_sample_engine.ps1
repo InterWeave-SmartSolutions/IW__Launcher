@@ -140,6 +140,41 @@ if (-not $SkipRuntimeConfigMerge) {
     }
 
     $importedCount = Import-XmlChildren -TargetDocument $targetXml -TargetRoot $targetRoot -SourceRoot $sourceRoot
+
+    # Also import flows from other workspace projects that have im/config.xml
+    $workspaceRoot = Join-Path $repoRoot "workspace"
+    $excludeDirs = @($SampleProjectName, "GeneratedProfiles", "IW_Runtime_Sync", ".metadata", "Templates")
+    foreach ($projectDir in (Get-ChildItem -Path $workspaceRoot -Directory -ErrorAction SilentlyContinue)) {
+        if ($excludeDirs -contains $projectDir.Name) { continue }
+        $otherConfig = Join-Path $projectDir.FullName "configuration\im\config.xml"
+        if (Test-Path $otherConfig) {
+            try {
+                [xml]$otherXml = Get-Content -Path $otherConfig -Raw
+                $otherRoot = $otherXml.SelectSingleNode("/BusinessDaemonConfiguration")
+                if ($otherRoot) {
+                    $otherCount = 0
+                    foreach ($node in @($otherRoot.SelectNodes("./TransactionDescription | ./Query"))) {
+                        $existingId = $node.GetAttribute("Id")
+                        # Skip if a flow with the same Id already exists
+                        $dup = $targetRoot.SelectSingleNode("*[@Id='$existingId']")
+                        if (-not $dup) {
+                            $imported = $targetXml.ImportNode($node, $true)
+                            [void]$targetRoot.AppendChild($imported)
+                            $otherCount++
+                            $importedCount++
+                        }
+                    }
+                    if ($otherCount -gt 0) {
+                        Write-Step "Imported $otherCount additional flow nodes from $($projectDir.Name)"
+                    }
+                }
+            }
+            catch {
+                Write-Step "Warning: could not parse $otherConfig - $_"
+            }
+        }
+    }
+
     Save-XmlDocument -Document $targetXml -Path $runtimeConfigPath
 
     Write-Step "Imported $importedCount runtime flow nodes into $runtimeConfigPath"

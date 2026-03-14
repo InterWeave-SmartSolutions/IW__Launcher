@@ -27,8 +27,12 @@ import { deriveFlows, fmtTime, statusColor, parseFlowSystems } from "@/lib/flow-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useEngineStatus } from "@/hooks/useEngine";
+import { useWorkspaceProjects } from "@/hooks/useWorkspace";
+import { deriveSolutionMeta } from "@/types/configuration";
 import { KpiRow } from "@/components/integrations/KpiRow";
 import { FlowDependencyMap } from "@/components/integrations/FlowDependencyMap";
+import { DataPipelineVisualization } from "@/components/integrations/DataPipelineVisualization";
 import { EngineControlsTab } from "@/components/integrations/EngineControlsTab";
 import { CredentialInventory } from "@/components/integrations/CredentialInventory";
 import { OnboardingOverlay } from "@/components/integrations/OnboardingOverlay";
@@ -55,6 +59,8 @@ export function IntegrationOverviewPage() {
   const { data: companyData } = useCompanyProfile();
   const { data: credData, isLoading: credLoading } = useCredentials();
   const { data: flowsRes } = useEngineFlows(false); // one-shot for dependency map
+  const { data: engineData } = useEngineStatus();
+  const { data: wsData } = useWorkspaceProjects();
 
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [flowSearch, setFlowSearch] = useState("");
@@ -123,6 +129,48 @@ export function IntegrationOverviewPage() {
         isLoading={isLoading}
       />
 
+      {/* Data Pipeline Visualization */}
+      {solutionType && (() => {
+        const meta = deriveSolutionMeta(solutionType);
+        const projects = wsData?.projects ?? [];
+        const matchingProject = projects.find((p) => p.solutionType === solutionType) ?? projects[0];
+        const creds = credentials;
+        const srcCred = creds.find((c) => c.credentialType.toLowerCase().includes(meta.crmName.toLowerCase().slice(0, 2)));
+        const dstCred = creds.find((c) => c.credentialType.toLowerCase().includes(meta.fsName.toLowerCase().slice(0, 2)));
+
+        function loadTestResult(type: string): boolean | null {
+          try {
+            const raw = localStorage.getItem(`iw-cred-test-${type}`);
+            if (!raw) return null;
+            return JSON.parse(raw).reachable ?? null;
+          } catch {
+            return null;
+          }
+        }
+
+        const srcTestResult = srcCred ? loadTestResult(srcCred.credentialType) : null;
+        const dstTestResult = dstCred ? loadTestResult(dstCred.credentialType) : null;
+
+        return (
+          <DataPipelineVisualization
+            source={{
+              name: meta.crmName,
+              connected: srcTestResult === true,
+              untested: srcTestResult === null,
+            }}
+            destination={{
+              name: meta.fsName,
+              connected: dstTestResult === true,
+              untested: dstTestResult === null,
+            }}
+            engineUp={engineData?.engineUp === true}
+            xsltCount={matchingProject?.xsltCount ?? 0}
+            transactionCount={matchingProject?.transactionCount ?? 0}
+            isLoading={false}
+          />
+        );
+      })()}
+
       {/* Hub-and-spoke dependency map */}
       {systems.length > 0 && <FlowDependencyMap systems={systems} />}
 
@@ -151,6 +199,28 @@ export function IntegrationOverviewPage() {
             Workspace Sync
           </TabsTrigger>
         </TabsList>
+
+        {/* Quick links to new pages */}
+        <div className="flex items-center gap-2 flex-wrap mt-2 mb-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/company/flows">
+              <Workflow className="w-3 h-3" />
+              Flow Builder
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/company/connections">
+              <Key className="w-3 h-3" />
+              Connection Manager
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/company/mappings">
+              <ArrowLeftRight className="w-3 h-3" />
+              Object Mapping
+            </Link>
+          </Button>
+        </div>
 
         {/* ── Flows Tab ── */}
         <TabsContent value="flows">

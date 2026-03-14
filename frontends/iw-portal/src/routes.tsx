@@ -68,6 +68,16 @@ import { CompanyConfigPage } from "@/pages/CompanyConfigPage";
 const ConfigurationWizardPage = lazy(() =>
   import("@/pages/ConfigurationWizardPage").then((m) => ({ default: m.ConfigurationWizardPage }))
 );
+/* Lazy-load connection & mapping pages */
+const ConnectionManagerPage = lazy(() =>
+  import("@/pages/ConnectionManagerPage").then((m) => ({ default: m.ConnectionManagerPage }))
+);
+const ObjectMappingPage = lazy(() =>
+  import("@/pages/ObjectMappingPage").then((m) => ({ default: m.ObjectMappingPage }))
+);
+const FlowBuilderPage = lazy(() =>
+  import("@/pages/FlowBuilderPage").then((m) => ({ default: m.FlowBuilderPage }))
+);
 /* Lazy-load integrations page (engine controls + credentials + dep map) */
 const IntegrationOverviewPage = lazy(() =>
   import("@/pages/IntegrationOverviewPage").then((m) => ({ default: m.IntegrationOverviewPage }))
@@ -206,6 +216,30 @@ export const router = createBrowserRouter(
           element: (
             <Suspense fallback={<LazyFallback />}>
               <ConfigurationWizardPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: "company/connections",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <ConnectionManagerPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: "company/mappings",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <ObjectMappingPage />
+            </Suspense>
+          ),
+        },
+        {
+          path: "company/flows",
+          element: (
+            <Suspense fallback={<LazyFallback />}>
+              <FlowBuilderPage />
             </Suspense>
           ),
         },

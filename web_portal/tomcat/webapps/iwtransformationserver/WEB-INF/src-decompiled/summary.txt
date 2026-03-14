@@ -1,0 +1,72 @@
+Summary for C:/IW_Launcher/web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/lib/iwengine.jar
+Decompiled with CFR 0.152
+
+
+com.interweave.adapter.database.IWSqlSync
+----------------------------
+
+run()
+  Unable to fully structure code
+
+
+com.interweave.adapter.email.IWEmailBaseAdaptor
+----------------------------
+
+parseMail(java.lang.String )
+  Unable to fully structure code
+addEvent(java.lang.String )
+  Unable to fully structure code
+
+
+com.interweave.adapter.filesystem.IWFileBaseAdaptor
+----------------------------
+
+writeFile(java.io.File java.lang.String boolean )
+  Unable to fully structure code
+readTypedFile(java.io.File )
+  Could not resolve type clashes
+  Unable to fully structure code
+
+
+com.interweave.adapter.filesystem.IWFtpBaseAdaptor
+----------------------------
+
+go(com.interweave.core.IWRequest )
+  Unable to fully structure code
+
+
+com.interweave.adapter.http.IWXMLBaseAdaptor
+----------------------------
+
+xml2Data(java.lang.String boolean )
+  Unable to fully structure code
+
+
+com.interweave.connector.IWHttpImpl
+----------------------------
+
+createRequest(javax.servlet.http.HttpServletRequest java.lang.String )
+  Unable to fully structure code
+
+
+com.interweave.connector.IWXsltcImpl
+----------------------------
+
+executeTransaction(com.interweave.core.IWRequest )
+  Unable to fully structure code
+
+
+com.interweave.core.PrintfFormat
+----------------------------
+
+setPrecision()
+  Unable to fully structure code
+setFieldWidth()
+  Unable to fully structure code
+
+
+com.interweave.developer.wsdl.RawMessageSender
+----------------------------
+
+trimXML(java.lang.String )
+  Unable to fully structure code

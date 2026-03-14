@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   User,
   Mail,
@@ -11,17 +12,27 @@ import {
   Eye,
   EyeOff,
   LayoutGrid,
+  Database,
+  Activity,
+  Settings,
+  Monitor,
+  ArrowRight,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProfile, useUpdateProfile, useChangePassword } from "@/hooks/useProfile";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useToast } from "@/providers/ToastProvider";
 import { usePortalVisibility, PORTAL_LABELS, type Portal } from "@/hooks/usePortal";
+import { useCredentials } from "@/hooks/useConfiguration";
+import { useTransactions } from "@/hooks/useMonitoring";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ConnectionStatusGrid } from "@/components/integrations/ConnectionStatusGrid";
+import { ActivityFeed } from "@/components/integrations/ActivityFeed";
 
 function StatusDot({ variant }: { variant: "success" | "warning" | "default" }) {
   const color = variant === "success" ? "bg-[hsl(var(--success))]"
@@ -36,6 +47,8 @@ export function ProfilePage() {
   const updateProfile = useUpdateProfile();
   const changePassword = useChangePassword();
   const { visible, toggle, all: allPortals } = usePortalVisibility();
+  const { data: credData, isLoading: credLoading } = useCredentials();
+  const { data: txRes, isLoading: txLoading } = useTransactions(1, 5);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -51,6 +64,8 @@ export function ProfilePage() {
   const { showToast } = useToast();
 
   const profile = data?.profile;
+  const credentials = credData?.data?.credentials ?? [];
+  const transactions = txRes?.data?.transactions ?? [];
 
   useEffect(() => {
     if (profile && !loaded) {
@@ -112,16 +127,16 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-semibold">My Profile</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Manage your personal information and account security.
+          Manage your personal information, connections, and account security.
         </p>
       </div>
 
-      {/* Account Status Card (ASSA-inspired) */}
+      {/* Account Status Card */}
       <div className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-5">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
@@ -146,71 +161,111 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* Two-column grid (ASSA-inspired) */}
+      {/* Two-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
 
-        {/* Personal Information Card */}
-        <form onSubmit={handleSaveProfile} className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-6">
-          <div className="flex items-center gap-2 mb-5">
-            <User className="w-4 h-4 text-[hsl(var(--primary))]" />
-            <h3 className="font-semibold">Personal Information</h3>
-          </div>
+        {/* ── Left Column ── */}
+        <div className="space-y-6">
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          {/* Personal Information Card */}
+          <form onSubmit={handleSaveProfile} className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <User className="w-4 h-4 text-[hsl(var(--primary))]" />
+              <h3 className="font-semibold">Personal Information</h3>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    maxLength={45}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    maxLength={45}
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
-                  id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  maxLength={45}
-                  required
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={255}
+                  placeholder="e.g. Integration Architect"
                 />
               </div>
+
               <div className="space-y-1.5">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  maxLength={45}
-                  required
-                />
+                <Label>Email</Label>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] text-sm text-muted-foreground">
+                  <Mail className="w-4 h-4 shrink-0" />
+                  {profile?.email}
+                </div>
+                <p className="text-[11px] text-muted-foreground">Email cannot be changed. Contact an administrator.</p>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button type="submit" disabled={updateProfile.isPending}>
+                  {updateProfile.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save Profile
+                </Button>
               </div>
             </div>
+          </form>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={255}
-                placeholder="e.g. Integration Architect"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Email</Label>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[hsl(var(--muted)/0.5)] border border-[hsl(var(--border))] text-sm text-muted-foreground">
-                <Mail className="w-4 h-4 shrink-0" />
-                {profile?.email}
+          {/* Connection Status Summary */}
+          <div className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4 text-[hsl(var(--primary))]" />
+                <h3 className="font-semibold text-sm">Connected Systems</h3>
               </div>
-              <p className="text-[11px] text-muted-foreground">Email cannot be changed. Contact an administrator.</p>
+              <Link
+                to="/admin/configurator"
+                className="text-xs text-[hsl(var(--primary))] hover:underline flex items-center gap-1"
+              >
+                Manage <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
-
-            <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={updateProfile.isPending}>
-                {updateProfile.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Save Profile
-              </Button>
-            </div>
+            <ConnectionStatusGrid credentials={credentials} isLoading={credLoading} />
           </div>
-        </form>
 
-        {/* Organization Card (ASSA-inspired sidebar info) */}
+          {/* Recent Activity Feed */}
+          <div className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[hsl(var(--primary))]" />
+                <h3 className="font-semibold text-sm">Recent Activity</h3>
+              </div>
+              <Link
+                to="/monitoring/transactions"
+                className="text-xs text-[hsl(var(--primary))] hover:underline flex items-center gap-1"
+              >
+                View all <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <ActivityFeed transactions={transactions} isLoading={txLoading} limit={5} />
+          </div>
+        </div>
+
+        {/* ── Right Column ── */}
         <div className="space-y-5">
+
+          {/* Organization Card */}
           <div className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-5">
             <div className="flex items-center gap-2 mb-4">
               <Building2 className="w-4 h-4 text-[hsl(var(--primary))]" />
@@ -219,17 +274,17 @@ export function ProfilePage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Company</span>
-                <span className="font-medium">{profile?.company || "—"}</span>
+                <span className="font-medium">{profile?.company || "\u2014"}</span>
               </div>
               <Separator />
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Solution</span>
-                <span className="font-medium">{profile?.solutionType || "—"}</span>
+                <span className="font-medium">{profile?.solutionType || "\u2014"}</span>
               </div>
               <Separator />
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Role</span>
-                <span className="font-medium capitalize">{profile?.role || "—"}</span>
+                <span className="font-medium capitalize">{profile?.role || "\u2014"}</span>
               </div>
             </div>
           </div>
@@ -336,6 +391,56 @@ export function ProfilePage() {
                 </div>
               </form>
             )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="glass-panel rounded-2xl border border-[hsl(var(--border))] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Settings className="w-4 h-4 text-[hsl(var(--primary))]" />
+              <h3 className="font-semibold text-sm">Quick Actions</h3>
+            </div>
+            <div className="space-y-2">
+              <Link
+                to="/company/config"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition text-sm"
+              >
+                <span className="flex items-center gap-2">
+                  <Workflow className="w-4 h-4 text-muted-foreground" />
+                  Configure Connections
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+              </Link>
+              <Link
+                to="/admin/configurator"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition text-sm"
+              >
+                <span className="flex items-center gap-2">
+                  <Monitor className="w-4 h-4 text-muted-foreground" />
+                  View Flows
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+              </Link>
+              <Link
+                to="/monitoring"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition text-sm"
+              >
+                <span className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-muted-foreground" />
+                  Monitoring
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+              </Link>
+              <Link
+                to="/company"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--muted))] transition text-sm"
+              >
+                <span className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-muted-foreground" />
+                  Company Config
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>

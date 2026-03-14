@@ -102,4 +102,6 @@ Read these files on-demand when working in the relevant area:
 - `docs/deployment/STUNNEL_MAPPING.md` — stunnel ↔ direct HTTPS port mapping (production log decoding)
 - `docs/deployment/FLOW_CATALOG.md` — all 56 flow definitions (production + IW_Launcher)
 - `docs/deployment/PRODUCTION_DEPLOYMENT.md` — side-by-side deployment on production server
+- `docs/ui-ux/iw_smarthub/` — 8 SmartHub marketing site prototypes (product pages, design tokens, brand identity)
+- `docs/ui-ux/PORTAL_ARCHITECTURE.md` — three-portal UI architecture (associate + master + operator)
 - `docs/NEXT_STEPS.md` — current development roadmap

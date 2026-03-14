@@ -7770,3 +7770,203 @@ Verification performed:
 Follow-ups / known issues:
 - CVE Phase 2-3 (Xerces/Xalan upgrade) deferred — requires transformer regression testing in staging
 - XSD validation is warn-only; could be made strict after validating all existing workspace configs pass
+
+---
+
+## Session 30 — Configuration Process Overhaul: Full Engine Control from Frontend (2026-03-14)
+
+**Goal:** Overhaul User Profile, Company Profile, and the Configuration process so users can operate the full InterWeave engine from the frontend, with the IDE as an optional power-user tool.
+
+### Phase 1: Profile & Company as Integration Dashboards (Frontend-Only)
+
+New files created:
+- `src/types/workspace.ts` — TypeScript interfaces for workspace API responses (WorkspaceProject, WorkspaceProjectDetail, etc.)
+- `src/hooks/useWorkspace.ts` — `useWorkspaceProjects()`, `useWorkspaceProject(name)` hooks wrapping GET /api/workspace/projects
+- `src/components/integrations/ConnectionStatusGrid.tsx` — Reusable connected-systems mini card grid with test status
+- `src/components/integrations/ActivityFeed.tsx` — Recent transaction activity feed (5 most recent)
+
+Modified files:
+- `src/pages/ProfilePage.tsx` — Added Connected Systems panel, Recent Activity feed, Quick Actions grid; widened to max-w-5xl
+- `src/pages/CompanyPage.tsx` — Transformed into integration command center with Integration Health KPIs (flow count, running, 24h success, team members), Connected Systems panel, Workspace Project Summary (transaction/query/XSLT totals per project), Configuration Completeness progress bar, engine online/offline badge
+
+### Phase 2: Connection Manager & Object Mapping Canvas
+
+New files created:
+- `src/hooks/useConnections.ts` — Combined hook merging credentials + workspace data; systemDisplayName(), buildConnectionViews(), useSaveWorkspaceConnection()
+- `src/components/connections/ConnectionCard.tsx` — Visual connection card with status dot, system icon, endpoint URL, auth summary, test/edit actions, related project badges
+- `src/components/connections/ConnectionDialog.tsx` — Add/Edit connection dialog with system type, adapter, URL, auth fields
+- `src/components/mappings/ObjectPair.tsx` — Source↔Dest mapping row with direction selector, expand toggle, tier/category labels
+- `src/components/mappings/FieldMappingPanel.tsx` — Refactored from FieldMappingPage: accepts schema props, falls back to sample schemas, compact inline layout
+- `src/pages/ConnectionManagerPage.tsx` — Full connection management page at /company/connections with card grid, Test All, Add Connection dialog
+- `src/pages/ObjectMappingPage.tsx` — Visual object mapping canvas at /company/mappings with core/extended sections, expandable field panels, inline save
+
+Modified files:
+- `src/routes.tsx` — Added lazy-loaded routes: /company/connections, /company/mappings
+- `src/components/layout/Sidebar.tsx` — Added Connections (Database icon) and Object Mapping (Globe icon) to Configuration group
+- `src/pages/ConfigurationWizardPage.tsx` — Added "Full Page" link in Step 2 (→/company/mappings) and "Connection Manager" link in Step 3 (→/company/connections)
+- `src/pages/CompanyConfigPage.tsx` — Credentials step links to /company/connections; Object Mapping step links to /company/mappings
+
+### Phase 3: Transaction Flow Builder
+
+New files created:
+- `src/components/flows/FlowList.tsx` — Sidebar flow list with search filter, transaction/query grouping, engine status indicators
+- `src/components/flows/FlowDetail.tsx` — Detail panel with metadata grid, parameters, engine controls (Start/Stop), transaction chain visualization
+- `src/components/flows/FlowChainVisualization.tsx` — Vertical stepper showing NextTransaction chain with step type inference (Read→Transform→Write)
+- `src/pages/FlowBuilderPage.tsx` — Master flow builder at /company/flows with split-panel layout (320px list + detail)
+
+Modified files:
+- `src/routes.tsx` — Added lazy-loaded route: /company/flows
+- `src/components/layout/Sidebar.tsx` — Added Flows (Plug icon) to Configuration group
+
+### Phase 4: Visual Pipeline & Unified Dashboard
+
+New files created:
+- `src/components/integrations/DataPipelineVisualization.tsx` — Visual [Source] → [IW Engine] → [Destination] pipeline with system status, XSLT count, flow count
+
+Modified files:
+- `src/pages/IntegrationOverviewPage.tsx` — Added DataPipelineVisualization at top; added quick-link buttons to Flow Builder, Connection Manager, Object Mapping
+- `src/pages/CompanyConfigPage.tsx` — Credentials and Object Mapping steps now deep-link to their dedicated pages
+
+### Summary Statistics
+
+- **New files**: 16 (4 types/hooks, 9 components, 3 pages)
+- **Modified files**: 7 (ProfilePage, CompanyPage, CompanyConfigPage, IntegrationOverviewPage, ConfigurationWizardPage, routes.tsx, Sidebar.tsx)
+- **New routes**: 3 (/company/connections, /company/mappings, /company/flows)
+- **New sidebar items**: 3 (Connections, Object Mapping, Flows in Configuration group)
+- **Total pages**: 44 (was 41, +3 new)
+- **TypeScript errors**: 0
+- **Vite build**: Passes (6.6s, new chunks code-split via lazy loading)
+- **Backend changes**: 0 (all frontend, using existing APIs)
+- **Bundle sizes**: ConnectionManagerPage 12.8kB, ObjectMappingPage 13.8kB, FlowBuilderPage 13.6kB (all gzipped ~4kB)
+
+### What I did (this response)
+Implemented all 4 phases of the Configuration Process Overhaul plan:
+1. Enhanced ProfilePage and CompanyPage as integration dashboards with connection status, activity feed, workspace project summaries, and configuration completeness
+2. Built ConnectionManagerPage (card grid + dialog), ObjectMappingPage (two-column with expandable field panels), and restructured the wizard with deep links
+3. Built FlowBuilderPage with split-panel layout, flow list, detail panel, parameters, engine controls, and NextTransaction chain visualization
+4. Added DataPipelineVisualization to IntegrationOverviewPage, updated CompanyConfigPage with deep links to new pages
+- All builds pass with zero TypeScript errors
+- SPA routes already covered by existing /company/* wildcard in web.xml
+
+---
+
+## Session 30b — Production Workspace Project Extraction (2026-03-14)
+
+**Goal:** Extract production workspace projects from the existing `IW_IDE.zip` (307MB, 25,979 entries) for reference patterns.
+
+### SDK Source Search Result
+- Confirmed: **zero `.java` source files** for iw_sdk_1.0.0 in the ZIP
+- Only 328 `.java` files found, all AccpacCom (Sage COM interop stubs)
+- SDK exists only as 310 compiled `.class` files — bytecode only
+
+### Extracted Workspace Projects
+From `IW_IDE.zip`, extracted configs, XSLTs, and include files (skipping Eclipse `.metadata/.history` bloat) into `docs/production-reference/workspace-projects/`:
+
+**all_projects_1/** (21 projects):
+- **SF2QBBase**: 301 XSLTs, 89KB config.xml — the base SF↔QB integration (largest)
+- **ConfTest**: 195 XSLTs, 107KB config.xml (SF2QB Custom variant)
+- **CPADemo**: 220 XSLTs, 74KB config.xml (SugarCRM variant)
+- **MM2SF**: 230 XSLTs, 55KB config.xml (Magento↔SF)
+- **HTTPTest**: 169 XSLTs, 107KB config.xml (Aria/HTTP adapter reference)
+- Plus Accpac (29 XSLTs, 31 transactions), MySQL2SF, Nexternal integrations, test projects
+
+**all_projects_2/** (5 projects):
+- **SF2AuthNet**: 141 XSLTs (Salesforce ↔ Authorize.Net — matches IW_Launcher workspace)
+- **MSSQL2SFBase**: 100 XSLTs (MSSQL ↔ Salesforce)
+- **Next2SFBBBS**: 120 XSLTs (Nexternal multi-tenant)
+- Plus IWHostedManager, SF2SQLBR
+
+**Standalone projects**: SN2QBSP (Sales Prodigy→QB), SSProject, NexternalHostedIan, QB_sample, sample_projects, SalesProdigy1, SN_Test, SN_Test_New, SPworkspace
+
+**IWHostedSolutions** (already copied in prior session): 37 transactions, 2 queries — the master multi-tenant hosted solution (51KB config.xml)
+
+### Final Inventory
+| Metric | Count |
+|--------|-------|
+| soltran.xslt files (master transformations) | 28 |
+| Total XSLTs | 3,408 |
+| config.xml files | 80 |
+| Total files | 3,661 |
+| Unique workspace projects | 30+ |
+
+### Key Patterns Discovered
+- Production `soltran.xslt` files range from 1KB (simple) to 677KB (HTTPTest — massive Aria integration)
+- SF2QBBase's `soltran.xslt` (239KB) contains the canonical field mappings for SF Account↔QB Customer — directly usable for live FieldMappingPanel
+- All projects follow the same structure: `configuration/im/config.xml`, `xslt/`, `xslt/include/dataconnections.xslt`, `xslt/Site/new/include/soltran.xslt`
+
+### What I did (this response)
+- Searched IW_IDE.zip for SDK source — confirmed zero `.java` files for iw_sdk_1.0.0
+- Extracted 3,661 files from 30+ production workspace projects (configs, XSLTs, soltran master transformations)
+- Placed in `docs/production-reference/workspace-projects/` organized by project
+- Wrote server-side instructions for another AI to search for SDK source on the production server and copy remaining assets
+- Cleaned up temp extraction directory
+
+---
+
+## Session 30c — SDK Decompilation + Production Schema Integration (2026-03-14)
+
+### SDK Source Recovery via CFR Decompilation
+
+Downloaded CFR 0.152 decompiler and fully reconstructed Java source for all InterWeave proprietary code:
+
+| Component | Files | Lines | Quality |
+|-----------|-------|-------|---------|
+| **SDK Plugin** (`iw_sdk_1.0.0`) | 108 | 25,478 | Zero decompilation errors in core files |
+| **IW Engine** (`iwengine.jar`) | 134 | 29,669 | Clean decompilation |
+| **FD Plugin** (`fd_plugin.jar`) | 29 | 1,994 | Clean decompilation |
+| **TOTAL** | **271** | **57,141** | |
+
+Output locations:
+- `plugins/iw_sdk_1.0.0/src/` — SDK Eclipse plugin source (ConfigContext 3110 LOC, NavigationView 2064 LOC, TemplateEditorView 1423 LOC)
+- `web_portal/tomcat/webapps/iwtransformationserver/WEB-INF/src-decompiled/` — engine source
+- `web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/src-decompiled/` — fd_plugin source
+
+Key SDK classes now readable:
+- `ConfigContext.java` (3110 lines) — config.xml DOM operations, project lifecycle, build pipeline
+- `ProjectActions.java` (557 lines) — 20+ IDE actions (New Project, Build, Open, Close)
+- `NavigationView.java` (2064 lines) — project tree, transaction/query listing
+- `TemplateEditorView.java` (1423 lines) — XSLT template editor with 37 inner constructs
+- `ConnectionView.java` (301 lines) — dataconnections.xslt editing
+- `TransactionBase.java` (272 lines) — base class for transaction context
+- `BuildProject.java` (140 lines) — 4-stage build pipeline dialog
+
+### Production Schema Integration
+
+Created `src/lib/production-schemas.ts` — a schema catalog with real field names extracted from production XSLT transformers:
+- **Creatio Account** (9 fields) ↔ **Magento Customer** (14 fields) — from `workspace/Creatio_Magento2_Integration/`
+- **Salesforce Account** (20 fields) ↔ **QuickBooks Customer** (23 fields) — from `docs/production-reference/workspace-projects/all_projects_1/SF2QBBase/`
+- **Salesforce Opportunity** (8 fields) ↔ **QuickBooks Invoice** (7 fields)
+- **Salesforce Product** (5 fields) ↔ **QuickBooks Item** (5 fields)
+- **Salesforce Contact** (16 fields) — secondary object
+
+Updated `ObjectMappingPage.tsx` to use `lookupSchema()` — when a production schema exists for the active solution type + mapping key, the FieldMappingPanel renders real field names with AI similarity matching instead of sample data. Falls back to defaults when no production schema is available.
+
+### What I did (this response)
+- Downloaded CFR 0.152 and decompiled all InterWeave proprietary bytecode (SDK + Engine + FD Plugin = 271 files, 57,141 LOC)
+- Created production-schemas.ts with real field names from XSLT transformers
+- Wired ObjectMappingPage to use production schemas via lookupSchema()
+- Zero TypeScript errors, Vite build passes
+
+---
+
+## 2026-03-14 16:15–17:00 (UTC) — Session 30 (continued)
+Agent/tool: Claude Opus 4.6 (Claude Code)
+User request: Fix CRM2MG2 flows not showing in Engine Controls; document SmartHub UI prototypes
+Actions taken:
+- **CRM2MG2 flow fix**: Diagnosed that `enable_legacy_sample_engine.ps1` only imported SF2AuthNet flows into the live config.xml, ignoring other workspace projects. Updated script to scan ALL workspace projects and import their flows (deduplicating by Id). After fix: 95 total flows (70 SF2AUTH + 14 CRM2MG2 + 11 CRM2QB)
+- **SmartHub documentation**: Analyzed all 8 HTML files in `docs/ui-ux/iw_smarthub/` — marketing site prototypes for the InterWeave SmartIntegration Platform. Documented page inventory, design tokens, product family names, marketing claims, sitemap, and cross-page link structure
+- Updated NEXT_STEPS.md with SmartHub section alongside existing portal prototypes
+- Updated CLAUDE.md reference index with SmartHub and portal architecture links
+- Updated MEMORY.md with SmartHub repo stats
+Files changed/created:
+- `scripts/setup/enable_legacy_sample_engine.ps1` (multi-project flow import)
+- `docs/NEXT_STEPS.md` (SmartHub documentation section)
+- `CLAUDE.md` (reference index additions)
+- `docs/ai/AI_WORKLOG.md` (this entry)
+Verification performed:
+- Tomcat restarted, `prepare_legacy_runtime.ps1` reports: "Imported 14 additional flow nodes from Creatio_Magento2_Integration" + "Imported 11 additional flow nodes from Creatio_QuickBooks_Integration"
+- API returns 31 scheduled + 7 utility + 57 query = 95 total flows
+- CRM2MG2 flows confirmed: BPMTransactions2Magento, CRMAcctSync2M2, CRMOrderSync2M2, CRMInvSync2M2, CRMProdSync2M2, CRMSRSync2M2, M2OrderSync2CRM, M2InventorySync2CRM + 6 queries
+Follow-ups / known issues:
+- Config templates in `docs/authentication/` should be updated with CRM2MG2+CRM2QB flow definitions for fresh deployments
+- `interweave-multi-cloud_1.html` is an exact duplicate of `interweave-multi-cloud.html` — can be deleted

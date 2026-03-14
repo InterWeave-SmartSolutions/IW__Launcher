@@ -191,29 +191,46 @@ Detail schemas fully expanded (2026-03-10):
 
 ---
 
-## UI Prototype Incorporation (Three-Portal Architecture)
+## UI Prototype Incorporation (Three-Portal Architecture + SmartHub)
 
-Two new static HTML prototypes were added to `docs/ui-ux/` — they define the target UI for the Associate Portal and Master Console surfaces. Both use the same ASSA design tokens as `iw-portal` (same color system, glassmorphism, card/table/sidebar primitives).
+### Existing Prototypes
+
+Two static HTML prototypes define the target UI for the Associate Portal and Master Console. Both use the ASSA design tokens (glassmorphism, card/table/sidebar primitives).
 
 **Full architecture doc:** `docs/ui-ux/PORTAL_ARCHITECTURE.md`
 
-### Associate Portal (`docs/ui-ux/iw_associate_portal/`) — 9 pages
-Customer-facing portal for ASSA associate owners/members. Key new patterns:
-- **Hero section** — welcome banner with role-aware CTAs (not in iw-portal yet)
-- **Tile component** — nested content cards within cards
-- **Business Checkup** — structured intake wizard (maps to Config Wizard concept)
-- **Resource Library + Search** — content browsing with category filters
-- **Webinars** — media library (upcoming + recorded)
-- **Billing** — subscription/plan management (future Stripe integration)
+**Associate Portal** (`docs/ui-ux/iw_associate_portal/`) — 9 pages: Hero, Billing, Business Intake, Resource Library, Search, Support, Webinars, Notifications, Profile
 
-### Master Console (`docs/ui-ux/iw_master_console/`) — 10 pages
-Program admin console for IW/ASSA administrators. Key new patterns:
-- **4-column KPI grid** (`span-3`) with SVG sparklines via `data-spark` attribute
-- **Operational Queue** — filterable admin action table with status dots
-- **Analytics** — engagement funnel, content adoption, search demand signals
-- **Subscriptions** — plan management, churn metrics, MRR tracking
-- **Content Library** — resource publishing/CMS admin
-- **Users & Roles** — cross-org user management with role assignment
+**Master Console** (`docs/ui-ux/iw_master_console/`) — 10 pages: Dashboard, Analytics, Audit, Content, Integrations, Notifications, Settings, Subscriptions, Support, Users
+
+### SmartHub Marketing Site (`docs/ui-ux/iw_smarthub/`) — 8 unique pages (NEW)
+
+Public-facing marketing website prototypes for the InterWeave SmartIntegration Platform. Dark theme with teal (`#1D9E75`) accent, Instrument Serif + DM Sans + JetBrains Mono typography. These define the brand identity and product positioning for the external website.
+
+| Page | Title | Hero H1 |
+|------|-------|---------|
+| `interweave-home.html` | The SmartIntegration Platform | Enterprise Integration. *Executed with Intelligence.* |
+| `interweave-smarthub.html` | SmartIntegration Hub | The Engine Behind Smart, Connected Business |
+| `interweave-smartportal.html` | SmartPortal | Your Customers. *Self-service.* Always on. |
+| `interweave-adapters.html` | Protocol Adapters | Every protocol your stack speaks. *Already built.* |
+| `interweave-ecommerce.html` | eCommerce Solutions | eCommerce *Integrated* with your CRM |
+| `interweave-financial-solutions.html` | Financial Solutions | Financial Application *Integration.* Done Right. |
+| `interweave-payments.html` | Payment Cloud Processing | Payment Processing. *Innovative.* Secure. Integrated. |
+| `interweave-multi-cloud.html` | Multi-Cloud Solutions | Multi-Cloud *Integration.* Anywhere. |
+
+**Product family (from SmartHub pages):**
+- **SmartIntegration Hub** — core engine (hub-and-spoke orchestration)
+- **SmartPortal** — self-service customer payment portal (48+ MSPs)
+- **SmartAgents** — AI automation layer (field mapping, anomaly detection)
+- **SmartPayment Gateway** — 48+ merchant service providers
+- **eCommerce Gateway** — 44+ eCommerce providers
+- **Protocol Adapters** — 16 built-in adapters (REST, SOAP, GraphQL, Kafka, AMQP, MQTT, FTP, AS2, EDI, JDBC, LDAP, OData, HL7/FHIR, SMTP, WebSocket, JMS)
+
+**Key marketing claims:** 48+ payment processors, 44+ eCommerce providers, 16 protocol adapters, 100+ integrations delivered, Day 1 deployment, <5s transaction latency
+
+**Design tokens:** `--bg:#0d0f10`, `--teal:#1D9E75`, `--text:#e8e6e0` (dark theme, distinct from iw-portal's shadcn/ui light+dark)
+
+**Note:** `interweave-multi-cloud_1.html` is a duplicate of `interweave-multi-cloud.html`.
 
 ### Phased adoption into iw-portal (see PORTAL_ARCHITECTURE.md):
 - **Phase A** (1-2 hrs): Hero section on Dashboard, 4th KPI card, radius token alignment

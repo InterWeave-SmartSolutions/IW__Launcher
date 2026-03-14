@@ -574,6 +574,11 @@ function StepObjectMapping({
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
+            <Link to="/company/mappings">
+              <ExternalLink className="w-3 h-3" /> Full Page
+            </Link>
+          </Button>
           <Button variant="outline" size="sm" onClick={() => handleBulkAction("enableCore")}>
             <Zap className="w-3 h-3" /> Enable Core
           </Button>
@@ -992,12 +997,19 @@ function StepCredentials({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">System Credentials</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Enter API credentials for your source and destination systems. Passwords are stored
-          encrypted and never returned in API responses.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="text-lg font-semibold">System Credentials</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Enter API credentials for your source and destination systems. Passwords are stored
+            encrypted and never returned in API responses.
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
+          <Link to="/company/connections">
+            <ExternalLink className="w-3 h-3" /> Connection Manager
+          </Link>
+        </Button>
       </div>
 
       {existingCreds.length > 0 && (

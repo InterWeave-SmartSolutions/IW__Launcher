@@ -33,6 +33,8 @@ interface ConfigStep {
   icon: React.ComponentType<{ className?: string }>;
   complete: boolean;
   wizardStep?: number;
+  /** Direct link to a full-page view (overrides wizardStep) */
+  linkTo?: string;
   detail?: string;
 }
 
@@ -92,7 +94,7 @@ export function CompanyConfigPage() {
       description: hasCredentials ? credSummary : "Source and destination system credentials",
       icon: Database,
       complete: hasCredentials,
-      wizardStep: 2,
+      linkTo: "/company/connections",
       detail: hasCredentials ? `${credentials.length} credential(s)` : undefined,
     },
     {
@@ -108,7 +110,7 @@ export function CompanyConfigPage() {
         : "Data object sync direction mapping",
       icon: Globe,
       complete: hasConfiguration,
-      wizardStep: 1,
+      linkTo: "/company/mappings",
       detail: hasConfiguration ? `${activeMappingCount}/${mappings.length} configured` : undefined,
     },
   ];
@@ -196,7 +198,8 @@ export function CompanyConfigPage() {
       <div className="space-y-3">
         {steps.map((step, i) => {
           const Icon = step.icon;
-          const clickable = step.wizardStep !== undefined && isAdmin;
+          const clickable = (step.wizardStep !== undefined || step.linkTo !== undefined) && isAdmin;
+          const linkTarget = step.linkTo || "/company/config/wizard";
 
           const content = (
             <>
@@ -254,7 +257,7 @@ export function CompanyConfigPage() {
           );
 
           return clickable ? (
-            <Link key={step.label} to="/company/config/wizard" className={baseClass}>
+            <Link key={step.label} to={linkTarget} className={baseClass}>
               {content}
             </Link>
           ) : (

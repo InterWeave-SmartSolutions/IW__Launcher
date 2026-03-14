@@ -1,0 +1,11 @@
+Summary for C:/Users/amago/AppData/Local/Temp/iw_sdk_classes.jar
+Decompiled with CFR 0.152
+
+
+com.inerweave.sdk.ConfigContext
+----------------------------
+
+getFlowTransactions(java.lang.String )
+  Unable to fully structure code
+modifyJar(java.lang.String java.lang.String[] java.lang.String[] java.lang.String[] )
+  Unable to fully structure code

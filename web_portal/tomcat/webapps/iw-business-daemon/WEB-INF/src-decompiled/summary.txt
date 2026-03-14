@@ -1,0 +1,2 @@
+Summary for C:/IW_Launcher/web_portal/tomcat/webapps/iw-business-daemon/WEB-INF/lib/fd_plugin.jar
+Decompiled with CFR 0.152
